@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Font Name="Tahoma" Size="8.25" />
+  <Class Name="PowerSDR.Display">
+    <Position X="3" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>display.cs</FileName>
+      <HashCode>NYNHMJaQyVwu6wcLdBty1DAYKDADB4MTpIi/ONKqkok=</HashCode>
+    </TypeIdentifier>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Properties" Collapsed="true" />
+    </Compartments>
+    <NestedTypes>
+      <Class Name="PowerSDR.Display.Background" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>display.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Class>
+    </NestedTypes>
+  </Class>
+  <Enum Name="PowerSDR.RenderType" Collapsed="true">
+    <Position X="0.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <FileName>display.cs</FileName>
+      <HashCode>AAAAAAABAAAAAAAAAQAAAAAAAAAAAAAAAACAAAAAAAA=</HashCode>
+    </TypeIdentifier>
+  </Enum>
+</ClassDiagram>
