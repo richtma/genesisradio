@@ -466,6 +466,7 @@ namespace PowerSDR
 
         [DllImport("PA19.dll", EntryPoint = "PA_GetStreamInfo")]
         unsafe public static extern IntPtr PA_GetStreamInfoPtr(void* stream);
+
         unsafe public static PaStreamInfo PA_GetStreamInfo(void* stream)
         {
             IntPtr ptr = PA_GetStreamInfoPtr(stream);

@@ -683,6 +683,7 @@ namespace PowerSDR
 			}
 
 			BinaryReader reader = null;
+
 			try
 			{
 				reader = new BinaryReader(File.Open(filename, FileMode.Open, FileAccess.Read));
@@ -873,6 +874,7 @@ namespace PowerSDR
                 if (file_list.Count > 0)
                 {
                     string filename = (string)file_list[currently_playing];
+
                     if (!OpenWaveFile(filename))
                     {
                         checkBoxPlay.Checked = false;
@@ -920,7 +922,8 @@ namespace PowerSDR
                     if (!Directory.Exists(Application.StartupPath + "\\Recordings"))
                         Directory.CreateDirectory(Application.StartupPath + "\\Recordings");
                     string file_name = "";
-                    file_name += console.LOSCFreq.ToString("f6") + "MHz ";
+                    file_name += Math.Round(console.LOSCFreq,3).ToString("f3") + "MHz ";
+                    file_name += Audio.SampleRate1.ToString() + " ";
                     file_name += DateTime.Now.ToString() + ".wav";
                     file_name = file_name.Replace("/", "-");
                     file_name = file_name.Replace(":", " ");
@@ -1504,7 +1507,6 @@ namespace PowerSDR
         private int OUT_BLOCK;
         private byte[] io_buf;
         private int io_buf_size;
-
         unsafe private void* resamp_l, resamp_r;
 
 		public WaveFileReader(
@@ -1563,8 +1565,7 @@ namespace PowerSDR
                     {
                         //Debug.WriteLine("loop 2");
                         ReadBuffer(ref reader);
-                        rb_l.Write(buf_l_in, IN_BLOCK);
-                        rb_r.Write(buf_r_in, IN_BLOCK);
+
                         if (playback == false)
                             goto end;
                     }
@@ -1598,7 +1599,7 @@ namespace PowerSDR
                 int val = reader.Read(io_buf, 0, io_buf_size);
 
                 if (val < io_buf_size)
-                {
+                {                   
                     switch (format)
                     {
                         case 1:		// ints
@@ -1695,6 +1696,7 @@ namespace PowerSDR
 		public void Stop()
 		{
 			playback = false;
+            Thread.Sleep(20);
 		}
 	}
 

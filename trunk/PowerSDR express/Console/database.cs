@@ -28,7 +28,7 @@
 
 /*
  *  Changes for GenesisRadio
- *  Copyright (C)2008,2009,2010 YT7PWR Goran Radivojevic
+ *  Copyright (C)2008,2009,2010,2011,2012 YT7PWR Goran Radivojevic
  *  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 */
 
@@ -67,7 +67,7 @@ namespace PowerSDR
 			AddBandStackTable();
 			AddMemoryTable();
 			AddGroupListTable();
-			AddTXProfileTable();
+            AddTXProfileDefTable();
 		}
 
         private static void FillTables() // changes yt7pwr
@@ -96,14 +96,18 @@ namespace PowerSDR
 								1.810000, 1.810000, "160M CW QRP",				true,
 								1.810001, 1.836599, "160M CW",					true,
                                 1.836600, 1.836600, "160M WSPR",				true,
-                                1.836601, 1.842999, "160M CW",					true,
+                                1.836601, 1.837999, "160M CW",					true,
+                                1.838000, 1.838000, "160M JT65HF",  			true,
+                                1.838001, 1.842999, "160M CW",					true,
 								1.843000, 1.909999, "160M SSB/SSTV/Wide Band",	true,
 								1.910000, 1.910000, "160M SSB QRP",				true,
 								1.910001, 1.994999, "160M SSB/SSTV/Wide Band",	true,
 								1.995000, 1.999999, "160M Experimental",		true,
 
 								3.500000, 3.524999, "80M Extra CW",				true,
-								3.525000, 3.579999, "80M CW",					true,
+								3.525000, 3.575999, "80M CW",					true,
+                                3.576000, 3.576000, "80M JT65HF",				true,
+                                3.576001, 3.579999, "80M CW",					true,
 								3.580000, 3.589999, "80M RTTY",					true,
 								3.590000, 3.590000, "80M RTTY DX",				true,
 								3.590001, 3.592599, "80M RTTY",					true,
@@ -130,7 +134,9 @@ namespace PowerSDR
                                 7.038600, 7.038600, "40M WSPR",					true,
                                 7.038601, 7.039999, "40M CW",					true,
 								7.040000, 7.040000, "40M RTTY DX",				true,
-								7.040001, 7.099999, "40M RTTY",					true,
+								7.040001, 7.075999, "40M RTTY",					true,
+                                7.076000, 7.076000, "40M JT65HF",				true,
+                                7.076001, 7.099999, "40M RTTY",					true,
 								7.100000, 7.124999, "40M CW",					true,
 								7.125000, 7.170999, "40M Ext/Adv SSB",			true,
 								7.171000, 7.171000, "40M SSTV",					true,
@@ -147,7 +153,9 @@ namespace PowerSDR
 
 								14.000000, 14.024999, "20M Extra CW",			true,
 								14.025000, 14.069999, "20M CW",					true,
-								14.070000, 14.094999, "20M RTTY",				true,
+								14.070000, 14.075999, "20M RTTY",				true,
+                                14.076000, 14.076000, "20M JT65HF",				true,
+                                14.076001, 14.094999, "20M RTTY",				true,
 								14.095000, 14.095599, "20M Packet",				true,
                                 14.095600, 14.095600, "20M WSPR",				true,
                                 14.095601, 14.099499, "20M Packet",				true,
@@ -174,7 +182,9 @@ namespace PowerSDR
 								
 								21.000000, 21.024999, "15M Extra CW",			true,
 								21.025000, 21.069999, "15M CW",					true,
-								21.070000, 21.094599, "15M RTTY",				true,
+								21.070000, 21.075999, "15M RTTY",				true,
+                                21.076000, 21.076000, "15M JT65HF",				true,
+                                21.076001, 21.094599, "15M RTTY",				true,
                                 21.094600, 21.094600, "15M WSPR",				true,
                                 21.094601, 21.099999, "15M RTTY",				true,
 								21.100000, 21.109999, "15M Packet",				true,
@@ -196,7 +206,9 @@ namespace PowerSDR
 								24.930001, 24.989999, "12M SSB",				true,
 								
 								28.000000, 28.069999, "10M CW",					true,
-								28.070000, 28.124599, "10M RTTY",				true,
+								28.070000, 28.075999, "10M RTTY",				true,
+                                28.076000, 28.076000, "10M JT65HF",				true,
+                                28.076001, 28.124599, "10M RTTY",				true,
                                 28.124600, 28.124600, "10M WSPR",				true,
                                 28.124601, 28.149999, "10M RTTY",				true,
 								28.150000, 28.199999, "10M CW",					true,
@@ -260,6 +272,30 @@ namespace PowerSDR
 								53.900010, 53.979999, "6M Repeater Outputs",	true,
 								53.980000, 53.999999, "6M Deadband",			true,
 								
+                                70.000000, 70.089999, "4M CW Telegraphy",		true,
+                                70.090000, 70.090499, "4M CW/Beacons",  		true,
+                                70.090500, 70.091499, "4M WSPR beacons",  		true,
+                                70.091500, 70.099999, "4M CW/Beacons",  		true,
+                                70.100000, 70.184999, "4M CW/SSB",      		true,
+                                70.185000, 70.199999, "4M Cross band calling", 	true,
+                                70.200000, 70.249999, "4M CW/SSB",      		true,
+                                70.250000, 70.250000, "4M MS calling",     		true,
+                                70.250001, 70.259999, "4M All modes",      		true,
+                                70.260000, 70.260000, "4M AM/FM calling",  		true,
+                                70.260001, 70.269999, "4M All modes",      		true,
+                                70.270000, 70.270000, "4M MGM activity centre",	true,
+                                70.270001, 70.299999, "4M All modes",      		true,
+                                70.300000, 70.300000, "4M RTTY/FAX",      		true,
+                                70.300001, 70.311499, "4M FM 12.5KHz spacing",  true,
+                                70.312500, 70.312500, "4M Digital",      		true,
+                                70.312501, 70.324999, "4M FM 12.5KHz spacing",	true,
+                                70.325000, 70.325000, "4M Digital",      		true,
+                                70.322501, 70.449999, "4M FM 12.5KHz spacing",	true,
+                                70.450000, 70.450000, "4M FM calling",      	true,
+                                70.450001, 70.487499, "4M FM 12.5KHz spacing",	true,
+                                70.487500, 70.487500, "4M Digital",         	true,
+                                70.487501, 70.499999, "4M FM 12.5KHz spacing",	true,
+
 								144.000000, 144.099999, "2M CW",				true,
 								144.100000, 144.199999, "2M CW/SSB",			true,
 								144.200000, 144.200000, "2M MS Calling",    	true,
@@ -506,6 +542,48 @@ namespace PowerSDR
 								"GEN", "SAM", "F7", 9.550000,
 								"GEN", "SAM", "F8", 0.590000,
 								"GEN", "SAM", "F7", 3.850000,
+                                "X1", "USB", "F7", 144.00000,
+                                "X1", "USB", "F7", 144.00000,
+                                "X1", "USB", "F7", 144.00000,
+                                "X2", "USB", "F7", 144.00000,
+                                "X2", "USB", "F7", 144.00000,
+                                "X2", "USB", "F7", 144.00000,
+                                "X3", "USB", "F7", 144.00000,
+                                "X3", "USB", "F7", 144.00000,
+                                "X3", "USB", "F7", 144.00000,
+                                "X4", "USB", "F7", 144.00000,
+                                "X4", "USB", "F7", 144.00000,
+                                "X4", "USB", "F7", 144.00000,
+                                "X5", "USB", "F7", 144.00000,
+                                "X5", "USB", "F7", 144.00000,
+                                "X5", "USB", "F7", 144.00000,
+                                "X6", "USB", "F7", 144.00000,
+                                "X6", "USB", "F7", 144.00000,
+                                "X6", "USB", "F7", 144.00000,
+                                "X7", "USB", "F7", 144.00000,
+                                "X7", "USB", "F7", 144.00000,
+                                "X7", "USB", "F7", 144.00000,
+                                "X8", "USB", "F7", 144.00000,
+                                "X8", "USB", "F7", 144.00000,
+                                "X8", "USB", "F7", 144.00000,
+                                "X9", "USB", "F7", 144.00000,
+                                "X9", "USB", "F7", 144.00000,
+                                "X9", "USB", "F7", 144.00000,
+                                "X10", "USB", "F7", 144.00000,
+                                "X10", "USB", "F7", 144.00000,
+                                "X10", "USB", "F7", 144.00000,
+                                "X11", "USB", "F7", 144.00000,
+                                "X11", "USB", "F7", 144.00000,
+                                "X11", "USB", "F7", 144.00000,
+                                "X12", "USB", "F7", 144.00000,
+                                "X12", "USB", "F7", 144.00000,
+                                "X12", "USB", "F7", 144.00000,
+                                "2190M", "CWU", "F7", 0.136000,
+                                "2190M", "USB", "F7", 0.136000,
+                                "2190M", "USB", "F7", 0.136000,
+                                "600M", "CWU", "F7", 0.50100,
+                                "600M", "USB", "F7", 0.50200,
+                                "600M", "USB", "F7", 0.50300,
 			};
 
             for (int i = 0; i < data.Length / 4; i++)
@@ -523,25 +601,11 @@ namespace PowerSDR
             }
         }
 
-        private static bool RemoveMemoryTable() // changes yt7pwr
+        private static bool RemoveMemoryTable(string table) // changes yt7pwr
         {
             try
             {
-                ds.Tables.Remove("Memory");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Debug.Write(ex.ToString());
-                return false;
-            }
-        }
-
-        public static bool RemoveTXProfileTable() // changes yt7pwr
-        {
-            try
-            {
-                ds.Tables.Remove("TxProfile");
+                ds.Tables.Remove(table);
                 return true;
             }
             catch (Exception ex)
@@ -569,7 +633,6 @@ namespace PowerSDR
             memoryTable.Columns.Add("Text", typeof(string));
 		}
 
-
         private static void AddGroupListTable()
         {
             ds.Tables.Add("GroupList");
@@ -586,141 +649,6 @@ namespace PowerSDR
                 dr[0] = i;
                 dr[1] = vals[i];
                 t.Rows.Add(dr);
-            }
-        }
-
-        private static void AddTXProfileTable()
-        {
-            try
-            {
-                ds.Tables.Add("TXProfile");
-                DataTable t = ds.Tables["TXProfile"];
-
-                t.Columns.Add("Name", typeof(string));
-                t.Columns.Add("FilterLow", typeof(int));
-                t.Columns.Add("FilterHigh", typeof(int));
-                t.Columns.Add("TXEQNumBands", typeof(int));
-                t.Columns.Add("TXEQEnabled", typeof(bool));
-                t.Columns.Add("TXEQPreamp", typeof(int));
-                t.Columns.Add("TXEQ1", typeof(int));
-                t.Columns.Add("TXEQ2", typeof(int));
-                t.Columns.Add("TXEQ3", typeof(int));
-                t.Columns.Add("TXEQ4", typeof(int));
-                t.Columns.Add("TXEQ5", typeof(int));
-                t.Columns.Add("TXEQ6", typeof(int));
-                t.Columns.Add("TXEQ7", typeof(int));
-                t.Columns.Add("TXEQ8", typeof(int));
-                t.Columns.Add("TXEQ9", typeof(int));
-                t.Columns.Add("TXEQ10", typeof(int));
-                t.Columns.Add("DXOn", typeof(bool));
-                t.Columns.Add("DXLevel", typeof(int));
-                t.Columns.Add("CompressorOn", typeof(bool));
-                t.Columns.Add("CompressorLevel", typeof(int));
-                t.Columns.Add("CompanderOn", typeof(bool));
-                t.Columns.Add("CompanderLevel", typeof(int));
-                t.Columns.Add("MicGain", typeof(int));
-                t.Columns.Add("Lev_On", typeof(bool));
-                t.Columns.Add("Lev_Slope", typeof(int));
-                t.Columns.Add("Lev_MaxGain", typeof(int));
-                t.Columns.Add("Lev_Attack", typeof(int));
-                t.Columns.Add("Lev_Decay", typeof(int));
-                t.Columns.Add("Lev_Hang", typeof(int));
-                t.Columns.Add("Lev_HangThreshold", typeof(int));
-                t.Columns.Add("ALC_Slope", typeof(int));
-                t.Columns.Add("ALC_MaxGain", typeof(int));
-                t.Columns.Add("ALC_Attack", typeof(int));
-                t.Columns.Add("ALC_Decay", typeof(int));
-                t.Columns.Add("ALC_Hang", typeof(int));
-                t.Columns.Add("ALC_HangThreshold", typeof(int));
-                t.Columns.Add("Power", typeof(int));
-
-                #region Default
-
-                DataRow dr = t.NewRow();
-                dr["Name"] = "Default";
-                dr["FilterLow"] = 200;
-                dr["FilterHigh"] = 3100;
-                dr["TXEQNumBands"] = 3;
-                dr["TXEQEnabled"] = false;
-                dr["TXEQPreamp"] = 0;
-                dr["TXEQ1"] = 0;
-                dr["TXEQ2"] = 0;
-                dr["TXEQ3"] = 0;
-                dr["TXEQ4"] = 0;
-                dr["TXEQ5"] = 0;
-                dr["TXEQ6"] = 0;
-                dr["TXEQ7"] = 0;
-                dr["TXEQ8"] = 0;
-                dr["TXEQ9"] = 0;
-                dr["TXEQ10"] = 0;
-                dr["DXOn"] = false;
-                dr["DXLevel"] = 3;
-                dr["CompanderOn"] = true;
-                dr["CompanderLevel"] = 2;
-                dr["MicGain"] = 10;
-                dr["Lev_On"] = true;
-                dr["Lev_Slope"] = 0;
-                dr["Lev_MaxGain"] = 10;
-                dr["Lev_Attack"] = 2;
-                dr["Lev_Decay"] = 500;
-                dr["Lev_Hang"] = 500;
-                dr["Lev_HangThreshold"] = 0;
-                dr["ALC_Slope"] = 0;
-                dr["ALC_MaxGain"] = -20;
-                dr["ALC_Attack"] = 2;
-                dr["ALC_Decay"] = 10;
-                dr["ALC_Hang"] = 500;
-                dr["ALC_HangThreshold"] = 0;
-                dr["Power"] = 50;
-                t.Rows.Add(dr);
-
-                #endregion
-
-                #region Default DX
-
-                dr = t.NewRow();
-                dr["Name"] = "Default DX";
-                dr["FilterLow"] = 200;
-                dr["FilterHigh"] = 3100;
-                dr["TXEQNumBands"] = 3;
-                dr["TXEQEnabled"] = false;
-                dr["TXEQPreamp"] = 0;
-                dr["TXEQ1"] = 0;
-                dr["TXEQ2"] = 0;
-                dr["TXEQ3"] = 0;
-                dr["TXEQ4"] = 0;
-                dr["TXEQ5"] = 0;
-                dr["TXEQ6"] = 0;
-                dr["TXEQ7"] = 0;
-                dr["TXEQ8"] = 0;
-                dr["TXEQ9"] = 0;
-                dr["TXEQ10"] = 0;
-                dr["DXOn"] = true;
-                dr["DXLevel"] = 5;
-                dr["CompanderOn"] = false;
-                dr["CompanderLevel"] = 2;
-                dr["MicGain"] = 5;
-                dr["Lev_On"] = true;
-                dr["Lev_Slope"] = 0;
-                dr["Lev_MaxGain"] = 10;
-                dr["Lev_Attack"] = 2;
-                dr["Lev_Decay"] = 500;
-                dr["Lev_Hang"] = 500;
-                dr["Lev_HangThreshold"] = 0;
-                dr["ALC_Slope"] = 0;
-                dr["ALC_MaxGain"] = -20;
-                dr["ALC_Attack"] = 2;
-                dr["ALC_Decay"] = 10;
-                dr["ALC_Hang"] = 500;
-                dr["ALC_HangThreshold"] = 0;
-                dr["Power"] = 50;
-                t.Rows.Add(dr);
-
-                #endregion
-            }
-            catch(Exception ex)
-            {
-                Debug.Write(ex.ToString());
             }
         }
 
@@ -747,6 +675,8 @@ namespace PowerSDR
             t.Columns.Add("TXEQ10", typeof(int));
             t.Columns.Add("DXOn", typeof(bool));
             t.Columns.Add("DXLevel", typeof(int));
+            t.Columns.Add("CompressorOn", typeof(bool));
+            t.Columns.Add("CompressorLevel", typeof(int));
             t.Columns.Add("CompanderOn", typeof(bool));
             t.Columns.Add("CompanderLevel", typeof(int));
             t.Columns.Add("MicGain", typeof(int));
@@ -942,9 +872,9 @@ namespace PowerSDR
             dr["TXEQNumBands"] = 3;
             dr["TXEQEnabled"] = false;
             dr["TXEQPreamp"] = -6;
-            dr["TXEQ1"] = 7;
-            dr["TXEQ2"] = 3;
-            dr["TXEQ3"] = 4;
+            dr["TXEQ1"] = 0;
+            dr["TXEQ2"] = 0;
+            dr["TXEQ3"] = 0;
             dr["TXEQ4"] = 0;
             dr["TXEQ5"] = 0;
             dr["TXEQ6"] = 0;
@@ -984,9 +914,9 @@ namespace PowerSDR
             dr["TXEQNumBands"] = 3;
             dr["TXEQEnabled"] = false;
             dr["TXEQPreamp"] = -6;
-            dr["TXEQ1"] = 7;
-            dr["TXEQ2"] = 3;
-            dr["TXEQ3"] = 4;
+            dr["TXEQ1"] = 0;
+            dr["TXEQ2"] = 0;
+            dr["TXEQ3"] = 0;
             dr["TXEQ4"] = 0;
             dr["TXEQ5"] = 0;
             dr["TXEQ6"] = 0;
@@ -1026,9 +956,9 @@ namespace PowerSDR
             dr["TXEQNumBands"] = 3;
             dr["TXEQEnabled"] = true;
             dr["TXEQPreamp"] = -6;
-            dr["TXEQ1"] = 7;
-            dr["TXEQ2"] = 3;
-            dr["TXEQ3"] = 4;
+            dr["TXEQ1"] = 0;
+            dr["TXEQ2"] = 0;
+            dr["TXEQ3"] = 0;
             dr["TXEQ4"] = 0;
             dr["TXEQ5"] = 0;
             dr["TXEQ6"] = 0;
@@ -1458,6 +1388,11 @@ namespace PowerSDR
             {
                 if (!ds.Tables.Contains("BandText"))
                     AddBandTextTable();
+                else
+                {
+                    ds.Tables.Remove("BandText");
+                    AddBandTextTable();
+                }
 
                 if (!ds.Tables.Contains("BandStack"))
                     AddBandStackTable();
@@ -1469,23 +1404,29 @@ namespace PowerSDR
                 }
                 else if (!CheckMemoryTable())
                 {
-                    if (RemoveMemoryTable())
+                    if (RemoveMemoryTable("Memory"))
                     {
                         AddMemoryTable();
                         FillMemory();
                     }
                 }
 
+                if (ds.Tables.Contains("TXProfile"))
+                    RemoveTable("TXProfile");
+
                 if (!ds.Tables.Contains("GroupList"))
                     AddGroupListTable();
 
-                if (!ds.Tables.Contains("TXProfile"))
-                    AddTXProfileTable();
-
                 if (!ds.Tables.Contains("TXProfileDef"))
                     AddTXProfileDefTable();
-
-                Update();
+                else if (ds.Tables.Contains("TXProfileDef"))
+                {
+                    if (!CheckTXProfileDefTable())
+                    {
+                        RemoveTable("TXProfileDef");
+                        AddTXProfileDefTable();
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -1507,6 +1448,29 @@ namespace PowerSDR
                         + "/" + dr[3].ToString() + "/" + dr[4].ToString() + "/" + dr[5].ToString()
                         + "/" + dr[6].ToString() + "/" + dr[7].ToString() + "/" + dr[8].ToString()
                         + "/" + dr[9].ToString() + "/" + dr[10].ToString() + dr[11].ToString());
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+                return false;
+            }
+        }
+
+        private static bool CheckTXProfileDefTable()
+        {
+            try
+            {
+                ArrayList list = new ArrayList();
+
+                foreach (DataRow dr in DB.ds.Tables["TxProfileDef"].Rows)
+                {
+                    for (int i = 0; i < 37; i++)
+                    {
+                        list.Add(dr[i].ToString() + "/");
+                    }
                 }
 
                 return true;
@@ -1602,13 +1566,14 @@ namespace PowerSDR
             }
         }
 
-		public static int[] GetBandStackNum()
+        public static int[] GetBandStackNum(string x1, string x2, string x3, string x4, string x5,
+            string x6, string x7, string x8, string x9, string x10, string x11, string x12)
 		{
 			string[] band_list = {"160M", "80M", "60M", "40M", "30M", "20M", "17M",
 								  "15M", "12M", "10M", "6M", "2M", "WWV", "GEN",
-								  "VHF0", "VHF1", "VHF2", "VHF3", "VHF4", "VHF5",
-								  "VHF6", "VHF7", "VHF8", "VHF9", "VHF10", "VHF11",
-								  "VHF12", "VHF13" };
+								  x1, x2, x3, x4, x5, x6,
+								  x7, x8, x9, x10, x11, x12,
+								  "2190M", "600M" };
 
 			int[] retvals = new int[band_list.Length];
 
@@ -1655,36 +1620,60 @@ namespace PowerSDR
 		}
 
         // changes yt7pwr
-		public static void AddBandStack(string band, string modeMainRX, string modeSubRX,
-            string filterMainRX, string filterSubRX, double freqA, double freqB, double losc_freq)
+		public static void AddBandStack(string band, string DSPmode,
+            string filter, double freq)
 		{
 			DataRow dr = ds.Tables["BandStack"].NewRow();
 			dr["BandName"] = band;
-			dr["ModeMainRX"] = modeMainRX;
-            dr["ModeSubRX"] = modeSubRX;
-			dr["FilterMainRX"] = filterMainRX;
-            dr["FilterSubRX"] = filterMainRX;
-			dr["VFOA"] = freqA;
-            dr["VFOB"] = freqB;
-            dr["LOSC"] = losc_freq;
+			dr["ModeMainRX"] = DSPmode;
+            dr["ModeSubRX"] = DSPmode;
+			dr["FilterMainRX"] = filter;
+            dr["FilterSubRX"] = filter;
+			dr["VFOA"] = freq;
+            dr["VFOB"] = freq;
+            dr["LOSC"] = freq;
 			ds.Tables["BandStack"].Rows.Add(dr);
 		}
 
+        public static bool RemoveTable(string table_name) // changes yt7pwr
+        {
+            try
+            {
+                ds.Tables.Remove(table_name);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+                return false;
+            }
+        }
+
         private static void AddFormTable(string name)
         {
-            ds.Tables.Add(name);
+            DataTable tbl;
+            tbl = ds.Tables.Add(name);
             ds.Tables[name].Columns.Add("Key", typeof(string));
             ds.Tables[name].Columns.Add("Value", typeof(string));
+            ds.Tables[name].PrimaryKey = new DataColumn[] { tbl.Columns["Key"] };
         }
 
         public static void SaveVars(string tableName, ref ArrayList list)
         {
             if (!ds.Tables.Contains(tableName))
                 AddFormTable(tableName);
+            else
+            {
+                RemoveTable(tableName);
+                AddFormTable(tableName);
+            }
+
+            list.Sort();
 
             foreach (string s in list)
             {
                 string[] vals = s.Split('/');
+
                 if (vals.Length > 2)
                 {
                     for (int i = 2; i < vals.Length; i++)
@@ -1692,6 +1681,7 @@ namespace PowerSDR
                 }
 
                 DataRow[] rows = ds.Tables[tableName].Select("Key = '" + vals[0] + "'");
+
                 if (rows.Length == 0)	// name is not in list
                 {
                     DataRow newRow = ds.Tables[tableName].NewRow();
@@ -1793,7 +1783,7 @@ namespace PowerSDR
                 }
                 if (!CheckMemoryTable())
                 {
-                    if (RemoveMemoryTable())
+                    if (RemoveMemoryTable("Memory"))
                     {
                         AddMemoryTable();
                         FillMemory();
@@ -1858,7 +1848,7 @@ namespace PowerSDR
                 }
                 else if (!CheckMemoryTable())
                 {
-                    if (RemoveMemoryTable())
+                    if (RemoveMemoryTable("Memory"))
                     {
                         AddMemoryTable();
                         FillMemory();
@@ -1911,7 +1901,7 @@ namespace PowerSDR
                 }
                 else if (!CheckMemoryTable())
                 {
-                    if (RemoveMemoryTable())
+                    if (RemoveMemoryTable("Memory"))
                     {
                         AddMemoryTable();
                         FillMemory();
@@ -1922,6 +1912,25 @@ namespace PowerSDR
 
                 return null;
             }
+        }
+
+        public static bool ImportDatabase(string filename)
+        {
+            if (!File.Exists(filename)) return false;
+
+            DataSet file = new DataSet();
+
+            try
+            {
+                file.ReadXml(filename);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
+            ds = file;
+            return true;
         }
 
 		#endregion

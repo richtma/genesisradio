@@ -24,7 +24,8 @@
 
 using System;
 using System.Windows.Forms;
-using SDRSerialSupportII; 
+using SDRSerialSupportII;
+using System.IO.Ports; 
 
 namespace PowerSDR
 {
@@ -53,7 +54,7 @@ namespace PowerSDR
 		}
 		private bool Initialized = false;
 
-        public SerialPorts.SerialPort sp = new SerialPorts.SerialPort();
+        public SerialPort sp = new SerialPort();
 
 		//
 		// 

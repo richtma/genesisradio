@@ -3,7 +3,7 @@
 //=================================================================
 //
 //  USB communication with External Si570(QRP2000 from www.sdr-kits.net)
-//  Copyright (C)2008,2009,2010 YT7PWR Goran Radivojevic
+//  Copyright (C)2008,2009,2010,2011 YT7PWR Goran Radivojevic
 //  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 //
 // This program is free software; you can redistribute it and/or
@@ -143,8 +143,10 @@ namespace PowerSDR
         {
             try
             {
-                if (console.SI570 != null && console.SI570.connected)
+                if (console.SI570 != null)
+                {
                     ShowGUI();
+                }
             }
             catch (Exception ex)
             {
@@ -305,10 +307,35 @@ namespace PowerSDR
                             break;
                         case (106):                             // mode changed
                             char newmode = GetMode();
+
+                            switch (newmode)
+                            {
+                                case 'U':
+                                    console.CurrentDSPMode = DSPMode.USB;
+                                    break;
+                                case 'L':
+                                    console.CurrentDSPMode = DSPMode.LSB;
+                                    break;
+                                case 'D':
+                                    console.CurrentDSPMode = DSPMode.DRM;
+                                    break;
+                                case 'A':
+                                    console.CurrentDSPMode = DSPMode.AM;
+                                    break;
+                                case 'S':
+                                    console.CurrentDSPMode = DSPMode.SAM;
+                                    break;
+                                case 'C':
+                                    console.CurrentDSPMode = DSPMode.CWU;
+                                    break;
+                            }
+
                             break;
                         case (107):                             // start command!
+                            console.chkPower.Checked = true;
                             break;
                         case (108):                             // stop command!
+                            console.chkPower.Checked = false;
                             break;
                         case (109):                             // passband limits changed!
                             int loCut = 0;

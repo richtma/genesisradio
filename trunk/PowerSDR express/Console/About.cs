@@ -2,7 +2,7 @@
 // About
 //=================================================================
 //  
-//  Copyright (C)2009,2010 YT7PWR Goran Radivojevic
+//  Copyright (C)2009,2010,2011 YT7PWR Goran Radivojevic
 //  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 //
 // This program is free software; you can redistribute it and/or
@@ -55,27 +55,84 @@ namespace PowerSDR
 
         private void About_Load(object sender, EventArgs e)
         {
-            if (console.CurrentModel == Model.GENESIS_G59USB)
+            switch (console.CurrentModel)
             {
-                console.g59.WriteToDevice(19, 0);  // read software version
-                Thread.Sleep(100);
-                lblFirm_version.Text = console.g59.FIRMWARE_VER;
-                lblSerialNumber.Text = console.g59.SERIAL_NO;
-                lblBoot_version.Text = console.g59.BOOT_VER;
-                console.g59.FIRMWARE_VER = "";
-                console.g59.BOOT_VER = "";
-                console.g59.SERIAL_NO = "";
-            }
-            else if (console.CurrentModel == Model.GENESIS_G59NET)
-            {
-                console.net_device.WriteToDevice(19, 0);  // read software version
-                Thread.Sleep(100);
-                lblFirm_version.Text = console.net_device.FIRMWARE_VER;
-                lblSerialNumber.Text = console.net_device.SERIAL_NO;
-                lblBoot_version.Text = console.net_device.BOOT_VER;
-                console.net_device.FIRMWARE_VER = "";
-                console.net_device.BOOT_VER = "";
-                console.net_device.SERIAL_NO = "";
+                case Model.GENESIS_G59USB:
+                    {
+                        console.g59.WriteToDevice(19, 0);  // read software version
+                        Thread.Sleep(100);
+                        console.g59.WriteToDevice(29, 0);  // read serial number
+                        Thread.Sleep(100);
+                        lblFirm_version.Text = console.g59.FIRMWARE_VER;
+                        lblSerialNumber.Text = console.g59.SERIAL_NO;
+                        lblBoot_version.Text = console.g59.BOOT_VER;
+                        console.g59.FIRMWARE_VER = "";
+                        console.g59.BOOT_VER = "";
+                        console.g59.SERIAL_NO = "";
+                        lblRadioModel.Text = "Genesis G59";
+                    }
+                    break;
+
+                case Model.GENESIS_G59NET:
+                    {
+                        console.net_device.WriteToDevice(19, 0);  // read software version
+                        Thread.Sleep(100);
+                        console.net_device.WriteToDevice(29, 0);  // read serial number
+                        Thread.Sleep(100);
+                        lblFirm_version.Text = console.net_device.FIRMWARE_VER;
+                        lblSerialNumber.Text = console.net_device.SERIAL_NO;
+                        lblBoot_version.Text = console.net_device.BOOT_VER;
+                        console.net_device.FIRMWARE_VER = "";
+                        console.net_device.BOOT_VER = "";
+                        console.net_device.SERIAL_NO = "";
+                        lblRadioModel.Text = "Genesis G59NET";
+                    }
+                    break;
+
+                case Model.GENESIS_G11:
+                    {
+                        console.g11.WriteToDevice(19, 0);  // read software version
+                        Thread.Sleep(100);
+                        console.g11.WriteToDevice(29, 0);  // read serial number
+                        Thread.Sleep(100);
+                        lblFirm_version.Text = console.g11.FIRMWARE_VER;
+                        lblSerialNumber.Text = console.g11.SERIAL_NO;
+                        lblBoot_version.Text = console.g11.BOOT_VER;
+                        console.g11.FIRMWARE_VER = "";
+                        console.g11.BOOT_VER = "";
+                        console.g11.SERIAL_NO = "";
+                        lblRadioModel.Text = "Genesis G11";
+                    }
+                    break;
+
+                case Model.GENESIS_G137:
+                    lblRadioModel.Text = "Genesis G137";
+                    break;
+
+                case Model.GENESIS_G500:
+                    lblRadioModel.Text = "Genesis G500";
+                    break;
+
+                case Model.GENESIS_G160:
+                    lblRadioModel.Text = "Genesis G160";
+                    break;
+
+                case Model.GENESIS_G80:
+                    lblRadioModel.Text = "Genesis G80";
+                    break;
+
+                case Model.GENESIS_G40:
+                    lblRadioModel.Text = "Genesis G40";
+                    break;
+
+                case Model.GENESIS_G3020:
+                    lblRadioModel.Text = "Genesis G3020";
+                    break;
+
+                case Model.QRP2000:
+                    lblRadioModel.Text = "QRP2000";
+                    break;
+
             }
         }
     }

@@ -101,6 +101,12 @@ namespace PowerSDR
         // Properties
         // ======================================================
 
+        private static FilterMode AF_filter_mode = FilterMode.PASS_BAND;
+        public static FilterMode AFFilterMode
+        {
+            set { AF_filter_mode = value; }
+        }
+
         private static bool not_pan = false;
         public static bool NotPan
         {
@@ -339,12 +345,15 @@ namespace PowerSDR
 		// DLL Method Definitions
 		// ======================================================
 
+        [DllImport("DttSP.dll", EntryPoint = "ResetRingBuffer")]
+        public static extern void ResetRB(uint thread);
+
 		[DllImport("DttSP.dll", EntryPoint="Setup_SDR")]
 			/// <summary>
 			/// This function sets up the SDR functions and data structures
 			/// </summary>
 			/// <returns></returns>
-		public static extern void SetupSDR(char[] data_path);
+		public static extern void SetupSDR(string data_path);
 
 		[DllImport("DttSP.dll", EntryPoint="SetDSPBuflen")]
 		public static extern void ResizeSDR(uint thread, int DSPsize);
@@ -403,8 +412,11 @@ namespace PowerSDR
 		[DllImport("DttSP.dll", EntryPoint="SetKeyerSampleRate")]///
 		public static extern void SetKeyerSampleRate(float freq);
 
-		[DllImport("DttSP.dll", EntryPoint="SetKeyerRamp")]///
-		public static extern void SetKeyerRamp(float ramp);
+        [DllImport("DttSP.dll", EntryPoint = "SetKeyerRise")]///
+        public static extern void SetKeyerRise(float rise);
+
+        [DllImport("DttSP.dll", EntryPoint = "SetKeyerFall")]///
+        public static extern void SetKeyerFall(float fall);
 
 		[DllImport("DttSP.dll", EntryPoint="SetKeyerIambic")]///
 		public static extern void SetKeyerIambic(bool iambic);
@@ -491,6 +503,18 @@ namespace PowerSDR
 
 		[DllImport("DttSP.dll", EntryPoint="SetRXFilter")]///
 		public static extern int SetRXFilter(uint thread, uint subrx, double low, double high);
+
+        [DllImport("DttSP.dll", EntryPoint = "SetRXStopBandFilter")]  // yt7pwr
+        public static extern int SetRXStopBandFilter(uint thread, uint subrx, double low, double high);
+
+        [DllImport("DttSP.dll", EntryPoint = "SetRXLowPassFilter")]  // yt7pwr
+        public static extern int SetRXLowPassFilter(uint thread, uint subrx, double cut_freq);
+
+        [DllImport("DttSP.dll", EntryPoint = "SetRXHighPassFilter")]  // yt7pwr
+        public static extern int SetRXHighPassFilter(uint thread, uint subrx, double cut_freq);
+
+        [DllImport("DttSP.dll", EntryPoint = "SetRXFilterMode")]  // yt7pwr
+        public static extern int SetRXFilterMode(uint thread, uint subrx, FilterMode mode);
 	
 		[DllImport("DttSP.dll", EntryPoint="SetTXFilter")]///
 		public static extern int SetTXFilter(uint thread, double low, double high);
@@ -584,6 +608,12 @@ namespace PowerSDR
 
 		[DllImport("DttSP.dll", EntryPoint="SetCorrectTXIQPhase")]///
 		public static extern void SetTXIQPhase(uint thread, double setit);
+
+        [DllImport("DttSP.dll", EntryPoint = "SetIQSuspended")]                     // yt7pwr
+        public static extern void SetIQSuspended(uint setit);
+
+        [DllImport("DttSP.dll", EntryPoint = "SetIQFixed")]                         // yt7pwr
+        public static extern void SetIQFixed(uint thread, uint subrx, uint setit, float gain, float phase);
 
         [DllImport("DttSP.dll", EntryPoint = "SetCorrectIQEnable")]
         public static extern void SetCorrectIQEnable(uint setit);
@@ -786,7 +816,7 @@ namespace PowerSDR
         public static void Init()
         {
             block_size = 2048;
-            SetupSDR(Application.StartupPath.ToCharArray());
+            SetupSDR(Application.StartupPath.ToString() + "\\wisdom");
             ReleaseUpdate();
             SetSampleRate(48000.0);
         }
@@ -807,6 +837,30 @@ namespace PowerSDR
                 MessageBox.Show("Error in DttSP.SetRXFilterSubRX: " + i);
         }
 
+        public static void SetNotchFilter(int low, int high)
+        {
+            int i = 0;
+            if (high - low >= 10)
+            {
+                i = DttSP.SetRXLowPassFilter(0, 0, Math.Abs(low));
+                i = DttSP.SetRXHighPassFilter(0, 0, Math.Abs(high));
+            }
+
+            if (i != 0)
+                MessageBox.Show("Error in DttSP.SetRXNotchFilters (SetFilter): " + i);
+        }
+
+        public static void SetStopBandFilter(int low, int high)
+        {
+            int i = 0;
+            if (high - low >= 10)
+            {
+                i = DttSP.SetRXStopBandFilter(0, 0, low, high);
+            }
+
+            if (i != 0)
+                MessageBox.Show("Error in DttSP.SetRXNotchFilters (SetFilter): " + i);
+        }
 
         public static void SetFilter(int low, int high)
         {

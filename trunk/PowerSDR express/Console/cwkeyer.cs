@@ -35,7 +35,7 @@
 
 /*
  *  Changes for GenesisRadio
- *  Copyright (C)2008,2009,2010 YT7,2011PWR Goran Radivojevic
+ *  Copyright (C)2008,2009,2010,2011,2012 YT7PWR Goran Radivojevic
  *  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 */
 
@@ -43,23 +43,50 @@ using System;
 using System.Threading;
 using System.Diagnostics;
 using System.Windows.Forms;
+using System.IO.Ports;
 
 namespace PowerSDR
 {
-    
+
     public class CWKeyer2
     {
         #region Variables and Properties
 
         public Thread Keyer, CWTone, Monitor;
-        private bool comm_port_clossing = true;
+        private bool primary_comm_port_clossing = true;
+        private bool secondary_comm_port_clossing = true;
         private bool CW_monitor_off = false;
         private bool CW_monitor_on = false;
         private int keyermode = 0;
-        public bool extkey_dash = false, extkey_dot = false;
+        public bool primary_keyer_dash = false, primary_keyer_dot = false;
+        public bool secondary_keyer_dash = false, secondary_keyer_dot = false;
         private bool keyprog = false;
         public bool CWMonitorState = false;
+        public bool debug = false;
+        private delegate void DebugCallbackFunction(string name);
 
+        private bool ptt_bit_bang_enabled;
+        public bool PTTBitBangEnabled                       // yt7pwr
+        {
+            set { ptt_bit_bang_enabled = value; }
+        }
+
+        private bool runKeyer = false;                      // yt7pwr
+        public bool RunKeyer
+        {
+            set 
+            {
+                runKeyer = value;
+                if (runKeyer)
+                    StartKeyerThread();
+            }
+        }
+
+        private bool secondary_keyer_mox = false;           // yt7pwr
+        public bool SecondaryKeyerMox
+        {
+            set { secondary_keyer_mox = value; }
+        }
 
         private bool primary_keyer_mox = false;             // yt7pwr
         public bool PrimaryKeyerMox
@@ -113,8 +140,8 @@ namespace PowerSDR
         public bool QRP2000CW1 = true;
         public bool QRP2000CW2 = false;
 
-        private CATKeyerLine secondary_ptt_line = CATKeyerLine.NONE;
-        public CATKeyerLine SecondaryPTTLine
+        private SecondaryPTTKeyerLine secondary_ptt_line = SecondaryPTTKeyerLine.NONE;
+        public SecondaryPTTKeyerLine SecondaryPTTLine
         {
             get { return secondary_ptt_line; }
             set
@@ -192,7 +219,7 @@ namespace PowerSDR
         public bool MemoryPTT
         {
             get { return memoryptt; }
-            set 
+            set
             {
                 memoryptt = value;
             }
@@ -204,40 +231,54 @@ namespace PowerSDR
             get { return primary_conn_port; }
             set
             {
-                primary_conn_port = value;
-                switch (primary_conn_port)
+                try
                 {
-                    case "None":
-                        primary_conn_port = "None";
-                        break;
-                    case "USB":
-                        comm_port_clossing = true;
-                        if (sp.IsOpen) sp.Close();
-                        break;
-                    case "NET":
-                        comm_port_clossing = true;
-                        if (sp.IsOpen) sp.Close();
-                        break;
-                    default:
-                        comm_port_clossing = true;
-                        if (sp.IsOpen) sp.Close();
-                        sp.PortName = primary_conn_port;
-                        try
-                        {
-                            sp.Open();
-                            if (!console.DTRCWMonitor)
-                                sp.DtrEnable = true;        // default
-                            else
-                                sp.DtrEnable = false;       // require the PCB alteration!
-                            if (sp.IsOpen)
-                                comm_port_clossing = false;
-                        }
-                        catch (Exception)
-                        {
-                            MessageBox.Show("Primary Keyer Port [" + primary_conn_port + "] could not be opened.");
-                            primary_conn_port = "USB";
-                        }
-                        break;
+                    primary_conn_port = value;
+
+                    switch (primary_conn_port)
+                    {
+                        case "None":
+                            primary_comm_port_clossing = true;
+                            Thread.Sleep(10);
+                            if (sp.IsOpen) sp.Close();
+                            break;
+                        case "USB":
+                            primary_comm_port_clossing = true;
+                            Thread.Sleep(10);
+                            if (sp.IsOpen) sp.Close();
+                            break;
+                        case "NET":
+                            primary_comm_port_clossing = true;
+                            Thread.Sleep(10);
+                            if (sp.IsOpen) sp.Close();
+                            break;
+                        default:
+                            primary_comm_port_clossing = true;
+                            if (sp.IsOpen) sp.Close();
+                            sp.PortName = primary_conn_port;
+
+                            try
+                            {
+                                sp.Open();
+                                if (!console.DTRCWMonitor)
+                                    sp.DtrEnable = true;        // default
+                                else
+                                    sp.DtrEnable = false;       // require the PCB alteration!
+
+                                if (sp.IsOpen)
+                                    primary_comm_port_clossing = false;
+                            }
+                            catch (Exception)
+                            {
+                                MessageBox.Show("Primary Keyer Port [" + primary_conn_port + "] could not be opened.");
+                                primary_conn_port = "USB";
+                            }
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.Write(ex.ToString());
                 }
             }
         }
@@ -248,35 +289,51 @@ namespace PowerSDR
             get { return secondary_conn_port; }
             set
             {
-                secondary_conn_port = value;
-                switch (secondary_conn_port)
+                try
                 {
-                    case "None":
-                        if (sp2.IsOpen) sp2.Close();
-                        enabled_secondary_keyer = false;
-                        break;
-                    case "CAT":
-                        if (!cat_enabled)
-                            MessageBox.Show("CAT was selected for the Keyer Secondary Port, but CAT is not enabled.");
-                        enabled_secondary_keyer = false;
-                        break;
-                    default: // COMx
-                        if (sp2.IsOpen) sp2.Close();
-                        sp2.PortName = secondary_conn_port;
-                        try
-                        {
-                            sp2.Open();
-                            sp2.DtrEnable = true;
-                            sp2.RtsEnable = true;
-                            enabled_secondary_keyer = true;
-                        }
-                        catch (Exception)
-                        {
-                            MessageBox.Show("Comport for keyer program could not be opened\n");
-                            secondary_conn_port = "None";
+                    secondary_conn_port = value;
+                    switch (secondary_conn_port)
+                    {
+                        case "None":
+                            secondary_comm_port_clossing = true;
+                            Thread.Sleep(10);
+                            if (sp2.IsOpen) sp2.Close();
                             enabled_secondary_keyer = false;
-                        }
-                        break;
+                            break;
+                        default: // COMx
+                            secondary_comm_port_clossing = true;
+                            Thread.Sleep(10);
+                            if (sp2.IsOpen) sp2.Close();
+                            sp2.PortName = secondary_conn_port;
+
+                            try
+                            {
+                                sp2.Open();
+                                sp2.DtrEnable = true;
+                                sp2.RtsEnable = true;
+                                if (sp2.IsOpen)
+                                {
+                                    secondary_comm_port_clossing = false;
+                                    enabled_secondary_keyer = true;
+                                }
+                                else
+                                {
+                                    secondary_comm_port_clossing = true;
+                                    enabled_secondary_keyer = false;
+                                }
+                            }
+                            catch (Exception)
+                            {
+                                MessageBox.Show("COM port [" + secondary_conn_port + "] for secondary keyer could not be opened\n");
+                                secondary_conn_port = "None";
+                                enabled_secondary_keyer = false;
+                            }
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.Write(ex.ToString());
                 }
             }
         }
@@ -291,11 +348,15 @@ namespace PowerSDR
         private bool keyerptt = false;
         public bool KeyerPTT
         {
-            get { return keyerptt; }
+            get
+            {
+                isPTT();
+                return keyerptt;
+            }
         }
 
-        public SerialPorts.SerialPort sp = new SerialPorts.SerialPort();
-        public SerialPorts.SerialPort sp2 = new SerialPorts.SerialPort();
+        public SerialPort sp = new SerialPort();
+        public SerialPort sp2 = new SerialPort();
 
         #endregion
 
@@ -325,12 +386,6 @@ namespace PowerSDR
 
             Thread.Sleep(100);
 
-            Keyer = new Thread(new ThreadStart(KeyThread));
-            Keyer.Name = "CW KeyThread";
-            Keyer.Priority = ThreadPriority.Highest;
-            Keyer.IsBackground = true;
-            Keyer.Start();
-
             timer = new HiPerfTimer();
         }
 
@@ -349,6 +404,16 @@ namespace PowerSDR
             DttSP.DeleteKeyer();
         }
 
+        public void StartKeyerThread()
+        {
+            Keyer = null;
+            Keyer = new Thread(new ThreadStart(KeyThread));
+            Keyer.Name = "CW KeyThread";
+            Keyer.Priority = ThreadPriority.Highest;
+            Keyer.IsBackground = true;
+            Keyer.Start();
+        }
+
         #endregion
 
         #region Thread Functions
@@ -358,27 +423,34 @@ namespace PowerSDR
             try
             {
                 int[] tmp = new int[1];
+                bool tune_CW = false;
 
                 do
                 {
                     DttSP.KeyerStartedWait();
-                    for (; DttSP.KeyerRunning(); )
+                    while (runKeyer)
                     {
                         timer.Start();
                         DttSP.PollTimerWait();
                         CWMonitorState = DttSP.KeyerPlaying();
 
-                        if (tuneCW)
+                        if (tuneCW && !tune_CW)
                         {
-                            extkey_dash = true;
-                            extkey_dot = false;
+                            tune_CW = true;
+                            secondary_keyer_dash = false;
+                            secondary_keyer_dot = true;
+                        }
+                        else if (!tuneCW && tune_CW)
+                        {
+                            tune_CW = false;
+                            secondary_keyer_dash = false;
+                            secondary_keyer_dot = false;
                         }
                         else if (memoryptt)
                         {
                             //console ptt on
                             keyprog = true;
-                            extkey_dot = extkey_dash = memorykey;
-                            primary_keyer_mox = false;
+                            secondary_keyer_dot = secondary_keyer_dash = memorykey;
 
                             if (console.CWMonitorEnabled)
                             {
@@ -391,7 +463,6 @@ namespace PowerSDR
                                             console.g59.WriteToDevice(24, 1); // CW monitor on
                                             CW_monitor_off = false;
                                             CW_monitor_on = true;
-                                            Debug.Write("CW monitor on\n");
                                         }
                                     }
                                     else
@@ -401,7 +472,6 @@ namespace PowerSDR
                                             console.g59.WriteToDevice(24, 0);  // CW monitor off
                                             CW_monitor_on = false;
                                             CW_monitor_off = true;
-                                            Debug.Write("CW monitor off\n");
                                         }
                                     }
                                 }
@@ -421,6 +491,27 @@ namespace PowerSDR
                                         if (!CW_monitor_off && cw_monitor_enabled)
                                         {
                                             console.net_device.WriteToDevice(24, 0);  // CW monitor off
+                                            CW_monitor_on = false;
+                                            CW_monitor_off = true;
+                                        }
+                                    }
+                                }
+                                else if (console.CurrentModel == Model.GENESIS_G11)
+                                {
+                                    if (memorykey)
+                                    {
+                                        if (!CW_monitor_on && cw_monitor_enabled)
+                                        {
+                                            console.g11.WriteToDevice(24, 1); // CW monitor on
+                                            CW_monitor_off = false;
+                                            CW_monitor_on = true;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (!CW_monitor_off && cw_monitor_enabled)
+                                        {
+                                            console.g11.WriteToDevice(24, 0);  // CW monitor off
                                             CW_monitor_on = false;
                                             CW_monitor_off = true;
                                         }
@@ -452,119 +543,14 @@ namespace PowerSDR
                                 }
                             }
                         }
-
-                        if (enabled_primary_keyer && console.g59.NewData)
+                        else if (!tune_CW)
                         {
-                            console.g59.NewData = false;
-                            extkey_dash = false;
-                            extkey_dot = false;
+                            secondary_keyer_dash = false;
+                            secondary_keyer_dot = false;
                             keyprog = false;
-                            primary_keyer_mox = true;
-
-                            switch (primary_conn_port)
-                            {
-                                case "USB":
-                                    {
-                                        if (console.g59.Connected)
-                                        {
-                                            switch (console.g59.KEYER)
-                                            {
-                                                case 0:                                            // DASH ON command from USB
-                                                    extkey_dash = true;
-                                                    break;
-
-                                                case 1:                                            // DOT ON command from USB
-                                                    extkey_dot = true;
-                                                    break;
-
-                                                case 2:                                            // DASH OFF command from USB
-                                                    extkey_dash = false;
-                                                    break;
-
-                                                case 3:                                            // DOT OFF command from USB
-                                                    extkey_dot = false;
-                                                    break;
-
-                                                default:
-                                                    extkey_dash = false;
-                                                    extkey_dot = false;
-                                                    break;
-                                            }
-                                        }
-                                    }
-                                    break;
-                                case "NET":
-                                    {
-                                        if (console.net_device.Connected)
-                                        {
-                                            switch (console.net_device.KEYER)
-                                            {
-                                                case 0:                                            // DASH ON command from Network
-                                                    extkey_dash = true;
-                                                    break;
-
-                                                case 1:                                            // DOT ON command from Network
-                                                    extkey_dot = true;
-                                                    break;
-
-                                                case 2:                                            // DASH OFF command from Network
-                                                    extkey_dash = false;
-                                                    break;
-
-                                                case 3:                                            // DOT OFF command from Network
-                                                    extkey_dot = false;
-                                                    break;
-
-                                                default:
-                                                    extkey_dash = false;
-                                                    extkey_dot = false;
-                                                    break;
-                                            }
-                                        }
-                                    }
-                                    break;
-                                case "QRP2000":
-                                    {
-                                        if (console.MOX)
-                                            console.qrp2000.SetPTTGetCWInput(1, tmp);
-                                        else
-                                            console.qrp2000.SetPTTGetCWInput(0, tmp);
-                                        if (QRP2000CW1)
-                                        {
-                                            tmp[0] &= 0x20;
-                                        }
-                                        else if (QRP2000CW2)
-                                        {
-                                            tmp[0] &= 0x02;
-                                        }
-
-                                        if (tmp[0] == 0x00)
-                                        {
-                                            extkey_dash = extkey_dot = true;
-                                        }
-                                        else
-                                            extkey_dash = extkey_dot = false;
-                                    }
-                                    break;
-                                default:
-                                    if (sp.IsOpen)
-                                    {
-                                        keyprog = false;
-                                        extkey_dash = sp.CtsHolding;
-                                        extkey_dot = sp.DsrHolding;
-
-                                        if (dtr_cw_monitor && console.CWMonitorEnabled)
-                                        {
-                                            if (CWMonitorState)
-                                                CW_monitor(true);
-                                            else
-                                                CW_monitor(false);
-                                        }
-                                    }
-                                    break;
-                            }
                         }
-                        else if (enabled_secondary_keyer && !primary_keyer_mox)
+
+                        if (enabled_secondary_keyer && (secondary_keyer_mox || ptt_bit_bang_enabled))
                         {
                             keyprog = false;
 
@@ -578,19 +564,31 @@ namespace PowerSDR
                                         switch (secondary_dot_line)
                                         {
                                             case KeyerLine.DSR:
-                                                extkey_dot = sp2.DsrHolding;
+                                                secondary_keyer_dot = sp2.DsrHolding;
                                                 break;
                                             case KeyerLine.CTS:
-                                                extkey_dot = sp2.CtsHolding;
+                                                secondary_keyer_dot = sp2.CtsHolding;
+                                                break;
+                                            case KeyerLine.DCD:
+                                                secondary_keyer_dot = sp2.CDHolding;
+                                                break;
+                                            case KeyerLine.NONE:
+                                                secondary_keyer_dot = false;
                                                 break;
                                         }
                                         switch (secondary_dash_line)
                                         {
                                             case KeyerLine.DSR:
-                                                extkey_dash = sp2.DsrHolding;
+                                                secondary_keyer_dash = sp2.DsrHolding;
                                                 break;
                                             case KeyerLine.CTS:
-                                                extkey_dash = sp2.CtsHolding;
+                                                secondary_keyer_dash = sp2.CtsHolding;
+                                                break;
+                                            case KeyerLine.DCD:
+                                                secondary_keyer_dash = sp2.CDHolding;
+                                                break;
+                                            case KeyerLine.NONE:
+                                                secondary_keyer_dash = false;
                                                 break;
                                         }
 
@@ -601,7 +599,7 @@ namespace PowerSDR
                                                 if (CWMonitorState)
                                                 {
                                                     if (!CW_monitor_on && cw_monitor_enabled)
-                                                    { 
+                                                    {
                                                         console.g59.WriteToDevice(24, 1); // CW monitor on
                                                         CW_monitor_off = false;
                                                         CW_monitor_on = true;
@@ -638,6 +636,27 @@ namespace PowerSDR
                                                     }
                                                 }
                                             }
+                                            else if (console.CurrentModel == Model.GENESIS_G11)
+                                            {
+                                                if (CWMonitorState)
+                                                {
+                                                    if (!CW_monitor_on && cw_monitor_enabled)
+                                                    {
+                                                        console.g11.WriteToDevice(24, 1); // CW monitor on
+                                                        CW_monitor_off = false;
+                                                        CW_monitor_on = true;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    if (!CW_monitor_off && cw_monitor_enabled)
+                                                    {
+                                                        console.g11.WriteToDevice(24, 0);  // CW monitor off
+                                                        CW_monitor_on = false;
+                                                        CW_monitor_off = true;
+                                                    }
+                                                }
+                                            }
                                             else if (console.CurrentModel == Model.GENESIS_G160 ||
                                                 console.CurrentModel == Model.GENESIS_G3020 ||
                                                 console.CurrentModel == Model.GENESIS_G40 ||
@@ -658,10 +677,249 @@ namespace PowerSDR
                             }
                         }
 
+                        if (enabled_primary_keyer && !secondary_keyer_mox && !memoryptt)
+                        {
+                            switch (primary_conn_port)
+                            {
+                                case "USB":
+                                    {
+                                        switch (console.CurrentModel)
+                                        {
+                                            case Model.GENESIS_G6:
+                                                {
+                                                    if (console.g6.Connected && console.g6.KeyerNewData)
+                                                    {
+                                                        keyprog = false;
+                                                        primary_keyer_mox = true;
+
+                                                        switch (console.g6.KEYER)
+                                                        {
+                                                            case 0:                                            // DASH ON command from USB
+                                                                primary_keyer_dash = true;
+                                                                break;
+
+                                                            case 1:                                            // DOT ON command from USB
+                                                                primary_keyer_dot = true;
+                                                                break;
+
+                                                            case 2:                                            // DASH OFF command from USB
+                                                                primary_keyer_dash = false;
+                                                                break;
+
+                                                            case 3:                                            // DOT OFF command from USB
+                                                                primary_keyer_dot = false;
+                                                                break;
+
+                                                            case 0xaa:
+                                                                console.g6.KEYER = 0xff;
+                                                                primary_keyer_dot = false;
+                                                                primary_keyer_dash = false;
+                                                                break;
+
+                                                            default:
+                                                                primary_keyer_dash = false;
+                                                                primary_keyer_dot = false;
+                                                                break;
+                                                        }
+                                                    }
+                                                }
+                                                break;
+                                            case Model.GENESIS_G59USB:
+                                                {
+                                                    if (console.g59.Connected && console.g59.KeyerNewData)
+                                                    {
+                                                        keyprog = false;
+                                                        primary_keyer_mox = true;
+
+                                                        switch (console.g59.KEYER)
+                                                        {
+                                                            case 0:                                            // DASH ON command from USB
+                                                                primary_keyer_dash = true;
+                                                                break;
+
+                                                            case 1:                                            // DOT ON command from USB
+                                                                primary_keyer_dot = true;
+                                                                break;
+
+                                                            case 2:                                            // DASH OFF command from USB
+                                                                primary_keyer_dash = false;
+                                                                break;
+
+                                                            case 3:                                            // DOT OFF command from USB
+                                                                primary_keyer_dot = false;
+                                                                break;
+
+                                                            case 0xaa:
+                                                                console.g59.KEYER = 0xff;
+                                                                primary_keyer_dot = false;
+                                                                primary_keyer_dash = false;
+                                                                break;
+
+                                                            default:
+                                                                primary_keyer_dash = false;
+                                                                primary_keyer_dot = false;
+                                                                break;
+                                                        }
+                                                    }
+                                                }
+                                                break;
+
+                                            case Model.GENESIS_G11:
+                                                {
+                                                    if (console.g11.Connected && console.g11.KeyerNewData)
+                                                    {
+                                                        keyprog = false;
+                                                        primary_keyer_mox = true;
+
+                                                        switch (console.g11.KEYER)
+                                                        {
+                                                            case 0:                                            // DASH ON command from USB
+                                                                primary_keyer_dash = true;
+                                                                break;
+
+                                                            case 1:                                            // DOT ON command from USB
+                                                                primary_keyer_dot = true;
+                                                                break;
+
+                                                            case 2:                                            // DASH OFF command from USB
+                                                                primary_keyer_dash = false;
+                                                                break;
+
+                                                            case 3:                                            // DOT OFF command from USB
+                                                                primary_keyer_dot = false;
+                                                                break;
+
+                                                            case 0xaa:
+                                                                console.g11.KEYER = 0xff;
+                                                                primary_keyer_dot = false;
+                                                                primary_keyer_dash = false;
+                                                                break;
+
+                                                            default:
+                                                                primary_keyer_dash = false;
+                                                                primary_keyer_dot = false;
+                                                                break;
+                                                        }
+                                                    }
+                                                }
+                                                break;
+                                        }
+                                    }
+                                    break;
+                                case "NET":
+                                    {
+                                        if (console.net_device.Connected && console.net_device.KeyerNewData)
+                                        {
+                                            keyprog = false;
+                                            primary_keyer_mox = true;
+
+                                            switch (console.net_device.KEYER)
+                                            {
+                                                case 0:                                            // DASH ON command from Network
+                                                    primary_keyer_dash = true;
+                                                    primary_keyer_dot = false;
+                                                    break;
+
+                                                case 1:                                            // DOT ON command from Network
+                                                    primary_keyer_dot = true;
+                                                    primary_keyer_dash = false;
+                                                    break;
+
+                                                case 2:                                            // DASH OFF command from Network
+                                                    primary_keyer_dash = false;
+                                                    break;
+
+                                                case 3:                                            // DOT OFF command from Network
+                                                    primary_keyer_dot = false;
+                                                    break;
+
+                                                case 0xaa:
+                                                    console.net_device.KEYER = 0xff;
+                                                    primary_keyer_dot = false;
+                                                    primary_keyer_dash = false;
+                                                    break;
+
+                                                default:
+                                                    primary_keyer_dash = false;
+                                                    primary_keyer_dot = false;
+                                                    break;
+                                            }
+                                        }
+                                    }
+                                    break;
+                                case "QRP2000":
+                                    {
+                                        if (console.qrp2000.QRP2000Status())
+                                        {
+                                            keyprog = false;
+
+                                            if (console.MOX)
+                                                console.qrp2000.SetPTTGetCWInput(1, tmp);
+                                            else
+                                                console.qrp2000.SetPTTGetCWInput(0, tmp);
+
+                                            if (QRP2000CW1)
+                                            {
+                                                tmp[0] &= 0x20;
+                                            }
+                                            else if (QRP2000CW2)
+                                            {
+                                                tmp[0] &= 0x02;
+                                            }
+
+                                            if (tmp[0] == 0x00)
+                                            {
+                                                primary_keyer_dash = primary_keyer_dot = true;
+                                            }
+                                            else
+                                                primary_keyer_dash = primary_keyer_dot = false;
+                                        }
+                                    }
+                                    break;
+                                default:
+                                    if (sp.IsOpen)
+                                    {
+                                        keyprog = false;
+
+                                        keyprog = false;
+                                        primary_keyer_dash = sp.CtsHolding;
+                                        primary_keyer_dot = sp.DsrHolding;
+
+                                        if (dtr_cw_monitor && console.CWMonitorEnabled)
+                                        {
+                                            if (CWMonitorState)
+                                                CW_monitor(true);
+                                            else
+                                                CW_monitor(false);
+                                        }
+                                    }
+                                    break;
+                            }
+                        }
+
                         timer.Stop();
                         msdel = (float)timer.DurationMsec;
-                        DttSP.KeyValue(msdel, extkey_dash, extkey_dot, keyprog);
 
+                        if (keyprog || secondary_keyer_mox || tune_CW || ptt_bit_bang_enabled)
+                        {
+                            DttSP.KeyValue(msdel, secondary_keyer_dash, secondary_keyer_dot, keyprog);
+                            keyprog = false;
+                        }
+                        else if (primary_keyer_mox)
+                        {
+                            DttSP.KeyValue(msdel, primary_keyer_dash, primary_keyer_dot, keyprog);
+                        }
+                        else if (enabled_primary_keyer && !secondary_keyer_mox && !memoryptt)
+                        {
+                            DttSP.KeyValue(msdel, primary_keyer_dash, primary_keyer_dot, keyprog);
+                        }
+                        else
+                        {
+                            DttSP.KeyValue(msdel, false, false, false);
+                            primary_keyer_mox = false;
+                            secondary_keyer_mox = false;
+                            keyprog = false;
+                        }
                     }
                 } while (true);
             }
@@ -681,22 +939,54 @@ namespace PowerSDR
 
         public bool isPTT()  // yt7pwr
         {
-            bool dsr = false;
-            if (!comm_port_clossing)
+            bool dsr = false,cts = false;
+
+            if (!primary_comm_port_clossing)
             {
-                if (sp.IsOpen)
+                if (sp.IsOpen)                   // primary COM port
                 {
                     dsr = System.Convert.ToBoolean(sp.DsrHolding);
-                    if (dsr) return true;
+                    cts = System.Convert.ToBoolean(sp.CtsHolding);
+
+                    if (dsr || cts)
+                    {
+                        keyerptt = true;
+                        return true;
+                    }
+                    else
+                    {
+                        keyerptt = false;
+                    }
                 }
             }
-                if (sp2.IsOpen)
+
+            if (sp2.IsOpen)
+            {
+                switch (secondary_ptt_line)     // secondary COM port
                 {
-                    dsr = System.Convert.ToBoolean(sp2.DsrHolding);
-                    if (dsr) return true;
+                    case SecondaryPTTKeyerLine.DTR:
+                        dsr = System.Convert.ToBoolean(sp2.DsrHolding);
+                        break;
+                    case SecondaryPTTKeyerLine.DCD:
+                        dsr = System.Convert.ToBoolean(sp2.CDHolding);
+                        break;
+                    case SecondaryPTTKeyerLine.CTS:
+                        dsr = System.Convert.ToBoolean(sp2.CtsHolding);
+                        break;
+                }
+
+                if (dsr)
+                {
+                    secondary_keyer_mox = true;
+                    keyerptt = true;
+                    return true;
                 }
                 else
-                    return false;
+                {
+                    keyerptt = false;
+                    secondary_keyer_mox = false;
+                }
+            }
 
             return false;
         }

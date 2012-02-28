@@ -259,9 +259,9 @@ namespace PowerSDR
                         break;
                     case "PM":
                         break;
-                    //					case "PR":
-                    //						rtncmd = cmdlist.PR(suffix);
-                    //						break;
+                    case "PR":
+                        rtncmd = cmdlist.PR(suffix);
+                        break;
                     case "PS":
                         rtncmd = cmdlist.PS(suffix);
                         break;
@@ -766,21 +766,18 @@ namespace PowerSDR
                 case "ZZNT":
                     rtncmd = cmdlist.ZZNT(suffix);
                     break;
-                case "ZZPA":
-                    rtncmd = cmdlist.ZZPA(suffix);
-                    break;
                 case "ZZPC":
                     rtncmd = cmdlist.ZZPC(suffix);
                     break;
                 case "ZZPD":
                     rtncmd = cmdlist.ZZPD();
                     break;
-                //				case "ZZPK":
-                //					rtncmd = cmdlist.ZZPK(suffix);
-                //					break;
-                //				case "ZZPL":
-                //					rtncmd = cmdlist.ZZPL(suffix);
-                //					break;
+                case "ZZPK":
+                    rtncmd = cmdlist.ZZPK(suffix);
+                    break;
+                case "ZZPL":
+                    rtncmd = cmdlist.ZZPL(suffix);
+                    break;
                 case "ZZPO":
                     rtncmd = cmdlist.ZZPO(suffix);
                     break;
@@ -946,13 +943,11 @@ namespace PowerSDR
                 case "ZZXS":
                     rtncmd = cmdlist.ZZXS(suffix);
                     break;
-                case "ZZZB":
-                    rtncmd = cmdlist.ZZZB();
-                    break;
                 case "ZZZZ":
                     rtncmd = cmdlist.ZZZZ();
                     break;
             }
+
             if (rtncmd != Error1 && rtncmd != Error2 && rtncmd != Error3)
             {
                 if (rtncmd.Length == nAns && nAns > 0)
