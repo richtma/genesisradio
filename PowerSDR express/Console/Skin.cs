@@ -30,7 +30,7 @@
  
 /*
  *  Changes for GenesisRadio
- *  Copyright (C)2008,2009,2010 YT7PWR Goran Radivojevic
+ *  Copyright (C)2008,2009,2010,2011 YT7PWR Goran Radivojevic
  *  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 */
 
@@ -125,15 +125,17 @@ namespace PowerSDR
                     c.BackColor = console.NewBackgroundVFOColor;
                     foreach (Control c2 in grp.Controls)
                     {
-                        temp = c2 as AGauge;
-                        if (temp != null)
-                        {
-                            SetAGaugeBackgroundImage((AGauge)c2);
-                        }
                         temp = c2 as PrettyTrackBar;
                         if (temp != null)
                         {
                             SetupPrettyTrackBarImages((PrettyTrackBar)c2);
+                        }
+
+                        temp = c2 as PictureBox;
+                        if (temp != null)
+                        {
+                            SetBackgroundImage((PictureBox)c2);
+                            return;
                         }
                     }
                 }
@@ -199,7 +201,10 @@ namespace PowerSDR
                         temp.Name != console.lblVFOATX.Name &&
                         temp.Name != console.lblVFOBTX.Name &&
                         temp.Name != console.btnUSB.Name &&
-                        temp.Name != console.btnNetwork.Name)                 
+                        temp.Name != console.btnNetwork.Name &&
+                        temp.Name != console.lblAFValue.Name &&
+                        temp.Name != console.lblRFValue.Name &&
+                        temp.Name != console.lblPWRValue.Name)
                     {
                         c.BackgroundImage = Image.FromFile(path + "\\" + f.Name + "\\" + "lbl" + pic_file_ext);
                         c.ForeColor = console.SkinsButtonTxtColor;
@@ -238,18 +243,11 @@ namespace PowerSDR
                 return;
             }
 
-            temp = c as AGauge;
+            temp = c as RadioButtonTS;
             if (temp != null)
             {
-                SetAGaugeBackgroundImage((AGauge)c);
-                return;
-            }
-
-            temp = c as RadioButton;
-            if (temp != null)
-            {
-                if (((RadioButton)c).Appearance == Appearance.Button)
-                    SetupRadioButtonImages((RadioButton)c);
+                if (((RadioButtonTS)c).Appearance == Appearance.Button)
+                    SetupRadioButtonImages((RadioButtonTS)c);
                 return;
             }
 
@@ -602,7 +600,7 @@ namespace PowerSDR
 
         #region RadioButton
 
-        private void SetupRadioButtonImages(RadioButton ctrl)
+        private void SetupRadioButtonImages(RadioButtonTS ctrl)
         {
             if (ctrl.ImageList == null)
                 ctrl.ImageList = new ImageList();
@@ -690,59 +688,7 @@ namespace PowerSDR
         {
             if (ctrl.ImageList == null) return;
             int index = ctrl.ImageList.Images.IndexOfKey(state.ToString());
-            if (index < 0)
-            {
-                if (console.SkinsEnabled)
-                {
-                    switch (state)
-                    {
-                        case (ImageState.NormalDown):
-                            {
-                                ctrl.BackgroundImage = null;
-                                ctrl.ForeColor = console.SkinsButtonTxtColor;
-                                return;
-                            };
-                        case (ImageState.MouseOverDown):
-                            {
-                                return;
-                            };
-                        case (ImageState.MouseOverUp):
-                            {
-                                return;
-                            };
-                        default:
-                            {
-                                ctrl.BackgroundImage = null;
-                                ctrl.ForeColor = console.SkinsButtonTxtColor;
-                                ctrl.BackColor = SystemColors.Control;
-                                return;
-                            }
-                    }
-                }
-                else
-                {
-                    switch (state)
-                    {
-                        case (ImageState.NormalDown):
-                            {
-                                ctrl.BackgroundImage = null;
-                                ctrl.ForeColor = console.SkinsButtonTxtColor;
-                                ctrl.BackColor = console.ButtonSelectedColor;
-                                return;
-                            };
-                        case (ImageState.MouseOverUp):
-                            {
-                                return;
-                            };
-                        default:
-                            {
-                                ctrl.BackgroundImage = null;
-                                ctrl.ForeColor = console.SkinsButtonTxtColor;
-                                return;
-                            }
-                    }
-                }
-            }
+            if (index < 0) return;
             ctrl.BackgroundImage = ctrl.ImageList.Images[index];
         }
 
@@ -792,35 +738,31 @@ namespace PowerSDR
 
         private void SetBackgroundImage(Control c)
         {
+            if (c.Name == "console" && File.Exists(path + "\\" + c.TopLevelControl.Name + "\\" + c.Name + pic_file_ext))
+            {
+                console.BackgroundImage = Image.FromFile(path + "\\" + c.TopLevelControl.Name + "\\" + c.Name + pic_file_ext);
+            }
+            else if (c.Name == "picAGauge" && File.Exists(path + "\\" + c.TopLevelControl.Name + "\\" + 
+                "NewVFOAnalogSignalGauge" + ".jpg"))
+            {
+                c.BackgroundImage = Image.FromFile(path + "\\" + c.TopLevelControl.Name + "\\" + "NewVFOAnalogSignalGauge" + ".jpg");
+                console.NewVFO_background_image = path + "\\" + c.TopLevelControl.Name + "\\" + "NewVFOAnalogSignalGauge" + ".jpg";
+            }
+            else if (c.Name == "picSmallAGauge" && File.Exists(path + "\\" + c.TopLevelControl.Name + "\\" +
+                "AnalogSignalGauge" + ".jpg"))
+            {
+                c.BackgroundImage = Image.FromFile(path + "\\" + c.TopLevelControl.Name + "\\" + "AnalogSignalGauge" + ".jpg");
+                console.classicVFO_background_image = path + "\\" + c.TopLevelControl.Name + "\\" + "AnalogSignalGauge" + ".jpg";
+            }
+            else if (c.Name == "picDisplay" && File.Exists(path + "\\" + c.TopLevelControl.Name + "\\" + c.Name + pic_file_ext))
+            {
 #if(DirectX)
-            if (c.Name == "picDisplay" && File.Exists(path + "\\" + c.TopLevelControl.Name + "\\" + c.Name + pic_file_ext))
-            {
                 Display_DirectX.background_image = path + "\\" + c.TopLevelControl.Name + "\\" + c.Name + pic_file_ext;
-                c.BackgroundImage = Image.FromFile(path + "\\" + c.TopLevelControl.Name + "\\" + c.Name + pic_file_ext);
-            }
-
-            else
 #endif
-            if (File.Exists(path + "\\" + c.TopLevelControl.Name + "\\" + c.Name + pic_file_ext))
-            {
-                    c.BackgroundImage = Image.FromFile(path + "\\" + c.TopLevelControl.Name + "\\" + c.Name + pic_file_ext);
+                c.BackgroundImage = Image.FromFile(path + "\\" + c.TopLevelControl.Name + "\\" + c.Name + pic_file_ext);
+                //console.DXform.BackgroundImage = Image.FromFile(path + "\\" + c.TopLevelControl.Name + "\\" + c.Name + pic_file_ext);
             }
-            else
-                c.BackgroundImage = null;
-        }
 
-        private void SetAGaugeBackgroundImage(AGauge c)
-        {
-            if (c.Name == "AnalogSignalGauge" && File.Exists(path + "\\" + c.TopLevelControl.Name + "\\" + c.Name + ".jpg"))
-            {
-                c.BackgroundImage = Image.FromFile(path + "\\" + c.TopLevelControl.Name + "\\" + c.Name + ".jpg");
-                console.classicVFO_background_image = path + "\\" + c.TopLevelControl.Name + "\\" + c.Name + ".jpg";
-            }
-            else if (c.Name == "NewVFOAnalogSignalGauge" && File.Exists(path + "\\" + c.TopLevelControl.Name + "\\" + c.Name + ".jpg"))
-            {
-                c.BackgroundImage = Image.FromFile(path + "\\" + c.TopLevelControl.Name + "\\" + c.Name + ".jpg");
-                console.NewVFO_background_image = path + "\\" + c.TopLevelControl.Name + "\\" + c.Name + ".jpg";
-            }
             else if (File.Exists(path + "\\" + c.TopLevelControl.Name + "\\" + c.Name + pic_file_ext))
             {
                 c.BackgroundImage = Image.FromFile(path + "\\" + c.TopLevelControl.Name + "\\" + c.Name + pic_file_ext);

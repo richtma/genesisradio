@@ -612,6 +612,7 @@ namespace PowerSDR
 				return false;
 
 			bool success = GetControlByType(mixer, dst_type, src_type, MIXERCONTROL_CONTROLTYPE_VOLUME, out volCtrl);
+
 			if(success == true)
 			{
 				if(val>volCtrl.lMaximum) val = volCtrl.lMaximum; 

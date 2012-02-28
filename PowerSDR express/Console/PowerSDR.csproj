@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <OutputPath>..\bin\Release_new\</OutputPath>
+    <OutputPath>..\..\..\bin\release\</OutputPath>
     <DefineConstants>TRACE;WIN32;DirectX</DefineConstants>
     <BaseAddress>285212672</BaseAddress>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -22,8 +22,7 @@
     <AssemblyKeyContainerName>
     </AssemblyKeyContainerName>
     <AssemblyName>Genesis</AssemblyName>
-    <AssemblyOriginatorKeyFile>
-    </AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>GSDR.pfx</AssemblyOriginatorKeyFile>
     <DefaultClientScript>JScript</DefaultClientScript>
     <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
     <DefaultTargetSchema>IE50</DefaultTargetSchema>
@@ -44,6 +43,9 @@
     <OldToolsVersion>3.5</OldToolsVersion>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <TargetFrameworkProfile />
+    <TargetFrameworkSubset>
+    </TargetFrameworkSubset>
+    <SignAssembly>false</SignAssembly>
     <PublishUrl>E:\tmp\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -58,9 +60,6 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkSubset>
-    </TargetFrameworkSubset>
-    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath>..\..\bin\Debug\</OutputPath>
@@ -110,7 +109,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\..\bin\Debug\</OutputPath>
+    <OutputPath>obj\x86\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;WIN32;DirectX</DefineConstants>
     <BaseAddress>285212672</BaseAddress>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -122,7 +121,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <OutputPath>..\..\..\bin\Release x64\</OutputPath>
-    <DefineConstants>TRACE;x64_build;DirectX</DefineConstants>
+    <DefineConstants>TRACE;WIN64;DirectX</DefineConstants>
     <BaseAddress>285212672</BaseAddress>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
@@ -142,24 +141,32 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="G11, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Dependency\G11.dll</HintPath>
+    </Reference>
     <Reference Include="G59, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\PowerSDR express\bin\Debug\G59.dll</HintPath>
+      <HintPath>..\Dependency\G59.dll</HintPath>
     </Reference>
-    <Reference Include="MemCompressor, Version=1.0.0.3, Culture=neutral, PublicKeyToken=d7dc4571284f76c3, processorArchitecture=x86">
+    <Reference Include="G6, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\PowerSDR express\bin\Debug\MemCompressor.dll</HintPath>
+      <HintPath>..\Dependency\G6.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.DirectX.Direct3D, Version=1.0.2902.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
+    <Reference Include="MemCompressor, Version=1.0.0.3, Culture=neutral, PublicKeyToken=d7dc4571284f76c3, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Dependency\MemCompressor.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="NetworkControl, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\PowerSDR express\bin\Debug\NetworkControl.dll</HintPath>
+      <HintPath>..\Dependency\NetworkControl.dll</HintPath>
     </Reference>
-    <Reference Include="SlimDX, Version=2.0.9.42, Culture=neutral, PublicKeyToken=b1b0c32fd1ffe4f9, processorArchitecture=x86">
+    <Reference Include="ProgressODoom, Version=1.0.4386.37036, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files (x86)\SlimDX SDK (February 2010)\Bin\x86\SlimDX.dll</HintPath>
+      <HintPath>..\Dependency\ProgressODoom.dll</HintPath>
     </Reference>
+    <Reference Include="SlimDX, Version=2.0.12.43, Culture=neutral, PublicKeyToken=b1b0c32fd1ffe4f9, processorArchitecture=x86" />
     <Reference Include="System">
       <Name>System</Name>
     </Reference>
@@ -184,25 +191,49 @@
     <Compile Include="About.Designer.cs">
       <DependentUpon>About.cs</DependentUpon>
     </Compile>
+    <Compile Include="AGauge.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="audio.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="CAT\CATCommands.cs" />
+    <Compile Include="ClusterSetup.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ClusterSetup.Designer.cs" />
+    <Compile Include="ConsoleCrossThreadCallback.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DebugForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DebugForm.Designer.cs">
+      <DependentUpon>DebugForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="dsp.cs">
       <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DXClusterClient.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DXClusterClient.designer.cs">
+      <DependentUpon>DXClusterClient.cs</DependentUpon>
+    </Compile>
+    <Compile Include="InputBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Invoke\SMeter1.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Invoke\SMeter1.Designer.cs">
+      <DependentUpon>SMeter1.cs</DependentUpon>
     </Compile>
     <Compile Include="LoopDLL.cs" />
     <Compile Include="MultiPSK.cs" />
     <Compile Include="Network Client.cs" />
     <Compile Include="Network Server.cs" />
     <Compile Include="CAT Ethernet.cs" />
-    <Compile Include="NetworkDevice.cs" />
-    <Compile Include="Invoke\AGauge.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Invoke\AGauge.Designer.cs">
-      <DependentUpon>AGauge.cs</DependentUpon>
-    </Compile>
     <Compile Include="display_DirectX.cs">
     </Compile>
     <Compile Include="Invoke\PrettyTrackBar.cs">
@@ -214,19 +245,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="CAT\CATParser.cs" />
-    <Compile Include="CAT\CATTester.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="CAT\SDRSerialPortII.cs" />
     <Compile Include="CAT\SerialPortPTT.cs" />
-    <Compile Include="CAT\SerialPort\Enumerations.cs" />
-    <Compile Include="CAT\SerialPort\Resources.cs" />
-    <Compile Include="CAT\SerialPort\SafeHandle.cs" />
-    <Compile Include="CAT\SerialPort\SerialEventArgs.cs" />
-    <Compile Include="CAT\SerialPort\SerialPort.cs" />
-    <Compile Include="CAT\SerialPort\SerialStream.cs" />
-    <Compile Include="CAT\SerialPort\TimeoutException.cs" />
-    <Compile Include="CAT\SerialPort\Win32API_Serial.cs" />
     <Compile Include="CAT\SerialRxEvent.cs" />
     <Compile Include="CAT\SIOListenerII.cs" />
     <Compile Include="ColorButton.cs">
@@ -263,9 +283,6 @@
     </Compile>
     <Compile Include="hiperftimer.cs">
       <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="InputBox.cs">
-      <SubType>Form</SubType>
     </Compile>
     <Compile Include="invoke.cs">
       <SubType>Code</SubType>
@@ -355,17 +372,15 @@
     <Compile Include="wizard.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="XTRV.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="XTRVform.Designer.cs">
+      <DependentUpon>XTRV.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="About.resx">
       <SubType>Designer</SubType>
       <DependentUpon>About.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CAT\CATTester.resx">
-      <DependentUpon>CATTester.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CAT\SerialPort\SerialPort.resx">
-      <DependentUpon>SerialPort.cs</DependentUpon>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="console.resx">
       <DependentUpon>console.cs</DependentUpon>
@@ -388,10 +403,6 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="images\soundcard.jpg" />
-    <EmbeddedResource Include="InputBox.resx">
-      <DependentUpon>InputBox.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
     <EmbeddedResource Include="Invoke\buttonts.resx">
       <DependentUpon>buttonts.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -427,6 +438,8 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
+    <None Include="GSDR.pfx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -435,7 +448,7 @@
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
       <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <ProductName>.NET Framework Client Profile</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
@@ -462,17 +475,40 @@
   <ItemGroup>
     <Content Include="Genesis.ico" />
     <Content Include="images\genesis.ico" />
-    <EmbeddedResource Include="images\Si570.jpg" />
+    <EmbeddedResource Include="DebugForm.resx">
+      <DependentUpon>DebugForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="images\genesisG11.jpg" />
+    <EmbeddedResource Include="ClusterSetup.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ClusterSetup1.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DXClusterClient.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>DXClusterClient1.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="images\genesisG59.jpg" />
+    <EmbeddedResource Include="images\Si570.jpg" />
     <EmbeddedResource Include="images\genesisGXX.jpg" />
     <EmbeddedResource Include="images\genesisGYY.jpg" />
     <EmbeddedResource Include="images\splash.jpg" />
+    <EmbeddedResource Include="InputBox.resx">
+      <DependentUpon>InputBox.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Invoke\SMeter1.resx">
+      <DependentUpon>SMeter1.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="VoiceMessages.resx">
       <DependentUpon>VoiceMessages.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="XTRV.resx">
+      <DependentUpon>XTRV.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Resources\" />
     <Folder Include="Skins\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

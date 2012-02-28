@@ -29,17 +29,31 @@ using System.Collections;
 using System.Windows.Forms; // needed for MessageBox (wjt)
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+using System.Drawing;
+using System.Threading;
 
 namespace PowerSDR
 {	
 	public class SIOListenerII
-	{
-		#region Constructor
+    {
+        #region variable
 
-		public SIOListenerII(Console c)
+        bool run_thread = false;
+        Thread send_thread;
+        AutoResetEvent send_event = new AutoResetEvent(false);
+        byte[] send_data = new byte[256];
+        uint data_length = 0;
+        private delegate void DebugCallbackFunction(string name);
+        public bool debug = false;
+
+        #endregion
+
+        #region Constructor
+
+        public SIOListenerII(Console c)
 		{
 			console = c;
-			console.Activated += new EventHandler(console_Activated);
+			//console.Activated += new EventHandler(console_Activated);
 			console.Closing += new System.ComponentModel.CancelEventHandler(console_Closing);
 			parser = new CATParser(console);
 
@@ -66,28 +80,39 @@ namespace PowerSDR
 						MessageBoxButtons.OK, MessageBoxIcon.Error);
 				}
 			}
+
 			SIOMonitor = new System.Timers.Timer();
 			SIOMonitor.Elapsed+=new
 				System.Timers.ElapsedEventHandler(SIOMonitor_Elapsed);
+            SIOMonitor.Interval = 5000;     // 5s
 
+            run_thread = true;
+            send_thread = new Thread(new ThreadStart(SendThread));
+            send_thread.Name = "Serial send Process Thread ";
+            send_thread.Priority = ThreadPriority.Normal;
+            send_thread.IsBackground = true;
+            send_thread.Start();
 
 		}
+
+        ~SIOListenerII()
+        {
+            run_thread = false;
+            send_event.Set();
+        }
 
 		private void SIOMonitor_Elapsed(object sender,
 			System.Timers.ElapsedEventArgs e)
 		{
 			if(!console.MOX) SIOMonitorCount++;		// increments the counter when in receive
-			if(SIOMonitorCount < 12)	// if the counter is less than 12 (60 seconds),reinitialize the serial port
+
+			if(SIOMonitorCount > 12)	// if the counter is less than 12 (60 seconds),reinitialize the serial port
 			{
 				Fpass = true;
 				disableCAT();
 				enableCAT();
 				//Initialize();
-			}
-			else					// consider the remote program on the serial port as being shut down
-			{
-				SIOMonitorCount = 0;
-				SIOMonitor.Stop();
+                SIOMonitorCount = 0;
 			}
 		}
 
@@ -108,7 +133,9 @@ namespace PowerSDR
 							(SDRSerialSupportII.SDRSerialPort.DataBits)console.CATDataBits, 
 							(SDRSerialSupportII.SDRSerialPort.StopBits)console.CATStopBits); 
 		
-			Initialize();			
+			Initialize();
+            SIOMonitorCount = 0;
+            SIOMonitor.Start();
 		}
 
 		// typically called when the end user has disabled CAT control through a UI element ... this 
@@ -123,6 +150,7 @@ namespace PowerSDR
 
 			if ( SIO != null ) 
 			{
+                SIOMonitor.Stop();
 				SIO.Destroy(); 
 				SIO = null; 
 			}
@@ -233,45 +261,130 @@ namespace PowerSDR
 			}
 		}
 
-		private void console_Activated(object sender, EventArgs e)
+		/*private void console_Activated(object sender, EventArgs e)
 		{
 			if ( console.CATEnabled ) 
 			{ 
 				// Initialize();   // wjt enable CAT calls Initialize 
 				enableCAT(); 
 			}
-		}
+		}*/
 
 		private void SerialRXEventHandler(object source, SDRSerialSupportII.SerialRXEvent e)
 		{
-			SIOMonitor.Interval = 5000;		// set the timer for 5 seconds
-			SIOMonitor.Enabled = true;		// start or restart the timer
-			//ParseString(e.buffer, e.count);  // Replace with regular expression parser
-			// Added Regex.Replace 2/25/07 BT Removes whitespaces and non-alphanumeric
-			// characters from input string. ^start at beginning \w any non-alphanumeric
-			// \;. except a semicolon or period.
+            try
+            {
+                //			SIOMonitor.Interval = 5000;		// set the timer for 5 seconds
+                //			SIOMonitor.Enabled = true;		// start or restart the timer
+                //ParseString(e.buffer, e.count);  // Replace with regular expression parser
+                // Added Regex.Replace 2/25/07 BT Removes whitespaces and non-alphanumeric
+                // characters from input string. ^start at beginning \w any non-alphanumeric
+                // \;. except a semicolon or period.
 
-			CommBuffer += Regex.Replace(AE.GetString(e.buffer),@"[^\w\;.]","");
-//			CommBuffer += AE.GetString(e.buffer);
-			Regex rex = new Regex(".*?;");
-			string answer;
-			byte[] out_string;
-			uint result;
-			for(Match m = rex.Match(CommBuffer); m.Success; m = m.NextMatch())
-			{
-				answer = parser.Get(m.Value);
-				Debug.WriteLine(m.Value);
-				Debug.WriteLine(answer);
-				out_string = AE.GetBytes(answer);
-				result = SIO.put(out_string, (uint) out_string.Length);
-				CommBuffer = CommBuffer.Replace(m.Value, "");
-				Debug.WriteLine(CommBuffer.Length.ToString());
-			}
+                //CommBuffer += Regex.Replace(AE.GetString(e.buffer), @"[^\w\;.]", "");
+                //			CommBuffer += AE.GetString(e.buffer);
 
-			
+                lock (this)
+                {
+                    SIOMonitorCount = 0;        // reset watch dog!
+                }
+
+                CommBuffer += AE.GetString(e.buffer, 0, e.buffer.Length);
+                Regex rex = new Regex(".*?;");
+                string answer;
+                byte[] out_string = new byte[1024];
+
+                for (Match m = rex.Match(CommBuffer); m.Success; m = m.NextMatch())
+                {
+                    answer = parser.Get(m.Value);
+
+                    if (debug)
+                    {
+                        console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                            "CAT command: " + m.Value.ToString());
+                    }
+
+                    out_string = AE.GetBytes(answer);
+                    send_data = out_string;
+                    send_event.Set();
+                }
+
+                CommBuffer = "";
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+
+                if (debug)
+                {
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                        "CAT SerialRXEvent error! \n" + ex.ToString());
+                }
+            }
 		}
 
 		#endregion Events
-	}
+
+        #region crossthread call/thread
+
+        public void CrossThreadCallback(string command, byte[] data)
+        {
+            try
+            {
+                switch (command)
+                {
+                    case "send":
+                        if (data.Length <= 256)
+                        {
+                            lock (this)
+                            {
+                                send_data = data;
+                            }
+                        }
+
+                        send_event.Set();
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+
+                if (debug)
+                {
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                        "CAT CrossThreasCallback error! \n" + ex.ToString());
+                }
+            }
+        }
+
+        private void SendThread()
+        {
+            ASCIIEncoding buffer = new ASCIIEncoding();
+            string out_string = "";
+
+            while (run_thread)
+            {
+                send_event.WaitOne();
+
+                lock (this)
+                {
+                    SIO.put(send_data, (uint)send_data.Length);
+                }
+
+                out_string = buffer.GetString(send_data);
+
+                if (debug)
+                {
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                        "CAT answer: " + out_string);
+                }
+
+                Debug.Write(out_string + "\n");
+            }
+        }
+
+        #endregion
+    }
 }
 

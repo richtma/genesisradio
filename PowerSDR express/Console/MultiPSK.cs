@@ -2,7 +2,7 @@
 // MultiPSK Network control 
 //=================================================================
 //
-//  Copyright (C)2010 YT7PWR Goran Radivojevic
+//  Copyright (C)2010,2011 YT7PWR Goran Radivojevic
 //  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 //
 // This program is free software; you can redistribute it and/or
@@ -56,14 +56,13 @@ namespace PowerSDR
         Thread ServerThread;
         Thread BufferThread;
         private bool run_server_thread = false;
-        AutoResetEvent server_event;
+        private AutoResetEvent server_event;
         public AutoResetEvent send_event;
         Thread Send_thread;
         private bool run_MultiPSK_send_thread = false;
         public byte[] send_buffer;
         public bool ClientConnected = false;
         public int send_bytes = 512;
-        public Mutex send_mutex;
         public int receive_byte_count = 0;
         private bool run_buffer_send_thread = false;
 
@@ -84,7 +83,6 @@ namespace PowerSDR
             send_buffer = new byte[65535];
             send_event = new AutoResetEvent(false);
             server_event = new AutoResetEvent(false);
-            send_mutex = new Mutex(false);
         }
 
         ~MultiPSKEthernetServer()
@@ -97,13 +95,6 @@ namespace PowerSDR
         {
             try
             {
-                if (send_mutex != null)
-                {
-                    send_mutex.Close();
-                    send_mutex = null;
-                    send_mutex = new Mutex(false);
-                }
-
                 MultiPSKpassword = password;
                 ServerIPAddress = ipAddress;
                 ServerPort = port;
@@ -114,6 +105,9 @@ namespace PowerSDR
 
                 ServerSocket.Bind(ipep);
                 ServerSocket.Listen(100);
+
+                if (WorkingSocket == null)
+                    WorkingSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
                 run_server_thread = true;
                 server_event.Reset();
@@ -190,6 +184,7 @@ namespace PowerSDR
             }
         }
 
+        private int sample_pointer = 0;
         unsafe private void ProcessData(byte[] data)
         {
             ASCIIEncoding command = new ASCIIEncoding();
@@ -206,6 +201,7 @@ namespace PowerSDR
                     data[1] += 0x30;
                 if (data[2] == 0x03)
                     data[2] += 0x30;
+
                 command_type = command.GetString(data, 0, 4);
                 version = command.GetString(data, 30, 3);
                 password = command.GetString(data, 11, 10);
@@ -221,30 +217,31 @@ namespace PowerSDR
                     run_buffer_send_thread = false;
                     IsPTT = false;
                 }
-                else if (command_type == "123S")        // standard transmite packet
+                else if (command_type == "123S")        // standard transmit packet
                 {
                     int i;
                     int count = (int)data[4];
                     count = count << 8;
-                    count += (int)data[5];
+                    count += data[5];
 
-                    send_mutex.WaitOne();
-
-                    for (i = 0; i < count; i++)
+                    for (i = 0; i < 122; i++)
                     {
-                        Audio.network_input_bufer_l[i] = data[i + 6];
+                        Audio.MultiPSK_input_bufer_l[sample_pointer + i] = (float)(data[i + 6] / 1e4);
+//                        Audio.MultiPSK_input_bufer_r[sample_pointer + i] = (float)(data[i + 6] / 1e5);
+//                        Audio.MultiPSK_input_bufer_r[sample_pointer + i+1] = (float)(data[i+1 + 6] / 1e5);
+                        sample_pointer ++;
+//                        sample_pointer += 2;
+//                        i++;
                     }
-
-                    send_mutex.ReleaseMutex();
-
                 }
-                else if (command_type == "123R")        // last transmite packet
+                else if (command_type == "123R")        // last transmit packet
                 {
                     run_buffer_send_thread = false;
                     IsPTT = false;
                 }
-                else if (command_type == "123T")        // transmit
+                else if (command_type == "123T")        // transmit start
                 {
+                    sample_pointer = 0;
                     IsPTT = true;
                     Thread.Sleep(100);
 
@@ -263,22 +260,35 @@ namespace PowerSDR
                 {
                     int i;
 
-                    send_mutex.WaitOne();
-
-                    for(i=0; i<256; i++)
+                    for (i = 0; i < 128; i++)
                     {
-                        Audio.network_input_bufer_l[i] = data[i];
+                        Audio.MultiPSK_input_bufer_l[i + sample_pointer] = (float)(data[i] / 1e4);
+//                        Audio.MultiPSK_input_bufer_r[i + sample_pointer] = (float)(data[i] / 1e5);
+//                        Audio.MultiPSK_input_bufer_r[i+1 + sample_pointer] = (float)(data[i+1] / 1e5);
+                        sample_pointer ++;
+//                        sample_pointer += 2;
+//                        i++;
                     }
 
-                    send_mutex.ReleaseMutex();
+                    if (sample_pointer == 236 || sample_pointer > 236)
+                    {
+                        Audio.MultiPSK_event.Set();
+                        Thread.Sleep(2);
+                        sample_pointer -= 236;
 
-                    Debug.Write("receive data!");
+                        for (i = 0; i < sample_pointer; i++)
+                        {
+                            Audio.MultiPSK_input_bufer_l[i] = Audio.MultiPSK_input_bufer_l[236 + i];
+//                            Audio.MultiPSK_input_bufer_r[i] = Audio.MultiPSK_input_bufer_l[2048 + i];
+//                            Audio.MultiPSK_input_bufer_l[i + 1] = Audio.MultiPSK_input_bufer_l[2048 + i+1];
+//                            i++;
+                        }
+                    }
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.ToString());
-//                IsPTT = false;
             }
         }
 
@@ -395,7 +405,6 @@ namespace PowerSDR
                 while (run_MultiPSK_send_thread)
                 {
                     send_event.WaitOne();
-                    send_mutex.WaitOne();
 
                     if (WorkingSocket.Connected && run_MultiPSK_send_thread)
                     {
@@ -407,8 +416,6 @@ namespace PowerSDR
                             run_MultiPSK_send_thread = false;
                         }
                     }
-
-                    send_mutex.ReleaseMutex();
                 }
             }
             catch (Exception ex)
@@ -423,8 +430,6 @@ namespace PowerSDR
         {
             while (run_buffer_send_thread && console.power && console.MOX)
             {
-                send_mutex.WaitOne();
-
                 send_buffer[0] = 0x01;
                 send_buffer[1] = 0x02;
                 send_buffer[2] = 0x03;
@@ -433,10 +438,6 @@ namespace PowerSDR
                 send_buffer[5] = 0x00;
 
                 send_event.Set();
-
-                send_mutex.ReleaseMutex();
-
-//                Debug.Write("send buffer size!");
 
                 Thread.Sleep(200);
             }

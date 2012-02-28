@@ -24,7 +24,9 @@
 
 using System;
 using System.Threading;
-using SerialPorts; 
+//using SerialPorts;
+using System.Diagnostics;
+using System.IO.Ports;
 
 namespace SDRSerialSupportII
 {
@@ -76,14 +78,17 @@ namespace SDRSerialSupportII
 		{
 			commPort = new SerialPort();
 			commPort.Encoding = System.Text.Encoding.ASCII;
-			commPort.ErrorEvent += new SerialPorts.SerialEventHandler(this.SerialPortErrorEvent);
-			commPort.ReceivedEvent += new SerialPorts.SerialEventHandler(this.SerialPortReceivedEvent);
-			commPort.PinChangedEvent += new SerialPorts.SerialEventHandler(this.SerialPortPinChangedEvent);
+			//commPort.ErrorEvent += new SerialPorts.SerialEventHandler(this.SerialPortErrorEvent);
+            commPort.ErrorReceived += new SerialErrorReceivedEventHandler(this.SerialPortErrorEvent);
+			//commPort.ReceivedEvent += new SerialPorts.SerialEventHandler(this.SerialPortReceivedEvent);
+            commPort.DataReceived += new  SerialDataReceivedEventHandler(this.SerialPortReceivedEvent);
+			//commPort.PinChangedEvent += new SerialPorts.SerialEventHandler(this.SerialPortPinChangedEvent);
+            commPort.PinChanged += new SerialPinChangedEventHandler(this.SerialPortPinChangedEvent);
 
 			commPort.PortName = "COM" + portidx.ToString(); 
 
-			commPort.Parity = SerialPorts.Parity.None; 
-			commPort.StopBits = SerialPorts.StopBits.One;
+			commPort.Parity = System.IO.Ports.Parity.None; 
+			commPort.StopBits = System.IO.Ports.StopBits.One;
 			commPort.DataBits = 8; 
 			commPort.BaudRate = 9600; 
 			commPort.ReadTimeout = 5000;
@@ -101,38 +106,38 @@ namespace SDRSerialSupportII
 			switch ( p ) 
 			{ 
 				case Parity.NONE: 
-					commPort.Parity = SerialPorts.Parity.None; 
+					commPort.Parity = System.IO.Ports.Parity.None; 
 					break; 
-				case Parity.ODD: 
-					commPort.Parity = SerialPorts.Parity.Odd; 
+				case Parity.ODD:
+                    commPort.Parity = System.IO.Ports.Parity.Odd; 
 					break; 
 				case Parity.EVEN:
-					commPort.Parity = SerialPorts.Parity.Even; 
+                    commPort.Parity = System.IO.Ports.Parity.Even; 
 					break; 
-				case Parity.MARK: 
-					commPort.Parity = SerialPorts.Parity.Mark; 
+				case Parity.MARK:
+                    commPort.Parity = System.IO.Ports.Parity.Mark; 
 					break; 
 				case Parity.SPACE:
-					commPort.Parity = SerialPorts.Parity.Space; 
+                    commPort.Parity = System.IO.Ports.Parity.Space; 
 					break; 
-				default: 
-					commPort.Parity = SerialPorts.Parity.None; 
+				default:
+                    commPort.Parity = System.IO.Ports.Parity.None; 
 					break; 
 			}
 									
 			switch ( stop ) 
 			{
-				case StopBits.ONE: 
-					commPort.StopBits = SerialPorts.StopBits.One;  
+				case StopBits.ONE:
+                    commPort.StopBits = System.IO.Ports.StopBits.One;  
 					break; 
-				case StopBits.ONE_AND_HALF: 
-					commPort.StopBits = SerialPorts.StopBits.OnePointFive; 
+				case StopBits.ONE_AND_HALF:
+                    commPort.StopBits = System.IO.Ports.StopBits.OnePointFive; 
 					break; 
-				case StopBits.TWO: 
-					commPort.StopBits = SerialPorts.StopBits.Two; 
+				case StopBits.TWO:
+                    commPort.StopBits = System.IO.Ports.StopBits.Two; 
 					break; 
-				default: 
-					commPort.StopBits = SerialPorts.StopBits.One; 
+				default:
+                    commPort.StopBits = System.IO.Ports.StopBits.One; 
 					break; 
 			}
 			
@@ -155,9 +160,18 @@ namespace SDRSerialSupportII
 		
 		public uint put(byte[] b, uint count) 
 		{
-			if ( bitBangOnly ) return 0;  // fixme -- throw exception?			
-			commPort.Write(b, 0, (int)count);			
-			return count; // wjt fixme -- hack -- we don't know if we actually wrote things 			
+            try
+            {
+                if (bitBangOnly) return 0;  // fixme -- throw exception?			
+                commPort.Write(b, 0, (int)count);
+                return count; // wjt fixme -- hack -- we don't know if we actually wrote things 			
+            }
+            catch
+                (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+                return 0;
+            }
 		}
 
 		public int Create()
@@ -181,7 +195,7 @@ namespace SDRSerialSupportII
 		public void Destroy()
 		{
 			try 
-			{
+            {
 				commPort.Close(); 
 			}
 			catch(Exception)
@@ -215,22 +229,29 @@ namespace SDRSerialSupportII
 			return commPort.CDHolding; 
 		}
 
-		void SerialPortErrorEvent(object source, SerialPorts.SerialEventArgs e)
+        void SerialPortErrorEvent(object sender, SerialErrorReceivedEventArgs e)
+        {
+
+        }
+
+        void SerialPortPinChangedEvent(object sender, SerialPinChangedEventArgs e)
 		{
 			
 		}
-		
-		void SerialPortPinChangedEvent(object source, SerialPorts.SerialEventArgs e)
+
+        void SerialPortReceivedEvent(object sender, SerialDataReceivedEventArgs e)
 		{
-			
-		}	
-		
-		void SerialPortReceivedEvent(object source, SerialPorts.SerialEventArgs e)
-		{
-			int num_to_read = commPort.InBufferBytes;
-			byte[] inbuf = new byte[num_to_read];
-			commPort.Read(inbuf, 0, num_to_read);
-			serial_rx_event(this, new SDRSerialSupportII.SerialRXEvent(inbuf, (uint)num_to_read));
+            try
+            {
+                int num_to_read = commPort.BytesToRead;  // InBufferBytes;
+                byte[] inbuf = new byte[num_to_read];
+                commPort.Read(inbuf, 0, num_to_read);
+                serial_rx_event(this, new SDRSerialSupportII.SerialRXEvent(inbuf, (uint)num_to_read));
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 	}

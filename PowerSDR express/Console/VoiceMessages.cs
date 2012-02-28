@@ -1081,8 +1081,6 @@ namespace PowerSDR
                     {
                         //Debug.WriteLine("loop 2");
                         ReadBuffer(ref reader);
-                        rb_l.Write(buf_l_in, IN_BLOCK);
-                        rb_r.Write(buf_r_in, IN_BLOCK);
                         if (playback == false)
                             goto end;
 

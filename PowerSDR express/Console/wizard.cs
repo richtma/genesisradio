@@ -88,6 +88,7 @@ namespace PowerSDR
         private RadioButtonTS radModelQRP2000;
         private RadioButtonTS radModelG500;
         private RadioButtonTS radModelG137;
+        private RadioButtonTS radModelG11;
         private System.ComponentModel.Container components = null;
 
         #endregion
@@ -109,6 +110,9 @@ namespace PowerSDR
             model = console.CurrentModel;
             switch (model)
             {
+                case Model.GENESIS_G11:
+                    radModelG11.Checked = true;
+                    break;
                 case Model.GENESIS_G59USB:
                     radModelG59.Checked = true;
                     break;
@@ -174,6 +178,7 @@ namespace PowerSDR
             this.button1 = new System.Windows.Forms.ButtonTS();
             this.comboBox3 = new System.Windows.Forms.ComboBoxTS();
             this.grpModel = new System.Windows.Forms.GroupBox();
+            this.radModelG11 = new System.Windows.Forms.RadioButtonTS();
             this.radModelQRP2000 = new System.Windows.Forms.RadioButtonTS();
             this.radModelG500 = new System.Windows.Forms.RadioButtonTS();
             this.radModelG137 = new System.Windows.Forms.RadioButtonTS();
@@ -190,7 +195,7 @@ namespace PowerSDR
             // btnPrevious
             // 
             this.btnPrevious.Image = null;
-            this.btnPrevious.Location = new System.Drawing.Point(145, 358);
+            this.btnPrevious.Location = new System.Drawing.Point(145, 360);
             this.btnPrevious.Name = "btnPrevious";
             this.btnPrevious.Size = new System.Drawing.Size(75, 23);
             this.btnPrevious.TabIndex = 0;
@@ -200,7 +205,7 @@ namespace PowerSDR
             // btnNext
             // 
             this.btnNext.Image = null;
-            this.btnNext.Location = new System.Drawing.Point(261, 358);
+            this.btnNext.Location = new System.Drawing.Point(261, 360);
             this.btnNext.Name = "btnNext";
             this.btnNext.Size = new System.Drawing.Size(75, 23);
             this.btnNext.TabIndex = 1;
@@ -211,7 +216,7 @@ namespace PowerSDR
             // 
             this.btnFinished.Enabled = false;
             this.btnFinished.Image = null;
-            this.btnFinished.Location = new System.Drawing.Point(377, 358);
+            this.btnFinished.Location = new System.Drawing.Point(377, 360);
             this.btnFinished.Name = "btnFinished";
             this.btnFinished.Size = new System.Drawing.Size(75, 23);
             this.btnFinished.TabIndex = 2;
@@ -221,10 +226,12 @@ namespace PowerSDR
             // pictureBox1
             // 
             this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
             this.pictureBox1.InitialImage = ((System.Drawing.Image)(resources.GetObject("pictureBox1.InitialImage")));
             this.pictureBox1.Location = new System.Drawing.Point(42, 62);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(245, 167);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBox1.TabIndex = 3;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Visible = false;
@@ -264,7 +271,7 @@ namespace PowerSDR
             // lblMessage2
             // 
             this.lblMessage2.Image = null;
-            this.lblMessage2.Location = new System.Drawing.Point(24, 295);
+            this.lblMessage2.Location = new System.Drawing.Point(24, 299);
             this.lblMessage2.Name = "lblMessage2";
             this.lblMessage2.Size = new System.Drawing.Size(464, 48);
             this.lblMessage2.TabIndex = 7;
@@ -339,6 +346,7 @@ namespace PowerSDR
             // 
             // grpModel
             // 
+            this.grpModel.Controls.Add(this.radModelG11);
             this.grpModel.Controls.Add(this.radModelQRP2000);
             this.grpModel.Controls.Add(this.radModelG500);
             this.grpModel.Controls.Add(this.radModelG137);
@@ -348,13 +356,23 @@ namespace PowerSDR
             this.grpModel.Controls.Add(this.radModelG40);
             this.grpModel.Controls.Add(this.radModelG3020);
             this.grpModel.Controls.Add(this.radModelG59);
-            this.grpModel.Location = new System.Drawing.Point(350, 47);
+            this.grpModel.Location = new System.Drawing.Point(350, 42);
             this.grpModel.Name = "grpModel";
-            this.grpModel.Size = new System.Drawing.Size(167, 245);
+            this.grpModel.Size = new System.Drawing.Size(167, 254);
             this.grpModel.TabIndex = 20;
             this.grpModel.TabStop = false;
             this.grpModel.Text = "Radio model";
             this.grpModel.Visible = false;
+            // 
+            // radModelG11
+            // 
+            this.radModelG11.Image = null;
+            this.radModelG11.Location = new System.Drawing.Point(39, 231);
+            this.radModelG11.Name = "radModelG11";
+            this.radModelG11.Size = new System.Drawing.Size(88, 17);
+            this.radModelG11.TabIndex = 12;
+            this.radModelG11.Text = "G11";
+            this.radModelG11.CheckedChanged += new System.EventHandler(this.radModelG11_CheckedChanged);
             // 
             // radModelQRP2000
             // 
@@ -364,7 +382,6 @@ namespace PowerSDR
             this.radModelQRP2000.Name = "radModelQRP2000";
             this.radModelQRP2000.Size = new System.Drawing.Size(72, 17);
             this.radModelQRP2000.TabIndex = 11;
-            this.radModelQRP2000.TabStop = true;
             this.radModelQRP2000.Text = "QRP2000";
             this.radModelQRP2000.UseVisualStyleBackColor = true;
             this.radModelQRP2000.CheckedChanged += new System.EventHandler(this.radModelQRP2000_CheckedChanged);
@@ -377,7 +394,6 @@ namespace PowerSDR
             this.radModelG500.Name = "radModelG500";
             this.radModelG500.Size = new System.Drawing.Size(51, 17);
             this.radModelG500.TabIndex = 10;
-            this.radModelG500.TabStop = true;
             this.radModelG500.Text = "G500";
             this.radModelG500.UseVisualStyleBackColor = true;
             this.radModelG500.CheckedChanged += new System.EventHandler(this.radModelG500_CheckedChanged);
@@ -390,7 +406,6 @@ namespace PowerSDR
             this.radModelG137.Name = "radModelG137";
             this.radModelG137.Size = new System.Drawing.Size(51, 17);
             this.radModelG137.TabIndex = 9;
-            this.radModelG137.TabStop = true;
             this.radModelG137.Text = "G137";
             this.radModelG137.UseVisualStyleBackColor = true;
             this.radModelG137.CheckedChanged += new System.EventHandler(this.radModelG137_CheckedChanged);
@@ -403,7 +418,6 @@ namespace PowerSDR
             this.radModelNetBox.Name = "radModelNetBox";
             this.radModelNetBox.Size = new System.Drawing.Size(68, 17);
             this.radModelNetBox.TabIndex = 8;
-            this.radModelNetBox.TabStop = true;
             this.radModelNetBox.Text = "NET Box";
             this.radModelNetBox.UseVisualStyleBackColor = true;
             this.radModelNetBox.CheckedChanged += new System.EventHandler(this.radModelNetBox_CheckedChanged);
@@ -416,7 +430,6 @@ namespace PowerSDR
             this.radModelG160.Name = "radModelG160";
             this.radModelG160.Size = new System.Drawing.Size(51, 17);
             this.radModelG160.TabIndex = 7;
-            this.radModelG160.TabStop = true;
             this.radModelG160.Text = "G160";
             this.radModelG160.UseVisualStyleBackColor = true;
             this.radModelG160.CheckedChanged += new System.EventHandler(this.radModelG160_CheckedChanged);
@@ -429,7 +442,6 @@ namespace PowerSDR
             this.radModelG80.Name = "radModelG80";
             this.radModelG80.Size = new System.Drawing.Size(45, 17);
             this.radModelG80.TabIndex = 6;
-            this.radModelG80.TabStop = true;
             this.radModelG80.Text = "G80";
             this.radModelG80.UseVisualStyleBackColor = true;
             this.radModelG80.CheckedChanged += new System.EventHandler(this.radModelG80_CheckedChanged);
@@ -456,13 +468,11 @@ namespace PowerSDR
             // 
             // radModelG59
             // 
-            this.radModelG59.Checked = true;
             this.radModelG59.Image = null;
             this.radModelG59.Location = new System.Drawing.Point(39, 18);
             this.radModelG59.Name = "radModelG59";
             this.radModelG59.Size = new System.Drawing.Size(88, 17);
             this.radModelG59.TabIndex = 3;
-            this.radModelG59.TabStop = true;
             this.radModelG59.Text = "G59";
             this.radModelG59.CheckedChanged += new System.EventHandler(this.radModelG59_CheckedChanged);
             // 
@@ -547,6 +557,7 @@ namespace PowerSDR
                     radModelG59_CheckedChanged(this, EventArgs.Empty);
                     radModelG3020_CheckedChanged(this, EventArgs.Empty);
                     radModelG40_CheckedChanged(this, EventArgs.Empty);
+                    radModelG11_CheckedChanged(this, EventArgs.Empty);
                     pictureBox1.Visible = true;
                     radNo.Visible = false;
                     radYes.Visible = false;
@@ -755,13 +766,7 @@ namespace PowerSDR
                 console.SetupForm.chkGeneralUSBPresent.Checked = false;
             }
 
-            ArrayList a = new ArrayList();
-            a.Add("SetupWizard/1");
-            DB.SaveVars("State", ref a);
-
-            console.SetupForm.SaveOptions();
-            console.SaveState();
-
+            console.run_setup_wizard = false;
             this.Close();
         }
 
@@ -773,13 +778,20 @@ namespace PowerSDR
 
         private void comboBox3_SelectedIndexChanged(object sender, System.EventArgs e)
         {
+
         }
+
+        #endregion
+
+        #region Radio model selection
 
         private void radModelG59_CheckedChanged(object sender, System.EventArgs e)
         {
             if (radModelG59.Checked)
             {
                 model = Model.GENESIS_G59USB;
+                console.SetupForm.radGenModelGenesisG59.Checked = true;
+
                 if (grpModel.Visible)
                     pictureBox1.Image = new Bitmap(GetResource("PowerSDR.images.genesisG59.jpg"));
             }
@@ -790,6 +802,8 @@ namespace PowerSDR
             if (radModelG3020.Checked)
             {
                 model = Model.GENESIS_G3020;
+                console.SetupForm.radGenModelGenesisG3020.Checked = true;
+
                 if (grpModel.Visible)
                     pictureBox1.Image = new Bitmap(GetResource("PowerSDR.images.genesisGYY.jpg"));
             }
@@ -800,18 +814,20 @@ namespace PowerSDR
             if (radModelG40.Checked)
             {
                 model = Model.GENESIS_G40;
+                console.SetupForm.radGenModelGenesisG40.Checked = true;
+
                 if (grpModel.Visible)
                     pictureBox1.Image = new Bitmap(GetResource("PowerSDR.images.genesisGXX.jpg"));
             }
         }
-
-        #endregion
 
         private void radModelG80_CheckedChanged(object sender, EventArgs e)
         {
             if (radModelG80.Checked)
             {
                 model = Model.GENESIS_G80;
+                console.SetupForm.radGenModelGenesisG80.Checked = true;
+
                 if (grpModel.Visible)
                     pictureBox1.Image = new Bitmap(GetResource("PowerSDR.images.genesisGXX.jpg"));
             }
@@ -822,6 +838,8 @@ namespace PowerSDR
             if (radModelG160.Checked)
             {
                 model = Model.GENESIS_G160;
+                console.SetupForm.radGenModelGenesisG160.Checked = true;
+
                 if (grpModel.Visible)
                     pictureBox1.Image = new Bitmap(GetResource("PowerSDR.images.genesisGXX.jpg"));
             }
@@ -832,6 +850,8 @@ namespace PowerSDR
             if (radModelNetBox.Checked)
             {
                 model = Model.GENESIS_G59NET;
+                console.SetupForm.radGenModelGenesisNET.Checked = true;
+
                 if (grpModel.Visible)
                     pictureBox1.Image = new Bitmap(GetResource("PowerSDR.images.genesisGXX.jpg"));
             }
@@ -842,6 +862,8 @@ namespace PowerSDR
             if (radModelG137.Checked)
             {
                 model = Model.GENESIS_G137;
+                console.SetupForm.radGenModelGenesisG137.Checked = true;
+
                 if (grpModel.Visible)
                     pictureBox1.Image = new Bitmap(GetResource("PowerSDR.images.genesisGXX.jpg"));
             }
@@ -852,6 +874,8 @@ namespace PowerSDR
             if (radModelG500.Checked)
             {
                 model = Model.GENESIS_G500;
+                console.SetupForm.radGenModelGenesisG500.Checked = true;
+
                 if (grpModel.Visible)
                     pictureBox1.Image = new Bitmap(GetResource("PowerSDR.images.genesisGXX.jpg"));
             }
@@ -862,9 +886,25 @@ namespace PowerSDR
             if (radModelQRP2000.Checked)
             {
                 model = Model.QRP2000;
+                console.SetupForm.radGenModelQRP2000.Checked = true;
+
                 if (grpModel.Visible)
                     pictureBox1.Image = new Bitmap(GetResource("PowerSDR.images.Si570.jpg"));
             }
         }
+
+        private void radModelG11_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radModelG11.Checked)
+            {
+                model = Model.GENESIS_G11;
+                console.SetupForm.radGenModelGenesisG11.Checked = true;
+
+                if (grpModel.Visible)
+                    pictureBox1.Image = new Bitmap(GetResource("PowerSDR.images.genesisG11.jpg"));                    
+            }
+        }
+
+        #endregion
     }
 }

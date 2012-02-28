@@ -22,7 +22,7 @@
 
 /*
  *  Changes for GenesisRadio
- *  Copyright (C)2010 YT7PWR Goran Radivojevic
+ *  Copyright (C)2010,2011,2012 YT7PWR Goran Radivojevic
  *  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 */
 
@@ -52,6 +52,7 @@ namespace PowerSDR
 		private ASCIIEncoding AE = new ASCIIEncoding();
 		private string lastFR = "0";
 		private string lastFT = "0";
+        public delegate void CATCrossThreadCallback(string type, int parm1, int[] parm2);  // yt7pwr
 
 		//		public static Mutex CATmut = new Mutex();
 
@@ -85,7 +86,9 @@ namespace PowerSDR
 			{
 				int raw = Convert.ToInt32(s.Substring(1));
 				int af = (int) Math.Round(raw/2.55,0);	// scale 255:100 (Kenwood vs SDR)
-				console.AF = af;		// Set the console control
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "AF", af, parm2);
+				//console.AF = af;		// Set the console control
 				return "";
 			}
 			else if(s.Length == parser.nGet)	// if this is a read command
@@ -103,36 +106,12 @@ namespace PowerSDR
 		public string AI(string s)
 		{
 			return ZZAI(s);
-			//			if(console.SetupForm.AllowFreqBroadcast)
-			//			{
-			//				if(s.Length == parser.nSet)
-			//				{
-			//					if(s == "0")
-			//						console.KWAutoInformation = false;
-			//					else 
-			//						console.KWAutoInformation = true;
-			//					return "";
-			//				}
-			//				else if(s.Length == parser.nGet)
-			//				{
-			//					if(console.KWAutoInformation)
-			//						return "1";
-			//					else
-			//						return "0";
-			//				}
-			//				else
-			//					return parser.Error1;
-			//			}
-			//			else
-			//				return parser.Error1;
 		}
 
 		// Moves one band down from the currently selected band
 		// write only
 		public string BD()
 		{
-			//			BandDown();
-			//			return "";
 			return ZZBD();
 		}
 
@@ -140,74 +119,24 @@ namespace PowerSDR
 		// write only
 		public string BU()
 		{
-			//			BandUp();
-			//			return "";
 			return ZZBU();
 		}
 
 		//Moves the VFO A frequency by the step size set on the console
 		public string DN()
 		{
-			//			int step = console.StepSize;
-			//			double[] wheel_tune_list;
-			//			wheel_tune_list = new double[13];		// initialize wheel tuning list array
-			//			wheel_tune_list[0]  =  0.000001;
-			//			wheel_tune_list[1]  =  0.000010;
-			//			wheel_tune_list[2]  =  0.000050;
-			//			wheel_tune_list[3]  =  0.000100;
-			//			wheel_tune_list[4]  =  0.000250;
-			//			wheel_tune_list[5]  =  0.000500;
-			//			wheel_tune_list[6]  =  0.001000;
-			//			wheel_tune_list[7]  =  0.005000;
-			//			wheel_tune_list[8]  =  0.009000;
-			//			wheel_tune_list[9]  =  0.010000;
-			//			wheel_tune_list[10] =  0.100000;
-			//			wheel_tune_list[11] =  1.000000;
-			//			wheel_tune_list[12] = 10.000000;
-			//
-			//			console.VFOAFreq = console.VFOAFreq - wheel_tune_list[step];
-			//			return "";
-
 			return ZZSA();
 		}
 
 		// Sets or reads the frequency of VFO A
 		public string FA(string s)
 		{
-            if (s.Length == parser.nSet)
-            {
-                s = s.Insert(5, separator);		//reinsert the global numeric separator
-                double vfoA = double.Parse(s);
-                if (vfoA > (console.MaxFreq) || vfoA < console.MinFreq)
-                {
-                    console.VFOAFreq = double.Parse(s);
-                    console.LOSCFreq = double.Parse(s) - 0.01125;   // yt7pwr
-                    console.VFOAFreq = double.Parse(s);
-                }
-                else
-                    console.VFOAFreq = double.Parse(s);
-
-                return "";
-            }
-            else if (s.Length == parser.nGet)
-                return StrVFOFreq("A");
-            else
-                return parser.Error1;
+            return ZZFA(s);
 		}
 
 		// Sets or reads the frequency of VFO B
 		public string FB(string s)
 		{
-			//			if(s.Length == parser.nSet)
-			//			{
-			//				s = s.Insert(5,separator);
-			//				console.VFOBFreq = double.Parse(s);
-			//				return "";
-			//			}
-			//			else if(s.Length == parser.nGet)
-			//				return StrVFOFreq("B");
-			//			else
-			//				return parser.Error1;
 			return ZZFB(s);
 		}
 
@@ -245,24 +174,6 @@ namespace PowerSDR
 		// another "happiness" command
 		public string FT(string s)
 		{
-			//			if(s.Length == parser.nSet)
-			//			{
-			//				if(s == "1")
-			//				{
-			//					console.VFOSplit = true;
-			//				}
-			//				else if(s == "0")
-			//				{
-			//					console.VFOSplit = false;
-			//				}
-			//				return "";
-			//			}
-			//			else if(s.Length == parser.nGet)
-			//			{
-			//				return ZZSP(s);
-			//			}
-			//			else
-			//				return parser.Error1;
 			return ZZSP(s);
 		}
 
@@ -272,7 +183,10 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet)
 			{
-				console.CurrentFilter = String2Filter(s);
+                Filter new_filter = String2Filter(s);
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter", (int)new_filter, parm2);
+				//console.CurrentFilter = String2Filter(s);
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -365,13 +279,14 @@ namespace PowerSDR
 			//			if(temp == parser.Error1)
 			//				temp = " ";
 
-			string f = ZZFA("");
+			//string f = ZZFA("");
+            string f = "";
 			if(f.Length > 11)
 			{
 				f = f.Substring(f.Length-11,11);
 			}
 			rtn += f;
-//			rtn += StrVFOFreq("A");						// VFO A frequency			11 bytes
+			rtn += StrVFOFreq("A");						// VFO A frequency			11 bytes
 			rtn += stepsize;							// Console step frequency	 4 bytes
 			rtn += incr;								// incremental tuning value	 6 bytes
 			rtn += rit;									// RIT status				 1 byte
@@ -390,115 +305,11 @@ namespace PowerSDR
 			rtn += split;								// VFO Split status			 1 byte
 			rtn += "0000";								// dummy for the balance	 4 bytes
 			return rtn;									// total bytes				35
-
-			//			// Initalize the command word
-			//			string cmd_string = "";
-			//			string temp;
-			//
-			//			// Get VFOA's frequency (P1 - 11 bytes)
-			//			if(console.VFOSplit)
-			//				cmd_string += StrVFOFreq("B");
-			//			else
-			//				cmd_string += StrVFOFreq("A");
-			//
-			//			// Get the step size index (P2 - 4 bytes)
-			//			cmd_string += ZZST();
-			//
-			//			// Determine which incremental tuning control is active
-			//			// and get the value for the active control 
-			//			string rit = "0";
-			//			string xit = "0";
-			//			int ITValue = 0;
-			//
-			//			if(console.RITOn)
-			//				rit = "1";
-			//			else if(console.XITOn)
-			//				xit = "1";
-			//
-			//			if(rit == "1")
-			//				ITValue = console.RITValue;
-			//			else if(xit == "1")
-			//				ITValue = console.XITValue;
-			//
-			//			// Add the ITValue to the command string (P3 - 6 bytes
-			//			if(ITValue < 0)
-			//				cmd_string += "-"+Convert.ToString(Math.Abs(ITValue)).PadLeft(5,'0');
-			//			else
-			//				cmd_string += "+"+Convert.ToString(Math.Abs(ITValue)).PadLeft(5,'0');
-			//
-			//			// Add the RIT/XIT status bits (P4 and P5, one byte each)
-			//			cmd_string += rit+xit;
-			//				
-			//			// Skip the memory channel stuff, the SDR1K doesn't use banks and channels per se
-			//			// (P6 - 1 byte, P7 - 2 bytes)
-			//			cmd_string += "000";
-			//
-			//			// Set the current MOX state (P8 - 1 byte)(what the heck is this for?)
-			//			if(console.MOX)
-			//				cmd_string += "1";
-			//			else
-			//				cmd_string += "0";
-			//
-			//			// Get the SDR mode.  (P9 - 1 byte)
-			//			temp = Mode2KString(console.CurrentDSPMode);
-			//			if(temp.Length == 1)	// if the answer is not an error message ?;
-			//				cmd_string += temp;
-			//			else
-			//				cmd_string += " ";	// return a blank if it's an error
-			//
-			//			// Set the FR/FT commands which determines the transmit and receive
-			//			// VFO's. VFO A = 0, VFO B = 1. (P10 - 1 byte)
-			//			if(console.VFOSplit)
-			//				cmd_string += "1";
-			//			else
-			//				cmd_string += "0";
-			//
-			//
-			//			// Set the Scan code to 0 
-			//			// The Scan code might be implemented but the frequency range would
-			//			// have to be manually entered. (P11 - 1 byte)
-			//			cmd_string += "0";
-			//
-			//			// Set the Split operation code (P12 - 1 byte)
-			//			cmd_string += ZZSP("");
-			//
-			//			// Set the remaining CTCSS tone and shift bits to 0 (P13 - P15, 4 bytes)
-			//			cmd_string += "0000";
-			//
-			//			return cmd_string;
 		}
 
 		//Sets or reads the CWX CW speed
 		public string KS(string s)
 		{
-			//			int cws = 0;
-			//			// Make sure we have an instance of the form
-			//			if(console.CWXForm == null || console.CWXForm.IsDisposed)
-			//			{
-			//				try
-			//				{
-			//					console.CWXForm = new CWX(console);
-			//				}
-			//				catch
-			//				{
-			//					return parser.Error1;
-			//				}
-			//			}
-			//			if(s.Length == parser.nSet)
-			//			{
-			//				cws = Convert.ToInt32(s);
-			//				cws = Math.Max(1, cws);
-			//				cws = Math.Min(99, cws);
-			//				console.CWXForm.WPM = cws;
-			//				return "";
-			//
-			//			}
-			//			else if(s.Length == parser.nGet)
-			//			{
-			//				return AddLeadingZeros(console.CWXForm.WPM);
-			//			}
-			//			else
-			//				return parser.Error1;
 			return ZZKS(s);
 		}
 
@@ -518,6 +329,7 @@ namespace PowerSDR
 				}
 			}
 
+            int[] parm2 = new int[1];
 			// Make sure we are in a cw mode.
 			switch(console.CurrentDSPMode)
 			{
@@ -530,15 +342,18 @@ namespace PowerSDR
 				case DSPMode.LSB:
 				case DSPMode.USB:
 					if(console.CurrentBand >= Band.B160M && console.CurrentBand <= Band.B40M)
-						console.CurrentDSPMode = DSPMode.CWL;
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "DSP Mode VFOA", (int)DSPMode.CWL, parm2);
+						//console.CurrentDSPMode = DSPMode.CWL;
 					else
-						console.CurrentDSPMode = DSPMode.CWU;
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "DSP Mode VFOA", (int)DSPMode.CWU, parm2);
+						//console.CurrentDSPMode = DSPMode.CWU;
 					break;
                 case DSPMode.CWL:
                 case DSPMode.CWU:
                     break;
 				default:
-					console.CurrentDSPMode = DSPMode.CWU;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "DSP Mode VFOA", (int)DSPMode.CWU, parm2);
+					//console.CurrentDSPMode = DSPMode.CWU;
 					break;
 			}
 
@@ -557,12 +372,14 @@ namespace PowerSDR
 				if(trms.Length > 1)
 				{
 					msg = AE.GetBytes(trms);
-					return console.CWXForm.RemoteMessage(msg);
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "CWX Remote Msg", 0, msg);
+                    return "";  // console.CWXForm.RemoteMessage(msg);
 				}
 				else
 				{
 					char ss = Convert.ToChar(trms);
-					return console.CWXForm.RemoteMessage(ss);
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "CWX Remote Msg", 0, ss);
+                    return ""; // console.CWXForm.RemoteMessage(ss);
 				}
 			}
 			else if(s.Length == parser.nGet)
@@ -584,17 +401,51 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet)
 			{
+                int[] parm2 = new int[1];
+
 				if(Convert.ToInt32(s) > 0 && Convert.ToInt32(s) <= 9)
 				{
-					KString2Mode(s);
-					return "";
+                    DSPMode new_mode = DSPMode.USB;
+
+                    switch (s)
+                    {
+                        case "1":
+                            new_mode = DSPMode.LSB;
+                            break;
+                        case "2":
+                            new_mode = DSPMode.USB;
+                            break;
+                        case "3":
+                            new_mode = DSPMode.CWU;
+                            break;
+                        case "4":
+                            new_mode = DSPMode.FMN;
+                            break;
+                        case "5":
+                            new_mode = DSPMode.AM;
+                            break;
+                        case "6":
+                            new_mode = DSPMode.DIGL;
+                            break;
+                        case "7":
+                            new_mode = DSPMode.CWL;
+                            break;
+                        case "9":
+                            new_mode = DSPMode.DIGU;
+                            break;
+                        default:
+                            new_mode = DSPMode.USB;
+                            break;
+                    }
+
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "DSP Mode VFOA", (int)new_mode, parm2);
+                    return "";
 				}
 				else
 					return parser.Error1;
 			}
 			else if(s.Length == parser.nGet)
-			{
-
+			{               
 				return Mode2KString(console.CurrentDSPMode);
 
 			}
@@ -630,24 +481,6 @@ namespace PowerSDR
 		// Sets or reads the Monitor status
 		public string MO(string s)
 		{
-			//			if(s.Length == parser.nSet)
-			//			{
-			//				if(s == "0")
-			//					console.MON = false;
-			//				else if(s == "1")
-			//					console.MON = true;
-			//				return "";
-			//			}
-			//			else if(s.Length == parser.nGet)
-			//			{
-			//				bool retval = console.MON;
-			//				if(retval)
-			//					return "1";
-			//				else
-			//					return "0";
-			//			}
-			//			else
-			//				return parser.Error1;
 			return ZZMO(s);
 		}
 
@@ -658,120 +491,36 @@ namespace PowerSDR
 		// Sets or reads the Noise Blanker 1 status
 		public string NB(string s)
 		{
-			//			if(s.Length == parser.nSet && (s == "0" || s == "1"))
-			//			{
-			//				console.CATNB1 = Convert.ToInt32(s);
-			//				return "";
-			//			}
-			//			else if(s.Length == parser.nGet)
-			//			{
-			//				return console.CATNB1.ToString();
-			//			}
-			//			else
-			//			{
-			//				return parser.Error1;
-			//			}
 			return ZZNA(s);
 		}
 
 		// Sets or reads the Automatic Notch Filter status
 		public string NT(string s)
 		{
-			//			if(s.Length == parser.nSet && (s == "0" || s == "1"))
-			//			{
-			//				console.CATANF = Convert.ToInt32(s);
-			//				return "";
-			//			}
-			//			else if(s.Length == parser.nGet)
-			//			{
-			//				return console.CATANF.ToString();
-			//			}
-			//			else
-			//			{
-			//				return parser.Error1;
-			//			}
 			return ZZNT(s);
 		}
 
 		// Sets or reads the PA output thumbwheel
-		public string PC(string s)
-		{
-			//			int pwr = 0;
-			//
-			//			if(s.Length == parser.nSet)
-			//			{
-			//				pwr = Convert.ToInt32(s);
-			//				console.PWR = pwr;
-			//				return "";
-			//			}
-			//			else if(s.Length == parser.nGet)
-			//			{
-			//				return AddLeadingZeros(console.PWR);
-			//			}
-			//			else
-			//			{
-			//				return parser.Error1;
-			//			}
-			return ZZPC(s);
-		}
+        public string PC(string s)
+        {
+            return ZZPC(s);
+        }
 
 		// Sets or reads the Speech Compressor status
-		/*public string PR(string s)
-		{
-//			if(s.Length == parser.nSet)
-//			{
-//				if(s == "0")
-//					console.COMP = false;
-//				else if(s == "1")
-//					console.COMP = true;
-//				return "";
-//			}
-//			else if(s.Length == parser.nGet)
-//			{
-//				bool comp = console.COMP;
-//				if(comp)
-//					return "1";
-//				else
-//					return "0";
-//			}
-//			else
-//			{
-//				return "";
-//			}
+		public string PR(string s)
+		{           
 			return ZZPK(s);
-		}*/
+		}
 
 		// Sets or reads the console power on/off status
 		public string PS(string s)
 		{
-			//			if(s.Length == parser.nSet)
-			//			{
-			//				if(s == "0")
-			//					console.PowerOn = false;
-			//				else if(s == "1")
-			//					console.PowerOn = true;
-			//				return "";
-			//			}
-			//			else if(s.Length == parser.nGet)
-			//			{
-			//				bool pwr = console.PowerOn;
-			//				if(pwr)
-			//					return "1";
-			//				else
-			//					return "0";
-			//			}
-			//			else
-			//			{
-			//				return parser.Error1;
-			//			}
 			return ZZPS(s);
 		}
 
 		// Sets the Quick Memory with the current contents of VFO A
 		public string QI()
 		{
-//			console.CATMemoryQS();
-//			return "";
 			return ZZQS();
 		}
 
@@ -783,8 +532,6 @@ namespace PowerSDR
 		// write only
 		public string RC()
 		{
-//			console.RITValue = 0;
-//			return "";
 			return ZZRC();
 		}
 
@@ -794,30 +541,9 @@ namespace PowerSDR
 			return ZZRD(s);
 		}
 
-
 		// Sets or reads the RIT status (on/off)
 		public string RT(string s)
 		{
-			//			if(s.Length == parser.nSet)
-			//			{
-			//				if(s == "0")
-			//					console.RITOn = false;
-			//				else if(s == "1") 
-			//					console.RITOn = true;
-			//				return "";
-			//			}
-			//			else if(s.Length == parser.nGet)
-			//			{
-			//				bool rit = console.RITOn;
-			//				if(rit)
-			//					return "1";
-			//				else
-			//					return "0";
-			//			}
-			//			else
-			//			{
-			//				return parser.Error1;
-			//			}
 			return ZZRT(s);
 		}
 
@@ -827,19 +553,18 @@ namespace PowerSDR
 			return ZZRU(s);
 		}
 
-
 		// Sets or reads the transceiver receive mode status
 		// write only but spec shows an answer parameter for a read???
 		public string RX(string s)
 		{
-			console.CATPTT = false;
-			return "";
-			//return ZZTX("0");
+            int[] parm2 = new int[1];
+            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "MOX", 0, parm2);
+            return "";  // ZZTX("0");
 		}
 
 		// Sets or reads the variable DSP filter high side
 		public string SH(string s)
-		{
+		{           
 			if(s.Length == parser.nSet)
 			{
 				SetFilter(s, "SH");
@@ -856,9 +581,11 @@ namespace PowerSDR
 					case DSPMode.FMN:
 					case DSPMode.SAM:
 					case DSPMode.USB:
+                    case DSPMode.DIGU:
 						return Frequency2Code(console.FilterHighValue,"SH");
 					case DSPMode.CWL:
 					case DSPMode.LSB:
+                    case DSPMode.DIGL:
 						return Frequency2Code(console.FilterLowValue,"SH");
 					default:
 						return Frequency2Code(console.FilterHighValue,"SH");
@@ -889,9 +616,11 @@ namespace PowerSDR
 					case DSPMode.FMN:
 					case DSPMode.SAM:
 					case DSPMode.USB:
+                    case DSPMode.DIGU:
 						return Frequency2Code(console.FilterLowValue,"SL");
 					case DSPMode.CWL:
 					case DSPMode.LSB:
+                    case DSPMode.DIGL:
 						return Frequency2Code(console.FilterHighValue,"SL");
 					default:
 						return Frequency2Code(console.FilterLowValue,"SL");
@@ -914,7 +643,7 @@ namespace PowerSDR
 				float num = 0f;
 				if(console.PowerOn)
 					num = DttSP.CalculateRXMeter(0, 0,DttSP.MeterType.SIGNAL_STRENGTH);
-				num = num+console.MultiMeterCalOffset+console.PreampOffset;
+				num = num+console.MultimeterCalOffset;
 
 				num = Math.Max(-140, num);
 				num = Math.Min(-10, num);
@@ -954,11 +683,13 @@ namespace PowerSDR
 			if(s.Length == parser.nSet)
 				//convert to a double and add the scale factor (160 = 255)
 			{
+                int[] parm2 = new int[1];
 				level = Convert.ToDouble(s.Substring(1));
 				level = Math.Max(0, level);			// lower bound
 				level = Math.Min(255, level);		// upper bound
 				level = level*0.62745;				// scale factor
-				console.SquelchMainRX = Convert.ToInt32(Math.Round(level,0));
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "SQL VFOA", (int)Math.Round(level,0), parm2);
+				//console.SquelchMainRX = Convert.ToInt32(Math.Round(level,0));
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -974,66 +705,23 @@ namespace PowerSDR
 		// Sets the transmitter on, write only
 		// will eventually need eiter Commander change or ZZ code
 		// since it is not CAT compliant as it is
-		public string TX(string s)
-		{
-			console.CATPTT = true;
-			return "";
-			//return ZZTX("1");
-		}
+        public string TX(string s)
+        {
+            int[] parm2 = new int[1];
+            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "MOX", 1, parm2);
+            return "";  // ZZTX("1");
+        }
 
 		//Moves the VFO A frequency up by the step size set on the console
 		public string UP()
 		{
-			//			int step = console.StepSize;
-			//			double[] wheel_tune_list;
-			//			wheel_tune_list = new double[13];		// initialize wheel tuning list array
-			//			wheel_tune_list[0]  =  0.000001;
-			//			wheel_tune_list[1]  =  0.000010;
-			//			wheel_tune_list[2]  =  0.000050;
-			//			wheel_tune_list[3]  =  0.000100;
-			//			wheel_tune_list[4]  =  0.000250;
-			//			wheel_tune_list[5]  =  0.000500;
-			//			wheel_tune_list[6]  =  0.001000;
-			//			wheel_tune_list[7]  =  0.005000;
-			//			wheel_tune_list[8]  =  0.009000;
-			//			wheel_tune_list[9]  =  0.010000;
-			//			wheel_tune_list[10] =  0.100000;
-			//			wheel_tune_list[11] =  1.000000;
-			//			wheel_tune_list[12] = 10.000000;
-			//
-			//			console.VFOAFreq = console.VFOAFreq + wheel_tune_list[step];
-			//			return "";
-
 			return ZZSB();
 		}
-
 
 		// Sets or reads the transceiver XIT status (on/off)
 		public string XT(string s)
 		{
-			//			if(s.Length == parser.nSet)
-			//			{
-			//				if(s == "0")
-			//					console.XITOn = false;
-			//				else
-			//					if(s == "1") 
-			//					console.XITOn = true;
-			//				return "";
-			//			}
-			//			else if(s.Length == parser.nGet)
-			//			{
-			//				bool xit = console.XITOn;
-			//				if(xit)
-			//					return "1";
-			//				else
-			//					return "0";
-			//			}
-			//			else
-			//			{
-			//				return parser.Error1;
-			//			}
 			return ZZXS(s);
-
 		}
 
 		#endregion Standard CAT Methods R-Z
@@ -1041,16 +729,43 @@ namespace PowerSDR
 		#region Extended CAT Methods ZZA-ZZF
 
 
-        //Sets or reads the console step size (also see zzst(read only)
+        //Sets or reads the console step size VFOB(also see zzst(read only)
+        public string ZZAB(string s)
+        {
+            int step = 0;
+            if (s.Length == parser.nSet)
+            {
+                int[] parm2 = new int[1];
+                step = Convert.ToInt32(s);
+                if (step >= 0 || step <= 14)
+                {
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "StepSize VFOB", step, parm2);
+                    return "";
+                }
+                else
+                    return parser.Error1;
+            }
+            else if (s.Length == parser.nGet)
+            {
+                step = console.StepSizeSubRX;
+                return AddLeadingZeros(step);
+            }
+            else
+                return parser.Error1;
+        }
+
+        //Sets or reads the console step size VFOA(also see zzst(read only)
         public string ZZAC(string s)
         {
             int step = 0;
             if (s.Length == parser.nSet)
             {
+                int[] parm2 = new int[1];
                 step = Convert.ToInt32(s);
                 if (step >= 0 || step <= 14)
                 {
-                    console.StepSize = step;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "StepSize VFOA", step, parm2);
+                    //console.StepSize = step;
                     return "";
                 }
                 else
@@ -1071,10 +786,12 @@ namespace PowerSDR
             int step = 0;
             if (s.Length == parser.nSet)
             {
+                int[] parm2 = new int[1];
                 step = Convert.ToInt32(s);
                 if (step >= 0 || step <= 14)
                 {
-                    console.VFOAFreq = console.CATVFOA - Step2Freq(step);
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VFOA down", step, parm2);
+                    //console.VFOAFreq = console.CATVFOA - Step2Freq(step);
                     return "";
                 }
                 else
@@ -1091,10 +808,12 @@ namespace PowerSDR
 
 			if(s.Length == parser.nSet)	// if the length of the parameter legal for setting this prefix
 			{
+                int[] parm2 = new int[1];
 				af = Convert.ToInt32(s);
 				af = Math.Max(0, af);
 				af = Math.Min(100, af);
-				console.AF = af;		// Set the console control
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "AF", af, parm2);
+				//console.AF = af;		// Set the console control
 				return "";
 			}
 			else if(s.Length == parser.nGet)	// if this is a read command
@@ -1114,10 +833,13 @@ namespace PowerSDR
 			{
 				if(s.Length == parser.nSet)
 				{
+                    int[] parm2 = new int[1];
 					if(s == "0")
-						console.KWAutoInformation = false;
-					else 
-						console.KWAutoInformation = true;
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "FreqBroadcast", 0, parm2);
+						//console.KWAutoInformation = false;
+					else
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "FreqBroadcast", 1, parm2);
+						//console.KWAutoInformation = true;
 					return "";
 				}
 				else if(s.Length == parser.nGet)
@@ -1150,7 +872,9 @@ namespace PowerSDR
 
 			if(s.Length == parser.nSet)
 			{
-				console.RF = n;
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "RF", n, parm2);
+				//console.RF = n;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -1178,7 +902,9 @@ namespace PowerSDR
                 step = Convert.ToInt32(s);
                 if (step >= 0 || step <= 14)
                 {
-                    console.VFOAFreq = console.CATVFOA + Step2Freq(step);
+                    int[] parm2 = new int[1];
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VFOA up", step, parm2);
+                    //console.VFOAFreq = console.CATVFOA + Step2Freq(step);
                     return "";
                 }
                 else
@@ -1198,19 +924,24 @@ namespace PowerSDR
 		// Sets the Band Group (HF/VHF)
 		public string ZZBG(string s)
 		{
-			if(s.Length == parser.nSet && (s == "0" || s == "1"))
-			{
-				console.CATBandGroup = Convert.ToInt32(s);
-				return "";
-			}
-			else if(s.Length == parser.nGet)
-			{
-				return console.CATBandGroup.ToString();
-			}
-			else
-			{
-				return parser.Error1;
-			}
+            if (s.Length == parser.nSet && (s == "0" || s == "1"))
+            {
+                int[] parm2 = new int[1];
+                if (s == "0")
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "BandGrp", 0, parm2);
+                //console.CATBandGroup = Convert.ToInt32(s);
+                else if (s == "1")
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "BandGrp", 1, parm2);
+                return "";
+            }
+            else if (s.Length == parser.nGet)
+            {
+                return console.CATBandGroup.ToString();
+            }
+            else
+            {
+                return parser.Error1;
+            }
 		}
 
 		// Sets or reads the BIN button status
@@ -1218,7 +949,9 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet && (s == "0" || s == "1"))
 			{
-				console.CATBIN = Convert.ToInt32(s);
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "BIN", Int32.Parse(s), parm2);
+				//console.CATBIN = Convert.ToInt32(s);
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -1240,7 +973,9 @@ namespace PowerSDR
                 step = Convert.ToInt32(s);
                 if (step >= 0 || step <= 14)
                 {
-                    console.VFOBFreq = console.CATVFOB - Step2Freq(step);
+                    int[] parm2 = new int[1];
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VFOB down", step, parm2);
+                    //console.VFOBFreq = console.CATVFOB - Step2Freq(step);
                     return "";
                 }
                 else
@@ -1259,7 +994,9 @@ namespace PowerSDR
                 step = Convert.ToInt32(s);
                 if (step >= 0 || step <= 14)
                 {
-                    console.VFOBFreq = console.CATVFOB + Step2Freq(step);
+                    int[] parm2 = new int[1];
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VFOB up", step, parm2);
+                    //console.VFOBFreq = console.CATVFOB + Step2Freq(step);
                     return "";
                 }
                 else
@@ -1285,7 +1022,9 @@ namespace PowerSDR
         //Shuts down the console
         public string ZZBY()
         {
-            this.console.Close();
+            int[] parm2 = new int[1];
+            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "CLOSE", 0, parm2);
+            //this.console.Close();
             return "";
         }
 
@@ -1294,10 +1033,14 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet && (s == "0" || s == "1"))
 			{
+                int[] parm2 = new int[1];
+
 				if(s == "1")
-					console.BreakInEnabled = true;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "CW BreakIn", 1, parm2);
+					//console.BreakInEnabled = true;
 				else
-					console.BreakInEnabled = false;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "CW BreakIn", 0, parm2);
+					//console.BreakInEnabled = false;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -1314,7 +1057,6 @@ namespace PowerSDR
 
 		}
 
-
 		// Sets or reads the CW Break In Delay
 		public string ZZCD(string s)
 		{
@@ -1324,20 +1066,22 @@ namespace PowerSDR
 				n = Convert.ToInt32(s);
 			n = Math.Max(150, n);
 			n = Math.Min(5000, n);
+            int[] parm2 = new int[1];
 
-			if(s.Length == parser.nSet)
-			{
-				console.SetupForm.BreakInDelay = n;
-				return "";
-			}
-			else if(s.Length == parser.nGet)
-			{
-				return AddLeadingZeros((int) console.SetupForm.BreakInDelay);
-			}
-			else
-			{
-				return parser.Error1;
-			}
+            if (s.Length == parser.nSet)
+            {
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "BreakIn Delay", n, parm2);
+                //console.SetupForm.BreakInDelay = n;
+                return "";
+            }
+            else if (s.Length == parser.nGet)
+            {
+                return AddLeadingZeros((int)console.SetupForm.BreakInDelay);
+            }
+            else
+            {
+                return parser.Error1;
+            }
 
 		}
 
@@ -1350,10 +1094,14 @@ namespace PowerSDR
 				case DSPMode.CWU:
 					if(s.Length == parser.nSet && (s == "0" || s == "1"))
 					{
+                        int[] parm2 = new int[1];
+
 						if(s == "1")
-							console.ShowCWTXFreq = true;
+                            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Show CW TXfreq", 1, parm2);
+							//console.ShowCWTXFreq = true;
 						else
-							console.ShowCWTXFreq = false;
+                            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Show CW TXfreq", 0, parm2);
+							//console.ShowCWTXFreq = false;
 						return "";
 					}
 					else if(s.Length == parser.nGet)
@@ -1377,10 +1125,14 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet && (s == "0" || s == "1"))
 			{
-				if(s == "1")
-					console.CWIambic = true;
-				else
-					console.CWIambic = false;
+                int[] parm2 = new int[1];
+
+                if (s == "1")
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "CW Iambic", 1, parm2);
+                //console.CWIambic = true;
+                else
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "CW Iambic", 0, parm2);
+                    //console.CWIambic = false;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -1406,7 +1158,9 @@ namespace PowerSDR
 
 			if(s.Length == parser.nSet)
 			{
-				console.SetupForm.CATCWPitch = n;
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "CW Pitch", n, parm2);
+				//console.SetupForm.CATCWPitch = n;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -1424,10 +1178,14 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet && (s == "0" || s == "1"))
 			{
+                int[] parm2 = new int[1];
+
 				if(s == "1")
-					console.CATCWMonitor = "1";
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "CW Monitor", 1, parm2);
+					//console.CATCWMonitor = "1";
 				else
-					console.CATCWMonitor = "0";
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "CW Monitor", 0, parm2);
+					//console.CATCWMonitor = "0";
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -1449,10 +1207,13 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet)
 			{
+                int[] parm2 = new int[1];
 				if(s == "0")
-					console.CATCmpd = 0;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "CMPD", 0, parm2);
+					//console.CATCmpd = 0;
 				else if(s == "1")
-					console.CATCmpd = 1;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "CMPD", 1, parm2);
+					//console.CATCmpd = 1;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -1475,7 +1236,9 @@ namespace PowerSDR
 
 			if(s.Length == parser.nSet)
 			{
-				console.CATCWSpeed = n;
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "CW Speed", n, parm2);
+				//console.CATCWSpeed = n;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -1500,7 +1263,9 @@ namespace PowerSDR
 
 			if(s.Length == parser.nSet)
 			{
-				console.CPDRVal = n;
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "CPDR", n, parm2);
+				//console.CPDRVal = n;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -1525,7 +1290,9 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet && (s == "0" || s == "1"))
 			{
-				console.CATDisplayAvg = Convert.ToInt32(s);
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "DisplayAVG", Int32.Parse(s), parm2);
+				//console.CATDisplayAvg = Convert.ToInt32(s);
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -1539,61 +1306,6 @@ namespace PowerSDR
 
 		}
 
-		// Sets or reads the current display mode
-/*		public string ZZDM(string s)
-		{
-			int n = -1;
-
-			if(s.Length == parser.nSet)
-			{
-				n = Convert.ToInt32(s);
-				switch(n)
-				{
-					case 0:
-						console.DisplayModeText = "Spectrum";
-						break;
-					case 1:
-						console.DisplayModeText = "Panadapter";
-						break;
-					case 2:
-						console.DisplayModeText = "Scope";
-						break;
-					case 3:
-						console.DisplayModeText = "Phase";
-						break;
-					case 4:
-						console.DisplayModeText = "Phase2";
-						break;
-					case 5:
-						console.DisplayModeText = "Waterfall";
-						break;
-					case 6:
-						console.DisplayModeText = "Histogram";
-						break;
-					case 7:
-						console.DisplayModeText = "Off";
-						break;
-
-				}
-
-//				if(n > (int) DisplayMode.FIRST && n < (int) DisplayMode.LAST)
-//					Display.CurrentDisplayMode = (DisplayMode) n;
-//				else
-//					return parser.Error1;
-//
-				return "";
-			}
-			else if(s.Length == parser.nGet)
-			{
-				return ((int) Display.CurrentDisplayMode).ToString();
-			}
-			else
-			{
-				return parser.Error1;
-			}
-
-		}*/
-
         // Sets or reads the current display mode
         public string ZZDM(string s) // changes yt7pwr
         {
@@ -1601,9 +1313,11 @@ namespace PowerSDR
 
             if (s.Length == parser.nSet)
             {
+                int[] parm2 = new int[1];
                 n = Convert.ToInt32(s);
                 if (n > (int)DisplayMode.FIRST && n < (int)DisplayMode.LAST)
-                    console.CAT_CurrentDisplayMode = (DisplayMode)n;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Display Mode", n, parm2);
+                    //console.CAT_CurrentDisplayMode = (DisplayMode)n;
                 else
                     return parser.Error1;
 
@@ -1629,7 +1343,9 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet)
 			{
-				console.CATPhoneDX = s;
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "DX", Int32.Parse(s), parm2);
+				//console.CATPhoneDX = s;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -1665,13 +1381,15 @@ namespace PowerSDR
 					ans[x] = Int32.Parse(s.Substring(0,3));
 					s = s.Remove(0,3);							//Remove the last three used
 				}
-				console.EQForm.RXEQ = ans;						//Send the array to the eq form
+
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "RX EQU", 0, ans);
+				//console.EQForm.RXEQ = ans;						//Send the array to the eq form
 				return "";
 			}
 			else if(s.Length == parser.nGet)
 			{
 				int[] eqarray = console.EQForm.RXEQ;			//Get the equalizer array
-				int nb = console.EQForm.NumBands;				//Get the number of bands in the array
+				int nb = 10;                    				//Get the number of bands in the array
 				int val;										//Holds a temporary value
 				string ans = nb.ToString().PadLeft(3,'0');		//The return string with the number of bands added
 
@@ -1706,13 +1424,15 @@ namespace PowerSDR
 					ans[x] = Int32.Parse(s.Substring(0,3));
 					s = s.Remove(0,3);							//Remove the last three used
 				}
-				console.EQForm.TXEQ = ans;						//Send the array to the eq form
+
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "TX EQU", 0, ans);
+				//console.EQForm.TXEQ = ans;						//Send the array to the eq form
 				return "";
 			}
 			else if(s.Length == parser.nGet)
 			{
 				int[] eqarray = console.EQForm.TXEQ;			//Get the equalizer array
-				int nb = console.EQForm.NumBands;				//Get the number of bands in the array
+				int nb = 10;                    				//Get the number of bands in the array
 				int val;										//Holds a temporary value
 				string ans = nb.ToString().PadLeft(3,'0');		//The return string with the number of bands added
 
@@ -1738,10 +1458,14 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet  && (s == "1" || s == "0"))
 			{
+                int[] parm2 = new int[1];
+
 				if(s == "1")
-					console.CATRXEQ = "1";
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "RX EQU Enable", 1, parm2);
+					//console.CATRXEQ = "1";
 				else if(s == "0")
-					console.CATRXEQ = "0";
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "RX EQU Enable", 0, parm2);
+					//console.CATRXEQ = "0";
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -1757,10 +1481,14 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet  && (s == "1" || s == "0"))
 			{
+                int[] parm2 = new int[1];
+
 				if(s == "1")
-					console.CATTXEQ = "1";
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "TX EQU Enable", 1, parm2);
+					//console.CATTXEQ = "1";
 				else if(s == "0")
-					console.CATTXEQ = "0";
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "TX EQU Enable", 0, parm2);
+					//console.CATTXEQ = "0";
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -1775,92 +1503,87 @@ namespace PowerSDR
 		//Sets or reads VFO A frequency
 		public string ZZFA(string s)
 		{
-			if(s.Length == parser.nSet)
-			{
-				if(console.SetupForm.RttyOffsetEnabledA && 
-					(console.CurrentDSPMode == DSPMode.DIGU || console.CurrentDSPMode == DSPMode.DIGL))
-				{
-					int f = int.Parse(s);
-					if(console.CurrentDSPMode == DSPMode.DIGU)
-						f = f - Convert.ToInt32(console.SetupForm.RttyOffsetHigh);
-					else if(console.CurrentDSPMode == DSPMode.DIGL)
-						f = f + Convert.ToInt32(console.SetupForm.RttyOffsetLow);
-					s = AddLeadingZeros(f);
-					s = s.Insert(5, separator);
-				}
-				else
-					s = s.Insert(5, separator);
+            if (s.Length == parser.nSet)
+            {
+                s = s.Insert(5, separator);		//reinsert the global numeric separator
+                double vfoA = double.Parse(s);
 
-                console.VFOAFreq = double.Parse(s);
-
-                if (console.VFOAFreq > console.MaxFreq || console.VFOAFreq < console.MinFreq)
+                if (vfoA > (console.MaxFreq) || vfoA < console.MinFreq)
                 {
+                    console.cat_vfoa = true;
                     console.VFOAFreq = double.Parse(s);
-                    console.LOSCFreq = double.Parse(s) - 0.01125;   // yt7pwr
+                    console.cat_vfoa = false;
+
+                    if ((Audio.VACEnabled && Audio.VACDirectI_Q && Audio.VAC_RXshift_enabled) ||
+                        (Audio.PrimaryDirectI_Q && Audio.Primary_RXshift_enabled))
+                    {
+                        console.cat_losc = true;
+                        console.LOSCFreq = double.Parse(s) - Audio.RXShift / 1e6;     // yt7pwr
+                        console.cat_losc = false;
+                    }
+                    else
+                    {
+                        console.cat_losc = true;
+                        console.LOSCFreq = double.Parse(s) - 0.015;                    // yt7pwr
+                        console.cat_losc = false;
+                    }
+
+                    console.cat_vfoa = true;
                     console.VFOAFreq = double.Parse(s);
+                    console.cat_vfoa = false;
+                }
+                else
+                {
+                    if ((Audio.VACEnabled && Audio.VACDirectI_Q && Audio.VAC_RXshift_enabled) ||
+                        (Audio.PrimaryDirectI_Q && Audio.Primary_RXshift_enabled))
+                    {
+                        console.cat_losc = true;
+                        console.LOSCFreq = double.Parse(s) - Audio.RXShift / 1e6;     // yt7pwr
+                        console.cat_losc = false;
+                    }
+
+                    console.cat_vfoa = true;
+                    console.VFOAFreq = double.Parse(s);
+                    console.cat_vfoa = false;
                 }
 
-				return "";
-			}
-			else if(s.Length == parser.nGet)
-			{
-				if(console.SetupForm.RttyOffsetEnabledA &&
-					(console.CurrentDSPMode == DSPMode.DIGU || console.CurrentDSPMode == DSPMode.DIGL))
-				{
-                    int f = Convert.ToInt32(Math.Round(console.CATVFOA, 6) * 1e6);
-					if(console.CurrentDSPMode == DSPMode.DIGU)
-						f = f + Convert.ToInt32(console.SetupForm.RttyOffsetHigh);
-					else if(console.CurrentDSPMode == DSPMode.DIGL)
-						f = f - Convert.ToInt32(console.SetupForm.RttyOffsetLow);
-					return AddLeadingZeros(f);
-				}
-				else
-					return StrVFOFreq("A");
-			}
-			else
-				return parser.Error1;
-
+                return "";
+            }
+            else if (s.Length == parser.nGet)
+                return StrVFOFreq("A");
+            else
+                return parser.Error1;
 		}
 
 		//Sets or reads VFO B frequency
 		public string ZZFB(string s)
 		{
-			if(s.Length == parser.nSet)
-			{
-				if(console.SetupForm.RttyOffsetEnabledB  && 
-					(console.CurrentDSPMode == DSPMode.DIGU || console.CurrentDSPMode == DSPMode.DIGL))
-				{
-					int f = int.Parse(s);
-					if(console.CurrentDSPMode == DSPMode.DIGU)
-						f = f - Convert.ToInt32(console.SetupForm.RttyOffsetHigh);
-					else if(console.CurrentDSPMode == DSPMode.DIGL)
-						f = f + Convert.ToInt32(console.SetupForm.RttyOffsetLow);
-					s = AddLeadingZeros(f);
-					s = s.Insert(5, separator);
-				}
-				else
-					s = s.Insert(5, separator);
+            if (s.Length == parser.nSet)
+            {
+                s = s.Insert(5, separator);		//reinsert the global numeric separator
+                double vfoB = double.Parse(s);
+                console.cat_vfob = true;
 
-				console.VFOBFreq = double.Parse(s);
-				return "";
-			}
-			else if(s.Length == parser.nGet)
-			{
-				if(console.SetupForm.RttyOffsetEnabledB &&
-					(console.CurrentDSPMode == DSPMode.DIGU || console.CurrentDSPMode == DSPMode.DIGL))
-				{
-                    int f = Convert.ToInt32(Math.Round(console.CATVFOB, 6) * 1e6);
-					if(console.CurrentDSPMode == DSPMode.DIGU)
-						f = f + Convert.ToInt32(console.SetupForm.RttyOffsetHigh);
-					else if(console.CurrentDSPMode == DSPMode.DIGL)
-						f = f - Convert.ToInt32(console.SetupForm.RttyOffsetLow);
-					return AddLeadingZeros(f);
-				}
-				else
-					return StrVFOFreq("B");
-			}
-			else
-				return parser.Error1;		
+                if (vfoB > (console.MaxFreq))
+                {
+                    console.VFOBFreq = console.MaxFreq;
+                }
+                else if (vfoB < console.MinFreq)
+                {
+                    console.VFOBFreq = console.MinFreq;
+                }
+                else
+                {
+                    console.VFOBFreq = double.Parse(s);
+                }
+
+                console.cat_vfob = false;
+                return "";
+            }
+            else if (s.Length == parser.nGet)
+                return StrVFOFreq("B");
+            else
+                return parser.Error1;
 		}
 
         //Sets or reads LOSC frequency
@@ -1872,7 +1595,9 @@ namespace PowerSDR
                 s = AddLeadingZeros(f);
                 s = s.Insert(5, separator);
 
+                console.cat_losc = true;
                 console.LOSCFreq = double.Parse(s);
+                console.cat_losc = false;
                 return "";
             }
             else if (s.Length == parser.nGet)
@@ -1895,8 +1620,10 @@ namespace PowerSDR
 
 			if(s.Length == parser.nSet)
 			{
+                int[] parm2 = new int[1];
 				if(n < (int) Filter.LAST)
-					console.CurrentFilter = (Filter) n;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter", n, parm2);
+					//console.CurrentFilter = (Filter) n;
 				else
 					return parser.Error1;
 
@@ -1922,8 +1649,10 @@ namespace PowerSDR
 
             if (s.Length == parser.nSet)
             {
+                int[] parm2 = new int[1];
                 if (n < (int)Filter.LAST)
-                    console.CurrentFilterSubRX = (Filter)n;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter VFOB", n, parm2);
+                    //console.CurrentFilterSubRX = (Filter)n;
                 else
                     return parser.Error1;
 
@@ -1952,10 +1681,12 @@ namespace PowerSDR
 			if(s.Length == parser.nSet)
 			{
 				n = Convert.ToInt32(s);
-				n = Math.Min(9999, n);
-				n = Math.Max(-9999, n);
-				console.FilterLowValue = n;
-				console.UpdateFilters(n, console.FilterHighValue);
+				n = Math.Min(20000, n);
+				n = Math.Max(-20000, n);
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter Low", n, parm2);
+                //console.FilterLowValue = n;
+				//console.UpdateFilters(n, console.FilterHighValue);
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -1987,10 +1718,12 @@ namespace PowerSDR
 			if(s.Length == parser.nSet)
 				{
 					n = Convert.ToInt32(s);
-					n = Math.Min(9999, n);
-					n = Math.Max(-9999, n);
-					console.FilterHighValue = n;
-					console.UpdateFilters(console.FilterLowValue, n);
+					n = Math.Min(20000, n);
+					n = Math.Max(-20000, n);
+                    int[] parm2 = new int[1];
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter High", n, parm2);
+					//console.FilterHighValue = n;
+					//console.UpdateFilters(console.FilterLowValue, n);
 					return "";
 				}
 				else if(s.Length == parser.nGet)
@@ -2011,6 +1744,7 @@ namespace PowerSDR
 		public string ZZFM()
 		{
 			string radio = console.CurrentModel.ToString();
+
             if (radio == "GENESIS_G59USB")
                 return "0";
             else if (radio == "GENESIS_G3020")
@@ -2023,6 +1757,8 @@ namespace PowerSDR
                 return "4";
             else if (radio == "GENESIS_G59NET")
                 return "5";
+            else if (radio == "GENESIS_G6")
+                return "6";
             else
                 return parser.Error1;
 		}
@@ -2036,10 +1772,14 @@ namespace PowerSDR
         {
             if (s.Length == parser.nSet && (s == "0" || s == "1"))
             {
+                int[] parm2 = new int[1];
+
                 if (s == "1")
-                    console.G59_AF_button = true;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "G59 AF", 1, parm2);
+                    //console.G59_AF_button = true;
                 else
-                    console.G59_AF_button = false;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "G59 AF", 0, parm2);
+                    //console.G59_AF_button = false;
                 return "";
             }
             else if (s.Length == parser.nGet)
@@ -2060,10 +1800,14 @@ namespace PowerSDR
         {
             if (s.Length == parser.nSet && (s == "0" || s == "1"))
             {
+                int[] parm2 = new int[1];
+
                 if (s == "1")
-                    console.G59_RF_button = true;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "G59 RF", 1, parm2);
+                    //console.G59_RF_button = true;
                 else
-                    console.G59_RF_button = false;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "G59 AF", 0, parm2);
+                    //console.G59_RF_button = false;
                 return "";
             }
             else if (s.Length == parser.nGet)
@@ -2084,10 +1828,14 @@ namespace PowerSDR
         {
             if (s.Length == parser.nSet && (s == "0" || s == "1"))
             {
+                int[] parm2 = new int[1];
+
                 if (s == "1")
-                    console.G59_ATT_button = true;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "G59 ATT", 1, parm2);
+                    //console.G59_ATT_button = true;
                 else
-                    console.G59_ATT_button = false;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "G59 ATT", 0, parm2);
+                    //console.G59_ATT_button = false;
                 return "";
             }
             else if (s.Length == parser.nGet)
@@ -2108,10 +1856,14 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet && (s == "0" || s == "1"))
 			{
+                int[] parm2 = new int[1];
+
 				if(s == "1")
-					console.NoiseGateEnabled = true;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Noise Gate", 1, parm2);
+					//console.NoiseGateEnabled = true;
 				else
-					console.NoiseGateEnabled = false;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Noise Gate", 0, parm2);
+					//console.NoiseGateEnabled = false;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -2143,7 +1895,9 @@ namespace PowerSDR
 
 			if(s.Length == parser.nSet)
 			{
-				console.NoiseGate = n;
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Noise Gate Level", n, parm2);
+				//console.NoiseGate = n;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -2193,7 +1947,9 @@ namespace PowerSDR
 		
 			if(s.Length == parser.nSet)
 			{
-				console.SetupForm.DSPBufferSize = Index2Width(s);
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "DSP Size", Index2Width(s), parm2);
+				//console.SetupForm.DSPBufferSize = Index2Width(s);
 				return "";
 			}
 			else if (s.Length == parser.nGet)
@@ -2410,7 +2166,9 @@ namespace PowerSDR
 
 			if(s.Length == parser.nSet)
 			{
-				console.CATFilterWidth = n;
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter Width", n, parm2);   
+				//console.CATFilterWidth = n;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -2434,7 +2192,9 @@ namespace PowerSDR
 
 			if(s.Length == parser.nSet)
 			{
-				console.CATFilterShift = n;
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter Shift", n, parm2);
+				//console.CATFilterShift = n;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -2456,7 +2216,9 @@ namespace PowerSDR
 		// Resets the Filter Shift to zero.  Write only
 		public string ZZIU()
 		{
-			console.CATFilterShiftReset = 1;	//Fixed XML entry 4/2/2007 to prevent return value.  BT
+            int[] parm2 = new int[1];
+            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter Shift", 0, parm2);
+			//console.CATFilterShiftReset = 1;	//Fixed XML entry 4/2/2007 to prevent return value.  BT
 			return "";
 		}
 
@@ -2472,7 +2234,9 @@ namespace PowerSDR
                 {
                     try
                     {
-                        console.CWXForm = new CWX(console);
+                        int[] parm2 = new int[1];
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "CWX Start", 0, parm2);
+                        //console.CWXForm = new CWX(console);
                     }
                     catch
                     {
@@ -2495,12 +2259,15 @@ namespace PowerSDR
 		public string ZZKS(string s)
 		{
 			int cws = 0;
+            int[] parm2 = new int[1];
+
 			// Make sure we have an instance of the form
 			if(console.CWXForm == null || console.CWXForm.IsDisposed)
 			{
 				try
 				{
-					console.CWXForm = new CWX(console);
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "CWX Start", 0, parm2);
+					//console.CWXForm = new CWX(console);
 				}
 				catch
 				{
@@ -2513,7 +2280,8 @@ namespace PowerSDR
 				cws = Convert.ToInt32(s);
 				cws = Math.Max(1, cws);
 				cws = Math.Min(99, cws);
-				console.CWXForm.WPM = cws;
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "CWX Speed", cws, parm2);
+				//console.CWXForm.WPM = cws;
 				return "";
 
 			}
@@ -2528,12 +2296,15 @@ namespace PowerSDR
 		//Sends text to CWX for conversion to Morse
 		public string ZZKY(string s)
 		{
+            int[] parm2 = new int[1];
+
 			// Make sure we have an instance of the form
 			if(console.CWXForm == null || console.CWXForm.IsDisposed)
 			{
 				try
 				{
-					console.CWXForm = new CWX(console);
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "CWX Start", 0, parm2);
+					//console.CWXForm = new CWX(console);
 				}
 				catch
 				{
@@ -2541,29 +2312,8 @@ namespace PowerSDR
 				}
 			}
 
-			// Make sure we are in a cw mode.
-			switch(console.CurrentDSPMode)
-			{
-				case DSPMode.AM:
-				case DSPMode.DRM:
-				case DSPMode.DSB:
-				case DSPMode.FMN:
-				case DSPMode.SAM:
-				case DSPMode.SPEC:
-				case DSPMode.LSB:
-				case DSPMode.USB:
-					if(console.CurrentBand >= Band.B160M && console.CurrentBand <= Band.B40M)
-						console.CurrentDSPMode = DSPMode.CWL;
-					else
-						console.CurrentDSPMode = DSPMode.CWU;
-					break;
-                case DSPMode.CWL:
-                case DSPMode.CWU:
-                    break;
-				default:
-					console.CurrentDSPMode = DSPMode.CWU;
-					break;
-			}
+            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "DSP Mode VFOA", (int)DSPMode.CWU, parm2);
+            Thread.Sleep(100);
 
 			if(s.Length == parser.nSet)
 			{
@@ -2580,12 +2330,14 @@ namespace PowerSDR
 				if(trms.Length > 1)
 				{
 					msg = AE.GetBytes(trms);
-					return console.CWXForm.RemoteMessage(msg);
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "CWX Remote Msg", 0, msg);
+                    return ""; // console.CWXForm.RemoteMessage(msg);
 				}
 				else
 				{
 					char ss = Convert.ToChar(trms);
-					return console.CWXForm.RemoteMessage(ss);
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "CWX Remote Msg", 0, ss);
+                    return ""; // console.CWXForm.RemoteMessage(ss);
 				}
 			}
 			else if(s.Length == parser.nGet)
@@ -2609,10 +2361,13 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet && (s == "0" || s == "1"))
 			{
+                int[] parm2 = new int[1];
 				if(s == "0")
-					console.MUT = false;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "MUT", 0, parm2);
+					//console.MUT = false;
 				else if(s == "1")
-					console.MUT = true;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "MUT", 1, parm2);
+					//console.MUT = true;
 
 				return "";
 			}
@@ -2638,7 +2393,9 @@ namespace PowerSDR
 			{
 				if(Convert.ToInt32(s) >= 0 && Convert.ToInt32(s) <= 11)
 				{
-					String2Mode(s);
+                    int[] parm2 = new int[1];
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "DSP Mode VFOA", Int32.Parse(s), parm2);
+					//String2Mode(s);
 					return "";
 				}
 				else
@@ -2661,7 +2418,9 @@ namespace PowerSDR
             {
                 if (Convert.ToInt32(s) >= 0 && Convert.ToInt32(s) <= 11)
                 {
-                    String2SUBRXMode(s);
+                    int[] parm2 = new int[1];
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "DSP Mode VFOB", Int32.Parse(s), parm2);
+                    //String2SUBRXMode(s);
                     return "";
                 }
                 else
@@ -2691,7 +2450,9 @@ namespace PowerSDR
 
 			if(s.Length == parser.nSet)
 			{
-				console.CATMIC = Convert.ToInt32(s);
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "MIC", Int32.Parse(s), parm2);
+				//console.CATMIC = Convert.ToInt32(s);
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -2707,10 +2468,14 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet)
 			{
+                int[] parm2 = new int[1];
+
 				if(s == "0")
-					console.MON = false;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "MON", 0, parm2);
+					//console.MON = false;
 				else if(s == "1")
-					console.MON = true;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "MON", 1, parm2);
+					//console.MON = true;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -2754,10 +2519,13 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet  && (s == "1" || s == "0"))
 			{
+                int[] parm2 = new int[1];
 				if(s == "1")
-					console.CATPanSwap = "1";
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "PAN Swap", 1, parm2);
+					//console.CATPanSwap = "1";
 				else if(s == "0")
-					console.CATPanSwap= "0";
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "PAN Swap", 0, parm2);
+					//console.CATPanSwap= "0";
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -2773,10 +2541,14 @@ namespace PowerSDR
         {
             if (s.Length == parser.nSet && (s == "1" || s == "0"))
             {
+                int[] parm2 = new int[1];
+
                 if (s == "1")
-                    console.CATSubRX = "1";
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "SUB Rx", 1, parm2);
+                    //console.CATSubRX = "1";
                 else if (s == "0")
-                    console.CATSubRX = "0";
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "SUB Rx", 0, parm2);
+                    //console.CATSubRX = "0";
                 return "";
             }
             else if (s.Length == parser.nGet)
@@ -2819,7 +2591,9 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet && (s == "0" || s == "1"))
 			{
-				console.CATNB1 = Convert.ToInt32(s);
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "NB1", Int32.Parse(s), parm2);
+				//console.CATNB1 = Convert.ToInt32(s);
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -2837,7 +2611,9 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet && (s == "0" || s == "1"))
 			{
-				console.CATNB2 = Convert.ToInt32(s);
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "NB2", Int32.Parse(s), parm2);
+				//console.CATNB2 = Convert.ToInt32(s);
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -2856,7 +2632,9 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet)
 			{
-				console.SetupForm.CATNB1Threshold = Convert.ToInt32(s);
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "NB1 Threshold", Int32.Parse(s), parm2);
+				//console.SetupForm.CATNB1Threshold = Convert.ToInt32(s);
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -2875,7 +2653,9 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet)
 			{
-				console.SetupForm.CATNB2Threshold = Convert.ToInt32(s);
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "NB2 Threshold", Int32.Parse(s), parm2);
+				//console.SetupForm.CATNB2Threshold = Convert.ToInt32(s);
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -2891,12 +2671,6 @@ namespace PowerSDR
 
 
 		// Sets or reads the Noise Reduction status
-		//		public string ZZNR()
-		//		{
-		//			int nr = console.CATNR;
-		//			return nr.ToString();
-		//		}
-
 		public string ZZNR(string s)
 		{
 			int sx = 0;
@@ -2906,7 +2680,9 @@ namespace PowerSDR
 
 			if(s.Length == parser.nSet && (s == "0" || s == "1"))
 			{
-				console.CATNR = sx;
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "NR", sx, parm2);
+				//console.CATNR = sx;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -2924,7 +2700,9 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet && (s == "0" || s == "1"))
 			{
-				console.CATANF = Convert.ToInt32(s);
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "ANF", Int32.Parse(s), parm2);
+				//console.CATANF = Convert.ToInt32(s);
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -2937,38 +2715,6 @@ namespace PowerSDR
 			}
 		}
 
-		// Sets or reads the Preamp thumbwheel
-        public string ZZPA(string s)
-        {
-#if !DEBUG
-            int n = 0;
-            if (s != "")
-                n = Convert.ToInt32(s);
-
-            if (s.Length == parser.nSet)
-            {
-                if ((n > (int)PreampMode.FIRST && n < (int)PreampMode.LAST))
-                {
-                    console.CATPreamp = n;
-                    return "";
-                }
-                else
-                    return parser.Error1;
-
-
-            }
-            else if (s.Length == parser.nGet)
-            {
-                return console.CATPreamp.ToString();
-            }
-            else
-            {
-                return parser.Error1;
-            }
-#endif
-            return "0";
-        }
-
 		//Sets or reads the Drive level
 		public string ZZPC(string s)
 		{
@@ -2976,8 +2722,10 @@ namespace PowerSDR
 
 			if(s.Length == parser.nSet)
 			{
-				pwr = Convert.ToInt32(s);
-				console.PWR = pwr;
+                int[] parm2 = new int[1];
+                pwr = Convert.ToInt32(s);
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "PWR", pwr, parm2);
+				//console.PWR = pwr;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -2997,75 +2745,69 @@ namespace PowerSDR
 			return "";
 		}
 
-//		//Sets or reads the Speech Compressor button status
-//		public string ZZPK(string s)
-//		{
-//			if(s.Length == parser.nSet)
-//			{
-//				if(s == "0")
-//					console.COMP = false;
-//				else if(s == "1")
-//					console.COMP = true;
-//				return "";
-//			}
-//			else if(s.Length == parser.nGet)
-//			{
-//				bool comp = console.COMP;
-//				if(comp)
-//					return "1";
-//				else
-//					return "0";
-//			}
-//			else
-//			{
-//				return "";
-//			}
-//		}
-//
-//		// Sets or reads the Speech Compressor threshold
-//		public string ZZPL(string s)
-//		{
-//			if(s.Length == parser.nSet)
-//			{
-//				console.SetupForm.CATCompThreshold = Convert.ToInt32(s);
-//				return "";
-//			}
-//			else if(s.Length == parser.nGet)
-//			{
-//				return AddLeadingZeros(console.SetupForm.CATCompThreshold);
-//			}
-//			else
-//			{
-//				return parser.Error1;
-//			}
-//
-//		}
+		//Sets or reads the Speech Compressor button status
+		public string ZZPK(string s)
+		{
+			if(s.Length == parser.nSet)
+			{
+                int[] parm2 = new int[1];
+
+                if (s == "0")
+                {
+                    parm2[0] = 0;
+                    //console.COMP = false;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "COMP", 0, parm2);
+                }
+                else if (s == "1")
+                {
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "COMP", 1, parm2);
+                    //console.COMP = true;
+                }
+				return "";
+			}
+			else if(s.Length == parser.nGet)
+			{
+				bool comp = console.COMP;
+				if(comp)
+					return "1";
+				else
+					return "0";
+			}
+			else
+			{
+				return "";
+			}
+		}
 
 		// Sets or reads the Speech Compressor threshold
-//		public string ZZPL(string s)
-//		{
-//			if(s.Length == parser.nSet)
-//			{
-//				console.SetupForm.CATCompThreshold = Convert.ToInt32(s);
-//				return "";
-//			}
-//			else if(s.Length == parser.nGet)
-//			{
-//				return AddLeadingZeros(console.SetupForm.CATCompThreshold);
-//			}
-//			else
-//			{
-//				return parser.Error1;
-//			}
-//
-//		}
+		public string ZZPL(string s)
+		{
+			if(s.Length == parser.nSet)
+			{
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "COMP Threshold", Int32.Parse(s), parm2);
+				//console.SetupForm.CATCompThreshold = Convert.ToInt32(s);
+				return "";
+			}
+			else if(s.Length == parser.nGet)
+			{
+				return AddLeadingZeros(console.SetupForm.CATCompThreshold);
+			}
+			else
+			{
+				return parser.Error1;
+			}
+
+		}
 
 		//Sets or reads the Display Peak button status
 		public string ZZPO(string s)
 		{
 			if(s.Length == parser.nSet)
 			{
-				console.CATDispPeak = s;
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Display Peak", Int32.Parse(s), parm2);
+				//console.CATDispPeak = s;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -3081,10 +2823,14 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet)
 			{
+                int[] parm2 = new int[1];
+
 				if(s == "0")
-					console.PowerOn = false;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Power", 0, parm2);
+					//console.PowerOn = false;
 				else if(s == "1")
-					console.PowerOn = true;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Power", 1, parm2);
+					//console.PowerOn = true;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -3106,7 +2852,9 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet)
 			{
-				console.CATDispZoom = s;
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Display Zoom", Int32.Parse(s), parm2);
+				//console.CATDispZoom = s;
 
 				return "";
 			}
@@ -3128,14 +2876,18 @@ namespace PowerSDR
 		// Recalls Memory Quick Save
 		public string ZZQR()
 		{
-			console.CATMemoryQR();
+            int[] parm2 = new int[1];
+            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Memory Recall", 0, parm2);
+			//console.CATMemoryQR();
 			return "";
 		}
 
 		//Saves Quick Memory value
 		public string ZZQS()
 		{
-			console.CATMemoryQS();
+            int[] parm2 = new int[1];
+            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Memory Save", 0, parm2);
+			//console.CATMemoryQS();
 			return "";
 		}
 
@@ -3197,7 +2949,9 @@ namespace PowerSDR
 		//Clears the RIT frequency
 		public string ZZRC()
 		{
-			console.RITValue = 0;
+            int[] parm2 = new int[1];
+            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "RIT Clear", 0, parm2);
+			//console.RITValue = 0;
 			return "";
 		}
 
@@ -3210,15 +2964,19 @@ namespace PowerSDR
 			}
 			else if(s.Length == parser.nGet && console.RITOn)
 			{
+                int[] parm2 = new int[1];
+
 				switch(console.CurrentDSPMode)
 				{
 					case DSPMode.CWL:
 					case DSPMode.CWU:
-						console.RITValue -= 10;
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "RIT Down", 10, parm2);
+						//console.RITValue -= 10;
 						break;
 					case DSPMode.LSB:
 					case DSPMode.USB:
-						console.RITValue -= 50;
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "RIT Down", 50, parm2);
+						//console.RITValue -= 50;
 						break;
 				}
 				return "";
@@ -3237,13 +2995,15 @@ namespace PowerSDR
 			if(s != "")
 			{
 				n = Convert.ToInt32(s);
-				n = Math.Max(-9999, n);
-				n = Math.Min(9999, n);
+				n = Math.Max(-20000, n);
+				n = Math.Min(20000, n);
 			}
 
 			if(s.Length == parser.nSet)
 			{
-				console.RITValue = n;
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "RIT Value", n, parm2);
+				//console.RITValue = n;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -3279,7 +3039,9 @@ namespace PowerSDR
 
 			if(s.Length == parser.nSet)
 			{
-				console.SetupForm.RttyOffsetHigh = n;
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "RTTY OffsetHigh", n, parm2);
+				//console.SetupForm.RttyOffsetHigh = n;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -3315,7 +3077,9 @@ namespace PowerSDR
 
 			if(s.Length == parser.nSet)
 			{
-				console.SetupForm.RttyOffsetLow = n;
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "RTTY OffsetLow", n, parm2);
+				//console.SetupForm.RttyOffsetLow = n;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -3385,10 +3149,13 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet)
 			{
+                int[] parm2 = new int[1];
 				if(s == "0")
-					console.EnableSubRX = false;
-				else if(s == "1") 
-					console.EnableSubRX = true;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "SUB RX Enable", 0, parm2);
+					//console.EnableSubRX = false;
+				else if(s == "1")
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "SUB RX Enable", 1, parm2);
+					//console.EnableSubRX = true;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -3410,10 +3177,13 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet)
 			{
+                int[] parm2 = new int[1];
 				if(s == "0")
-					console.RITOn = false;
-				else if(s == "1") 
-					console.RITOn = true;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "RIT Enable", 0, parm2);
+					//console.RITOn = false;
+				else if(s == "1")
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "RIT Enable", 1, parm2);
+					//console.RITOn = true;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -3433,84 +3203,74 @@ namespace PowerSDR
 		//Increments RIT
 		public string ZZRU(string s)
 		{
+            int n = 0;
+            int x = 0;
+            string sign;
+
+            if (s != "")
+            {
+                n = Convert.ToInt32(s);
+                n = Math.Max(-20000, n);
+                n = Math.Min(20000, n);
+            }
+
 			if(s.Length == parser.nSet)
 			{
-				return ZZRF(s);
+                int[] parm2 = new int[1];
+
+                switch (console.CurrentDSPMode)
+                {
+                    case DSPMode.CWL:
+                    case DSPMode.CWU:
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "RIT Up", 10, parm2);
+                        //console.RITValue += 10;
+                        break;
+                    case DSPMode.LSB:
+                    case DSPMode.USB:
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "RIT Up", 50, parm2);
+                        //console.RITValue += 50;
+                        break;
+                }
+                return "";
 			}
 			else if(s.Length == parser.nGet && console.RITOn)
 			{
-				switch(console.CurrentDSPMode)
-				{
-					case DSPMode.CWL:
-					case DSPMode.CWU:
-						console.RITValue += 10;
-						break;
-					case DSPMode.LSB:
-					case DSPMode.USB:
-						console.RITValue += 50;
-						break;
-				}
-				return "";
+                x = console.RITValue;
+                if (x >= 0)
+                    sign = "+";
+                else
+                    sign = "-";
+                // we have to remove the leading zero and replace it with the sign.
+                return sign + AddLeadingZeros(Math.Abs(x)).Substring(1);
 			}
 			else
-				return parser.Error1;		}
+				return parser.Error1;	
+        }
 
 		//Moves VFO A down one Tune Step
 		public string ZZSA()
 		{
-			int step = console.StepSize;
-			double[] wheel_tune_list;
-			wheel_tune_list = new double[15];		// initialize wheel tuning list array
-			wheel_tune_list[0]  =  0.000001;
-			wheel_tune_list[1]  =  0.000010;
-			wheel_tune_list[2]  =  0.000050;
-			wheel_tune_list[3]  =  0.000100;
-			wheel_tune_list[4]  =  0.000250;
-			wheel_tune_list[5]  =  0.000500;
-			wheel_tune_list[6]  =  0.001000;
-			wheel_tune_list[7]  =  0.005000;
-			wheel_tune_list[8]  =  0.009000;
-			wheel_tune_list[9]  =  0.010000;
-			wheel_tune_list[10] =  0.100000;
-            wheel_tune_list[11] =  0.250000;
-            wheel_tune_list[12] =  0.500000;
-			wheel_tune_list[13] =  1.000000;
-			wheel_tune_list[14] = 10.000000;
-
-			console.VFOAFreq = console.CATVFOA - wheel_tune_list[step];
+            int[] parm2 = new int[1];
+            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VFOA down", console.StepSize, parm2);
+			//console.VFOAFreq = console.CATVFOA - wheel_tune_list[step];
 			return "";
 		}
 
 		//Moves VFO A up one Tune Step
 		public string ZZSB()
 		{
-			int step = console.StepSize;
-			double[] wheel_tune_list;
-            wheel_tune_list = new double[15];		// initialize wheel tuning list array
-            wheel_tune_list[0] = 0.000001;
-            wheel_tune_list[1] = 0.000010;
-            wheel_tune_list[2] = 0.000050;
-            wheel_tune_list[3] = 0.000100;
-            wheel_tune_list[4] = 0.000250;
-            wheel_tune_list[5] = 0.000500;
-            wheel_tune_list[6] = 0.001000;
-            wheel_tune_list[7] = 0.005000;
-            wheel_tune_list[8] = 0.009000;
-            wheel_tune_list[9] = 0.010000;
-            wheel_tune_list[10] = 0.100000;
-            wheel_tune_list[11] = 0.250000;
-            wheel_tune_list[12] = 0.500000;
-            wheel_tune_list[13] = 1.000000;
-            wheel_tune_list[14] = 10.000000;
-
-			console.VFOAFreq = console.CATVFOA + wheel_tune_list[step];
+            int[] parm2 = new int[1];
+            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VFOA up", console.StepSize, parm2);
+			//console.VFOAFreq = console.CATVFOA + wheel_tune_list[step];
 			return "";
 		}
 
 		//Moves the mouse wheel tuning step down
 		public string ZZSD()
 		{
-			console.CATTuneStepDown = "1";
+            int[] parm2 = new int[1];
+            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "StepSize VFOA down", 1, parm2);
+			//console.CATTuneStepDown = "1";
 			return "";
 		}
 
@@ -3527,52 +3287,18 @@ namespace PowerSDR
         //Moves VFO B down one Tune Step
         public string ZZSG()
         {
-            int step = console.StepSizeSubRX;
-            double[] wheel_tune_list;
-            wheel_tune_list = new double[15];		// initialize wheel tuning list array
-            wheel_tune_list[0] = 0.000001;
-            wheel_tune_list[1] = 0.000010;
-            wheel_tune_list[2] = 0.000050;
-            wheel_tune_list[3] = 0.000100;
-            wheel_tune_list[4] = 0.000250;
-            wheel_tune_list[5] = 0.000500;
-            wheel_tune_list[6] = 0.001000;
-            wheel_tune_list[7] = 0.005000;
-            wheel_tune_list[8] = 0.009000;
-            wheel_tune_list[9] = 0.010000;
-            wheel_tune_list[10] = 0.100000;
-            wheel_tune_list[11] = 0.250000;
-            wheel_tune_list[12] = 0.500000;
-            wheel_tune_list[13] = 1.000000;
-            wheel_tune_list[14] = 10.000000;
-
-            console.VFOBFreq = console.CATVFOB - wheel_tune_list[step];
+            int[] parm2 = new int[1];
+            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VFOB down", console.StepSizeSubRX, parm2);
+            //console.VFOBFreq = console.CATVFOB - wheel_tune_list[step];
             return "";
         }
 
         //Moves VFO B up one Tune Step
         public string ZZSH()
         {
-            int step = console.StepSizeSubRX;
-            double[] wheel_tune_list;
-            wheel_tune_list = new double[15];		// initialize wheel tuning list array
-            wheel_tune_list[0] = 0.000001;
-            wheel_tune_list[1] = 0.000010;
-            wheel_tune_list[2] = 0.000050;
-            wheel_tune_list[3] = 0.000100;
-            wheel_tune_list[4] = 0.000250;
-            wheel_tune_list[5] = 0.000500;
-            wheel_tune_list[6] = 0.001000;
-            wheel_tune_list[7] = 0.005000;
-            wheel_tune_list[8] = 0.009000;
-            wheel_tune_list[9] = 0.010000;
-            wheel_tune_list[10] = 0.100000;
-            wheel_tune_list[11] = 0.250000;
-            wheel_tune_list[12] = 0.500000;
-            wheel_tune_list[13] = 1.000000;
-            wheel_tune_list[14] = 10.000000;
-
-            console.VFOBFreq = console.CATVFOB + wheel_tune_list[step];
+            int[] parm2 = new int[1];
+            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VFOB up", console.StepSizeSubRX, parm2);
+            //console.VFOBFreq = console.CATVFOB + wheel_tune_list[step];
             return "";
         }
 
@@ -3586,13 +3312,12 @@ namespace PowerSDR
                 float num = 0f;
                 if (console.PowerOn)
                     if (s == "0")
-                        num = DttSP.CalculateRXMeter(0, 1, DttSP.MeterType.SIGNAL_STRENGTH);
+                        num = DttSP.CalculateRXMeter(0, 0, DttSP.MeterType.SIGNAL_STRENGTH);
                     else
-                        num = DttSP.CalculateRXMeter(0, 2, DttSP.MeterType.SIGNAL_STRENGTH);
+                        num = DttSP.CalculateRXMeter(0, 1, DttSP.MeterType.SIGNAL_STRENGTH);
 
                 num = num +
-                    console.multimeter_cal_offset +
-                    console.preamp_offset[(int)console.CurrentPreampMode] +
+                    console.MultimeterCalOffset +
                     console.filter_size_cal_offset;
 
                 num = Math.Max(-140, num);
@@ -3611,10 +3336,13 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet && (s == "0" || s == "1"))
 			{
+                int[] parm2 = new int[1];
 				if(s == "0")
-					console.VFOSplit = false;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "SPLIT", 0, parm2);
+					//console.VFOSplit = false;
 				else
-					console.VFOSplit = true;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "SPLIT", 1, parm2);
+					//console.VFOSplit = true;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -3632,12 +3360,14 @@ namespace PowerSDR
 
 		}
 
-		// Sets or reads the MainRX Squelch on/off status
+		// Sets or reads the VFOA Squelch on/off status
 		public string ZZSO(string s)
 		{
 			if(s.Length == parser.nSet && (s == "0" || s == "1"))
 			{
-				console.CATSquelch = Convert.ToInt32(s);
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "SQL VFOA Enable", Int32.Parse(s), parm2);
+				//console.CATSquelch = Convert.ToInt32(s);
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -3648,12 +3378,14 @@ namespace PowerSDR
 				return parser.Error1;
 		}
 
-        // Sets or reads the SubRX Squelch on/off status    yt7pwr
+        // Sets or reads the VFOB Squelch on/off status    yt7pwr
         public string ZZS0(string s)
         {
             if (s.Length == parser.nSet && (s == "0" || s == "1"))
             {
-                console.CATSquelchSubRX = Convert.ToInt32(s);
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "SQL VFOB Enable", Int32.Parse(s), parm2);
+                //console.CATSquelchSubRX = Convert.ToInt32(s);
                 return "";
             }
             else if (s.Length == parser.nGet)
@@ -3674,7 +3406,9 @@ namespace PowerSDR
 				level = Convert.ToInt32(s);
 				level = Math.Max(0, level);			// lower bound
 				level = Math.Min(160, level);		// upper bound
-				console.SquelchMainRX = level;
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "SQL VFOA", level, parm2);
+				//console.SquelchMainRX = level;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -3697,7 +3431,9 @@ namespace PowerSDR
                 level = Convert.ToInt32(s);
                 level = Math.Max(0, level);			// lower bound
                 level = Math.Min(160, level);		// upper bound
-                console.SquelchSubRX = level;
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "SQL VFOB", level, parm2);
+                //console.SquelchSubRX = level;
                 return "";
             }
             else if (s.Length == parser.nGet)
@@ -3712,7 +3448,9 @@ namespace PowerSDR
 
         public string ZZSS()
         {
-            console.CWXForm.CWXStop();
+            int[] parm2 = new int[1];
+            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "CWX Stop", 0, parm2);
+            //console.CWXForm.CWXStop();
             return "";
         }
 
@@ -3721,7 +3459,9 @@ namespace PowerSDR
 		{
             if (s.Length == parser.nSet)
             {
-                console.StepSize = String2Step(s);
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "StepSize VFOA", String2Step(s), parm2);
+                //console.StepSize = String2Step(s);
                 return "";
             }
             else if (s.Length == parser.nGet)
@@ -3738,7 +3478,9 @@ namespace PowerSDR
         {
             if (s.Length == parser.nSet)
             {
-                console.StepSizeSubRX = String2Step(s);
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "StepSize VFOB", String2Step(s), parm2);
+                //console.StepSizeSubRX = String2Step(s);
                 return "";
             }
             else if (s.Length == parser.nGet)
@@ -3753,7 +3495,9 @@ namespace PowerSDR
 		// Moves the mouse wheel step tune up
 		public string ZZSU()
 		{
-			console.CATTuneStepUp = "1";
+            int[] parm2 = new int[1];
+            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VFOA up", 1, parm2);
+			//console.CATTuneStepUp = "1";
 			return "";
 		}
 
@@ -3762,10 +3506,14 @@ namespace PowerSDR
         {
             if (s.Length == parser.nSet && (s == "0" || s == "1"))
             {
+                int[] parm2 = new int[1];
+
                 if (s == "0")
-                    console.SplitAB_TX = false;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "SPLIT", 0, parm2);
+                    //console.SplitAB_TX = false;
                 else if (s == "1")
-                    console.SplitAB_TX = true;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "SPLIT", 1, parm2);
+                    //console.SplitAB_TX = true;
 
                 return "";
             }
@@ -3797,10 +3545,14 @@ namespace PowerSDR
 				default:
 					if(s.Length == parser.nSet && (s == "0" || s == "1"))
 					{
+                        int[] parm2 = new int[1];
+
 						if(s == "1")
-							console.ShowTXFilter = true;
+                            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Show TXfreq", 1, parm2);
+							//console.ShowTXFilter = true;
 						else
-							console.ShowTXFilter = false;
+                            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Show TXfreq", 0, parm2);
+							//console.ShowTXFilter = false;
 						return "";
 					}
 					else if(s.Length == parser.nGet)
@@ -3826,7 +3578,9 @@ namespace PowerSDR
 				th = Convert.ToInt32(s);
 				th = Math.Max(500, th);
 				th = Math.Min(20000, th);
-				console.SetupForm.TXFilterHigh = th;		
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "TXFilter high", th, parm2);
+				//console.SetupForm.TXFilterHigh = th;		
 				return "";
 			}
 			else if(s.Length == parser.nGet)	// if this is a read command
@@ -3844,14 +3598,19 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet && (s == "0" || s == "1"))
 			{
+                int[] parm2 = new int[1];
+
 				if(s == "0")
 				{
-					console.RXOnly = false;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "RXOnly", 0, parm2);
+					//console.RXOnly = false;
 				}
 				else if(s == "1")
 				{
-					console.RXOnly = true;
-					console.MOX = false;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "RXOnly", 1, parm2);
+					//console.RXOnly = true;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "MOX", 0, parm2);
+					//console.MOX = false;
 				}
 
 				return "";
@@ -3865,22 +3624,24 @@ namespace PowerSDR
 		{
 			int tl = 0;
 
-			if(s.Length == parser.nSet)	// check the min/max control settings
-			{
-				tl = Convert.ToInt32(s);
-				tl = Math.Max(0, tl);
-				tl = Math.Min(2000, tl);
-				console.SetupForm.TXFilterLow = tl;		
-				return "";
-			}
-			else if(s.Length == parser.nGet)	// if this is a read command
-			{
-				return AddLeadingZeros(console.SetupForm.TXFilterLow);
-			}
-			else
-			{
-				return parser.Error1;	// return a ?
-			}
+            if (s.Length == parser.nSet)	// check the min/max control settings
+            {
+                tl = Convert.ToInt32(s);
+                tl = Math.Max(0, tl);
+                tl = Math.Min(2000, tl);
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "TXFilter low", tl, parm2);
+                //console.SetupForm.TXFilterLow = tl;
+                return "";
+            }
+            else if (s.Length == parser.nGet)	// if this is a read command
+            {
+                return AddLeadingZeros(console.SetupForm.TXFilterLow);
+            }
+            else
+            {
+                return parser.Error1;	// return a ?
+            }
 		}
 
 		//Sets or reads the Tune Power level
@@ -3893,7 +3654,9 @@ namespace PowerSDR
 				tl = Convert.ToInt32(s);
 				tl = Math.Max(0, tl);
 				tl = Math.Min(100, tl);
-				console.SetupForm.TunePower = tl;		
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "TUN Power", tl, parm2);
+				//console.SetupForm.TunePower = tl;
 				return "";
 			}
 			else if(s.Length == parser.nGet)	// if this is a read command
@@ -3917,7 +3680,9 @@ namespace PowerSDR
 
 			if(s.Length == parser.nSet && cnt < items)
 			{
-				console.CATTXProfile = cnt;
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "TX Profile", cnt, parm2);
+				//console.CATTXProfile = cnt;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -3933,10 +3698,14 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet && (s == "0" || s == "1"))
 			{
+                int[] parm2 = new int[1];
+
 				if(s == "0")
-					console.TUN = false;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "TUN Enable", 0, parm2);
+					//console.TUN = false;
 				else if(s == "1")
-					console.TUN = true;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "TUN Enable", 1, parm2);
+					//console.TUN = true;
 
 				return "";
 			}
@@ -3960,10 +3729,14 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet && (s == "0" || s == "1"))
 			{
+                int[] parm2 = new int[1];
+
 				if(s == "0")
-					console.CATPTT = false;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "MOX", 0, parm2);
+					//console.CATPTT = false;
 				else if(s == "1")
-					console.CATPTT = true;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "MOX", 1, parm2);
+					//console.CATPTT = true;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -3983,10 +3756,14 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet && (s == "0" || s == "1"))
 			{
+                int[] parm2 = new int[1];
+
 				if(s == "1")
-					console.SetupForm.VACEnable = true;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VAC", 1, parm2);
+					//console.SetupForm.VACEnable = true;
 				else
-					console.SetupForm.VACEnable = false;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VAC", 0, parm2);
+					//console.SetupForm.VACEnable = false;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -4024,7 +3801,9 @@ namespace PowerSDR
 
 			if(s.Length == parser.nSet)
 			{
-				console.VACRXGain = n;
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VAC RX gain", n, parm2);
+				//console.VACRXGain = n;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -4063,7 +3842,9 @@ namespace PowerSDR
 
 			if(s.Length == parser.nSet)
 			{
-				console.VACTXGain = n;
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VAC TX gain", n, parm2);
+				//console.VACTXGain = n;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -4094,32 +3875,50 @@ namespace PowerSDR
 			if(s.Length == parser.nSet)
 			{
 				n = Convert.ToInt32(s);
+                int[] parm2 = new int[1];
+
 				switch(n)
 				{
 					case 0:
-						console.VACSampleRate = "6000";
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VAC SampleRate", 6000, parm2);
+						//console.VACSampleRate = "6000";
 						break;
 					case 1:
-						console.VACSampleRate = "8000";
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VAC SampleRate", 8000, parm2);
+						//console.VACSampleRate = "8000";
 						break;
 					case 2:
-						console.VACSampleRate = "11025";
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VAC SampleRate", 11025, parm2);
+						//console.VACSampleRate = "11025";
 						break;
 					case 3:
-						console.VACSampleRate = "12000";
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VAC SampleRate", 12000, parm2);
+						//console.VACSampleRate = "12000";
 						break;
 					case 4:
-						console.VACSampleRate = "24000";
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VAC SampleRate", 22050, parm2);
+						//console.VACSampleRate = "22050";
 						break;
 					case 5:
-						console.VACSampleRate = "22050";
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VAC SampleRate", 24000, parm2);
+						//console.VACSampleRate = "24000";
 						break;
 					case 6:
-						console.VACSampleRate = "44100";
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VAC SampleRate", 44100, parm2);
+						//console.VACSampleRate = "44100";
 						break;
 					case 7:
-						console.VACSampleRate = "48000";
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VAC SampleRate", 48000, parm2);
+						//console.VACSampleRate = "48000";
 						break;
+                    case 8:
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VAC SampleRate", 96000, parm2);
+                        //console.VACSampleRate = "96000";
+                        break;
+                    case 9:
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VAC SampleRate", 192000, parm2);
+                        //console.VACSampleRate = "192000";
+                        break;
 				}
 				return "";
 			}
@@ -4171,10 +3970,14 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet && (s == "0" || s == "1"))
 			{
+                int[] parm2 = new int[1];
+
 				if(s == "1")
-					console.VOXEnable = true;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VOX", 1, parm2);
+					//console.VOXEnable = true;
 				else
-					console.VOXEnable = false;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VOX", 0, parm2);
+					//console.VOXEnable = false;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -4196,29 +3999,21 @@ namespace PowerSDR
 		/// </summary>
 		/// <param name="s"></param>
 		/// <returns></returns>
-		public string ZZVF(string s)
-		{
-			if(s.Length == parser.nSet && (s == "0" || s == "1"))
-			{
-				if(s == "1")
-					console.VACStereo = true;
-				else
-					console.VACStereo = false;
-				return "";
-			}
-			else if(s.Length == parser.nGet)
-			{
-				if(console.VACStereo)
-					return "1";
-				else
-					return "0";
-			}
-			else
-			{
-				return parser.Error1;
-			}
-
-		}
+        public string ZZVF(string s)
+        {
+            if (s.Length == parser.nSet && (s == "0" || s == "1"))
+            {
+                return "";
+            }
+            else if (s.Length == parser.nGet)
+            {
+                return "1";     // always 1!
+            }
+            else
+            {
+                return parser.Error1;
+            }
+        }
 
 		//Reads or set the VOX Gain control
 		public string ZZVG(string s)
@@ -4232,7 +4027,9 @@ namespace PowerSDR
 
 			if(s.Length == parser.nSet)
 			{
-				console.VOXSens = n;
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VOX Gain", n, parm2);
+				//console.VOXSens = n;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -4251,10 +4048,14 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet && (s == "0" || s == "1"))
 			{
+                int[] parm2 = new int[1];
+
 				if(s == "0")
-					console.CATVFOLock = false;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VFO Lock", 0, parm2);
+					//console.CATVFOLock = false;
 				else if(s == "1")
-					console.CATVFOLock = true;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VFO Lock", 1, parm2);
+					//console.CATVFOLock = true;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -4283,21 +4084,24 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet & Convert.ToInt32(s) <= 3)
 			{
-				console.CATVFOSwap(s);
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "VFO Swap", Int32.Parse(s), parm2);
+				//console.CATVFOSwap(s);
 				return "";
 			}
 			else
 			{
 				return parser.Error1;
 			}
-
 		}
 
         // Clears the XIT frequency
 		// write only
 		public string ZZXC()
 		{
-			console.XITValue = 0;
+            int[] parm2 = new int[1];
+            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "XIT Value", 0, parm2);
+			//console.XITValue = 0;
 			return "";
 		}
 
@@ -4311,13 +4115,15 @@ namespace PowerSDR
 			if(s != "")
 			{
 				n = Convert.ToInt32(s);
-				n = Math.Max(-9999, n);
-				n = Math.Min(9999, n);
+				n = Math.Max(-20000, n);
+				n = Math.Min(20000, n);
 			}
 
 			if(s.Length == parser.nSet)
 			{
-				console.XITValue = n;
+                int[] parm2 = new int[1];
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "XIT Value", n, parm2);
+				//console.XITValue = n;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -4341,11 +4147,14 @@ namespace PowerSDR
 		{
 			if(s.Length == parser.nSet)
 			{
+                int[] parm2 = new int[1];
+
 				if(s == "0")
-					console.XITOn = false;
-				else
-					if(s == "1") 
-					console.XITOn = true;
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "XIT Status", 0, parm2);
+					//console.XITOn = false;
+				else if(s == "1")
+                    console.Invoke(new CATCrossThreadCallback(console.CATCallback), "XIT Status", 1, parm2);
+					//console.XITOn = true;
 				return "";
 			}
 			else if(s.Length == parser.nGet)
@@ -4362,16 +4171,11 @@ namespace PowerSDR
 			}
 		}
 
-		public string ZZZB()
-		{
-			if(console.CATDisplayAvg == 1)
-				console.CATZB = "1";
-			return "";
-		}
-
 		public string ZZZZ()
 		{
-            console.Siolisten.SIO.Destroy();
+            int[] parm2 = new int[1];
+            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "CAT Serial Destroy", 0, parm2);
+            //console.Siolisten.SIO.Destroy();
 			return "";
 		}
 		#endregion Extended CAT Methods ZZR-ZZZ
@@ -4395,29 +4199,6 @@ namespace PowerSDR
 
 		#region Split Methods
 
-		private void SetKWSplitStatus(string s)
-		{
-			if(s == "0")
-			{
-				console.VFOSplit = false;
-				lastFR = "0";
-				lastFT = "0";
-			}
-			else if(s == "1" && !console.VFOSplit)
-			{
-				console.VFOSplit = true;
-				lastFR = "0";
-				lastFT = "1";
-			}
-			else if(s == "1" && lastFR == "1" && lastFT == "1" && console.VFOSplit)
-			{
-				console.VFOSplit = false;
-				lastFR = "0";
-				lastFT = "0";
-			}
-			Debug.WriteLine("lastFR = "+lastFR+" lastFT = "+lastFT);
-		}
-
 		private string GetP10()
 		{
 			return lastFT;
@@ -4431,6 +4212,7 @@ namespace PowerSDR
 		#endregion Split Methods
 
 		#region VFO Methods
+
 		// Converts a vfo frequency to a proper CAT frequency string
 		private string StrVFOFreq(string vfo)
 		{
@@ -4627,6 +4409,8 @@ namespace PowerSDR
 				case DSPMode.CWU:
 				case DSPMode.LSB:
 				case DSPMode.USB:
+                case DSPMode.DIGU:
+                case DSPMode.DIGL:
 				switch(n)
 				{
 					case "SH":
@@ -4712,6 +4496,18 @@ namespace PowerSDR
 						break;
 				}
 				break;
+
+                /*case DSPMode.DIGU:
+                case DSPMode.DIGL:
+                switch (n)
+                {
+                    case "SH":
+                        break;
+
+                    case "SL":
+                        break;
+                }
+                break;*/
 			}
 			return code;
 		}
@@ -4875,139 +4671,15 @@ namespace PowerSDR
 				break;
 			}
 			return freq;
-			#region old code
-
-//			int freq = 0;
-//			switch(console.CurrentDSPMode)
-//			{
-//				case DSPMode.CWL:
-//				case DSPMode.CWU:
-//				case DSPMode.LSB:
-//				case DSPMode.USB:
-//				{
-//					switch(c)	//c = filter code, n = SH or SL
-//					{
-//						case "00":
-//							if(n == "SL")
-//								freq = 10;
-//							else
-//								freq = 1400;
-//							break;
-//						case "01":
-//							if(n == "SL")
-//								freq = 50;
-//							else
-//								freq = 1600;
-//							break;
-//						case "02":
-//							if(n == "SL")
-//								freq = 100;
-//							else
-//								freq = 1800;
-//							break;
-//						case "03":
-//							if(n == "SL")
-//								freq = 200;
-//							else
-//								freq = 2000;
-//							break;
-//						case "04":
-//							if(n == "SL")
-//								freq = 300;
-//							else
-//								freq = 2200;
-//							break;
-//						case "05":
-//							if(n == "SL")
-//								freq = 400;
-//							else
-//								freq = 2400;
-//							break;
-//						case "06":
-//							if(n == "SL")
-//								freq = 500;
-//							else
-//								freq = 2600;
-//							break;
-//						case "07":
-//							if(n == "SL")
-//								freq = 600;
-//							else
-//								freq = 2800;
-//							break;
-//						case "08":
-//							if(n == "SL")
-//								freq = 700;
-//							else
-//								freq = 3000;
-//							break;
-//						case "09":
-//							if(n == "SL")
-//								freq = 800;
-//							else
-//								freq = 3400;
-//							break;
-//						case "10":
-//							if(n == "SL")
-//								freq = 900;
-//							else
-//								freq = 4000;
-//							break;
-//						case "11":
-//							if(n == "SL")
-//								freq = 1000;
-//							else
-//								freq = 5000;
-//							break;
-//						default:
-//							break;
-//					}
-//					break;
-//				}
-//				case DSPMode.AM:
-//				case DSPMode.DRM:
-//				case DSPMode.DSB:
-//				case DSPMode.FMN:
-//				case DSPMode.SAM:
-//				{
-//					switch(c)
-//					{
-//						case "00":
-//							if(n == "SL")
-//								freq = 10;
-//							else
-//								freq = 2500;
-//							break;
-//						case "01":
-//							if(n == "SL")
-//								freq = 100;
-//							else
-//								freq = 3000;
-//							break;
-//						case "02":
-//							if(n == "SL")
-//								freq = 200;
-//							else
-//								freq = 4000;
-//							break;
-//						case "03":
-//							if(n == "SL")
-//								freq = 500;
-//							else
-//								freq = 5000;
-//							break;
-//					}
-//				}
-//				break;
-//			}
-//			return freq;
-			#endregion old code
 		}
 
 		private void SetFilter(string c, string n)
 		{
 			// c = code, n = SH or SL
-			console.CurrentFilter = Filter.VAR1;
+            int[] parm2 = new int[1];
+            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter", (int)Filter.VAR1, parm2);
+			//console.CurrentFilter = Filter.VAR1;
+            Thread.Sleep(100);
 			int freq = 0;
 			int offset = 0;
 			string code;
@@ -5018,21 +4690,25 @@ namespace PowerSDR
 				case DSPMode.CWU:
 					freq = Code2Frequency(c, n);
 					if(n == "SH")
-						console.FilterHighValue = freq;	//split the bandwidth at the center frequency
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter High", freq, parm2);
+						//console.FilterHighValue = freq;	//split the bandwidth at the center frequency
 					else
-						console.FilterLowValue = freq;
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter Low", freq, parm2);
+						//console.FilterLowValue = freq;
 					break;
 				case DSPMode.LSB:
 				case DSPMode.CWL:
 					if(n == "SH")
 					{
 						freq = Code2Frequency(c, "SH");	// get the upper limit from the lower value set
-						console.FilterLowValue = -freq;	// since we need the more positive value
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter Low", freq, parm2);
+						//console.FilterLowValue = -freq;	// since we need the more positive value
 					}										// closest to the center freq in lsb modes
 					else
 					{
 						freq = Code2Frequency(c, "SL");	// do the reverse here, the less positive value
-						console.FilterHighValue = -freq; // is away from the center freq
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter High", freq, parm2);
+						//console.FilterHighValue = -freq; // is away from the center freq
 					}
 					break;
 				case DSPMode.AM:
@@ -5043,9 +4719,11 @@ namespace PowerSDR
 					if(n == "SH")
 					{
 						// Set the bandwith equally across the center freq
-						freq = Code2Frequency(c, "SH");	
-						console.FilterHighValue = freq/2;
-						console.FilterLowValue = -freq/2;
+						freq = Code2Frequency(c, "SH");
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter High", freq/2, parm2);
+						//console.FilterHighValue = freq/2;
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter Low", -freq/2, parm2);
+						//console.FilterLowValue = -freq/2;
 					}
 					else
 					{
@@ -5053,11 +4731,15 @@ namespace PowerSDR
 						freq = console.FilterHighValue*2;	
 						code = Frequency2Code(freq, "SH");
 						freq = Code2Frequency(code, "SH");
-						console.FilterHighValue = freq/2;
-						console.FilterLowValue = -freq/2;
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter High", freq/2, parm2);
+						//console.FilterHighValue = freq/2;
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter Low", -freq/2, parm2);
+						//console.FilterLowValue = -freq/2;
 						// subtract the SL value from the lower half of the bandwidth
 						offset = Code2Frequency(c, "SL");
-						console.FilterLowValue = console.FilterLowValue + offset;			
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter Low", 
+                            console.FilterLowValue + offset, parm2);
+						//console.FilterLowValue = console.FilterLowValue + offset;			
 					}
 					break;
 			}
@@ -5066,96 +4748,6 @@ namespace PowerSDR
 		#endregion Filter Methods
 
 		#region Mode Methods
-
-		public void String2Mode(string pIndex)
-		{
-			string s = pIndex;
-
-			switch(s)
-				{
-				case "00":								
-					console.CurrentDSPMode = DSPMode.LSB;
-					break;
-				case "01":
-					console.CurrentDSPMode = DSPMode.USB;
-					break;
-				case "02":
-					console.CurrentDSPMode = DSPMode.DSB;
-					break;
-				case "03":
-					console.CurrentDSPMode = DSPMode.CWL;
-					break;
-				case "04":
-					console.CurrentDSPMode = DSPMode.CWU;
-					break;
-				case "05":
-					console.CurrentDSPMode = DSPMode.FMN;
-					break;
-				case "06":
-					console.CurrentDSPMode = DSPMode.AM;
-					break;
-				case "07":
-					console.CurrentDSPMode = DSPMode.DIGU;
-					break;
-				case "08":
-					console.CurrentDSPMode = DSPMode.SPEC;
-					break;
-				case "09":
-					console.CurrentDSPMode = DSPMode.DIGL;
-					break;
-				case "10":
-					console.CurrentDSPMode = DSPMode.SAM;
-					break;
-				case "11":
-					console.CurrentDSPMode = DSPMode.DRM;
-					break;
-				}
-		}
-
-        public void String2SUBRXMode(string pIndex)     // yt7pwr
-        {
-            string s = pIndex;
-
-            switch (s)
-            {
-                case "00":
-                    console.CurrentDSPModeSubRX = DSPMode.LSB;
-                    break;
-                case "01":
-                    console.CurrentDSPModeSubRX = DSPMode.USB;
-                    break;
-                case "02":
-                    console.CurrentDSPModeSubRX = DSPMode.DSB;
-                    break;
-                case "03":
-                    console.CurrentDSPModeSubRX = DSPMode.CWL;
-                    break;
-                case "04":
-                    console.CurrentDSPModeSubRX = DSPMode.CWU;
-                    break;
-                case "05":
-                    console.CurrentDSPModeSubRX = DSPMode.FMN;
-                    break;
-                case "06":
-                    console.CurrentDSPModeSubRX = DSPMode.AM;
-                    break;
-                case "07":
-                    console.CurrentDSPModeSubRX = DSPMode.DIGU;
-                    break;
-                case "08":
-                    console.CurrentDSPModeSubRX = DSPMode.SPEC;
-                    break;
-                case "09":
-                    console.CurrentDSPModeSubRX = DSPMode.DIGL;
-                    break;
-                case "10":
-                    console.CurrentDSPModeSubRX = DSPMode.SAM;
-                    break;
-                case "11":
-                    console.CurrentDSPModeSubRX = DSPMode.DRM;
-                    break;
-            }
-        }
 
 		public string Mode2String(DSPMode pMode)
 		{
@@ -5206,43 +4798,6 @@ namespace PowerSDR
 				}
 
 			return retval;
-		}
-
-		// converts Kenwood single digit mode code to SDR mode
-		public void KString2Mode(string pIndex)
-		{
-			string s = pIndex;
-
-			switch(s)
-			{
-				case "1":
-                        console.CurrentDSPMode = DSPMode.LSB;
-					break;
-				case "2":
-    					console.CurrentDSPMode = DSPMode.USB;
-					break;
-				case "3":
-					console.CurrentDSPMode = DSPMode.CWU;
-					break;
-				case "4":
-					console.CurrentDSPMode = DSPMode.FMN;
-					break;
-				case "5":
-					console.CurrentDSPMode = DSPMode.AM;
-					break;
-				case "6":
-					console.CurrentDSPMode = DSPMode.DIGL;
-					break;
-				case "7":
-					console.CurrentDSPMode = DSPMode.CWL;
-					break;
-				case "9":
-					console.CurrentDSPMode = DSPMode.DIGU;
-					break;
-				default:
-					console.CurrentDSPMode = DSPMode.USB;
-					break;
-			}
 		}
 
 		// converts SDR mode to Kenwood single digit mode code
@@ -5340,8 +4895,6 @@ namespace PowerSDR
 			{
 				return parser.Error1;
 			}
-
-
 		}
 
 		private void BandUp()
@@ -5349,11 +4902,15 @@ namespace PowerSDR
 			Band nextband;
 			Band current = console.CurrentBand;
 			int currndx = Array.IndexOf(BandList,current);
+
 			if(currndx == LastBandIndex)
 				nextband = BandList[0];
 			else
 				nextband = BandList[currndx+1];
-			console.SetCATBand(nextband);
+
+            int[] parm2 = new int[1];
+            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Band set", (int)nextband, parm2);
+			//console.SetCATBand(nextband);
 		}
 
 		private void BandDown()
@@ -5365,7 +4922,10 @@ namespace PowerSDR
 				nextband = BandList[currndx-1];
 			else
 				nextband = BandList[LastBandIndex];
-			console.SetCATBand(nextband);
+
+            int[] parm2 = new int[1];
+            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Band set", (int)nextband, parm2);
+			//console.SetCATBand(nextband);
 
 		}
 
@@ -5425,61 +4985,62 @@ namespace PowerSDR
 			return retval;
 		}
 
-		private Band String2Band(string pBand)
-		{
-			string band = pBand.ToUpper();;
-			Band retval;
+        private Band String2Band(string pBand)
+        {
+            string band = pBand.ToUpper(); ;
+            Band retval;
 
-			switch(band)
-			{
-				case "888":
-					retval = Band.GEN;
-					break;
-				case "160":
-					retval = Band.B160M;
-					break;
-				case "060":
-					retval = Band.B60M;
-					break;
-				case "080":
-					retval = Band.B80M;
-					break;
-				case "040":
-					retval = Band.B40M;
-					break;
-				case "030":
-					retval = Band.B30M;
-					break;
-				case "020":
-					retval = Band.B20M;
-					break;
-				case "017":
-					retval = Band.B17M;
-					break;
-				case "015":
-					retval = Band.B15M;
-					break;
-				case "012":
-					retval = Band.B12M;
-					break;
-				case "010":
-					retval = Band.B10M;
-					break;
-				case "006":
-					retval = Band.B6M;
-					break;
-				case "002":
-					retval = Band.B2M;
-					break;
-				case "999":
-					retval = Band.WWV;
-					break;
-				default:
-					retval = Band.GEN;
-					break;
-			}
-			return retval;
-		}
+            switch (band)
+            {
+                case "888":
+                    retval = Band.GEN;
+                    break;
+                case "160":
+                    retval = Band.B160M;
+                    break;
+                case "060":
+                    retval = Band.B60M;
+                    break;
+                case "080":
+                    retval = Band.B80M;
+                    break;
+                case "040":
+                    retval = Band.B40M;
+                    break;
+                case "030":
+                    retval = Band.B30M;
+                    break;
+                case "020":
+                    retval = Band.B20M;
+                    break;
+                case "017":
+                    retval = Band.B17M;
+                    break;
+                case "015":
+                    retval = Band.B15M;
+                    break;
+                case "012":
+                    retval = Band.B12M;
+                    break;
+                case "010":
+                    retval = Band.B10M;
+                    break;
+                case "006":
+                    retval = Band.B6M;
+                    break;
+                case "002":
+                    retval = Band.B2M;
+                    break;
+                case "999":
+                    retval = Band.WWV;
+                    break;
+                default:
+                    retval = Band.GEN;
+                    break;
+            }
+
+            return retval;
+        }
 
 		#endregion Band Methods
 
@@ -5488,112 +5049,116 @@ namespace PowerSDR
         private double Step2Freq(int step)
         {
             double freq = 0.0;
-            switch(step)
+
+            switch (step)
             {
                 case 0:
-			        freq  =  0.000001;
+                    freq = 0.000001;
                     break;
                 case 1:
-                    freq  =  0.000010;
+                    freq = 0.000010;
                     break;
                 case 2:
-                    freq  =  0.000050;
+                    freq = 0.000050;
                     break;
                 case 3:
-                    freq  =  0.000100;
+                    freq = 0.000100;
                     break;
                 case 4:
-                    freq  =  0.000250;
+                    freq = 0.000250;
                     break;
                 case 5:
-                    freq  =  0.000500;
+                    freq = 0.000500;
                     break;
                 case 6:
-                    freq  =  0.001000;
+                    freq = 0.001000;
                     break;
                 case 7:
-                    freq  =  0.005000;
+                    freq = 0.005000;
                     break;
                 case 8:
-                    freq  =  0.009000;
+                    freq = 0.009000;
                     break;
                 case 9:
-                    freq  =  0.010000;
+                    freq = 0.010000;
                     break;
                 case 10:
                     freq = 0.100000;
                     break;
                 case 11:
-                    freq =  0.250000;
+                    freq = 0.250000;
                     break;
                 case 12:
-                    freq =  0.500000;
+                    freq = 0.500000;
                     break;
                 case 13:
-                    freq =  1.000000;
+                    freq = 1.000000;
                     break;
                 case 14:
                     freq = 10.000000;
                     break;
             }
+
             return freq;
         }
 
-		private string Step2String(int pSize)
-		{
-			// Modified 2/25/07 to accomodate changes to console where odd step sizes added.  BT
-			string stepval = "";
-			int step = pSize;
-			switch(step)
-			{
-				case 0:
-					stepval = "0000";	//10e0 = 1 hz
-					break;
-				case 1:
-					stepval = "0001";	//10e1 = 10 hz
-					break;
-				case 2:
-					stepval = "1000";	//special default for 50 hz
-					break;
-				case 3:
-					stepval = "0010";	//10e2 = 100 hz
-					break;
-				case 4:
-					stepval = "1001";	//special default for 250 hz
-					break;
-				case 5:
-					stepval = "1010";	//10e3 = 1 kHz default for 500 hz
-					break;
-				case 6:
-					stepval = "0011";	//10e3 = 1 kHz
-					break;
-				case 7:
-					stepval = "1011";	//special default for 5 kHz
-					break;
-				case 8:
-					stepval = "1100";	//special default for 9 kHz
-					break;
-				case 9:
-					stepval = "0100";	//10e4 = 10 khZ
-					break;
-				case 10:
-					stepval = "0101";	//10e5 = 100 kHz
-					break;
+        private string Step2String(int pSize)
+        {
+            // Modified 2/25/07 to accomodate changes to console where odd step sizes added.  BT
+            string stepval = "";
+            int step = pSize;
+
+            switch (step)
+            {
+                case 0:
+                    stepval = "0000";	//10e0 = 1 hz
+                    break;
+                case 1:
+                    stepval = "0001";	//10e1 = 10 hz
+                    break;
+                case 2:
+                    stepval = "1000";	//special default for 50 hz
+                    break;
+                case 3:
+                    stepval = "0010";	//10e2 = 100 hz
+                    break;
+                case 4:
+                    stepval = "1001";	//special default for 250 hz
+                    break;
+                case 5:
+                    stepval = "1010";	//10e3 = 1 kHz default for 500 hz
+                    break;
+                case 6:
+                    stepval = "0011";	//10e3 = 1 kHz
+                    break;
+                case 7:
+                    stepval = "1011";	//special default for 5 kHz
+                    break;
+                case 8:
+                    stepval = "1100";	//special default for 9 kHz
+                    break;
+                case 9:
+                    stepval = "0100";	//10e4 = 10 khZ
+                    break;
+                case 10:
+                    stepval = "0101";	//10e5 = 100 kHz
+                    break;
                 case 11:
                     stepval = "1101";   //special default for 250 kHz
                     break;
                 case 12:
                     stepval = "1110";   //special default for 500 kHz
                     break;
-				case 13:
-					stepval = "0110";	//10e6 = 1 mHz
-					break;
-				case 14:
-					stepval = "0111";	//10e7 = 10 mHz
-					break;
-			}
-			return stepval;
-		}
+                case 13:
+                    stepval = "0110";	//10e6 = 1 mHz
+                    break;
+                case 14:
+                    stepval = "0111";	//10e7 = 10 mHz
+                    break;
+            }
+
+            return stepval;
+        }
 
         private int String2Step(string step_string)       // yt7pwr
         {
@@ -5649,15 +5214,16 @@ namespace PowerSDR
             }
             return stepval;
         }
-		
-
+	
 		#endregion Step Methods
 
 		#region Meter Methods
 
 		private void String2RXMeter(int m)
 		{
-			console.CurrentMeterRXMode = (MeterRXMode) m;
+            int[] parm2 = new int[1];
+            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Meter RXMode", m, parm2);
+			//console.CurrentMeterRXMode = (MeterRXMode) m;
 		}
 
 		private string RXMeter2String()
@@ -5667,7 +5233,9 @@ namespace PowerSDR
 
 		private void String2TXMeter(int m)
 		{
-			console.CurrentMeterTXMode = (MeterTXMode) m;
+            int[] parm2 = new int[1];
+            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Meter TXMode", m, parm2);
+			//console.CurrentMeterTXMode = (MeterTXMode) m;
 		}
 
 		private string TXMeter2String()
@@ -5696,6 +5264,7 @@ namespace PowerSDR
 		private string Width2Index(int txt)
 		{
 			string ans = "";
+
 			switch(txt)
 			{
 				case 256:
@@ -5723,6 +5292,7 @@ namespace PowerSDR
 		private int Index2Width(string ndx)
 		{
 			int ans;
+
 			switch(ndx)
 			{
 				case "0":

@@ -35,12 +35,11 @@
 
 /*
  *  Changes for GenesisRadio
- *  Copyright (C)2009,2010 YT7PWR Goran Radivojevic
+ *  Copyright (C)2009,2010,2011,2012 YT7PWR Goran Radivojevic
  *  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 */
 
 #define SAVERESTORE
-//#define CWX_DEBUG (Note: Please do not put all Debug.Writeline()under this. Leave them commented off.)
 
 using System;
 using System.IO;
@@ -58,9 +57,19 @@ namespace PowerSDR
 	///  CWX is the cw memory and keyboard handler.
 	/// </summary>
 	public class CWX : System.Windows.Forms.Form
-	{
-		#region define element codes and constants
-		private const byte EL_UNDERFLOW = 0x80;	// underflow flag
+    {
+        #region enum
+
+        public enum CWmode
+        {
+            classic,
+            QRSS,
+        };
+
+        #endregion
+
+        #region define element codes and constants
+        private const byte EL_UNDERFLOW = 0x80;	// underflow flag
 		private const byte EL_PTT = 0x10;		// extra ptt delay command
 		private const byte EL_PAUSE = 0x08;		// pause flag
 		private const byte EL_END = 0x4;		// end flag
@@ -74,11 +83,11 @@ namespace PowerSDR
 		#endregion
 
 		#region Variable Declarations
-		private System.ComponentModel.IContainer components;
 
+		private System.ComponentModel.IContainer components;
 		private Console console;
         public bool running = false;
-
+        private delegate void CrossThreadCallback();
 		public static Mutex keydisplay = new Mutex();	// around the key display
 
 		private int cwxwpm;						// engine speed
@@ -92,10 +101,11 @@ namespace PowerSDR
             }
         }
 
+        private CWmode cw_mode = CWmode.classic;
 		private uint[] mbits = new uint[64];	// the Morse element maps
 		private string[] a2m2 = new string[64]; // in ASCII order from 32-95
 
-		private bool quit, kquit;	// shutdown flags
+		public bool quit, kquit;	// shutdown flags
 		private int pause;			// # cycles left to pause
 
 		public static Mutex cwfifo2 = new Mutex();	// around the key fifo
@@ -126,12 +136,10 @@ namespace PowerSDR
 		private bool stopThreads;	// tell threads to shut down
 		
 		// define the position and size of the keyboard area
-		private int kylx = 12, kyty = 180;				// ulc of key area
-		private int kyysz = 82, kyxsz = 665;			// extents
+		private int kylx = 0, kyty = 0;		    		// ulc of key area
+		private int kyysz = 90, kyxsz = 665;			// extents
 		private char[] kbufold = new char[NKEYS];		// sent keys
 		private char[] kbufnew = new char[NKEYS];		// unsent keys
-
-	
 
 		private System.Windows.Forms.Label label4;
 		private System.Windows.Forms.Button stopButton;
@@ -164,24 +172,84 @@ namespace PowerSDR
 		private System.Windows.Forms.NumericUpDownTS udDrop;
 		private System.Windows.Forms.Button keyButton;
 		private System.Windows.Forms.Label label7;
-		private System.Windows.Forms.TextBox txtdummy1;
 		private System.Windows.Forms.CheckBoxTS chkPause;
 		private System.Windows.Forms.Button clearButton;
 		private System.Windows.Forms.Button keyboardButton;
 		private System.Windows.Forms.Panel pttLed;
 		private System.Windows.Forms.Panel keyLed;
 		private System.Windows.Forms.ToolTip toolTip1;
-		private System.Windows.Forms.Panel keyboardLed;
-		private System.Windows.Forms.Button expandButton;
+        private System.Windows.Forms.Panel keyboardLed;
 		private System.Windows.Forms.NumericUpDownTS udPtt;
 		private System.Windows.Forms.Label pttdelaylabel;
-		private System.Windows.Forms.NumericUpDownTS udWPM;	
+        private CheckBoxTS chkQRSS;
+        private Label lblQRSS;
+        private PanelTS pictureBox1;
+        private CheckBoxTS chkAlwaysOnTop;
+		private System.Windows.Forms.NumericUpDownTS udWPM;
 
 		#endregion
 
-		#region Win32 Multimedia Timer Functions
+        #region constructor/destructor
 
-		// Represents the method that is called by Windows when a timer event occurs.
+        public CWX(Console c)
+        {
+            InitializeComponent();
+            this.DoubleBuffered = true;
+            console = c;
+
+            clear_keys();
+
+            txt1.Text = "### test de vk1aa";
+            txt2.Text = "cq cq test yt7pwr test";
+            txt3.Text = "5nn stx";
+            txt4.Text = "vk1aa de yt7pwr";
+            txt5.Text = "cq cq cq de yt7pwr +k";
+            txt6.Text = "qrz?";
+            txt7.Text = "?";
+            txt8.Text = "agn";
+            txt9.Text = "yu1lm";
+            cwxwpm = 20;
+            tpause = 100;
+            RestoreSettings();
+            cwxwpm = (int)udWPM.Value;
+            tpause = (int)udDelay.Value * 1000;
+            if (tpause < 1) tpause = tel;
+            ttdel = (int)udDrop.Value;
+            pttdelay = (int)udPtt.Value;
+            udDrop.Minimum = pttdelay + pttdelay / 2;
+            timeProcPeriodic = new TimeProc(TimerPeriodicEventCallback);
+            setup_timer();
+            load_alpha();
+            // build the mbits array from a2m2
+            build_mbits2();
+
+            stopThreads = false;
+
+            Thread keyFifoThread = new Thread(new ThreadStart(keyboardFifo));
+            keyFifoThread.Name = "keyboard fifo pop thread";
+            keyFifoThread.IsBackground = true;					// if app closes, kill this thread
+            keyFifoThread.Priority = ThreadPriority.Normal;
+            keyFifoThread.Start();
+
+            Thread keyDisplayThread = new Thread(new ThreadStart(keyboardDisplay));
+            keyDisplayThread.Name = "keyboard edit box handler thread";
+            keyDisplayThread.IsBackground = true;					// if app closes, kill this thread
+            keyDisplayThread.Priority = ThreadPriority.Normal;
+            keyDisplayThread.Start();
+
+            //			ttdel = 50;
+        }
+
+        ~CWX()
+        {
+
+        }
+
+        #endregion
+
+        #region Win32 Multimedia Timer Functions
+
+        // Represents the method that is called by Windows when a timer event occurs.
 		private delegate void TimeProc(int id, int msg, int user, int param1, int param2);
 
 		/// Specifies constants for multimedia timer event types.
@@ -199,7 +267,6 @@ namespace PowerSDR
 			public int periodMin;	// Minimum supported period in milliseconds.
 			public int periodMax;	// Maximum supported period in milliseconds.
 		}
-
 
 		// Gets timer capabilities.
 		[DllImport("winmm.dll")]
@@ -253,14 +320,14 @@ namespace PowerSDR
 		public void setup_timer()
 		{
 			tel = wpmrate();
-#if(CWX_DEBUG)
-			Debug.WriteLine(tel+" ms");
-#endif
+
 			if (timerID != 0)
 			{
 				timeKillEvent(timerID);
 			}
+
 			timerID = timeSetEvent(tel, 1, timeProcPeriodic, 0, (int)TimerMode.Periodic);
+
 			if (timerID == 0)
 			{
 				Debug.Fail("Timer creation failed.");
@@ -274,16 +341,23 @@ namespace PowerSDR
         {
             console.Keyer.MemoryPTT = state;
             ptt = state;
-            if (state) pttLed.BackColor = System.Drawing.Color.Red;
-            else pttLed.BackColor = System.Drawing.Color.Black;
+
+            if (state)
+                pttLed.BackColor = System.Drawing.Color.Red;
+            else 
+                pttLed.BackColor = System.Drawing.Color.Black;
         }
 
 		private void setkey(bool state)
 		{
 			console.Keyer.MemoryKey = state;
-			if (state) keyLed.BackColor = System.Drawing.Color.Yellow;
-			else keyLed.BackColor = System.Drawing.Color.Black;
+
+			if (state)
+                keyLed.BackColor = System.Drawing.Color.Yellow;
+			else
+                keyLed.BackColor = System.Drawing.Color.Black;
 		}
+
 		private void quitshut()
 		{
 			clear_fifo();
@@ -293,10 +367,11 @@ namespace PowerSDR
 			ttx = 0;  pause = 0; newptt = 0;
 			keying = false;
 		}
+
         private void quit_shut() // yt7pwr
         {
             running = false;
-            timeKillEvent(timerID);
+            //timeKillEvent(timerID);
             clear_fifo();
             clear_fifo2();
             setptt(false);
@@ -305,7 +380,8 @@ namespace PowerSDR
             keying = false;
             console.Keyer.MemoryPTT = false;
             console.Keyer.MemoryKey = false;
-            if (console.CurrentModel == Model.GENESIS_G59USB)
+
+            /*if (console.CurrentModel == Model.GENESIS_G59USB)
             {
                 console.g59.KEYER = 0xff;
                 console.g59.WriteToDevice(24, 0); // turn off CW monitor
@@ -314,8 +390,9 @@ namespace PowerSDR
             {
                 console.net_device.KEYER = 0xff;
                 console.net_device.WriteToDevice(24, 0); // turn off CW monitor
-            }
+            }*/
         }
+
 		private void clear_fifo()
 		{
 			cwfifo.WaitOne();
@@ -324,6 +401,7 @@ namespace PowerSDR
 			pout = 0;
 			cwfifo.ReleaseMutex();
 		}
+
 		private void push_fifo(byte data)
 		{
 			cwfifo.WaitOne();
@@ -335,6 +413,7 @@ namespace PowerSDR
 
 //			Debug.WriteLine("push " + data);
 		}
+
 		private byte pop_fifo()
 		{
 			byte data;
@@ -399,9 +478,13 @@ namespace PowerSDR
 		#endregion
 
 		#region Morse definition, table builders, and help display
-		private int wpmrate()	// Tel in ms from wpm (based on PARIS method
+
+		private int wpmrate()	// Tel in ms from wpm (based on PARIS method)  // changes yt7pwr
 		{
-			return	(1200/cwxwpm);
+            if (cw_mode == CWmode.classic)
+                return (1200 / cwxwpm);
+            else
+                return (12000 / cwxwpm);
 		}
 		private void help()
 		{
@@ -455,8 +538,6 @@ namespace PowerSDR
 			t.Priority = ThreadPriority.Normal;
 			t.Start();
 		}
-
-
 
 		private void build_mbits2()
 		{
@@ -642,7 +723,6 @@ namespace PowerSDR
 
 		public void SaveSettings()
 		{
-#if SAVERESTORE
 			ArrayList a = new ArrayList();
 			ArrayList temp = new ArrayList();
 
@@ -688,12 +768,10 @@ namespace PowerSDR
 			a.Add("Height/"+this.Height.ToString());
 
 			DB.SaveVars("CWX", ref a);		// save the values to the DB
-#endif
 		}
 
 		public void RestoreSettings()
 		{
-#if SAVERESTORE
 			ArrayList temp = new ArrayList();		// list of all first level controls
 			ControlList(this, ref temp);
 
@@ -873,7 +951,6 @@ namespace PowerSDR
 					this.Height = Int32.Parse(val);
 				}
 			}
-#endif
 		}
 
 
@@ -948,80 +1025,25 @@ namespace PowerSDR
         #endregion CAT Interface
 
 		#region startup/shutdown stuff
-		public CWX(Console c)
-		{
-			//
-			// Required for Windows Form Designer support
-			//
-			InitializeComponent();
-
-			console = c;
-
-			//
-			// TODO: Add any constructor code after InitializeComponent call
-			//
-
-			txtdummy1.Hide();
-			clear_keys();
-
-			txt1.Text = "### test de yt7pwr/b el29ep.$$\"";
-			txt2.Text = "cq cq test yt7pwr test";
-			txt3.Text = "5nn stx";
-			txt4.Text = "vk1aa de yt7pwr (";
-			txt5.Text = "cq cq cq de yt7pwr +k";
-			txt6.Text = "The quick brown fox jumped over the lazy dog. 0123456789 ";
-			txt7.Text = "?";
-			txt8.Text = "agn";
-			txt9.Text = "yu1lm";
-
-			RestoreSettings();
-
-			//		cwxwpm = 20;
-			//		udWPM.Value = cwxwpm;
-			cwxwpm = (int)udWPM.Value;
-
-			tpause = (int)udDelay.Value * 1000;
-			if (tpause < 1) tpause = tel;
-			ttdel = (int)udDrop.Value;
-			pttdelay = (int)udPtt.Value;
-			udDrop.Minimum = pttdelay + pttdelay/2;
-
-#if(CWX_DEBUG)
-			Debug.WriteLine("CWX entry");
-#endif
-
-			timeProcPeriodic = new TimeProc(TimerPeriodicEventCallback);
-			setup_timer();
-			load_alpha();
-			// build the mbits array from a2m2
-			build_mbits2();
-
-			stopThreads = false;
-
-			Thread keyFifoThread = new Thread(new ThreadStart(keyboardFifo));
-			keyFifoThread.Name = "keyboard fifo pop thread";
-			keyFifoThread.IsBackground = true;					// if app closes, kill this thread
-			keyFifoThread.Priority = ThreadPriority.Normal;
-			keyFifoThread.Start();
-			
-			Thread keyDisplayThread = new Thread(new ThreadStart(keyboardDisplay));
-			keyDisplayThread.Name = "keyboard edit box handler thread";
-			keyDisplayThread.IsBackground = true;					// if app closes, kill this thread
-			keyDisplayThread.Priority = ThreadPriority.Normal;
-			keyDisplayThread.Start();
-
-//			ttdel = 50;
-		}
 
 		/// <summary>
 		/// Clean up any resources being used.
 		/// </summary>
 		protected override void Dispose( bool disposing )
 		{
-#if(CWX_DEBUG)
-			Debug.WriteLine("dispose cwx");
-#endif
-			timeKillEvent(timerID);
+            quitshut();
+            Thread.Sleep(100);
+
+            // shut downs
+            stopThreads = true;
+
+            if (timerID != 0)
+            {
+                timeKillEvent(timerID);		        // kill the mmtimer
+            }
+
+            Thread.Sleep(200);		                // let it all stop
+
 			if( disposing )
 			{
 				if(components != null)
@@ -1029,6 +1051,7 @@ namespace PowerSDR
 					components.Dispose();
 				}
 			}
+
 			base.Dispose( disposing );
 		}
 		#endregion
@@ -1073,7 +1096,6 @@ namespace PowerSDR
             this.dropdelaylabel = new System.Windows.Forms.Label();
             this.keyButton = new System.Windows.Forms.Button();
             this.label7 = new System.Windows.Forms.Label();
-            this.txtdummy1 = new System.Windows.Forms.TextBox();
             this.chkPause = new System.Windows.Forms.CheckBoxTS();
             this.clearButton = new System.Windows.Forms.Button();
             this.keyboardButton = new System.Windows.Forms.Button();
@@ -1081,10 +1103,13 @@ namespace PowerSDR
             this.keyLed = new System.Windows.Forms.Panel();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.keyboardLed = new System.Windows.Forms.Panel();
-            this.expandButton = new System.Windows.Forms.Button();
             this.pttdelaylabel = new System.Windows.Forms.Label();
+            this.lblQRSS = new System.Windows.Forms.Label();
             this.udPtt = new System.Windows.Forms.NumericUpDownTS();
             this.udWPM = new System.Windows.Forms.NumericUpDownTS();
+            this.chkQRSS = new System.Windows.Forms.CheckBoxTS();
+            this.pictureBox1 = new System.Windows.Forms.PanelTS();
+            this.chkAlwaysOnTop = new System.Windows.Forms.CheckBoxTS();
             ((System.ComponentModel.ISupportInitialize)(this.udDelay)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.udDrop)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.udPtt)).BeginInit();
@@ -1094,17 +1119,16 @@ namespace PowerSDR
             // txt1
             // 
             this.txt1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txt1.Location = new System.Drawing.Point(40, 56);
+            this.txt1.Location = new System.Drawing.Point(53, 56);
             this.txt1.Name = "txt1";
             this.txt1.Size = new System.Drawing.Size(172, 20);
             this.txt1.TabIndex = 3;
-            this.txt1.Text = "cq cq test yt7pwr test";
             this.toolTip1.SetToolTip(this.txt1, "Message edit box.");
             // 
             // s1
             // 
             this.s1.Image = null;
-            this.s1.Location = new System.Drawing.Point(8, 56);
+            this.s1.Location = new System.Drawing.Point(21, 56);
             this.s1.Name = "s1";
             this.s1.Size = new System.Drawing.Size(24, 20);
             this.s1.TabIndex = 4;
@@ -1116,7 +1140,7 @@ namespace PowerSDR
             // s2
             // 
             this.s2.Image = null;
-            this.s2.Location = new System.Drawing.Point(8, 88);
+            this.s2.Location = new System.Drawing.Point(21, 88);
             this.s2.Name = "s2";
             this.s2.Size = new System.Drawing.Size(24, 20);
             this.s2.TabIndex = 6;
@@ -1128,7 +1152,7 @@ namespace PowerSDR
             // txt2
             // 
             this.txt2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txt2.Location = new System.Drawing.Point(40, 88);
+            this.txt2.Location = new System.Drawing.Point(53, 88);
             this.txt2.Name = "txt2";
             this.txt2.Size = new System.Drawing.Size(172, 20);
             this.txt2.TabIndex = 5;
@@ -1137,7 +1161,7 @@ namespace PowerSDR
             // s3
             // 
             this.s3.Image = null;
-            this.s3.Location = new System.Drawing.Point(8, 120);
+            this.s3.Location = new System.Drawing.Point(21, 120);
             this.s3.Name = "s3";
             this.s3.Size = new System.Drawing.Size(24, 20);
             this.s3.TabIndex = 8;
@@ -1149,7 +1173,7 @@ namespace PowerSDR
             // txt3
             // 
             this.txt3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txt3.Location = new System.Drawing.Point(40, 120);
+            this.txt3.Location = new System.Drawing.Point(53, 120);
             this.txt3.Name = "txt3";
             this.txt3.Size = new System.Drawing.Size(172, 20);
             this.txt3.TabIndex = 7;
@@ -1158,7 +1182,7 @@ namespace PowerSDR
             // s4
             // 
             this.s4.Image = null;
-            this.s4.Location = new System.Drawing.Point(232, 56);
+            this.s4.Location = new System.Drawing.Point(245, 56);
             this.s4.Name = "s4";
             this.s4.Size = new System.Drawing.Size(24, 20);
             this.s4.TabIndex = 10;
@@ -1170,7 +1194,7 @@ namespace PowerSDR
             // txt4
             // 
             this.txt4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txt4.Location = new System.Drawing.Point(264, 56);
+            this.txt4.Location = new System.Drawing.Point(277, 56);
             this.txt4.Name = "txt4";
             this.txt4.Size = new System.Drawing.Size(176, 20);
             this.txt4.TabIndex = 9;
@@ -1179,7 +1203,7 @@ namespace PowerSDR
             // s5
             // 
             this.s5.Image = null;
-            this.s5.Location = new System.Drawing.Point(232, 88);
+            this.s5.Location = new System.Drawing.Point(245, 88);
             this.s5.Name = "s5";
             this.s5.Size = new System.Drawing.Size(24, 20);
             this.s5.TabIndex = 12;
@@ -1191,7 +1215,7 @@ namespace PowerSDR
             // txt5
             // 
             this.txt5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txt5.Location = new System.Drawing.Point(264, 88);
+            this.txt5.Location = new System.Drawing.Point(277, 88);
             this.txt5.Name = "txt5";
             this.txt5.Size = new System.Drawing.Size(176, 20);
             this.txt5.TabIndex = 11;
@@ -1200,7 +1224,7 @@ namespace PowerSDR
             // s6
             // 
             this.s6.Image = null;
-            this.s6.Location = new System.Drawing.Point(232, 120);
+            this.s6.Location = new System.Drawing.Point(245, 120);
             this.s6.Name = "s6";
             this.s6.Size = new System.Drawing.Size(24, 20);
             this.s6.TabIndex = 14;
@@ -1212,15 +1236,15 @@ namespace PowerSDR
             // txt6
             // 
             this.txt6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txt6.Location = new System.Drawing.Point(264, 120);
+            this.txt6.Location = new System.Drawing.Point(277, 120);
             this.txt6.Name = "txt6";
-            this.txt6.Size = new System.Drawing.Size(160, 20);
+            this.txt6.Size = new System.Drawing.Size(176, 20);
             this.txt6.TabIndex = 13;
             this.toolTip1.SetToolTip(this.txt6, "Message edit box.");
             // 
             // speedLabel
             // 
-            this.speedLabel.Location = new System.Drawing.Point(232, 32);
+            this.speedLabel.Location = new System.Drawing.Point(263, 33);
             this.speedLabel.Name = "speedLabel";
             this.speedLabel.Size = new System.Drawing.Size(72, 16);
             this.speedLabel.TabIndex = 15;
@@ -1230,7 +1254,7 @@ namespace PowerSDR
             // notesButton
             // 
             this.notesButton.Image = null;
-            this.notesButton.Location = new System.Drawing.Point(176, 8);
+            this.notesButton.Location = new System.Drawing.Point(170, 8);
             this.notesButton.Name = "notesButton";
             this.notesButton.Size = new System.Drawing.Size(48, 24);
             this.notesButton.TabIndex = 17;
@@ -1244,7 +1268,7 @@ namespace PowerSDR
             this.cbMorse.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbMorse.DropDownWidth = 208;
             this.cbMorse.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cbMorse.Location = new System.Drawing.Point(472, 152);
+            this.cbMorse.Location = new System.Drawing.Point(468, 152);
             this.cbMorse.Name = "cbMorse";
             this.cbMorse.Size = new System.Drawing.Size(208, 23);
             this.cbMorse.TabIndex = 19;
@@ -1258,7 +1282,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udDelay.Location = new System.Drawing.Point(312, 8);
+            this.udDelay.Location = new System.Drawing.Point(337, 9);
             this.udDelay.Maximum = new decimal(new int[] {
             3600,
             0,
@@ -1272,6 +1296,8 @@ namespace PowerSDR
             this.udDelay.Name = "udDelay";
             this.udDelay.Size = new System.Drawing.Size(56, 20);
             this.udDelay.TabIndex = 20;
+            this.udDelay.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.udDelay, " Set repeat message delay in seconds.");
             this.udDelay.Value = new decimal(new int[] {
             3,
             0,
@@ -1282,9 +1308,9 @@ namespace PowerSDR
             // 
             // repeatdelayLabel
             // 
-            this.repeatdelayLabel.Location = new System.Drawing.Point(304, 32);
+            this.repeatdelayLabel.Location = new System.Drawing.Point(329, 33);
             this.repeatdelayLabel.Name = "repeatdelayLabel";
-            this.repeatdelayLabel.Size = new System.Drawing.Size(80, 16);
+            this.repeatdelayLabel.Size = new System.Drawing.Size(74, 16);
             this.repeatdelayLabel.TabIndex = 48;
             this.repeatdelayLabel.Text = "Repeat Delay";
             this.toolTip1.SetToolTip(this.repeatdelayLabel, " Set repeat message delay in seconds.");
@@ -1299,7 +1325,7 @@ namespace PowerSDR
             // 
             // stopButton
             // 
-            this.stopButton.Location = new System.Drawing.Point(48, 8);
+            this.stopButton.Location = new System.Drawing.Point(54, 8);
             this.stopButton.Name = "stopButton";
             this.stopButton.Size = new System.Drawing.Size(72, 24);
             this.stopButton.TabIndex = 26;
@@ -1325,7 +1351,7 @@ namespace PowerSDR
             // 
             // txt7
             // 
-            this.txt7.Location = new System.Drawing.Point(488, 56);
+            this.txt7.Location = new System.Drawing.Point(501, 56);
             this.txt7.Name = "txt7";
             this.txt7.Size = new System.Drawing.Size(176, 20);
             this.txt7.TabIndex = 29;
@@ -1333,7 +1359,7 @@ namespace PowerSDR
             // 
             // s7
             // 
-            this.s7.Location = new System.Drawing.Point(456, 56);
+            this.s7.Location = new System.Drawing.Point(469, 56);
             this.s7.Name = "s7";
             this.s7.Size = new System.Drawing.Size(24, 20);
             this.s7.TabIndex = 30;
@@ -1344,7 +1370,7 @@ namespace PowerSDR
             // 
             // s8
             // 
-            this.s8.Location = new System.Drawing.Point(456, 88);
+            this.s8.Location = new System.Drawing.Point(469, 88);
             this.s8.Name = "s8";
             this.s8.Size = new System.Drawing.Size(24, 20);
             this.s8.TabIndex = 31;
@@ -1355,7 +1381,7 @@ namespace PowerSDR
             // 
             // txt8
             // 
-            this.txt8.Location = new System.Drawing.Point(488, 88);
+            this.txt8.Location = new System.Drawing.Point(501, 88);
             this.txt8.Name = "txt8";
             this.txt8.Size = new System.Drawing.Size(176, 20);
             this.txt8.TabIndex = 32;
@@ -1363,7 +1389,7 @@ namespace PowerSDR
             // 
             // s9
             // 
-            this.s9.Location = new System.Drawing.Point(456, 120);
+            this.s9.Location = new System.Drawing.Point(469, 120);
             this.s9.Name = "s9";
             this.s9.Size = new System.Drawing.Size(24, 20);
             this.s9.TabIndex = 33;
@@ -1374,7 +1400,7 @@ namespace PowerSDR
             // 
             // txt9
             // 
-            this.txt9.Location = new System.Drawing.Point(488, 120);
+            this.txt9.Location = new System.Drawing.Point(501, 120);
             this.txt9.Name = "txt9";
             this.txt9.Size = new System.Drawing.Size(176, 20);
             this.txt9.TabIndex = 34;
@@ -1387,9 +1413,9 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udDrop.Location = new System.Drawing.Point(384, 8);
+            this.udDrop.Location = new System.Drawing.Point(403, 9);
             this.udDrop.Maximum = new decimal(new int[] {
-            5000,
+            60000,
             0,
             0,
             0});
@@ -1401,8 +1427,10 @@ namespace PowerSDR
             this.udDrop.Name = "udDrop";
             this.udDrop.Size = new System.Drawing.Size(56, 20);
             this.udDrop.TabIndex = 35;
+            this.udDrop.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.udDrop, " Set break in drop out in milliseconds. Minimum allowed is PTT Delay * 1.5 .");
             this.udDrop.Value = new decimal(new int[] {
-            500,
+            400,
             0,
             0,
             0});
@@ -1411,7 +1439,7 @@ namespace PowerSDR
             // 
             // dropdelaylabel
             // 
-            this.dropdelaylabel.Location = new System.Drawing.Point(384, 32);
+            this.dropdelaylabel.Location = new System.Drawing.Point(401, 33);
             this.dropdelaylabel.Name = "dropdelaylabel";
             this.dropdelaylabel.Size = new System.Drawing.Size(64, 16);
             this.dropdelaylabel.TabIndex = 36;
@@ -1436,19 +1464,10 @@ namespace PowerSDR
             this.label7.TabIndex = 47;
             this.label7.Text = "label7";
             // 
-            // txtdummy1
-            // 
-            this.txtdummy1.Location = new System.Drawing.Point(12, 180);
-            this.txtdummy1.Multiline = true;
-            this.txtdummy1.Name = "txtdummy1";
-            this.txtdummy1.Size = new System.Drawing.Size(665, 82);
-            this.txtdummy1.TabIndex = 42;
-            this.txtdummy1.Text = "the actual text box will be a graphic here and this one disabled";
-            // 
             // chkPause
             // 
             this.chkPause.Image = null;
-            this.chkPause.Location = new System.Drawing.Point(16, 156);
+            this.chkPause.Location = new System.Drawing.Point(22, 156);
             this.chkPause.Name = "chkPause";
             this.chkPause.Size = new System.Drawing.Size(80, 16);
             this.chkPause.TabIndex = 43;
@@ -1482,7 +1501,7 @@ namespace PowerSDR
             // pttLed
             // 
             this.pttLed.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.pttLed.Location = new System.Drawing.Point(10, 8);
+            this.pttLed.Location = new System.Drawing.Point(23, 8);
             this.pttLed.Name = "pttLed";
             this.pttLed.Size = new System.Drawing.Size(24, 13);
             this.pttLed.TabIndex = 49;
@@ -1491,7 +1510,7 @@ namespace PowerSDR
             // keyLed
             // 
             this.keyLed.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.keyLed.Location = new System.Drawing.Point(10, 24);
+            this.keyLed.Location = new System.Drawing.Point(23, 24);
             this.keyLed.Name = "keyLed";
             this.keyLed.Size = new System.Drawing.Size(24, 13);
             this.keyLed.TabIndex = 50;
@@ -1506,23 +1525,24 @@ namespace PowerSDR
             this.keyboardLed.TabIndex = 52;
             this.toolTip1.SetToolTip(this.keyboardLed, " Keyboard active indicator.");
             // 
-            // expandButton
-            // 
-            this.expandButton.Location = new System.Drawing.Point(432, 136);
-            this.expandButton.Name = "expandButton";
-            this.expandButton.Size = new System.Drawing.Size(8, 8);
-            this.expandButton.TabIndex = 53;
-            this.toolTip1.SetToolTip(this.expandButton, " Expand form.");
-            this.expandButton.Click += new System.EventHandler(this.expandButton_Click);
-            // 
             // pttdelaylabel
             // 
-            this.pttdelaylabel.Location = new System.Drawing.Point(456, 32);
+            this.pttdelaylabel.Location = new System.Drawing.Point(469, 33);
             this.pttdelaylabel.Name = "pttdelaylabel";
             this.pttdelaylabel.Size = new System.Drawing.Size(64, 16);
             this.pttdelaylabel.TabIndex = 55;
             this.pttdelaylabel.Text = "PTT Delay";
             this.toolTip1.SetToolTip(this.pttdelaylabel, "Set delay from PTT to key down in milliseconds.");
+            // 
+            // lblQRSS
+            // 
+            this.lblQRSS.AutoSize = true;
+            this.lblQRSS.Location = new System.Drawing.Point(226, 33);
+            this.lblQRSS.Name = "lblQRSS";
+            this.lblQRSS.Size = new System.Drawing.Size(37, 13);
+            this.lblQRSS.TabIndex = 58;
+            this.lblQRSS.Text = "QRSS";
+            this.toolTip1.SetToolTip(this.lblQRSS, " QRSS or classic mode.");
             // 
             // udPtt
             // 
@@ -1531,7 +1551,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udPtt.Location = new System.Drawing.Point(456, 8);
+            this.udPtt.Location = new System.Drawing.Point(469, 9);
             this.udPtt.Maximum = new decimal(new int[] {
             2000,
             0,
@@ -1545,6 +1565,8 @@ namespace PowerSDR
             this.udPtt.Name = "udPtt";
             this.udPtt.Size = new System.Drawing.Size(56, 20);
             this.udPtt.TabIndex = 54;
+            this.udPtt.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.udPtt, "Set delay from PTT to key down in milliseconds.");
             this.udPtt.Value = new decimal(new int[] {
             500,
             0,
@@ -1561,7 +1583,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udWPM.Location = new System.Drawing.Point(240, 8);
+            this.udWPM.Location = new System.Drawing.Point(271, 9);
             this.udWPM.Maximum = new decimal(new int[] {
             99,
             0,
@@ -1575,6 +1597,8 @@ namespace PowerSDR
             this.udWPM.Name = "udWPM";
             this.udWPM.Size = new System.Drawing.Size(56, 20);
             this.udWPM.TabIndex = 56;
+            this.udWPM.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.udWPM, " Set memory keyer (not paddle) speed in words per minute. (PARIS method)");
             this.udWPM.Value = new decimal(new int[] {
             22,
             0,
@@ -1583,21 +1607,58 @@ namespace PowerSDR
             this.udWPM.ValueChanged += new System.EventHandler(this.udWPM_ValueChanged);
             this.udWPM.LostFocus += new System.EventHandler(this.udWPM_LostFocus);
             // 
+            // chkQRSS
+            // 
+            this.chkQRSS.AutoSize = true;
+            this.chkQRSS.Image = null;
+            this.chkQRSS.Location = new System.Drawing.Point(236, 14);
+            this.chkQRSS.Name = "chkQRSS";
+            this.chkQRSS.Size = new System.Drawing.Size(15, 14);
+            this.chkQRSS.TabIndex = 57;
+            this.chkQRSS.UseVisualStyleBackColor = true;
+            this.chkQRSS.CheckedChanged += new System.EventHandler(this.chkQRSS_CheckedChanged);
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.AutoScrollMargin = new System.Drawing.Size(0, 0);
+            this.pictureBox1.AutoScrollMinSize = new System.Drawing.Size(0, 0);
+            this.pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pictureBox1.Location = new System.Drawing.Point(17, 181);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(665, 90);
+            this.pictureBox1.TabIndex = 59;
+            this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox1_Paint);
+            // 
+            // chkAlwaysOnTop
+            // 
+            this.chkAlwaysOnTop.AutoSize = true;
+            this.chkAlwaysOnTop.Image = null;
+            this.chkAlwaysOnTop.Location = new System.Drawing.Point(556, 12);
+            this.chkAlwaysOnTop.Name = "chkAlwaysOnTop";
+            this.chkAlwaysOnTop.Size = new System.Drawing.Size(98, 17);
+            this.chkAlwaysOnTop.TabIndex = 60;
+            this.chkAlwaysOnTop.Text = "Always On Top";
+            this.chkAlwaysOnTop.UseVisualStyleBackColor = true;
+            this.chkAlwaysOnTop.CheckedChanged += new System.EventHandler(this.chkAlwaysOnTop_CheckedChanged);
+            // 
             // CWX
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
-            this.ClientSize = new System.Drawing.Size(448, 150);
+            this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.ClientSize = new System.Drawing.Size(698, 276);
+            this.Controls.Add(this.chkAlwaysOnTop);
+            this.Controls.Add(this.pictureBox1);
+            this.Controls.Add(this.lblQRSS);
+            this.Controls.Add(this.chkQRSS);
             this.Controls.Add(this.udWPM);
             this.Controls.Add(this.pttdelaylabel);
             this.Controls.Add(this.udPtt);
-            this.Controls.Add(this.expandButton);
             this.Controls.Add(this.keyboardLed);
             this.Controls.Add(this.keyLed);
             this.Controls.Add(this.pttLed);
             this.Controls.Add(this.keyboardButton);
             this.Controls.Add(this.clearButton);
             this.Controls.Add(this.chkPause);
-            this.Controls.Add(this.txtdummy1);
             this.Controls.Add(this.txt9);
             this.Controls.Add(this.txt8);
             this.Controls.Add(this.txt7);
@@ -1629,13 +1690,15 @@ namespace PowerSDR
             this.Controls.Add(this.s3);
             this.Controls.Add(this.s2);
             this.Controls.Add(this.s1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
+            this.DoubleBuffered = true;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
+            this.MaximizeBox = false;
+            this.MaximumSize = new System.Drawing.Size(704, 304);
+            this.MinimumSize = new System.Drawing.Size(704, 304);
             this.Name = "CWX";
-            this.Text = "   CW Memories and Keyboard ...";
-            this.Load += new System.EventHandler(this.CWX_Load);
-            this.Paint += new System.Windows.Forms.PaintEventHandler(this.CWX_Paint);
+            this.Text = "   CW Memories and Keyboard";
             this.Closing += new System.ComponentModel.CancelEventHandler(this.CWX_Closing);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.CWX_KeyUp_1);
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.CWX_MouseMove);
@@ -1652,25 +1715,15 @@ namespace PowerSDR
 
 		#region event handlers and callbacks
 
-		private void expandButton_Click(object sender, System.EventArgs e)
-		{
-			if (CWX.ActiveForm.Width > 550)
-			{
-				CWX.ActiveForm.Width = 456;
-				CWX.ActiveForm.Height = 176;
-				expandButton.Left = 432;
-				expandButton.Top = 136;
-				toolTip1.SetToolTip(expandButton, " Expand form.");
-			}
-			else
-			{
-				CWX.ActiveForm.Width = 704;
-				CWX.ActiveForm.Height = 304;
-				expandButton.Left = 680;
-				expandButton.Top = 264;
-				toolTip1.SetToolTip(expandButton, " Compress form.");
-			}
-		}
+        private void chkQRSS_CheckedChanged(object sender, EventArgs e)     // yt7pwr
+        {
+            if (chkQRSS.Checked)
+                cw_mode = CWmode.QRSS;
+            else
+                cw_mode = CWmode.classic;
+
+            setup_timer();
+        }
 		
 		private void keyboardButton_Leave(object sender, System.EventArgs e)
 		{
@@ -1692,10 +1745,10 @@ namespace PowerSDR
 		private void CWX_KeyUp_1(object sender, System.Windows.Forms.KeyEventArgs e)
 		{
 			kkk++;
-			label6.Text = kkk.ToString() + " " + 
+			/*label6.Text = kkk.ToString() + " " + 
 				e.KeyCode.ToString()+ " " + 
 				e.KeyData.ToString() + " " + 
-				e.KeyValue.ToString("x");
+				e.KeyValue.ToString("x");*/
 
 			if (e.KeyCode.ToString().Equals("Menu")) altkey = false;
 		}
@@ -1746,7 +1799,20 @@ namespace PowerSDR
 	
 		private void keyboardButton_KeyPress(object sender, System.Windows.Forms.KeyPressEventArgs e)
 		{
-			process_key(e.KeyChar);	
+			char key = e.KeyChar;
+
+            if (key >= ' ' && key <= '~')	// a possible code
+            {
+                if (key >= 'a' && key <= 'z')	// convert to upper case
+                {
+                    key -= 'a';
+                    key += 'A';
+                }
+
+                insert_key(key);		// insert into unsent
+                pictureBox1.Invalidate();
+            }
+            else if (key == 8) backspace();
 		}
 
 		// process the 'Key' button which start transmitter with key down
@@ -1758,8 +1824,10 @@ namespace PowerSDR
 				return;
 			}
 
-			if(console.CurrentDSPMode != DSPMode.CWL &&
-				console.CurrentDSPMode != DSPMode.CWU)
+            if ((console.chkVFOSplit.Checked && console.CurrentDSPModeSubRX != DSPMode.CWL &&
+                console.CurrentDSPModeSubRX != DSPMode.CWU) ||
+                (!console.chkVFOSplit.Checked && (console.CurrentDSPMode != DSPMode.CWL &&
+                console.CurrentDSPMode != DSPMode.CWU)))
 			{
 				MessageBox.Show("Console is not in CW mode.  Please switch to either CWL or CWU and try again.",
 					"CWX Error: Wrong Mode",
@@ -1778,35 +1846,12 @@ namespace PowerSDR
 			keying = true;
 		}
 
-		private void CWX_Load(object sender, System.EventArgs e)
-		{		
-#if(CWX_DEBUG)
-			Debug.WriteLine("load cwx, queue is " + elfifo.Length);
-#endif
-		}
 		private void CWX_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-		{
-			quitshut();
-			Thread.Sleep(100);
-			
-			// shut downs
-			// savesettings, close threads, kill mmtimer
-			stopThreads = true;
-			if (timerID != 0)
-			{
-				timeKillEvent(timerID);		// kill the mmtimer
-			}
-			Thread.Sleep(200);		// let it all stop
-
-			SaveSettings();
-
-		//	Debug.WriteLine("CWX_Closing()");
-
-			// don't do next two lines so we will shut down the form completely
-
-		//	this.Hide();
-		//	e.Cancel = true;
+		{		
+			this.Hide();
+			e.Cancel = true;
 		}
+
 		// Callback method called by the Win32 multimedia timer when a timer
 		// periodic event occurs.
 		private void TimerPeriodicEventCallback(int id, int msg, int user, int param1, int param2)
@@ -1882,10 +1927,9 @@ namespace PowerSDR
 			if (e.Button.Equals(MouseButtons.Right)) editit();
 		}
 
-
 		private void s1_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-
+            if (e.Button.Equals(MouseButtons.Right)) msg2keys(1);
         }
 		private void s2_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
 		{
@@ -1927,8 +1971,8 @@ namespace PowerSDR
 			quit = true;
 			kquit = true;
             quit_shut();
-            console.Keyer.extkey_dash = false;
-            console.Keyer.extkey_dot = false;
+            console.Keyer.primary_keyer_dash = false;
+            console.Keyer.primary_keyer_dot = false;
 		}
 		private void udWPM_ValueChanged(object sender, System.EventArgs e)
 		{
@@ -1971,12 +2015,7 @@ namespace PowerSDR
 
 		private void CWX_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
 		{
-			label5.Text = ((int)e.X + " " + (int)e.Y);	// a tool for screen coords
-		}
-
-		private void CWX_Paint(object sender, System.Windows.Forms.PaintEventArgs e)
-		{
-			show_keys();		// since this is not a regular control
+			//label5.Text = ((int)e.X + " " + (int)e.Y);	// a tool for screen coords
 		}
 
 		private void chkPause_CheckedChanged(object sender, System.EventArgs e)
@@ -2001,77 +2040,20 @@ namespace PowerSDR
 			keydisplay.ReleaseMutex();
 		}
 
-		private void show_keys()
+        private void show_keys()
 		{
-			string s;
-			int i;
-			int x, y, dx, dy;
-			int kyrx = kylx + kyxsz + 1;
-			int kyby = kyty + kyysz + 1;
-			
-			lock(this)
-			{
-				y = kyty + 2;
-				dx = 11; dy = 19;
-
-				System.Drawing.Graphics formGraphics = this.CreateGraphics();
-		
-				System.Drawing.Font drawFont = new System.Drawing.Font("Courier New", 14,FontStyle.Bold);
-				System.Drawing.SolidBrush drawBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Black);
-				System.Drawing.SolidBrush grayBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Gray);
-				System.Drawing.SolidBrush whiteBrush = new System.Drawing.SolidBrush(System.Drawing.Color.White);
-				formGraphics.FillRectangle(whiteBrush, new Rectangle(kylx,kyty,kyxsz+1,kyysz+1));
-
-				// draw a box around the area
-				Pen myPen = new Pen(Color.Gray, 1);
-				formGraphics.DrawLine(myPen, kylx,kyty,kyrx,kyty);
-				formGraphics.DrawLine(myPen, kyrx,kyty,kyrx,kyby);
-				formGraphics.DrawLine(myPen, kyrx,kyby,kylx,kyby);
-				formGraphics.DrawLine(myPen, kylx,kyby,kylx,kyty);
-				myPen.Dispose();
-
-				keydisplay.WaitOne();
-				x = kylx;
-				for (i = 0; i < NKEYS; i++)
-				{
-					s = kbufold.GetValue(i).ToString();
-					formGraphics.DrawString(s, drawFont, grayBrush, (float)x, (float)y);
-					if ((i % NKPL) == (NKPL-1))
-					{
-						x = kylx;  y += dy;
-					}
-					else x += dx;
-				}
-			
-				x = kylx;
-				for (i = 0; i < NKEYS; i++)
-				{
-					s = kbufnew.GetValue(i).ToString();
-					formGraphics.DrawString(s, drawFont, drawBrush, (float)x, (float)y);
-					if ((i % NKPL) == (NKPL-1))
-					{
-						x = kylx;  y += dy;
-					}
-					else x += dx;
-				}
-				keydisplay.ReleaseMutex();
-
-				drawFont.Dispose();
-				whiteBrush.Dispose();
-				drawBrush.Dispose();
-				grayBrush.Dispose();
-				formGraphics.Dispose();
-			}
+            pictureBox1.Invalidate();
 		}
 
 		private void clearButton_Click(object sender, System.EventArgs e)
 		{
-			clear_show();
+            clear_keys();
+            pictureBox1.Invalidate();
 		}
 		private void clear_show()
 		{
 			clear_keys();
-			show_keys();
+            pictureBox1.Invalidate();
 		}
 	
 
@@ -2321,7 +2303,7 @@ namespace PowerSDR
 					kbufnew.SetValue(EMPTY_CODE,NKEYS-1);
 					keydisplay.ReleaseMutex();
 					push_fifo2((byte)topkey);
-					show_keys();
+                    this.Invoke(new CrossThreadCallback(show_keys));
 					while (infifo > 0) Thread.Sleep(10);
 					// somehow wait here 'till character has been sent
 				}
@@ -2331,8 +2313,10 @@ namespace PowerSDR
 
 		private void queue_start(int qmsg)			// queue message n for start
 		{
-			if(console.CurrentDSPMode != DSPMode.CWL &&
-				console.CurrentDSPMode != DSPMode.CWU)
+            if ((console.chkVFOSplit.Checked && console.CurrentDSPModeSubRX != DSPMode.CWL &&
+                console.CurrentDSPModeSubRX != DSPMode.CWU) ||
+			    (!console.chkVFOSplit.Checked && (console.CurrentDSPMode != DSPMode.CWL &&
+				console.CurrentDSPMode != DSPMode.CWU)))
 			{
 				MessageBox.Show("Console is not in CW mode.  Please switch to either CWL or CWU and try again.",
 					"CWX Error: Wrong Mode",
@@ -2474,28 +2458,6 @@ namespace PowerSDR
 													// pauses in the message
 		}
 
-
-
-
-
-		private void process_key(char key)	// keys from keyboardButton_KeyPress event
-		{
-#if(CWX_DEBUG)
-			Debug.WriteLine((char)key + "key " + (int)key);
-#endif
-
-			if (key >= ' ' && key <= '~')	// a possible code
-			{
-				if (key >= 'a' && key <= 'z')	// convert to upper case
-				{
-					key -= 'a';
-					key += 'A';
-				}
-				insert_key(key);		// insert into unsent
-				show_keys();
-			}
-			else if (key == 8) backspace();
-		}
 		private void insert_key(char key)
 		{
 			int i;
@@ -2524,7 +2486,7 @@ namespace PowerSDR
 				if ((char)kbufnew.GetValue(i) != EMPTY_CODE)
 				{
 					kbufnew.SetValue(EMPTY_CODE,i);
-					show_keys();
+                    show_keys();
 					return;
 				}
 			}
@@ -2563,9 +2525,74 @@ namespace PowerSDR
 				cc = (char)c.GetValue(0);
 				insert_key(cc);
 			}
-			show_keys();
+            show_keys();
 		}
 		#endregion
+
+        private void pictureBox1_Paint(object sender, PaintEventArgs e)
+        {
+            try
+            {
+                string s;
+                int i;
+                int x, y, dx, dy;
+                int W = e.ClipRectangle.Width;
+                int H = e.ClipRectangle.Height;
+
+                y = kyty + 2;
+                dx = 11; dy = 19;
+
+                System.Drawing.Graphics g = pictureBox1.CreateGraphics();
+
+                System.Drawing.Font drawFont = new System.Drawing.Font("Courier New", 14, FontStyle.Bold);
+                System.Drawing.SolidBrush drawBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Black);
+                System.Drawing.SolidBrush grayBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Gray);
+                System.Drawing.SolidBrush whiteBrush = new System.Drawing.SolidBrush(System.Drawing.Color.White);
+                //g.FillRectangle(whiteBrush, new Rectangle(0, 0, W, H));
+                g.Clear(Color.White);
+
+                keydisplay.WaitOne();
+                x = kylx;
+                for (i = 0; i < NKEYS; i++)
+                {
+                    s = kbufold.GetValue(i).ToString();
+                    g.DrawString(s, drawFont, grayBrush, (float)x, (float)y);
+                    if ((i % NKPL) == (NKPL - 1))
+                    {
+                        x = kylx; y += dy;
+                    }
+                    else x += dx;
+                }
+
+                x = kylx;
+                for (i = 0; i < NKEYS; i++)
+                {
+                    s = kbufnew.GetValue(i).ToString();
+                    g.DrawString(s, drawFont, drawBrush, (float)x, (float)y);
+                    if ((i % NKPL) == (NKPL - 1))
+                    {
+                        x = kylx; y += dy;
+                    }
+                    else x += dx;
+                }
+                keydisplay.ReleaseMutex();
+
+                drawFont.Dispose();
+                whiteBrush.Dispose();
+                drawBrush.Dispose();
+                grayBrush.Dispose();
+                g.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void chkAlwaysOnTop_CheckedChanged(object sender, EventArgs e)
+        {
+            this.TopMost = chkAlwaysOnTop.Checked;
+        }
 	
-	} // end class
-} // end namespace
+	}
+}

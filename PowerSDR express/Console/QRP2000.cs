@@ -2,7 +2,7 @@
 //              QRP2000 with USB Si570
 //=================================================================
 //
-// Copyright (C)2010 YT7PWR Goran Radivojevic
+// Copyright (C)2010,2011 YT7PWR Goran Radivojevic
 // contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 //
 // This program is free software; you can redistribute it and/or
@@ -44,9 +44,6 @@ namespace PowerSDR
         public Console console;
         public bool connected = false;
         int tmp;
-        public delegate void CallbackFunction(int cnt, int status, float IQoffs, short[] IQdata);
-        private static CallbackFunction callback;
-
 
         public QRP2000(Console c)
         {
@@ -133,8 +130,6 @@ namespace PowerSDR
                     }
                     else
                     {
-                        if (!console.SkinsEnabled)
-                            console.SetupForm.chkQRP2000USB.Checked = false;
                         console.SR_USBSi570Enable = false;
                         console.btnUSB.BackColor = Color.Red;
                     }
@@ -179,11 +174,14 @@ namespace PowerSDR
             {
                 if (IsOpen())
                     SetFreq(freq, i2caddr);
+
+                Thread.Sleep(10);
             }
             catch (Exception ex)
             {
                 Debug.Write("Error setting new frequency!\nValue is wrong!\n"
                     + ex.ToString());
+                Thread.Sleep(10);
             }
         }
 
