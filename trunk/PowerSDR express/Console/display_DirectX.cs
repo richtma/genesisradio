@@ -900,39 +900,60 @@ namespace PowerSDR
 
         private static void UpdateDisplayPeak()
         {
-            if (peak_buffer[0] == CLEAR_FLAG)
+            try
             {
-                for (int i = 0; i < BUFFER_SIZE; i++)
-                    peak_buffer[i] = current_display_data[i];
-            }
-            else
-            {
-                for (int i = 0; i < BUFFER_SIZE; i++)
+                if (peak_buffer[0] == CLEAR_FLAG)
                 {
-                    if (current_display_data[i] > peak_buffer[i])
+                    for (int i = 0; i < BUFFER_SIZE; i++)
                         peak_buffer[i] = current_display_data[i];
-                    current_display_data[i] = peak_buffer[i];
                 }
+                else
+                {
+                    for (int i = 0; i < BUFFER_SIZE; i++)
+                    {
+                        if (current_display_data[i] > peak_buffer[i])
+                            peak_buffer[i] = current_display_data[i];
+                        current_display_data[i] = peak_buffer[i];
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
             }
         }
 
         public static void ResetDisplayAverage()
         {
-            if (average_buffer != null)
+            try
             {
-                average_buffer[0] = CLEAR_FLAG;	// set reset flag
-                average_waterfall_buffer[0] = CLEAR_FLAG;
+                if (average_buffer != null)
+                {
+                    if (average_buffer != null)
+                    {
+                        average_buffer[0] = CLEAR_FLAG;	// set reset flag
+                        average_waterfall_buffer[0] = CLEAR_FLAG;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
             }
         }
 
         public static void ResetDisplayPeak()
         {
-            peak_buffer[0] = CLEAR_FLAG; // set reset flag
+            try
+            {
+                if (peak_buffer != null)
+                    peak_buffer[0] = CLEAR_FLAG; // set reset flag
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
-
-        #endregion
-
-        #region Routines
 
         public static bool DirectXInit()
         {
@@ -1108,7 +1129,7 @@ namespace PowerSDR
                             Panadapter_texture_size.Height = panadapter_target.Height;
                             Panadapter_Sprite = new Sprite(device);
                             WaterfallTexture = Texture.FromFile(waterfall_dx_device, background_image, waterfall_target.Width, waterfall_target.Height,
-                                1, Usage.None, Format.A8R8G8B8, Pool.Managed, SlimDX.Direct3D9.Filter.Default, SlimDX.Direct3D9.Filter.Default, 0);
+                                1, Usage.None, Format.X8R8G8B8, Pool.Managed, SlimDX.Direct3D9.Filter.Default, SlimDX.Direct3D9.Filter.Default, 0);
                             Waterfall_texture_size.Width = waterfall_target.Width;
                             Waterfall_texture_size.Height = waterfall_target.Height;
                             Waterfall_Sprite = new Sprite(waterfall_dx_device);
@@ -1117,7 +1138,7 @@ namespace PowerSDR
                         {
                             Panadapter_Sprite = null;
                             WaterfallTexture = new Texture(waterfall_dx_device, waterfall_target.Width, waterfall_target.Height, 0,
-                                Usage.None, Format.A8R8G8B8, Pool.Managed);
+                                Usage.None, Format.X8R8G8B8, Pool.Managed);
                             Waterfall_texture_size.Width = waterfall_target.Width;
                             Waterfall_texture_size.Height = waterfall_target.Height;
                             Waterfall_Sprite = new Sprite(waterfall_dx_device);

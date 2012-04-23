@@ -1,1 +1,35 @@
 E:\GSDR\bin\Release_new\Genesis.exe.config
+H:\PowerSDR express\bin\Release_new\Genesis.exe.config
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\ResolveAssemblyReference.cache
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\PowerSDR.About.resources
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\PowerSDR.Console.resources
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\PowerSDR.cwedit.resources
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\PowerSDR.CWX.resources
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\PowerSDR.EQForm.resources
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\PowerSDR.FilterForm.resources
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\System.Windows.Forms.ButtonTS.resources
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\PowerSDR.Progress.resources
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\PowerSDR.Properties.Resources.resources
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\PowerSDR.Setup.resources
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\Splash_Screen.Splash.resources
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\PowerSDR.WaveControl.resources
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\PowerSDR.WaveOptions.resources
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\PowerSDR.SetupWizard.resources
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\PowerSDR.ClusterSetup.resources
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\PowerSDR.DebugForm.resources
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\PowerSDR.DXClusterClient.resources
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\PowerSDR.InputBox.resources
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\PowerSDR.Invoke.SMeter1.resources
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\PowerSDR.VoiceMessages.resources
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\PowerSDR.XTRV.resources
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\PowerSDR.csproj.GenerateResource.Cache
+H:\PowerSDR express\bin\Release_new\Genesis.exe.manifest
+H:\PowerSDR express\bin\Release_new\Genesis.application
+H:\PowerSDR express\bin\Release_new\Genesis.exe
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\Genesis.exe.manifest
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\Genesis.application
+H:\PowerSDR express\trunk\PowerSDR express\Console\obj\x86\Release\Genesis.exe
+H:\PowerSDR express\bin\Release\Genesis.exe.config
+H:\PowerSDR express\bin\Release\Genesis.exe.manifest
+H:\PowerSDR express\bin\Release\Genesis.application
+H:\PowerSDR express\bin\Release\Genesis.exe

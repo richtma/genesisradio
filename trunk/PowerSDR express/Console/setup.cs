@@ -930,29 +930,23 @@ namespace PowerSDR
         private RadioButtonTS radTestBothChannel;
         private RadioButtonTS radTestLeftChannel;
         private RadioButtonTS radTestRightChannel;
-        private CheckBoxTS chkG59ExtATU;
+        private CheckBoxTS chkExtATU;
         private CheckBoxTS chkG59IambicBMode;
         private GroupBoxTS grpAudioTests;
         private ButtonTS btnAudioStreamInfo;
-        public ProgressBar progressBar2;
-        public ProgressBar progressBar1;
-        private LabelTS lblAudioRightChannel;
-        private LabelTS lblAudioLeftChannel;
         private LabelTS lblAudioStreamSampleRate;
         private LabelTS lblAudioStreamOutputLatency;
         private LabelTS lblAudioStreamInputLatency;
         private LabelTS lblAudioStreamSampleRateValue;
         private LabelTS lblAudioStreamOutputLatencyValue;
         private LabelTS lblAudioStreamInputLatencyValue;
-        private ButtonTS btnAudioTestStop;
-        private ButtonTS btnAudioTestStart;
         private ComboBoxTS comboKeyerConnPTTLine;
         private LabelTS lblKeyerConnPTTLine;
         private NumericUpDownTS udG59TXSwitchTime;
         private Label lblG59TXSwitchTime;
-        private RadioButtonTS radG59ExtATUMemTune;
-        private RadioButtonTS radG59ExtATUFullTune;
-        private RadioButtonTS radG59ExtATUBypass;
+        private RadioButtonTS radExtATUMemTune;
+        private RadioButtonTS radExtATUFullTune;
+        private RadioButtonTS radExtATUBypass;
         private CheckBoxTS chkButtonZoom;
         private TabPage tpATU;
         private GroupBoxTS grpExtATU;
@@ -1143,8 +1137,8 @@ namespace PowerSDR
 
 		#region Constructor and Destructor
 
-		public Setup(Console c)
-		{
+        public Setup(Console c)
+        {
             try
             {
                 InitializeComponent();
@@ -1178,11 +1172,19 @@ namespace PowerSDR
 
                 comboGeneralProcessPriority.Text = "Normal";
                 comboOptFilterWidthMode.Text = "Linear";
+                comboAudioSampleRate1.Items.Add(12000);
+                comboAudioSampleRate1.Items.Add(24000);
+                comboAudioSampleRate1.Items.Add(44100);
+                comboAudioSampleRate1.Items.Add(48000);
+                comboAudioSampleRate1.Items.Add(96000);
+                comboAudioSampleRate1.Items.Add(192000);
                 comboAudioSoundCard.Text = "Unsupported Card";
+
                 if (comboAudioSampleRate1.Items.Count > 0)
                     comboAudioSampleRate1.SelectedIndex = 0;
                 if (comboAudioSampleRate1.Items.Count > 0)
                     comboAudioSampleRateVAC.SelectedIndex = 0;
+
                 comboAudioBuffer1.Text = "2048";
                 comboAudioBufferVAC.Text = "2048";
                 comboAudioChannels1.Text = "2";
@@ -1373,7 +1375,7 @@ namespace PowerSDR
             {
                 MessageBox.Show("Error in Setup function!\n" + ex.ToString());
             }
-		}
+        }
 
 		protected override void Dispose( bool disposing )
 		{
@@ -1683,7 +1685,7 @@ namespace PowerSDR
             this.udCATEthCollTime = new System.Windows.Forms.NumericUpDownTS();
             this.lblCATEthServerWatchdogTime = new System.Windows.Forms.LabelTS();
             this.udCATEthServerWatchdogTime = new System.Windows.Forms.NumericUpDownTS();
-            this.chkG59ExtATU = new System.Windows.Forms.CheckBoxTS();
+            this.chkExtATU = new System.Windows.Forms.CheckBoxTS();
             this.chkG59IambicBMode = new System.Windows.Forms.CheckBoxTS();
             this.comboKeyerConnPTTLine = new System.Windows.Forms.ComboBoxTS();
             this.udG59TXSwitchTime = new System.Windows.Forms.NumericUpDownTS();
@@ -1723,6 +1725,16 @@ namespace PowerSDR
             this.udAudioLatencyVAC = new System.Windows.Forms.NumericUpDownTS();
             this.chkLargeRBBuffer = new System.Windows.Forms.CheckBoxTS();
             this.btnTXProfileRestore = new System.Windows.Forms.Button();
+            this.tbPrimaryGain = new System.Windows.Forms.TrackBarTS();
+            this.chkPrimaryRXshiftEnabled = new System.Windows.Forms.CheckBoxTS();
+            this.tbPrimaryPhase = new System.Windows.Forms.TrackBarTS();
+            this.chkPrimaryI_Qcorrection = new System.Windows.Forms.CheckBoxTS();
+            this.chkPrimaryDirectI_Q = new System.Windows.Forms.CheckBoxTS();
+            this.tbVACGain = new System.Windows.Forms.TrackBarTS();
+            this.chkVACRXShiftEnable = new System.Windows.Forms.CheckBoxTS();
+            this.tbVACPhase = new System.Windows.Forms.TrackBarTS();
+            this.chkVACCorrection = new System.Windows.Forms.CheckBoxTS();
+            this.chkVACDirectI_Q = new System.Windows.Forms.CheckBoxTS();
             this.lblG59PTT = new System.Windows.Forms.LabelTS();
             this.lblG59PTT_ON = new System.Windows.Forms.LabelTS();
             this.lblG59PTT_OFF = new System.Windows.Forms.LabelTS();
@@ -1730,8 +1742,6 @@ namespace PowerSDR
             this.timer_sweep = new System.Windows.Forms.Timer(this.components);
             this.tpTests = new System.Windows.Forms.TabPage();
             this.grpAudioTests = new System.Windows.Forms.GroupBoxTS();
-            this.btnAudioTestStop = new System.Windows.Forms.ButtonTS();
-            this.btnAudioTestStart = new System.Windows.Forms.ButtonTS();
             this.lblAudioStreamSampleRateValue = new System.Windows.Forms.LabelTS();
             this.lblAudioStreamOutputLatencyValue = new System.Windows.Forms.LabelTS();
             this.lblAudioStreamInputLatencyValue = new System.Windows.Forms.LabelTS();
@@ -1742,10 +1752,6 @@ namespace PowerSDR
             this.btnWBIRRead = new System.Windows.Forms.ButtonTS();
             this.lblAudioStreamOutputLatency = new System.Windows.Forms.LabelTS();
             this.lblAudioStreamInputLatency = new System.Windows.Forms.LabelTS();
-            this.lblAudioRightChannel = new System.Windows.Forms.LabelTS();
-            this.lblAudioLeftChannel = new System.Windows.Forms.LabelTS();
-            this.progressBar2 = new System.Windows.Forms.ProgressBar();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.btnAudioStreamInfo = new System.Windows.Forms.ButtonTS();
             this.grpBoxTS1 = new System.Windows.Forms.GroupBoxTS();
             this.groupBoxTS5 = new System.Windows.Forms.GroupBoxTS();
@@ -2162,12 +2168,7 @@ namespace PowerSDR
             this.grpPrimaryDirectI_Q = new System.Windows.Forms.GroupBoxTS();
             this.labelTS30 = new System.Windows.Forms.LabelTS();
             this.labelTS31 = new System.Windows.Forms.LabelTS();
-            this.tbPrimaryGain = new System.Windows.Forms.TrackBarTS();
-            this.chkPrimaryRXshiftEnabled = new System.Windows.Forms.CheckBoxTS();
             this.labelTS32 = new System.Windows.Forms.LabelTS();
-            this.tbPrimaryPhase = new System.Windows.Forms.TrackBarTS();
-            this.chkPrimaryI_Qcorrection = new System.Windows.Forms.CheckBoxTS();
-            this.chkPrimaryDirectI_Q = new System.Windows.Forms.CheckBoxTS();
             this.labelTS29 = new System.Windows.Forms.LabelTS();
             this.chkAudioMicBoost = new System.Windows.Forms.CheckBoxTS();
             this.labelTS24 = new System.Windows.Forms.LabelTS();
@@ -2192,12 +2193,7 @@ namespace PowerSDR
             this.grpVACDirectIQ = new System.Windows.Forms.GroupBoxTS();
             this.labelTS20 = new System.Windows.Forms.LabelTS();
             this.labelTS22 = new System.Windows.Forms.LabelTS();
-            this.tbVACGain = new System.Windows.Forms.TrackBarTS();
-            this.chkVACRXShiftEnable = new System.Windows.Forms.CheckBoxTS();
             this.lblRXShift = new System.Windows.Forms.LabelTS();
-            this.tbVACPhase = new System.Windows.Forms.TrackBarTS();
-            this.chkVACCorrection = new System.Windows.Forms.CheckBoxTS();
-            this.chkVACDirectI_Q = new System.Windows.Forms.CheckBoxTS();
             this.grpLoopDll = new System.Windows.Forms.GroupBoxTS();
             this.grpAudioVACAutoEnable = new System.Windows.Forms.GroupBoxTS();
             this.grpAudioVAC = new System.Windows.Forms.GroupBoxTS();
@@ -2370,9 +2366,9 @@ namespace PowerSDR
             this.lblUSBSerialNo = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.radG59ExtATUBypass = new System.Windows.Forms.RadioButtonTS();
-            this.radG59ExtATUMemTune = new System.Windows.Forms.RadioButtonTS();
-            this.radG59ExtATUFullTune = new System.Windows.Forms.RadioButtonTS();
+            this.radExtATUBypass = new System.Windows.Forms.RadioButtonTS();
+            this.radExtATUMemTune = new System.Windows.Forms.RadioButtonTS();
+            this.radExtATUFullTune = new System.Windows.Forms.RadioButtonTS();
             this.tcSetup = new System.Windows.Forms.TabControl();
             this.tpATU = new System.Windows.Forms.TabPage();
             this.grpExtATU = new System.Windows.Forms.GroupBoxTS();
@@ -2403,6 +2399,7 @@ namespace PowerSDR
             this.chkCATPTT_DTR = new System.Windows.Forms.CheckBoxTS();
             this.chkCATPTTEnabled = new System.Windows.Forms.CheckBoxTS();
             this.grpCatControlBox = new System.Windows.Forms.GroupBoxTS();
+            this.chkCATPushData = new System.Windows.Forms.CheckBoxTS();
             this.comboCATstopbits = new System.Windows.Forms.ComboBoxTS();
             this.lblCATData = new System.Windows.Forms.LabelTS();
             this.comboCATdatabits = new System.Windows.Forms.ComboBoxTS();
@@ -2471,7 +2468,6 @@ namespace PowerSDR
             this.groupBoxTS3 = new System.Windows.Forms.GroupBoxTS();
             this.labelTS10 = new System.Windows.Forms.LabelTS();
             this.groupBoxTS4 = new System.Windows.Forms.GroupBoxTS();
-            this.chkCATPushData = new System.Windows.Forms.CheckBoxTS();
             ((System.ComponentModel.ISupportInitialize)(this.udG40Xtal1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.udG3020Xtal4)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.udG3020Xtal3)).BeginInit();
@@ -2592,6 +2588,10 @@ namespace PowerSDR
             ((System.ComponentModel.ISupportInitialize)(this.udPrimaryRXshift)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.udUSBSerialNo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.udAudioLatencyVAC)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbPrimaryGain)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbPrimaryPhase)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbVACGain)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbVACPhase)).BeginInit();
             this.tpTests.SuspendLayout();
             this.grpAudioTests.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.udWBIRindex)).BeginInit();
@@ -2734,8 +2734,6 @@ namespace PowerSDR
             this.tpAudioCard1.SuspendLayout();
             this.grpAudioDetails1.SuspendLayout();
             this.grpPrimaryDirectI_Q.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.tbPrimaryGain)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tbPrimaryPhase)).BeginInit();
             this.grpSampleCorrection.SuspendLayout();
             this.grpAudioChannels.SuspendLayout();
             this.groupBoxTS7.SuspendLayout();
@@ -2743,8 +2741,6 @@ namespace PowerSDR
             this.grpAudioLatency1.SuspendLayout();
             this.tpVAC.SuspendLayout();
             this.grpVACDirectIQ.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.tbVACGain)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tbVACPhase)).BeginInit();
             this.grpLoopDll.SuspendLayout();
             this.grpAudioVACAutoEnable.SuspendLayout();
             this.grpAudioVAC.SuspendLayout();
@@ -3990,12 +3986,6 @@ namespace PowerSDR
             // 
             this.comboAudioSampleRate1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboAudioSampleRate1.DropDownWidth = 64;
-            this.comboAudioSampleRate1.Items.AddRange(new object[] {
-            "12000",
-            "24000",
-            "48000",
-            "96000",
-            "192000"});
             this.comboAudioSampleRate1.Location = new System.Drawing.Point(326, 38);
             this.comboAudioSampleRate1.Name = "comboAudioSampleRate1";
             this.comboAudioSampleRate1.Size = new System.Drawing.Size(64, 21);
@@ -8100,18 +8090,18 @@ namespace PowerSDR
             0});
             this.udCATEthServerWatchdogTime.ValueChanged += new System.EventHandler(this.udCATEthServerWatchdogTime_ValueChanged);
             // 
-            // chkG59ExtATU
+            // chkExtATU
             // 
-            this.chkG59ExtATU.AutoSize = true;
-            this.chkG59ExtATU.Image = null;
-            this.chkG59ExtATU.Location = new System.Drawing.Point(24, 34);
-            this.chkG59ExtATU.Name = "chkG59ExtATU";
-            this.chkG59ExtATU.Size = new System.Drawing.Size(89, 17);
-            this.chkG59ExtATU.TabIndex = 9;
-            this.chkG59ExtATU.Text = "External ATU";
-            this.toolTip1.SetToolTip(this.chkG59ExtATU, "External ATU present.");
-            this.chkG59ExtATU.UseVisualStyleBackColor = true;
-            this.chkG59ExtATU.CheckedChanged += new System.EventHandler(this.chkG59ExtATU_CheckedChanged);
+            this.chkExtATU.AutoSize = true;
+            this.chkExtATU.Image = null;
+            this.chkExtATU.Location = new System.Drawing.Point(24, 34);
+            this.chkExtATU.Name = "chkExtATU";
+            this.chkExtATU.Size = new System.Drawing.Size(89, 17);
+            this.chkExtATU.TabIndex = 9;
+            this.chkExtATU.Text = "External ATU";
+            this.toolTip1.SetToolTip(this.chkExtATU, "External ATU present.");
+            this.chkExtATU.UseVisualStyleBackColor = true;
+            this.chkExtATU.CheckedChanged += new System.EventHandler(this.chkG59ExtATU_CheckedChanged);
             // 
             // chkG59IambicBMode
             // 
@@ -8583,7 +8573,7 @@ namespace PowerSDR
             this.udRXShift.Size = new System.Drawing.Size(60, 20);
             this.udRXShift.TabIndex = 44;
             this.udRXShift.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.udRXShift, "Controls the gain on the audio coming from third party applications.");
+            this.toolTip1.SetToolTip(this.udRXShift, "VAC Direct I/Q RX Shift value.");
             this.udRXShift.Value = new decimal(new int[] {
             24000,
             0,
@@ -8645,7 +8635,7 @@ namespace PowerSDR
             this.udVACGain.Size = new System.Drawing.Size(56, 20);
             this.udVACGain.TabIndex = 50;
             this.udVACGain.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.udVACGain, "Sets the phase offset between the I and Q channels.  ");
+            this.toolTip1.SetToolTip(this.udVACGain, "VAC Direct I/Q output Gain correction.");
             this.udVACGain.Value = new decimal(new int[] {
             0,
             0,
@@ -8749,7 +8739,7 @@ namespace PowerSDR
             this.udPrimaryGain.Size = new System.Drawing.Size(56, 20);
             this.udPrimaryGain.TabIndex = 50;
             this.udPrimaryGain.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.udPrimaryGain, "Sets the phase offset between the I and Q channels.  ");
+            this.toolTip1.SetToolTip(this.udPrimaryGain, "Direct I/Q output Gain correction.");
             this.udPrimaryGain.Value = new decimal(new int[] {
             0,
             0,
@@ -8780,7 +8770,7 @@ namespace PowerSDR
             this.udPrimaryPhase.Size = new System.Drawing.Size(56, 20);
             this.udPrimaryPhase.TabIndex = 48;
             this.udPrimaryPhase.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.udPrimaryPhase, "Sets the phase offset between the I and Q channels.  ");
+            this.toolTip1.SetToolTip(this.udPrimaryPhase, "Direct I/Q output Phase correction.");
             this.udPrimaryPhase.Value = new decimal(new int[] {
             0,
             0,
@@ -8810,7 +8800,7 @@ namespace PowerSDR
             this.udPrimaryRXshift.Size = new System.Drawing.Size(60, 20);
             this.udPrimaryRXshift.TabIndex = 44;
             this.udPrimaryRXshift.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.toolTip1.SetToolTip(this.udPrimaryRXshift, "Controls the gain on the audio coming from third party applications.");
+            this.toolTip1.SetToolTip(this.udPrimaryRXshift, "Direct I/Q RX Shift value.");
             this.udPrimaryRXshift.Value = new decimal(new int[] {
             24000,
             0,
@@ -8967,6 +8957,136 @@ namespace PowerSDR
             this.toolTip1.SetToolTip(this.btnTXProfileRestore, "Click to restore TXProfile settings.");
             this.btnTXProfileRestore.Click += new System.EventHandler(this.btnTXProfileRestore_Click);
             // 
+            // tbPrimaryGain
+            // 
+            this.tbPrimaryGain.AutoSize = false;
+            this.tbPrimaryGain.Location = new System.Drawing.Point(190, 66);
+            this.tbPrimaryGain.Maximum = 400;
+            this.tbPrimaryGain.Minimum = -400;
+            this.tbPrimaryGain.Name = "tbPrimaryGain";
+            this.tbPrimaryGain.Size = new System.Drawing.Size(72, 25);
+            this.tbPrimaryGain.TabIndex = 41;
+            this.tbPrimaryGain.TickFrequency = 50;
+            this.toolTip1.SetToolTip(this.tbPrimaryGain, "Direct I/Q output Gain correction.");
+            this.tbPrimaryGain.Scroll += new System.EventHandler(this.tbPrimaryGain_Scroll);
+            // 
+            // chkPrimaryRXshiftEnabled
+            // 
+            this.chkPrimaryRXshiftEnabled.AutoSize = true;
+            this.chkPrimaryRXshiftEnabled.Image = null;
+            this.chkPrimaryRXshiftEnabled.Location = new System.Drawing.Point(12, 57);
+            this.chkPrimaryRXshiftEnabled.Name = "chkPrimaryRXshiftEnabled";
+            this.chkPrimaryRXshiftEnabled.Size = new System.Drawing.Size(98, 17);
+            this.chkPrimaryRXshiftEnabled.TabIndex = 46;
+            this.chkPrimaryRXshiftEnabled.Text = "RX shift enable";
+            this.toolTip1.SetToolTip(this.chkPrimaryRXshiftEnabled, "Direct I/Q RX Shift enable.");
+            this.chkPrimaryRXshiftEnabled.UseVisualStyleBackColor = true;
+            this.chkPrimaryRXshiftEnabled.CheckedChanged += new System.EventHandler(this.chkPrimaryRXshift_CheckedChanged);
+            // 
+            // tbPrimaryPhase
+            // 
+            this.tbPrimaryPhase.AutoSize = false;
+            this.tbPrimaryPhase.Location = new System.Drawing.Point(190, 23);
+            this.tbPrimaryPhase.Maximum = 400;
+            this.tbPrimaryPhase.Minimum = -400;
+            this.tbPrimaryPhase.Name = "tbPrimaryPhase";
+            this.tbPrimaryPhase.Size = new System.Drawing.Size(72, 25);
+            this.tbPrimaryPhase.TabIndex = 40;
+            this.tbPrimaryPhase.TickFrequency = 50;
+            this.toolTip1.SetToolTip(this.tbPrimaryPhase, "Direct I/Q output Phase correction.");
+            this.tbPrimaryPhase.Scroll += new System.EventHandler(this.tbPrimaryPhase_Scroll);
+            // 
+            // chkPrimaryI_Qcorrection
+            // 
+            this.chkPrimaryI_Qcorrection.AutoSize = true;
+            this.chkPrimaryI_Qcorrection.Image = null;
+            this.chkPrimaryI_Qcorrection.Location = new System.Drawing.Point(12, 38);
+            this.chkPrimaryI_Qcorrection.Name = "chkPrimaryI_Qcorrection";
+            this.chkPrimaryI_Qcorrection.Size = new System.Drawing.Size(87, 17);
+            this.chkPrimaryI_Qcorrection.TabIndex = 39;
+            this.chkPrimaryI_Qcorrection.Text = "IQ correction";
+            this.toolTip1.SetToolTip(this.chkPrimaryI_Qcorrection, "Dirtect I/Q output IQ correction.");
+            this.chkPrimaryI_Qcorrection.UseVisualStyleBackColor = true;
+            this.chkPrimaryI_Qcorrection.CheckedChanged += new System.EventHandler(this.chkPrimaryI_Qcorrection_CheckedChanged);
+            // 
+            // chkPrimaryDirectI_Q
+            // 
+            this.chkPrimaryDirectI_Q.AutoSize = true;
+            this.chkPrimaryDirectI_Q.Image = null;
+            this.chkPrimaryDirectI_Q.Location = new System.Drawing.Point(12, 19);
+            this.chkPrimaryDirectI_Q.Name = "chkPrimaryDirectI_Q";
+            this.chkPrimaryDirectI_Q.Size = new System.Drawing.Size(59, 17);
+            this.chkPrimaryDirectI_Q.TabIndex = 38;
+            this.chkPrimaryDirectI_Q.Text = "Enable";
+            this.toolTip1.SetToolTip(this.chkPrimaryDirectI_Q, "Enable Direct I/Q output");
+            this.chkPrimaryDirectI_Q.UseVisualStyleBackColor = true;
+            this.chkPrimaryDirectI_Q.CheckedChanged += new System.EventHandler(this.chkPrimaryDirectI_Q_CheckedChanged);
+            // 
+            // tbVACGain
+            // 
+            this.tbVACGain.AutoSize = false;
+            this.tbVACGain.Location = new System.Drawing.Point(187, 72);
+            this.tbVACGain.Maximum = 400;
+            this.tbVACGain.Minimum = -400;
+            this.tbVACGain.Name = "tbVACGain";
+            this.tbVACGain.Size = new System.Drawing.Size(72, 25);
+            this.tbVACGain.TabIndex = 41;
+            this.tbVACGain.TickFrequency = 50;
+            this.toolTip1.SetToolTip(this.tbVACGain, "VAC Direct I/Q output Gain correction.");
+            this.tbVACGain.Scroll += new System.EventHandler(this.tbVACGain_Scroll);
+            // 
+            // chkVACRXShiftEnable
+            // 
+            this.chkVACRXShiftEnable.AutoSize = true;
+            this.chkVACRXShiftEnable.Image = null;
+            this.chkVACRXShiftEnable.Location = new System.Drawing.Point(12, 66);
+            this.chkVACRXShiftEnable.Name = "chkVACRXShiftEnable";
+            this.chkVACRXShiftEnable.Size = new System.Drawing.Size(98, 17);
+            this.chkVACRXShiftEnable.TabIndex = 46;
+            this.chkVACRXShiftEnable.Text = "RX shift enable";
+            this.toolTip1.SetToolTip(this.chkVACRXShiftEnable, "VAC Direct I/Q RX Shift.");
+            this.chkVACRXShiftEnable.UseVisualStyleBackColor = true;
+            this.chkVACRXShiftEnable.CheckedChanged += new System.EventHandler(this.chkVACRXShiftEnable_CheckedChanged);
+            // 
+            // tbVACPhase
+            // 
+            this.tbVACPhase.AutoSize = false;
+            this.tbVACPhase.Location = new System.Drawing.Point(187, 29);
+            this.tbVACPhase.Maximum = 400;
+            this.tbVACPhase.Minimum = -400;
+            this.tbVACPhase.Name = "tbVACPhase";
+            this.tbVACPhase.Size = new System.Drawing.Size(72, 25);
+            this.tbVACPhase.TabIndex = 40;
+            this.tbVACPhase.TickFrequency = 50;
+            this.toolTip1.SetToolTip(this.tbVACPhase, "VAC Direct I/Q output Phase correction.");
+            this.tbVACPhase.Scroll += new System.EventHandler(this.tbVACPhase_Scroll);
+            // 
+            // chkVACCorrection
+            // 
+            this.chkVACCorrection.AutoSize = true;
+            this.chkVACCorrection.Image = null;
+            this.chkVACCorrection.Location = new System.Drawing.Point(12, 43);
+            this.chkVACCorrection.Name = "chkVACCorrection";
+            this.chkVACCorrection.Size = new System.Drawing.Size(87, 17);
+            this.chkVACCorrection.TabIndex = 39;
+            this.chkVACCorrection.Text = "IQ correction";
+            this.toolTip1.SetToolTip(this.chkVACCorrection, "VAC Direct I/Q output correction.");
+            this.chkVACCorrection.UseVisualStyleBackColor = true;
+            this.chkVACCorrection.CheckedChanged += new System.EventHandler(this.chkVACCorrection_CheckedChanged);
+            // 
+            // chkVACDirectI_Q
+            // 
+            this.chkVACDirectI_Q.AutoSize = true;
+            this.chkVACDirectI_Q.Image = null;
+            this.chkVACDirectI_Q.Location = new System.Drawing.Point(12, 20);
+            this.chkVACDirectI_Q.Name = "chkVACDirectI_Q";
+            this.chkVACDirectI_Q.Size = new System.Drawing.Size(59, 17);
+            this.chkVACDirectI_Q.TabIndex = 38;
+            this.chkVACDirectI_Q.Text = "Enable";
+            this.toolTip1.SetToolTip(this.chkVACDirectI_Q, "Enable VAC Direct I/Q output.");
+            this.chkVACDirectI_Q.UseVisualStyleBackColor = true;
+            this.chkVACDirectI_Q.CheckedChanged += new System.EventHandler(this.chkDirectI_Q_CheckedChanged);
+            // 
             // lblG59PTT
             // 
             this.lblG59PTT.AutoSize = true;
@@ -9027,8 +9147,6 @@ namespace PowerSDR
             // 
             // grpAudioTests
             // 
-            this.grpAudioTests.Controls.Add(this.btnAudioTestStop);
-            this.grpAudioTests.Controls.Add(this.btnAudioTestStart);
             this.grpAudioTests.Controls.Add(this.lblAudioStreamSampleRateValue);
             this.grpAudioTests.Controls.Add(this.lblAudioStreamOutputLatencyValue);
             this.grpAudioTests.Controls.Add(this.lblAudioStreamInputLatencyValue);
@@ -9039,10 +9157,6 @@ namespace PowerSDR
             this.grpAudioTests.Controls.Add(this.btnWBIRRead);
             this.grpAudioTests.Controls.Add(this.lblAudioStreamOutputLatency);
             this.grpAudioTests.Controls.Add(this.lblAudioStreamInputLatency);
-            this.grpAudioTests.Controls.Add(this.lblAudioRightChannel);
-            this.grpAudioTests.Controls.Add(this.lblAudioLeftChannel);
-            this.grpAudioTests.Controls.Add(this.progressBar2);
-            this.grpAudioTests.Controls.Add(this.progressBar1);
             this.grpAudioTests.Controls.Add(this.btnAudioStreamInfo);
             this.grpAudioTests.Location = new System.Drawing.Point(171, 192);
             this.grpAudioTests.Name = "grpAudioTests";
@@ -9050,28 +9164,6 @@ namespace PowerSDR
             this.grpAudioTests.TabIndex = 92;
             this.grpAudioTests.TabStop = false;
             this.grpAudioTests.Text = "Audio stream tests";
-            // 
-            // btnAudioTestStop
-            // 
-            this.btnAudioTestStop.Image = null;
-            this.btnAudioTestStop.Location = new System.Drawing.Point(167, 50);
-            this.btnAudioTestStop.Name = "btnAudioTestStop";
-            this.btnAudioTestStop.Size = new System.Drawing.Size(75, 23);
-            this.btnAudioTestStop.TabIndex = 22;
-            this.btnAudioTestStop.Text = "Stop";
-            this.btnAudioTestStop.UseVisualStyleBackColor = true;
-            this.btnAudioTestStop.Click += new System.EventHandler(this.btnAudioTestStop_Click);
-            // 
-            // btnAudioTestStart
-            // 
-            this.btnAudioTestStart.Image = null;
-            this.btnAudioTestStart.Location = new System.Drawing.Point(167, 21);
-            this.btnAudioTestStart.Name = "btnAudioTestStart";
-            this.btnAudioTestStart.Size = new System.Drawing.Size(75, 23);
-            this.btnAudioTestStart.TabIndex = 21;
-            this.btnAudioTestStart.Text = "Start";
-            this.btnAudioTestStart.UseVisualStyleBackColor = true;
-            this.btnAudioTestStart.Click += new System.EventHandler(this.btnAudioTestStart_Click);
             // 
             // lblAudioStreamSampleRateValue
             // 
@@ -9107,7 +9199,7 @@ namespace PowerSDR
             // 
             this.labelTS54.AutoSize = true;
             this.labelTS54.Image = null;
-            this.labelTS54.Location = new System.Drawing.Point(119, 102);
+            this.labelTS54.Location = new System.Drawing.Point(259, 64);
             this.labelTS54.Name = "labelTS54";
             this.labelTS54.Size = new System.Drawing.Size(33, 13);
             this.labelTS54.TabIndex = 46;
@@ -9128,7 +9220,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udWBIRindex.Location = new System.Drawing.Point(155, 100);
+            this.udWBIRindex.Location = new System.Drawing.Point(295, 62);
             this.udWBIRindex.Maximum = new decimal(new int[] {
             15,
             0,
@@ -9189,44 +9281,6 @@ namespace PowerSDR
             this.lblAudioStreamInputLatency.Size = new System.Drawing.Size(71, 13);
             this.lblAudioStreamInputLatency.TabIndex = 15;
             this.lblAudioStreamInputLatency.Text = "Input latency:";
-            // 
-            // lblAudioRightChannel
-            // 
-            this.lblAudioRightChannel.AutoSize = true;
-            this.lblAudioRightChannel.Image = null;
-            this.lblAudioRightChannel.Location = new System.Drawing.Point(306, 81);
-            this.lblAudioRightChannel.Name = "lblAudioRightChannel";
-            this.lblAudioRightChannel.Size = new System.Drawing.Size(32, 13);
-            this.lblAudioRightChannel.TabIndex = 14;
-            this.lblAudioRightChannel.Text = "Right";
-            // 
-            // lblAudioLeftChannel
-            // 
-            this.lblAudioLeftChannel.AutoSize = true;
-            this.lblAudioLeftChannel.Image = null;
-            this.lblAudioLeftChannel.Location = new System.Drawing.Point(308, 41);
-            this.lblAudioLeftChannel.Name = "lblAudioLeftChannel";
-            this.lblAudioLeftChannel.Size = new System.Drawing.Size(25, 13);
-            this.lblAudioLeftChannel.TabIndex = 13;
-            this.lblAudioLeftChannel.Text = "Left";
-            // 
-            // progressBar2
-            // 
-            this.progressBar2.Location = new System.Drawing.Point(261, 55);
-            this.progressBar2.Name = "progressBar2";
-            this.progressBar2.Size = new System.Drawing.Size(127, 23);
-            this.progressBar2.Step = 1;
-            this.progressBar2.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
-            this.progressBar2.TabIndex = 12;
-            // 
-            // progressBar1
-            // 
-            this.progressBar1.Location = new System.Drawing.Point(261, 15);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(127, 23);
-            this.progressBar1.Step = 1;
-            this.progressBar1.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
-            this.progressBar1.TabIndex = 11;
             // 
             // btnAudioStreamInfo
             // 
@@ -14749,30 +14803,6 @@ namespace PowerSDR
             this.labelTS31.TabIndex = 47;
             this.labelTS31.Text = "Phase:";
             // 
-            // tbPrimaryGain
-            // 
-            this.tbPrimaryGain.AutoSize = false;
-            this.tbPrimaryGain.Location = new System.Drawing.Point(190, 66);
-            this.tbPrimaryGain.Maximum = 200;
-            this.tbPrimaryGain.Minimum = -200;
-            this.tbPrimaryGain.Name = "tbPrimaryGain";
-            this.tbPrimaryGain.Size = new System.Drawing.Size(72, 25);
-            this.tbPrimaryGain.TabIndex = 41;
-            this.tbPrimaryGain.TickFrequency = 50;
-            this.tbPrimaryGain.Scroll += new System.EventHandler(this.tbPrimaryGain_Scroll);
-            // 
-            // chkPrimaryRXshiftEnabled
-            // 
-            this.chkPrimaryRXshiftEnabled.AutoSize = true;
-            this.chkPrimaryRXshiftEnabled.Image = null;
-            this.chkPrimaryRXshiftEnabled.Location = new System.Drawing.Point(12, 57);
-            this.chkPrimaryRXshiftEnabled.Name = "chkPrimaryRXshiftEnabled";
-            this.chkPrimaryRXshiftEnabled.Size = new System.Drawing.Size(98, 17);
-            this.chkPrimaryRXshiftEnabled.TabIndex = 46;
-            this.chkPrimaryRXshiftEnabled.Text = "RX shift enable";
-            this.chkPrimaryRXshiftEnabled.UseVisualStyleBackColor = true;
-            this.chkPrimaryRXshiftEnabled.CheckedChanged += new System.EventHandler(this.chkPrimaryRXshift_CheckedChanged);
-            // 
             // labelTS32
             // 
             this.labelTS32.Image = null;
@@ -14781,42 +14811,6 @@ namespace PowerSDR
             this.labelTS32.Size = new System.Drawing.Size(47, 16);
             this.labelTS32.TabIndex = 45;
             this.labelTS32.Text = "RX shift";
-            // 
-            // tbPrimaryPhase
-            // 
-            this.tbPrimaryPhase.AutoSize = false;
-            this.tbPrimaryPhase.Location = new System.Drawing.Point(190, 23);
-            this.tbPrimaryPhase.Maximum = 200;
-            this.tbPrimaryPhase.Minimum = -200;
-            this.tbPrimaryPhase.Name = "tbPrimaryPhase";
-            this.tbPrimaryPhase.Size = new System.Drawing.Size(72, 25);
-            this.tbPrimaryPhase.TabIndex = 40;
-            this.tbPrimaryPhase.TickFrequency = 50;
-            this.tbPrimaryPhase.Scroll += new System.EventHandler(this.tbPrimaryPhase_Scroll);
-            // 
-            // chkPrimaryI_Qcorrection
-            // 
-            this.chkPrimaryI_Qcorrection.AutoSize = true;
-            this.chkPrimaryI_Qcorrection.Image = null;
-            this.chkPrimaryI_Qcorrection.Location = new System.Drawing.Point(12, 38);
-            this.chkPrimaryI_Qcorrection.Name = "chkPrimaryI_Qcorrection";
-            this.chkPrimaryI_Qcorrection.Size = new System.Drawing.Size(87, 17);
-            this.chkPrimaryI_Qcorrection.TabIndex = 39;
-            this.chkPrimaryI_Qcorrection.Text = "IQ correction";
-            this.chkPrimaryI_Qcorrection.UseVisualStyleBackColor = true;
-            this.chkPrimaryI_Qcorrection.CheckedChanged += new System.EventHandler(this.chkPrimaryI_Qcorrection_CheckedChanged);
-            // 
-            // chkPrimaryDirectI_Q
-            // 
-            this.chkPrimaryDirectI_Q.AutoSize = true;
-            this.chkPrimaryDirectI_Q.Image = null;
-            this.chkPrimaryDirectI_Q.Location = new System.Drawing.Point(12, 19);
-            this.chkPrimaryDirectI_Q.Name = "chkPrimaryDirectI_Q";
-            this.chkPrimaryDirectI_Q.Size = new System.Drawing.Size(59, 17);
-            this.chkPrimaryDirectI_Q.TabIndex = 38;
-            this.chkPrimaryDirectI_Q.Text = "Enable";
-            this.chkPrimaryDirectI_Q.UseVisualStyleBackColor = true;
-            this.chkPrimaryDirectI_Q.CheckedChanged += new System.EventHandler(this.chkPrimaryDirectI_Q_CheckedChanged);
             // 
             // labelTS29
             // 
@@ -15069,30 +15063,6 @@ namespace PowerSDR
             this.labelTS22.TabIndex = 47;
             this.labelTS22.Text = "Phase:";
             // 
-            // tbVACGain
-            // 
-            this.tbVACGain.AutoSize = false;
-            this.tbVACGain.Location = new System.Drawing.Point(187, 72);
-            this.tbVACGain.Maximum = 200;
-            this.tbVACGain.Minimum = -200;
-            this.tbVACGain.Name = "tbVACGain";
-            this.tbVACGain.Size = new System.Drawing.Size(72, 25);
-            this.tbVACGain.TabIndex = 41;
-            this.tbVACGain.TickFrequency = 50;
-            this.tbVACGain.Scroll += new System.EventHandler(this.tbVACGain_Scroll);
-            // 
-            // chkVACRXShiftEnable
-            // 
-            this.chkVACRXShiftEnable.AutoSize = true;
-            this.chkVACRXShiftEnable.Image = null;
-            this.chkVACRXShiftEnable.Location = new System.Drawing.Point(12, 66);
-            this.chkVACRXShiftEnable.Name = "chkVACRXShiftEnable";
-            this.chkVACRXShiftEnable.Size = new System.Drawing.Size(98, 17);
-            this.chkVACRXShiftEnable.TabIndex = 46;
-            this.chkVACRXShiftEnable.Text = "RX shift enable";
-            this.chkVACRXShiftEnable.UseVisualStyleBackColor = true;
-            this.chkVACRXShiftEnable.CheckedChanged += new System.EventHandler(this.chkVACRXShiftEnable_CheckedChanged);
-            // 
             // lblRXShift
             // 
             this.lblRXShift.Image = null;
@@ -15101,42 +15071,6 @@ namespace PowerSDR
             this.lblRXShift.Size = new System.Drawing.Size(47, 16);
             this.lblRXShift.TabIndex = 45;
             this.lblRXShift.Text = "RX shift";
-            // 
-            // tbVACPhase
-            // 
-            this.tbVACPhase.AutoSize = false;
-            this.tbVACPhase.Location = new System.Drawing.Point(187, 29);
-            this.tbVACPhase.Maximum = 200;
-            this.tbVACPhase.Minimum = -200;
-            this.tbVACPhase.Name = "tbVACPhase";
-            this.tbVACPhase.Size = new System.Drawing.Size(72, 25);
-            this.tbVACPhase.TabIndex = 40;
-            this.tbVACPhase.TickFrequency = 50;
-            this.tbVACPhase.Scroll += new System.EventHandler(this.tbVACPhase_Scroll);
-            // 
-            // chkVACCorrection
-            // 
-            this.chkVACCorrection.AutoSize = true;
-            this.chkVACCorrection.Image = null;
-            this.chkVACCorrection.Location = new System.Drawing.Point(12, 43);
-            this.chkVACCorrection.Name = "chkVACCorrection";
-            this.chkVACCorrection.Size = new System.Drawing.Size(87, 17);
-            this.chkVACCorrection.TabIndex = 39;
-            this.chkVACCorrection.Text = "IQ correction";
-            this.chkVACCorrection.UseVisualStyleBackColor = true;
-            this.chkVACCorrection.CheckedChanged += new System.EventHandler(this.chkVACCorrection_CheckedChanged);
-            // 
-            // chkVACDirectI_Q
-            // 
-            this.chkVACDirectI_Q.AutoSize = true;
-            this.chkVACDirectI_Q.Image = null;
-            this.chkVACDirectI_Q.Location = new System.Drawing.Point(12, 20);
-            this.chkVACDirectI_Q.Name = "chkVACDirectI_Q";
-            this.chkVACDirectI_Q.Size = new System.Drawing.Size(59, 17);
-            this.chkVACDirectI_Q.TabIndex = 38;
-            this.chkVACDirectI_Q.Text = "Enable";
-            this.chkVACDirectI_Q.UseVisualStyleBackColor = true;
-            this.chkVACDirectI_Q.CheckedChanged += new System.EventHandler(this.chkDirectI_Q_CheckedChanged);
             // 
             // grpLoopDll
             // 
@@ -17375,43 +17309,43 @@ namespace PowerSDR
             this.label2.TabIndex = 2;
             this.label2.Text = "VID";
             // 
-            // radG59ExtATUBypass
+            // radExtATUBypass
             // 
-            this.radG59ExtATUBypass.AutoSize = true;
-            this.radG59ExtATUBypass.Image = null;
-            this.radG59ExtATUBypass.Location = new System.Drawing.Point(25, 76);
-            this.radG59ExtATUBypass.Name = "radG59ExtATUBypass";
-            this.radG59ExtATUBypass.Size = new System.Drawing.Size(59, 17);
-            this.radG59ExtATUBypass.TabIndex = 12;
-            this.radG59ExtATUBypass.Text = "Bypass";
-            this.radG59ExtATUBypass.UseVisualStyleBackColor = true;
-            this.radG59ExtATUBypass.CheckedChanged += new System.EventHandler(this.radG59ExtATUBypass_CheckedChanged);
+            this.radExtATUBypass.AutoSize = true;
+            this.radExtATUBypass.Image = null;
+            this.radExtATUBypass.Location = new System.Drawing.Point(25, 76);
+            this.radExtATUBypass.Name = "radExtATUBypass";
+            this.radExtATUBypass.Size = new System.Drawing.Size(59, 17);
+            this.radExtATUBypass.TabIndex = 12;
+            this.radExtATUBypass.Text = "Bypass";
+            this.radExtATUBypass.UseVisualStyleBackColor = true;
+            this.radExtATUBypass.CheckedChanged += new System.EventHandler(this.radExtATUBypass_CheckedChanged);
             // 
-            // radG59ExtATUMemTune
+            // radExtATUMemTune
             // 
-            this.radG59ExtATUMemTune.AutoSize = true;
-            this.radG59ExtATUMemTune.Image = null;
-            this.radG59ExtATUMemTune.Location = new System.Drawing.Point(25, 49);
-            this.radG59ExtATUMemTune.Name = "radG59ExtATUMemTune";
-            this.radG59ExtATUMemTune.Size = new System.Drawing.Size(95, 17);
-            this.radG59ExtATUMemTune.TabIndex = 11;
-            this.radG59ExtATUMemTune.Text = "Memory TUNE";
-            this.radG59ExtATUMemTune.UseVisualStyleBackColor = true;
-            this.radG59ExtATUMemTune.CheckedChanged += new System.EventHandler(this.radG59ExtATUMemTune_CheckedChanged);
+            this.radExtATUMemTune.AutoSize = true;
+            this.radExtATUMemTune.Image = null;
+            this.radExtATUMemTune.Location = new System.Drawing.Point(25, 49);
+            this.radExtATUMemTune.Name = "radExtATUMemTune";
+            this.radExtATUMemTune.Size = new System.Drawing.Size(95, 17);
+            this.radExtATUMemTune.TabIndex = 11;
+            this.radExtATUMemTune.Text = "Memory TUNE";
+            this.radExtATUMemTune.UseVisualStyleBackColor = true;
+            this.radExtATUMemTune.CheckedChanged += new System.EventHandler(this.radExtATUMemTune_CheckedChanged);
             // 
-            // radG59ExtATUFullTune
+            // radExtATUFullTune
             // 
-            this.radG59ExtATUFullTune.AutoSize = true;
-            this.radG59ExtATUFullTune.Checked = true;
-            this.radG59ExtATUFullTune.Image = null;
-            this.radG59ExtATUFullTune.Location = new System.Drawing.Point(25, 22);
-            this.radG59ExtATUFullTune.Name = "radG59ExtATUFullTune";
-            this.radG59ExtATUFullTune.Size = new System.Drawing.Size(74, 17);
-            this.radG59ExtATUFullTune.TabIndex = 10;
-            this.radG59ExtATUFullTune.TabStop = true;
-            this.radG59ExtATUFullTune.Text = "Full TUNE";
-            this.radG59ExtATUFullTune.UseVisualStyleBackColor = true;
-            this.radG59ExtATUFullTune.CheckedChanged += new System.EventHandler(this.radG59ExtATUFullTune_CheckedChanged);
+            this.radExtATUFullTune.AutoSize = true;
+            this.radExtATUFullTune.Checked = true;
+            this.radExtATUFullTune.Image = null;
+            this.radExtATUFullTune.Location = new System.Drawing.Point(25, 22);
+            this.radExtATUFullTune.Name = "radExtATUFullTune";
+            this.radExtATUFullTune.Size = new System.Drawing.Size(74, 17);
+            this.radExtATUFullTune.TabIndex = 10;
+            this.radExtATUFullTune.TabStop = true;
+            this.radExtATUFullTune.Text = "Full TUNE";
+            this.radExtATUFullTune.UseVisualStyleBackColor = true;
+            this.radExtATUFullTune.CheckedChanged += new System.EventHandler(this.radExtATUFullTune_CheckedChanged);
             // 
             // tcSetup
             // 
@@ -17436,7 +17370,7 @@ namespace PowerSDR
             // tpATU
             // 
             this.tpATU.BackColor = System.Drawing.SystemColors.Control;
-            this.tpATU.Controls.Add(this.chkG59ExtATU);
+            this.tpATU.Controls.Add(this.chkExtATU);
             this.tpATU.Controls.Add(this.grpExtATU);
             this.tpATU.Location = new System.Drawing.Point(4, 22);
             this.tpATU.Name = "tpATU";
@@ -17506,9 +17440,9 @@ namespace PowerSDR
             // 
             // grpATUMode
             // 
-            this.grpATUMode.Controls.Add(this.radG59ExtATUMemTune);
-            this.grpATUMode.Controls.Add(this.radG59ExtATUBypass);
-            this.grpATUMode.Controls.Add(this.radG59ExtATUFullTune);
+            this.grpATUMode.Controls.Add(this.radExtATUMemTune);
+            this.grpATUMode.Controls.Add(this.radExtATUBypass);
+            this.grpATUMode.Controls.Add(this.radExtATUFullTune);
             this.grpATUMode.Location = new System.Drawing.Point(35, 25);
             this.grpATUMode.Name = "grpATUMode";
             this.grpATUMode.Size = new System.Drawing.Size(135, 114);
@@ -17771,6 +17705,17 @@ namespace PowerSDR
             this.grpCatControlBox.TabIndex = 0;
             this.grpCatControlBox.TabStop = false;
             this.grpCatControlBox.Text = "CAT Control";
+            // 
+            // chkCATPushData
+            // 
+            this.chkCATPushData.AutoSize = true;
+            this.chkCATPushData.Image = null;
+            this.chkCATPushData.Location = new System.Drawing.Point(50, 216);
+            this.chkCATPushData.Name = "chkCATPushData";
+            this.chkCATPushData.Size = new System.Drawing.Size(74, 17);
+            this.chkCATPushData.TabIndex = 106;
+            this.chkCATPushData.Text = "Push data";
+            this.chkCATPushData.CheckedChanged += new System.EventHandler(this.chkCATPushData_CheckedChanged);
             // 
             // comboCATstopbits
             // 
@@ -18566,17 +18511,6 @@ namespace PowerSDR
             this.groupBoxTS4.TabStop = false;
             this.groupBoxTS4.Text = "groupBoxTS4";
             // 
-            // chkCATPushData
-            // 
-            this.chkCATPushData.AutoSize = true;
-            this.chkCATPushData.Image = null;
-            this.chkCATPushData.Location = new System.Drawing.Point(50, 216);
-            this.chkCATPushData.Name = "chkCATPushData";
-            this.chkCATPushData.Size = new System.Drawing.Size(74, 17);
-            this.chkCATPushData.TabIndex = 106;
-            this.chkCATPushData.Text = "Push data";
-            this.chkCATPushData.CheckedChanged += new System.EventHandler(this.chkCATPushData_CheckedChanged);
-            // 
             // Setup
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
@@ -18715,6 +18649,10 @@ namespace PowerSDR
             ((System.ComponentModel.ISupportInitialize)(this.udPrimaryRXshift)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.udUSBSerialNo)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.udAudioLatencyVAC)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbPrimaryGain)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbPrimaryPhase)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbVACGain)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbVACPhase)).EndInit();
             this.tpTests.ResumeLayout(false);
             this.grpAudioTests.ResumeLayout(false);
             this.grpAudioTests.PerformLayout();
@@ -18874,8 +18812,6 @@ namespace PowerSDR
             this.grpAudioDetails1.PerformLayout();
             this.grpPrimaryDirectI_Q.ResumeLayout(false);
             this.grpPrimaryDirectI_Q.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.tbPrimaryGain)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tbPrimaryPhase)).EndInit();
             this.grpSampleCorrection.ResumeLayout(false);
             this.grpAudioChannels.ResumeLayout(false);
             this.grpAudioChannels.PerformLayout();
@@ -18887,8 +18823,6 @@ namespace PowerSDR
             this.tpVAC.ResumeLayout(false);
             this.grpVACDirectIQ.ResumeLayout(false);
             this.grpVACDirectIQ.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.tbVACGain)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tbVACPhase)).EndInit();
             this.grpLoopDll.ResumeLayout(false);
             this.grpLoopDll.PerformLayout();
             this.grpAudioVACAutoEnable.ResumeLayout(false);
@@ -21633,6 +21567,7 @@ namespace PowerSDR
                     grpG59Keyer.Enabled = true;
                     grpGenesisUSB.Enabled = true;
                     comboKeyerConnPrimary.Text = "USB";
+                    console.Keyer.PrimaryConnPort = "USB";
                     grpGenesisConnection.Enabled = false;
                     grpGenesis160.Visible = false;
                     grpGenesis3020.Visible = false;
@@ -21699,6 +21634,7 @@ namespace PowerSDR
                     grpG59Keyer.Enabled = true;
                     grpGenesisUSB.Enabled = true;
                     comboKeyerConnPrimary.Text = "USB";
+                    console.Keyer.PrimaryConnPort = "USB";
                     grpGenesisConnection.Enabled = false;
                     grpGenesis160.Visible = false;
                     grpGenesis3020.Visible = false;
@@ -22124,6 +22060,7 @@ namespace PowerSDR
                     grpGenesis3020.Visible = false;
                     grpGenesis40.Visible = false;
                     grpGenesis80.Visible = false;
+                    grpG11.Visible = false;
                     grpNETBox.Visible = false;
                     grpG6.Visible = true;
                     grpGenesis137.Visible = false;
@@ -24047,7 +23984,7 @@ namespace PowerSDR
 						comboAudioSampleRate1.Items.Add(192000);
 
 					if(comboAudioSoundCard.Focused || comboAudioSampleRate1.SelectedIndex < 0)
-						comboAudioSampleRate1.Text = "48000";
+						comboAudioSampleRate1.Text = "96000";
 
 					console.PowerEnabled = true;
 					comboAudioChannels1.Text = "2";
@@ -24464,6 +24401,7 @@ namespace PowerSDR
 		private void udDSPImagePhaseTX_ValueChanged(object sender, System.EventArgs e)
 		{
             DttSP.SetTXIQPhase(thread_no, (double)udDSPImagePhaseTX.Value);
+
 			if(tbDSPImagePhaseTX.Value != (int)udDSPImagePhaseTX.Value)
 				tbDSPImagePhaseTX.Value = (int)udDSPImagePhaseTX.Value;		
 		}
@@ -24476,6 +24414,7 @@ namespace PowerSDR
 		private void udDSPImageGainTX_ValueChanged(object sender, System.EventArgs e)
 		{
             DttSP.SetTXIQGain(thread_no, (double)udDSPImageGainTX.Value);
+
 			if(tbDSPImageGainTX.Value != (int)udDSPImageGainTX.Value)
 				tbDSPImageGainTX.Value = (int)udDSPImageGainTX.Value;
 		}
@@ -25655,7 +25594,7 @@ namespace PowerSDR
 			}
 			else
 			{
-				udTestIMDPower.Value = console.PWR;
+				udTestIMDPower.Value = (decimal)console.PWR;
 				console.PWR = console.PreviousPWR;
 				Audio.CurrentAudioState1 = Audio.AudioState.DTTSP;
 				Audio.MOX = false;
@@ -27259,7 +27198,7 @@ namespace PowerSDR
 
         private void udPACalPower_ValueChanged(object sender, EventArgs e)
         {
-            console.PWR = udPACalPower.Value;
+            console.PWR = (double)udPACalPower.Value;
         }
 
         private void udtTX_IF_SHIFT_ValueChanged(object sender, EventArgs e)
@@ -27576,34 +27515,34 @@ namespace PowerSDR
 
         private void chkG59ExtATU_CheckedChanged(object sender, EventArgs e)
         {
-            if (chkG59ExtATU.Checked)
+            if (chkExtATU.Checked)
             {
                 grpExtATU.Enabled = true;
-                console.G59ExtATU_presetnt = true;
+                console.ExtATU_presetnt = true;
             }
             else
             {
                 grpExtATU.Enabled = false;
-                console.G59ExtATU_presetnt = false;
+                console.ExtATU_presetnt = false;
             }
         }
 
-        private void radG59ExtATUFullTune_CheckedChanged(object sender, EventArgs e)
+        private void radExtATUFullTune_CheckedChanged(object sender, EventArgs e)
         {
-            if (radG59ExtATUFullTune.Checked)
-                console.G59ExtATU_tuning_mode = ATUMode.FULL_TUNE;
+            if (radExtATUFullTune.Checked)
+                console.ExtATU_tuning_mode = ATUMode.FULL_TUNE;
         }
 
-        private void radG59ExtATUMemTune_CheckedChanged(object sender, EventArgs e)
+        private void radExtATUMemTune_CheckedChanged(object sender, EventArgs e)
         {
-            if (radG59ExtATUMemTune.Checked)
-                console.G59ExtATU_tuning_mode = ATUMode.MEM_TUNE;
+            if (radExtATUMemTune.Checked)
+                console.ExtATU_tuning_mode = ATUMode.MEM_TUNE;
         }
 
-        private void radG59ExtATUBypass_CheckedChanged(object sender, EventArgs e)
+        private void radExtATUBypass_CheckedChanged(object sender, EventArgs e)
         {
-            if (radG59ExtATUBypass.Checked)
-                console.G59ExtATU_tuning_mode = ATUMode.BYPASS;
+            if (radExtATUBypass.Checked)
+                console.ExtATU_tuning_mode = ATUMode.BYPASS;
         }
 
         public int ATUFullTime = 3500;
@@ -28787,7 +28726,7 @@ namespace PowerSDR
                 console.UsbSi570Enable = false;
                 chkGeneralUSBPresent.Checked = false;
                 chkGeneralUSBPresent.Enabled = false;
-                console.Keyer.PrimaryConnPort = "None";
+                console.Keyer.PrimaryConnPort = "QRP2000";
                 grpQRP2000.Visible = true;
                 console.CurrentVisibleGroup = VisibleGroup.Multimeter;
                 console.net_device.Disconnect();

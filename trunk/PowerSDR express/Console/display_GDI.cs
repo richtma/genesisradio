@@ -512,7 +512,9 @@ namespace PowerSDR
             set
             {
                 peak_on = value;
-                if (!peak_on) ResetDisplayPeak();
+
+                if (!peak_on)
+                    ResetDisplayPeak();
             }
         }
 

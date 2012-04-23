@@ -56,9 +56,6 @@ namespace PowerSDR
         }
 
 		#region Private Member Functions
-// ======================================================
-// Private Member Functions
-// ======================================================
 
 		private static void Create() // changes yt7pwr
 		{
@@ -492,46 +489,53 @@ namespace PowerSDR
             t.Columns.Add("VFOA", typeof(double));
             t.Columns.Add("VFOB", typeof(double));
             t.Columns.Add("LOSC", typeof(double));
+            t.Columns.Add("AF", typeof(int));
+            t.Columns.Add("RF", typeof(int));
+            t.Columns.Add("PWR", typeof(double));
+            t.Columns.Add("SQL1", typeof(int));
+            t.Columns.Add("SQL1_ON", typeof(bool));
+            t.Columns.Add("SQL2", typeof(int));
+            t.Columns.Add("SQL2_ON", typeof(bool));
 
             object[] data = {
-								"160M", "CWL", "F5", 1.810000,
-								"160M", "CWU", "F1", 1.835000,
-								"160M", "USB", "F6", 1.845000,
-								"80M", "CWL", "F1", 3.501000,
-								"80M", "LSB", "F6", 3.751000,
-								"80M", "LSB", "F6", 3.850000,
-								"60M", "USB", "F6", 5.330500,
-								"60M", "USB", "F6", 5.346500,
-								"60M", "USB", "F6", 5.366500,
-								"60M", "USB", "F6", 5.371500,
-								"60M", "USB", "F6", 5.403500,
-								"40M", "CWL", "F1", 7.001000,
-								"40M", "LSB", "F6", 7.152000,
-								"40M", "LSB", "F6", 7.255000,
-								"30M", "CWU", "F1", 10.120000,
-								"30M", "CWU", "F1", 10.130000,
-								"30M", "CWU", "F5", 10.140000,
-								"20M", "CWU", "F1", 14.010000,
-								"20M", "USB", "F6", 14.230000,
-								"20M", "USB", "F6", 14.336000,
-								"17M", "CWU", "F1", 18.090000,
-								"17M", "USB", "F6", 18.125000,
-								"17M", "USB", "F6", 18.140000,
-								"15M", "CWU", "F1", 21.001000,
-								"15M", "USB", "F6", 21.255000,
-								"15M", "USB", "F6", 21.300000,
-								"12M", "CWU", "F1", 24.895000,
-								"12M", "USB", "F6", 24.900000,
-								"12M", "USB", "F6", 24.910000,
-								"10M", "CWU", "F1", 28.010000,
-								"10M", "USB", "F6", 28.300000,
-								"10M", "USB", "F6", 28.400000,
-								"6M", "CWU", "F1", 50.010000,
-								"6M", "USB", "F6", 50.125000,
-								"6M", "USB", "F6", 50.200000,								
-								"2M", "CWU", "F1", 144.010000,
-								"2M", "USB", "F6", 144.200000,
-								"2M", "USB", "F6", 144.210000,
+								"160M", "CWU", "F8", 1.810000,
+								"160M", "LSB", "F7", 1.835000,
+								"160M", "LSB", "F7", 1.845000,
+								"80M", "CWU", "F8", 3.540000,
+								"80M", "LSB", "F7", 3.710000,
+								"80M", "LSB", "F7", 3.780000,
+								"60M", "USB", "F7", 5.330500,
+								"60M", "USB", "F7", 5.346500,
+								"60M", "USB", "F7", 5.366500,
+								"60M", "USB", "F7", 5.371500,
+								"60M", "USB", "F7", 5.403500,
+								"40M", "CWU", "F8", 7.040000,
+								"40M", "LSB", "F7", 7.110000,
+								"40M", "LSB", "F7", 7.170000,
+								"30M", "CWU", "F8", 10.120000,
+								"30M", "USB", "F8", 10.130000,
+								"30M", "USB", "F6", 10.140000,
+								"20M", "CWU", "F8", 14.040000,
+								"20M", "USB", "F7", 14.240000,
+								"20M", "USB", "F7", 14.310000,
+								"17M", "CWU", "F8", 18.090000,
+								"17M", "USB", "F7", 18.125000,
+								"17M", "USB", "F7", 18.140000,
+								"15M", "CWU", "F8", 21.0400000,
+								"15M", "USB", "F7", 21.240000,
+								"15M", "USB", "F7", 21.400000,
+								"12M", "CWU", "F8", 24.895000,
+								"12M", "USB", "F7", 24.900000,
+								"12M", "USB", "F7", 24.910000,
+								"10M", "CWU", "F8", 28.040000,
+								"10M", "USB", "F7", 28.470000,
+								"10M", "USB", "F7", 28.540000,
+								"6M", "CWU", "F8", 50.080000,
+								"6M", "USB", "F7", 50.130000,
+								"6M", "USB", "F7", 50.200000,								
+								"2M", "CWU", "F8", 144.040000,
+								"2M", "USB", "F7", 144.200000,
+								"2M", "USB", "F7", 144.300000,
 								"WWV", "SAM", "F7", 2.500000,
 								"WWV", "SAM", "F7", 5.000000,
 								"WWV", "SAM", "F7", 10.000000,
@@ -597,6 +601,13 @@ namespace PowerSDR
                 dr["VFOA"] = ((double)data[i * 4 + 3]).ToString("f6");
                 dr["VFOB"] = ((double)data[i * 4 + 3]).ToString("f6");
                 dr["LOSC"] = ((double)data[i * 4 + 3]).ToString("f6");
+                dr["AF"] = 20;
+                dr["RF"] = 80;
+                dr["PWR"] = 50.0;
+                dr["SQL1"] = 50;
+                dr["SQL1_ON"] = false;
+                dr["SQL2"] = 50;
+                dr["SQL2_on"] = false;
                 ds.Tables["BandStack"].Rows.Add(dr);
             }
         }
@@ -1396,6 +1407,14 @@ namespace PowerSDR
 
                 if (!ds.Tables.Contains("BandStack"))
                     AddBandStackTable();
+                else
+                {
+                    if (!CheckBandStackTable())
+                    {
+                        RemoveMemoryTable("BandStack");
+                        AddBandStackTable();
+                    }
+                }
 
                 if (!ds.Tables.Contains("Memory"))
                 {
@@ -1431,6 +1450,32 @@ namespace PowerSDR
             catch (Exception ex)
             {
                 MessageBox.Show("Error in Database!" + ex.ToString());
+            }
+        }
+
+        private static bool CheckBandStackTable()
+        {
+            try
+            {
+                ArrayList list = new ArrayList();
+
+                DataRow[] rows = ds.Tables["BandStack"].Select();
+
+                foreach (DataRow dr in rows)
+                {
+                    list.Add(dr[0].ToString() + "/" + dr[1].ToString() + "/" + dr[2].ToString()
+                        + "/" + dr[3].ToString() + "/" + dr[4].ToString() + "/" + dr[5].ToString()
+                        + "/" + dr[6].ToString() + "/" + dr[7].ToString() + "/" + dr[8].ToString()
+                        + "/" + dr[9].ToString() + "/" + dr[10].ToString() + dr[11].ToString()
+                        + "/" + dr[12].ToString() + "/" + dr[13].ToString() + dr[14].ToString());
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+                return false;
             }
         }
 
@@ -1589,7 +1634,8 @@ namespace PowerSDR
 
         // changes yt7pwr
 		public static bool GetBandStack(string band, int index, out string modeMainRX, out string modeSubRX, 
-            out string filterMainRX, out string filterSubRX, out double freqA, out double freqB, out double losc_freq)
+            out string filterMainRX, out string filterSubRX, out double freqA, out double freqB, out double losc_freq,
+            out int af,out int rf,out double pwr, out int sql1, out bool sql1_on, out int sql2, out bool sql2_on)
 		{
 			DataRow[] rows = ds.Tables["BandStack"].Select("'"+band+"' = BandName");
 
@@ -1604,6 +1650,13 @@ namespace PowerSDR
 				freqA = 0.0f;
                 freqB = 0.0f;
                 losc_freq = 0.0f;
+                af = 20;
+                rf = 80;
+                pwr = 50.0;
+                sql1 = 50;
+                sql1_on = false;
+                sql2 = 50;
+                sql2_on = false;
 				return false;
 			}
 
@@ -1616,24 +1669,46 @@ namespace PowerSDR
 			freqA = (double)((DataRow)rows[index])["VFOA"];
             freqB = (double)((DataRow)rows[index])["VFOB"];
             losc_freq = (double)((DataRow)rows[index])["LOSC"];
+            af = (int)((DataRow)rows[index])["AF"];
+            rf = (int)((DataRow)rows[index])["RF"];
+            pwr = (double)((DataRow)rows[index])["PWR"];
+            sql1 = (int)((DataRow)rows[index])["SQL1"];
+            sql1_on = (bool)((DataRow)rows[index])["SQL1_ON"];
+            sql2 = (int)((DataRow)rows[index])["SQL2"];
+            sql2_on = (bool)((DataRow)rows[index])["SQL2_ON"];
 			return true;
 		}
 
         // changes yt7pwr
-		public static void AddBandStack(string band, string DSPmode,
-            string filter, double freq)
-		{
-			DataRow dr = ds.Tables["BandStack"].NewRow();
-			dr["BandName"] = band;
-			dr["ModeMainRX"] = DSPmode;
-            dr["ModeSubRX"] = DSPmode;
-			dr["FilterMainRX"] = filter;
-            dr["FilterSubRX"] = filter;
-			dr["VFOA"] = freq;
-            dr["VFOB"] = freq;
-            dr["LOSC"] = freq;
-			ds.Tables["BandStack"].Rows.Add(dr);
-		}
+        public static void AddBandStack(string band, string DSPmode,
+            string filter, double freq, int af, int rf, double pwr, int sql1,
+            bool sql1_on, int sql2, bool sql2_on)
+        {
+            try
+            {
+                DataRow dr = ds.Tables["BandStack"].NewRow();
+                dr["BandName"] = band;
+                dr["ModeMainRX"] = DSPmode;
+                dr["ModeSubRX"] = DSPmode;
+                dr["FilterMainRX"] = filter;
+                dr["FilterSubRX"] = filter;
+                dr["VFOA"] = freq;
+                dr["VFOB"] = freq;
+                dr["LOSC"] = freq;
+                dr["AF"] = af;
+                dr["RF"] = rf;
+                dr["PWR"] = pwr;
+                dr["SQL1"] = sql1;
+                dr["SQL1_ON"] = sql1_on;
+                dr["SQL2"] = sql2;
+                dr["SQL2_on"] = sql2_on;
+                ds.Tables["BandStack"].Rows.Add(dr);
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
 
         public static bool RemoveTable(string table_name) // changes yt7pwr
         {
@@ -1714,7 +1789,8 @@ namespace PowerSDR
 
         // changes yt7pwr
         public static void SaveBandStack(string band, int index, string modeMainRX, string modeSubRX,
-            string filterMainRX, string filterSubRX, double VFOA, double VFOB, double losc_freq)
+            string filterMainRX, string filterSubRX, double VFOA, double VFOB, double losc_freq,
+            int af, int rf, double pwr, int sql1, bool sql1_on, int sql2, bool sql2_on)
         {
             try
             {
@@ -1730,6 +1806,13 @@ namespace PowerSDR
                         datarow["ModeSubRX"] = modeSubRX;
                         datarow["VFOB"] = VFOB;
                         datarow["LOSC"] = losc_freq;
+                        datarow["AF"] = af;
+                        datarow["RF"] = rf;
+                        datarow["PWR"] = pwr;
+                        datarow["SQL1"] = sql1;
+                        datarow["SQL1_ON"] = sql1_on;
+                        datarow["SQL2"] = sql2;
+                        datarow["SQL2_on"] = sql2_on;
                         return;
                     }
                 }
@@ -1744,6 +1827,13 @@ namespace PowerSDR
                 d["VFOA"] = VFOA;
                 d["VFOB"] = VFOB;
                 d["LOSC"] = losc_freq;
+                d["AF"] = af;
+                d["RF"] = rf;
+                d["PWR"] = pwr;
+                d["SQL1"] = sql1;
+                d["SQL1_ON"] = sql1_on;
+                d["SQL2"] = sql2;
+                d["SQL2_on"] = sql2_on;
             }
 
             catch (Exception ex)
