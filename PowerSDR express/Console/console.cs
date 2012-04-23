@@ -1284,13 +1284,19 @@ namespace PowerSDR
                     if (EQForm != null) EQForm.Hide();
                     if(XTRVForm != null) XTRVForm.Hide();
 
-                    if (DXClusterForm != null) DXClusterForm.Dispose();
+                    if (DXClusterForm != null)
+                    {
+                        DXClusterForm.closing = true;
+                        DXClusterForm.Hide();
+                    }
+
                     SaveState();
 
                     if (XTRVForm != null) XTRVForm.SaveOptions();
                     if (CWXForm != null) CWXForm.SaveSettings();
                     if (SetupForm != null) SetupForm.SaveOptions();
                     if (EQForm != null) EQForm.SaveSettings();
+                    if (DXClusterForm != null) DXClusterForm.SaveOptions();
 
                     if (disposing)
                     {
@@ -6070,6 +6076,8 @@ namespace PowerSDR
             // 
             this.BackColor = System.Drawing.SystemColors.Control;
             resources.ApplyResources(this, "$this");
+            this.Controls.Add(this.grpModeSpecificDigital);
+            this.Controls.Add(this.grpModeSpecificPhone);
             this.Controls.Add(this.grpG11);
             this.Controls.Add(this.grpMainRXMode);
             this.Controls.Add(this.grpSubRXMode);
@@ -6103,9 +6111,7 @@ namespace PowerSDR
             this.Controls.Add(this.grpMainRXFilter);
             this.Controls.Add(this.grpSubRXFilter);
             this.Controls.Add(this.grpBandHF);
-            this.Controls.Add(this.grpModeSpecificPhone);
             this.Controls.Add(this.grpModeSpecificCW);
-            this.Controls.Add(this.grpModeSpecificDigital);
             this.Controls.Add(this.grpManualNotch);
             this.Controls.Add(this.picSmallAGauge);
             this.Controls.Add(this.grpMultimeter);
@@ -8455,6 +8461,7 @@ namespace PowerSDR
                         #endregion
 
                         pause_DisplayThread = false;
+                        meter_data_ready = false;
                     }
                 }
             }
@@ -8566,7 +8573,7 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error in TX_phase_gain \n\n" + ex.ToString());
+                MessageBox.Show("Error in RX_phase_gain \n\n" + ex.ToString());
             }
         }
 
@@ -8621,7 +8628,8 @@ namespace PowerSDR
             g11.booting = true;
             g6 = new GenesisG6.G6(Handle);
             g6.booting = true;
-            g6.SetCallback(DebugInvokeCallback);
+            g6.SetCallback(GenesisG6CommandCallback);
+            g6.SetIQCallback(Audio.G6Callback);
             net_device = new GenesisNetBox.NetBox(Handle);
             net_device.booting = true;
             qrp2000 = new QRP2000(this);
@@ -10302,7 +10310,7 @@ namespace PowerSDR
             }
         }
 
-        private void SaveBand() // changes yt7pwr
+        public void SaveBand() // changes yt7pwr
         {
             // Used in Bandstacking algorithm
             double freqA = Math.Round(VFOAFreq, 6);
@@ -10319,114 +10327,142 @@ namespace PowerSDR
                 {
                     case Band.B160M:
                         if (freqA >= 1.8 && freqA < 2.0)
-                            DB.SaveBandStack("160M", band_160m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("160M", band_160m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B80M:
                         if (freqA >= 3.5 && freqA < 4.0)
-                            DB.SaveBandStack("80M", band_80m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("80M", band_80m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B60M:
                         if (freqA == 5.3305 || freqA == 5.3465 || freqA == 5.3665 || freqA == 5.3715 || freqA == 5.4035)
-                            DB.SaveBandStack("60M", band_60m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("60M", band_60m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B40M:
                         if (freqA >= 7.0 && freqA < 7.3)
-                            DB.SaveBandStack("40M", band_40m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("40M", band_40m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B30M:
                         if (freqA >= 10.1 && freqA < 10.15)
-                            DB.SaveBandStack("30M", band_30m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("30M", band_30m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B20M:
                         if (freqA >= 14.0 && freqA < 14.350)
-                            DB.SaveBandStack("20M", band_20m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("20M", band_20m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B17M:
                         if (freqA >= 18.068 && freqA < 18.168)
-                            DB.SaveBandStack("17M", band_17m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("17M", band_17m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B15M:
                         if (freqA >= 21.0 && freqA < 21.45)
-                            DB.SaveBandStack("15M", band_15m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("15M", band_15m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B12M:
                         if (freqA >= 24.890 && freqA < 24.990)
-                            DB.SaveBandStack("12M", band_12m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("12M", band_12m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B10M:
                         if (freqA >= 28.0 && freqA < 29.7)
-                            DB.SaveBandStack("10M", band_10m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("10M", band_10m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B6M:
                         if (freqA >= 50.0 && freqA < 54.0)
-                            DB.SaveBandStack("6M", band_6m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("6M", band_6m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B2M:
                         if (freqA >= 144.0 && freqA < 146.0)
-                            DB.SaveBandStack("2M", band_2m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("2M", band_2m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.WWV:
                         if (freqA == 2.5 || freqA == 5.0 || freqA == 10.0 || freqA == 15.0 || freqA == 20.0)
-                            DB.SaveBandStack("WWV", band_wwv_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("WWV", band_wwv_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.GEN:
-                        DB.SaveBandStack("GEN", band_gen_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                        DB.SaveBandStack("GEN", band_gen_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B2190M:
                         if (freqA >= 0.1 && freqA < 0.15)
-                            DB.SaveBandStack("2190M", band_2190m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("2190M", band_2190m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B600M:
                         if (freqA >= 0.4 && freqA < 0.6)
-                        DB.SaveBandStack("600M", band_600m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("600M", band_600m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                    AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.BX1:
                         if (freqA >= xBand[1].freq_min && freqA < xBand[1].freq_max)
-                            DB.SaveBandStack(xBand[1].name, band_X1_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack(xBand[1].name, band_X1_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.BX2:
                         if (freqA >= xBand[2].freq_min && freqA < xBand[2].freq_max)
-                            DB.SaveBandStack(xBand[2].name, band_X2_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack(xBand[2].name, band_X2_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.BX3:
                         if (freqA >= xBand[3].freq_min && freqA < xBand[3].freq_max)
-                            DB.SaveBandStack(xBand[3].name, band_X3_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack(xBand[3].name, band_X3_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.BX4:
                         if (freqA >= xBand[4].freq_min && freqA < xBand[4].freq_max)
-                            DB.SaveBandStack(xBand[4].name, band_X4_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack(xBand[4].name, band_X4_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.BX5:
                         if (freqA >= xBand[5].freq_min && freqA < xBand[5].freq_max)
-                            DB.SaveBandStack(xBand[5].name, band_X5_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack(xBand[5].name, band_X5_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.BX6:
                         if (freqA >= xBand[6].freq_min && freqA < xBand[6].freq_max)
-                            DB.SaveBandStack(xBand[6].name, band_X6_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack(xBand[6].name, band_X6_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.BX7:
                         if (freqA >= xBand[7].freq_min && freqA < xBand[7].freq_max)
-                            DB.SaveBandStack(xBand[7].name, band_X7_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack(xBand[7].name, band_X7_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.BX8:
                         if (freqA >= xBand[8].freq_min && freqA < xBand[8].freq_max)
-                            DB.SaveBandStack(xBand[8].name, band_X8_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack(xBand[8].name, band_X8_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.BX9:
                         if (freqA >= xBand[9].freq_min && freqA < xBand[9].freq_max)
-                            DB.SaveBandStack(xBand[9].name, band_X9_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack(xBand[9].name, band_X9_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.BX10:
                         if (freqA >= xBand[10].freq_min && freqA < xBand[10].freq_max)
-                            DB.SaveBandStack(xBand[10].name, band_X10_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack(xBand[10].name, band_X10_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.BX11:
                         if (freqA >= xBand[11].freq_min && freqA < xBand[11].freq_max)
-                            DB.SaveBandStack(xBand[11].name, band_X11_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack(xBand[11].name, band_X11_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.BX12:
                         if (freqA >= xBand[12].freq_min && freqA < xBand[12].freq_max)
-                            DB.SaveBandStack(xBand[12].name, band_X12_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack(xBand[12].name, band_X12_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                 }
             }
@@ -10436,114 +10472,142 @@ namespace PowerSDR
                 {
                     case Band.B160M:
                         if (freqA >= 1.0 && freqA < 2.75)
-                            DB.SaveBandStack("160M", band_160m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("160M", band_160m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B80M:
                         if (freqA >= 2.75 && freqA < 5.2)
-                            DB.SaveBandStack("80M", band_80m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("80M", band_80m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B60M:
                         if (freqA >= 5.2 && freqA < 7.0)
-                            DB.SaveBandStack("60M", band_60m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("60M", band_60m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B40M:
                         if (freqA >= 7.0 && freqA < 8.7)
-                            DB.SaveBandStack("40M", band_40m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("40M", band_40m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B30M:
                         if (freqA >= 8.7 && freqA < 12.075)
-                            DB.SaveBandStack("30M", band_30m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("30M", band_30m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B20M:
                         if (freqA >= 12.075 && freqA < 16.209)
-                            DB.SaveBandStack("20M", band_20m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("20M", band_20m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B17M:
                         if (freqA >= 16.209 && freqA < 19.584)
-                            DB.SaveBandStack("17M", band_17m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("17M", band_17m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B15M:
                         if (freqA >= 19.584 && freqA < 23.17)
-                            DB.SaveBandStack("15M", band_15m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("15M", band_15m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B12M:
                         if (freqA >= 23.17 && freqA < 26.495)
-                            DB.SaveBandStack("12M", band_12m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("12M", band_12m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B10M:
                         if (freqA >= 26.495 && freqA < 30.0)
-                            DB.SaveBandStack("10M", band_10m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("10M", band_10m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B6M:
                         if (freqA >= 50.0 && freqA < 54.0)
-                            DB.SaveBandStack("6M", band_6m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("6M", band_6m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B2M:
                         if (freqA >= 144.0 && freqA < 148.0)
-                            DB.SaveBandStack("2M", band_2m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("2M", band_2m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.WWV:
                         if (freqA == 2.5 || freqA == 5.0 || freqA == 10.0 || freqA == 15.0 || freqA == 20.0)
-                            DB.SaveBandStack("WWV", band_wwv_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("WWV", band_wwv_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.GEN:
-                        DB.SaveBandStack("GEN", band_gen_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                        DB.SaveBandStack("GEN", band_gen_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B2190M:
                         if (freqA >= 0.1 && freqA < 0.15)
-                            DB.SaveBandStack("2190M", band_2190m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("2190M", band_2190m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.B600M:
                         if (freqA >= 0.4 && freqA < 0.6)
-                            DB.SaveBandStack("600M", band_600m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack("600M", band_600m_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.BX1:
                         if (freqA >= xBand[1].freq_min && freqA < xBand[1].freq_max)
-                            DB.SaveBandStack(xBand[1].name, band_X1_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack(xBand[1].name, band_X1_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.BX2:
                         if (freqA >= xBand[2].freq_min && freqA < xBand[2].freq_max)
-                            DB.SaveBandStack(xBand[2].name, band_X2_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack(xBand[2].name, band_X2_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.BX3:
                         if (freqA >= xBand[3].freq_min && freqA < xBand[3].freq_max)
-                            DB.SaveBandStack(xBand[3].name, band_X3_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack(xBand[3].name, band_X3_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.BX4:
                         if (freqA >= xBand[4].freq_min && freqA < xBand[4].freq_max)
-                            DB.SaveBandStack(xBand[4].name, band_X4_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack(xBand[4].name, band_X4_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.BX5:
                         if (freqA >= xBand[5].freq_min && freqA < xBand[5].freq_max)
-                            DB.SaveBandStack(xBand[5].name, band_X5_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack(xBand[5].name, band_X5_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.BX6:
                         if (freqA >= xBand[6].freq_min && freqA < xBand[6].freq_max)
-                            DB.SaveBandStack(xBand[6].name, band_X6_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack(xBand[6].name, band_X6_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.BX7:
                         if (freqA >= xBand[7].freq_min && freqA < xBand[7].freq_max)
-                            DB.SaveBandStack(xBand[7].name, band_X7_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack(xBand[7].name, band_X7_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.BX8:
                         if (freqA >= xBand[8].freq_min && freqA < xBand[8].freq_max)
-                            DB.SaveBandStack(xBand[8].name, band_X8_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack(xBand[8].name, band_X8_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.BX9:
                         if (freqA >= xBand[9].freq_min && freqA < xBand[9].freq_max)
-                            DB.SaveBandStack(xBand[9].name, band_X9_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack(xBand[9].name, band_X9_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.BX10:
                         if (freqA >= xBand[10].freq_min && freqA < xBand[10].freq_max)
-                            DB.SaveBandStack(xBand[10].name, band_X10_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack(xBand[10].name, band_X10_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.BX11:
                         if (freqA >= xBand[11].freq_min && freqA < xBand[11].freq_max)
-                            DB.SaveBandStack(xBand[11].name, band_X11_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack(xBand[11].name, band_X11_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                     case Band.BX12:
                         if (freqA >= xBand[12].freq_min && freqA < xBand[12].freq_max)
-                            DB.SaveBandStack(xBand[12].name, band_X12_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                            DB.SaveBandStack(xBand[12].name, band_X12_index, modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq,
+                                AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked, SquelchSubRX, chkSQLSubRX.Checked);
                         break;
                 }
             }
@@ -10551,7 +10615,8 @@ namespace PowerSDR
 
         private bool band_locked = false;       // yt7pwr
         private void SetBand(string modeMainRX, string modeSubRX, string filterMainRX, string filterSubRX,
-            double freqA, double freqB, double losc) // changes yt7pwr
+            double freqA, double freqB, double losc, int af, int rf, double pwr, int sql1,
+            bool sql1_on, int sql2, bool sql2_on) // changes yt7pwr
         {
             // Set mode, filter, and frequency according to passed parameters
             band_locked = true;
@@ -10582,6 +10647,13 @@ namespace PowerSDR
             losc_change = false;
             wbir_delay_adapt = true;
             band_locked = false;
+            AF = af;
+            RF = rf;
+            PWR = pwr;
+            SquelchMainRX = sql1;
+            chkSQLMainRX.Checked = sql1_on;
+            SquelchSubRX = sql2;
+            chkSQLSubRX.Checked = sql2_on;
 #if(DirectX)
             Display_DirectX.RefreshPanadapterGrid = true;
 #endif
@@ -10884,7 +10956,7 @@ namespace PowerSDR
                 CAT_client_socket.ClientServerSync("ZZST;");     // sync with server
         }
 
-        private Band BandByFreq(double freq)     // changes yt7pwr
+        public Band BandByFreq(double freq)     // changes yt7pwr
         {
             Band b = Band.GEN;
 
@@ -13360,8 +13432,8 @@ namespace PowerSDR
         private int saved_tbDisplayPan = 0;
         private int saved_tbDisplayZoom = 4;
         public bool VoiceRecording = false;
-        public bool G59ExtATU_presetnt = false;
-        public ATUMode G59ExtATU_tuning_mode = ATUMode.FULL_TUNE;
+        public bool ExtATU_presetnt = false;
+        public ATUMode ExtATU_tuning_mode = ATUMode.FULL_TUNE;
         public int TXSwitchTime = 10;
         public bool cat_push_data = false;
 
@@ -14874,6 +14946,7 @@ namespace PowerSDR
             {
                 if (ptbRF != null)
                     ptbRF.Value = value;
+
                 RF_ValueChanged();
             }
         }
@@ -15840,8 +15913,7 @@ namespace PowerSDR
         public bool tx_IF
         {
             get { return tx_shift_if; }
-            set
-            { tx_shift_if = value; }
+            set { tx_shift_if = value; }
         }
 
         private double tx_shift = 0.1125; // yt7pwr
@@ -16046,8 +16118,8 @@ namespace PowerSDR
             set { disable_swr_protection = value; }
         }
 
-        private decimal previous_pwr = 50.0M;
-        public decimal PreviousPWR
+        private double previous_pwr = 50.0;
+        public double PreviousPWR
         {
             get { return previous_pwr; }
             set { previous_pwr = value; }
@@ -16949,6 +17021,7 @@ namespace PowerSDR
                         else if (rx_osc > sample_rate1 / 2)
                         {
                             first = true;
+
                             if (continuous_tuning)
                             {
                                 if (current_model == Model.GENESIS_G59NET ||
@@ -17406,13 +17479,13 @@ namespace PowerSDR
             }
         }
 
-        public decimal PWR
+        public double PWR
         {
             get { return (int)ptbPWR.Value; }
             set
             {
-                value = Math.Max(0.1M, value);			// lower bound
-                value = Math.Min(100, value);	    	// upper bound
+                value = Math.Max(0.1, value);             			// lower bound
+                value = Math.Min(100, value);	    	            // upper bound
 
                 ptbPWR.Value = (int)value;
                 PWR_ValueChanged();
@@ -20579,7 +20652,6 @@ namespace PowerSDR
                                                 output = power.ToString("f1") + " W";
                                                 new_meter_data = (float)power;
                                                 num = (float)(power * 1.2);
-                                                new_meter_data = num;
                                             }
                                             else if (current_model == Model.GENESIS_G59USB ||
                                                 current_model == Model.GENESIS_G59NET)                  // solo 10mW
@@ -20719,8 +20791,71 @@ namespace PowerSDR
 
                                                 output = swr.ToString("f1") + " : 1";
                                                 new_meter_data = (float)swr;
-                                                NewVFOSignalGauge.Value = (float)(Math.Log((Math.Exp(new_meter_data))));
-                                                AnalogSignalGauge.Value = (float)(Math.Log((Math.Exp(new_meter_data))));
+                                                Debug.Write(swr.ToString() + "\n");
+                                                double vswr = Math.Round(swr, 2);
+
+                                                if (vswr <= 1.1)
+                                                {
+                                                    vswr -= 1.0;
+                                                    vswr += 1;
+                                                }
+                                                else if (vswr <= 1.2)
+                                                {
+                                                    vswr -= 1.1;
+                                                    vswr *= 10;
+                                                    vswr += 1;
+                                                }
+                                                else if (vswr <= 1.3)
+                                                {
+                                                    vswr -= 1.2;
+                                                    vswr *= 9;
+                                                    vswr += 1.5;
+                                                }
+                                                else if (vswr <= 1.4)
+                                                {
+                                                    vswr -= 1.3;
+                                                    vswr *= 8;
+                                                    vswr += 2.5;
+                                                }
+                                                else if (vswr <= 1.5)
+                                                {
+                                                    vswr -= 1.4;
+                                                    vswr *= 7;
+                                                    vswr += 3.5;
+                                                }
+                                                else if (vswr <= 2.0)
+                                                {
+                                                    vswr -= 1.5;
+                                                    vswr *= 6;
+                                                    vswr += 4.2;
+                                                }
+                                                else if (vswr <= 3.0)
+                                                {
+                                                    vswr -= 2.0;
+                                                    vswr *= 2.5;
+                                                    vswr += 7.1;
+                                                }
+                                                else if (vswr <= 5.0)
+                                                {
+                                                    vswr -= 3.0;
+                                                    vswr *= 1.2;
+                                                    vswr += 9.6;
+                                                }
+                                                else if (vswr <= 50.0)
+                                                {
+                                                    vswr -= 5;
+                                                    vswr *= .1;
+                                                    vswr += 12;
+                                                }
+                                                else
+                                                {
+                                                    vswr -= 9;
+                                                    vswr *= .3;
+                                                    vswr += 15;
+                                                }
+
+                                                NewVFOSignalGauge.Value = (float)vswr;
+                                                AnalogSignalGauge.Value = (float)vswr;
                                             }
                                             else
                                             {
@@ -20953,6 +21088,7 @@ namespace PowerSDR
                                         qrp2000.SetPTTGetCWInput(1, ptt_tmp);
                                     else
                                         qrp2000.SetPTTGetCWInput(0, ptt_tmp);
+
                                     if (Keyer.QRP2000CW1)
                                     {
                                         ptt_tmp[0] &= 0x20;
@@ -20984,19 +21120,22 @@ namespace PowerSDR
                     {
                         keyer_ptt = (DttSP.KeyerPlaying() || g59.MOX);
 
-                        if (G59ExtATU_presetnt)
+                        if (ExtATU_presetnt)
                             tune_ptt = g59.TUNE;
                     }
                     else if (current_model == Model.GENESIS_G59NET)
                     {
                         keyer_ptt = (DttSP.KeyerPlaying() || net_device.MOX);
 
-                        if (G59ExtATU_presetnt)
+                        if (ExtATU_presetnt)
                             tune_ptt = net_device.TUNE;
                     }
                     else if (current_model == Model.GENESIS_G11)
                     {
                         keyer_ptt = (DttSP.KeyerPlaying() || g11.MOX);
+
+                        if (ExtATU_presetnt)
+                            tune_ptt = g11.TUNE;
                     }
                     else
                         keyer_ptt = DttSP.KeyerPlaying();
@@ -21383,6 +21522,12 @@ namespace PowerSDR
         {
             if (e.KeyChar == (char)Keys.Enter)
                 btnHidden.Focus();
+
+            if (debug != null && debug.Visible)
+            {
+                debug.rtbDebugMsg.AppendText("Key press: " + e.KeyChar.ToString() + " \n");
+                SendMessage(debug.rtbDebugMsg.Handle, WM_VSCROLL, SB_BOTTOM, 0);
+            }
         }
 
         private void Console_KeyUp(object sender, System.Windows.Forms.KeyEventArgs e) // changes yt7pwr
@@ -21408,6 +21553,12 @@ namespace PowerSDR
 
             if (e.KeyCode == Keys.Space)
                 chkMOX.Checked = false;
+
+            if (debug != null && debug.Visible)
+            {
+                debug.rtbDebugMsg.AppendText("KeyUp: " + e.KeyCode.ToString() + " \n");
+                SendMessage(debug.rtbDebugMsg.Handle, WM_VSCROLL, SB_BOTTOM, 0);
+            }
 
         }
 
@@ -21565,6 +21716,14 @@ namespace PowerSDR
             {
                 switch (e.KeyCode)
                 {
+                    case Keys.Add:
+                        RF++;
+                        break;
+
+                    case Keys.Subtract:
+                        RF--;
+                        break;
+
                     case Keys.V:
                         if (MinimalScreen)
                         {
@@ -22938,12 +23097,20 @@ namespace PowerSDR
                     g59.KEYER = 1;
                     net_device.KEYER = 1;
                     g11.KEYER = 1;
+                    g59.KeyerNewData = true;
+                    g11.KeyerNewData = true;
+                    net_device.KeyerNewData = true;
+                    g6.KeyerNewData = true;
                 }
                 else if (e.KeyCode == key_cw_dash)
                 {
                     g59.KEYER = 0;
                     net_device.KEYER = 0;
                     g11.KEYER = 0;
+                    g59.KeyerNewData = true;
+                    g11.KeyerNewData = true;
+                    net_device.KeyerNewData = true;
+                    g6.KeyerNewData = true;
                 }
                 else if (vfo_lock || !quick_qsy)
                 {
@@ -22959,6 +23126,12 @@ namespace PowerSDR
                     if (udCWSpeed.Value >= udCWSpeed.Minimum - 1)
                         udCWSpeed.Value -= 1;
                 }
+            }
+
+            if (debug != null && debug.Visible)
+            {
+                debug.rtbDebugMsg.AppendText("KeyDown: " + e.KeyCode.ToString() + " \n");
+                SendMessage(debug.rtbDebugMsg.Handle, WM_VSCROLL, SB_BOTTOM, 0);
             }
         }
 
@@ -23280,7 +23453,7 @@ namespace PowerSDR
 
                     DttSP.SetKeyerSpeed((float)udCWSpeed.Value);
                 }
-                ///////////////////// OFF ///////////////////////////////
+////////////////////////////////////// OFF /////////////////////////////////////////////////////////
                 else
                 {
                     if (Audio.wave_record)
@@ -25298,6 +25471,7 @@ namespace PowerSDR
             Display_DirectX.PeakOn = chkDisplayPeak.Checked;
 #endif
             Display_GDI.PeakOn = chkDisplayPeak.Checked;
+
             if (chkDisplayPeak.Checked)
             {
                 chkDisplayPeak.BackColor = button_selected_color;
@@ -25310,28 +25484,63 @@ namespace PowerSDR
 
         private void ATU_tuning_thread()                                         // yt7pwr
         {
-            if (G59ExtATU_presetnt && g59.Connected)
+            switch (current_model)
             {
-                switch (G59ExtATU_tuning_mode)
-                {
-                    case ATUMode.FULL_TUNE:
+                case Model.GENESIS_G59NET:
+                case Model.GENESIS_G59USB:
+                    {
+                        if (ExtATU_presetnt && g59.Connected)
                         {
-                            Thread.Sleep(SetupForm.ATUCarrierDelay);
-                            g59.WriteToDevice(27, 1);                           // ATU ON
-                            Thread.Sleep(SetupForm.ATUFullTime);                // >2500mS
-                        }
-                        break;
+                            switch (ExtATU_tuning_mode)
+                            {
+                                case ATUMode.FULL_TUNE:
+                                    {
+                                        Thread.Sleep(SetupForm.ATUCarrierDelay);
+                                        g59.WriteToDevice(27, 1);                           // ATU ON
+                                        Thread.Sleep(SetupForm.ATUFullTime);                // >2500mS
+                                    }
+                                    break;
 
-                    case ATUMode.MEM_TUNE:
+                                case ATUMode.MEM_TUNE:
+                                    {
+                                        Thread.Sleep(SetupForm.ATUCarrierDelay);
+                                        g59.WriteToDevice(27, 1);                           // ATU ON
+                                        Thread.Sleep(SetupForm.ATUMemoryTime);              // 430-620mS
+                                    }
+                                    break;
+                            }
+
+                            g59.WriteToDevice(27, 0);                                       // ATU OFF
+                        }
+                    }
+                    break;
+                case Model.GENESIS_G11:
+                    {
+                        if (ExtATU_presetnt && g11.Connected)
                         {
-                            Thread.Sleep(SetupForm.ATUCarrierDelay);
-                            g59.WriteToDevice(27, 1);                           // ATU ON
-                            Thread.Sleep(SetupForm.ATUMemoryTime);              // 430-620mS
-                        }
-                        break;
-                }
+                            switch (ExtATU_tuning_mode)
+                            {
+                                case ATUMode.FULL_TUNE:
+                                    {
+                                        Thread.Sleep(SetupForm.ATUCarrierDelay);
+                                        g11.WriteToDevice(27, 1);                           // ATU ON
+                                        Thread.Sleep(SetupForm.ATUFullTime);                // >2500mS
+                                    }
+                                    break;
 
-                g59.WriteToDevice(27, 0);                                       // ATU OFF
+                                case ATUMode.MEM_TUNE:
+                                    {
+                                        Thread.Sleep(SetupForm.ATUCarrierDelay);
+                                        g11.WriteToDevice(27, 1);                           // ATU ON
+                                        Thread.Sleep(SetupForm.ATUMemoryTime);              // 430-620mS
+                                    }
+                                    break;
+                            }
+
+                            g11.WriteToDevice(27, 0);                                       // ATU OFF
+                        }
+                    }
+                    break;
             }
         }
 
@@ -25380,15 +25589,33 @@ namespace PowerSDR
                 ptbPWR.Value = (int)tune_power;
                 lblPWRValue.Text = ptbPWR.Value.ToString();
 
-                if (G59ExtATU_presetnt)
+                if (ExtATU_presetnt)
                 {
-                    switch (G59ExtATU_tuning_mode)
+                    switch (ExtATU_tuning_mode)
                     {
                         case ATUMode.BYPASS:
-                            Keyer.TuneCW = false;                               // no carrier!
-                            g59.WriteToDevice(27, 1);                           // ATU ON
-                            Thread.Sleep(SetupForm.ATUBypassTime);              // 64-96mS
-                            g59.WriteToDevice(27, 0);                           // ATU OFF
+                            {
+                                switch (current_model)
+                                {
+                                    case Model.GENESIS_G59USB:
+                                    case Model.GENESIS_G59NET:
+                                        {
+                                            Keyer.TuneCW = false;                               // no carrier!
+                                            g59.WriteToDevice(27, 1);                           // ATU ON
+                                            Thread.Sleep(SetupForm.ATUBypassTime);              // 64-96mS
+                                            g59.WriteToDevice(27, 0);                           // ATU OFF                         
+                                        }
+                                        break;
+                                    case Model.GENESIS_G11:
+                                        {
+                                            Keyer.TuneCW = false;                               // no carrier!
+                                            g11.WriteToDevice(27, 1);                           // ATU ON
+                                            Thread.Sleep(SetupForm.ATUBypassTime);              // 64-96mS
+                                            g11.WriteToDevice(27, 0);                           // ATU OFF                         
+                                        }
+                                        break;
+                                }
+                            }
                             break;
 
                         case ATUMode.FULL_TUNE:
@@ -29439,12 +29666,15 @@ namespace PowerSDR
                 double freqA;
                 double freqB;
                 double losc_freq;
+                int af, rf, sql1, sql2;
+                double pwr;
+                bool sql1_on, sql2_on;
                 CurrentBand = Band.B160M;
 
                 if (DB.GetBandStack("160M", band_160m_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
 
                 MaxFreq = LOSCFreq + DttSP.SampleRate / 2 * 1e-6;
@@ -29513,12 +29743,15 @@ namespace PowerSDR
                 double freqA;
                 double freqB;
                 double losc_freq;
+                int af, rf, sql1, sql2;
+                double pwr;
+                bool sql1_on, sql2_on;
                 CurrentBand = Band.B80M;
 
                 if (DB.GetBandStack("80M", band_80m_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
 
                 MaxFreq = LOSCFreq + DttSP.SampleRate / 2 * 1e-6;
@@ -29589,12 +29822,15 @@ namespace PowerSDR
                 double freqA;
                 double freqB;
                 double losc_freq;
+                int af, rf, sql1, sql2;
+                double pwr;
+                bool sql1_on, sql2_on;
                 CurrentBand = Band.B60M;
 
                 if (DB.GetBandStack("60M", band_60m_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
 
                 MaxFreq = LOSCFreq + DttSP.SampleRate / 2 * 1e-6;
@@ -29665,12 +29901,15 @@ namespace PowerSDR
                 double freqA;
                 double freqB;
                 double losc_freq;
+                int af, rf, sql1, sql2;
+                double pwr;
+                bool sql1_on, sql2_on;
                 CurrentBand = Band.B40M;
 
                 if (DB.GetBandStack("40M", band_40m_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
 
                 MaxFreq = LOSCFreq + DttSP.SampleRate / 2 * 1e-6;
@@ -29741,12 +29980,15 @@ namespace PowerSDR
                 double freqA;
                 double freqB;
                 double losc_freq;
+                int af, rf, sql1, sql2;
+                double pwr;
+                bool sql1_on, sql2_on;
                 CurrentBand = Band.B30M;
 
                 if (DB.GetBandStack("30M", band_30m_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
 
                 MaxFreq = LOSCFreq + DttSP.SampleRate / 2 * 1e-6;
@@ -29817,12 +30059,15 @@ namespace PowerSDR
                 double freqA;
                 double freqB;
                 double losc_freq;
+                int af, rf, sql1, sql2;
+                double pwr;
+                bool sql1_on, sql2_on;
                 CurrentBand = Band.B20M;
 
                 if (DB.GetBandStack("20M", band_20m_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
 
                 MaxFreq = LOSCFreq + DttSP.SampleRate / 2 * 1e-6;
@@ -29893,12 +30138,15 @@ namespace PowerSDR
                 double freqA;
                 double freqB;
                 double losc_freq;
+                int af, rf, sql1, sql2;
+                double pwr;
+                bool sql1_on, sql2_on;
                 CurrentBand = Band.B17M;
 
                 if (DB.GetBandStack("17M", band_17m_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
 
                 MaxFreq = LOSCFreq + DttSP.SampleRate / 2 * 1e-6;
@@ -29969,12 +30217,15 @@ namespace PowerSDR
                 double freqA;
                 double freqB;
                 double losc_freq;
+                int af, rf, sql1, sql2;
+                double pwr;
+                bool sql1_on, sql2_on;
                 CurrentBand = Band.B15M;
 
                 if (DB.GetBandStack("15M", band_15m_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
 
                 MaxFreq = LOSCFreq + DttSP.SampleRate / 2 * 1e-6;
@@ -30045,12 +30296,15 @@ namespace PowerSDR
                 double freqA;
                 double freqB;
                 double losc_freq;
+                int af, rf, sql1, sql2;
+                double pwr;
+                bool sql1_on, sql2_on;
                 CurrentBand = Band.B12M;
 
                 if (DB.GetBandStack("12M", band_12m_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
 
                 MaxFreq = LOSCFreq + DttSP.SampleRate / 2 * 1e-6;
@@ -30121,12 +30375,15 @@ namespace PowerSDR
                 double freqA;
                 double freqB;
                 double losc_freq;
+                int af, rf, sql1, sql2;
+                double pwr;
+                bool sql1_on, sql2_on;
                 CurrentBand = Band.B10M;
 
                 if (DB.GetBandStack("10M", band_10m_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
 
                 MaxFreq = LOSCFreq + DttSP.SampleRate / 2 * 1e-6;
@@ -30197,12 +30454,15 @@ namespace PowerSDR
                 double freqA;
                 double freqB;
                 double losc_freq;
+                int af, rf, sql1, sql2;
+                double pwr;
+                bool sql1_on, sql2_on;
                 CurrentBand = Band.B6M;
 
                 if (DB.GetBandStack("6M", band_6m_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
 
                 MaxFreq = LOSCFreq + DttSP.SampleRate / 2 * 1e-6;
@@ -30273,12 +30533,15 @@ namespace PowerSDR
                 double freqA;
                 double freqB;
                 double losc_freq;
+                int af, rf, sql1, sql2;
+                double pwr;
+                bool sql1_on, sql2_on;
                 CurrentBand = Band.B2M;
 
                 if (DB.GetBandStack("2M", band_2m_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
 
                 MaxFreq = LOSCFreq + DttSP.SampleRate / 2 * 1e-6;
@@ -30372,12 +30635,15 @@ namespace PowerSDR
                 double freqA;
                 double freqB;
                 double losc_freq;
+                int af, rf, sql1, sql2;
+                double pwr;
+                bool sql1_on, sql2_on;
                 CurrentBand = Band.WWV;
 
                 if (DB.GetBandStack("WWV", band_wwv_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
 
                 MaxFreq = LOSCFreq + DttSP.SampleRate / 2 * 1e-6;
@@ -30448,12 +30714,15 @@ namespace PowerSDR
                 double freqA;
                 double freqB;
                 double losc_freq;
+                int af, rf, sql1, sql2;
+                double pwr;
+                bool sql1_on, sql2_on;
                 CurrentBand = Band.GEN;
 
                 if (DB.GetBandStack("GEN", band_gen_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
 
                 MaxFreq = LOSCFreq + DttSP.SampleRate / 2 * 1e-6;
@@ -38530,19 +38799,25 @@ namespace PowerSDR
             double freqA;
             double freqB;
             double losc_freq;
+            int af, rf, sql1, sql2;
+            double pwr;
+            bool sql1_on, sql2_on;
 
             if (get_band_stack)
             {
                 if (DB.GetBandStack("2190M", band_2190m_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
                 else
                 {
-                    DB.AddBandStack("2190M", "CWU", "F7", 0.136);
-                    DB.AddBandStack("2190M", "CWU", "F7", 0.136);
-                    DB.AddBandStack("2190M", "CWU", "F7", 0.136);
+                    DB.AddBandStack("2190M", "CWU", "F7", 0.136, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                    DB.AddBandStack("2190M", "CWU", "F7", 0.136, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                    DB.AddBandStack("2190M", "CWU", "F7", 0.136, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
                     DB.Update();
                     UpdateBandStackRegisters();
                 }
@@ -38619,19 +38894,25 @@ namespace PowerSDR
             double freqA;
             double freqB;
             double losc_freq;
+            int af, rf, sql1, sql2;
+            double pwr;
+            bool sql1_on, sql2_on;
 
             if (get_band_stack)
             {
                 if (DB.GetBandStack("600M", band_600m_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
                 else
                 {
-                    DB.AddBandStack("600M", "CWU", "F7", 0.501);
-                    DB.AddBandStack("600M", "CWU", "F7", 0.502);
-                    DB.AddBandStack("600M", "CWU", "F7", 0.503);
+                    DB.AddBandStack("600M", "CWU", "F7", 0.501, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                    DB.AddBandStack("600M", "CWU", "F7", 0.502, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                    DB.AddBandStack("600M", "CWU", "F7", 0.503, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
                     DB.Update();
                     UpdateBandStackRegisters();
                 }
@@ -38708,23 +38989,29 @@ namespace PowerSDR
             double freqA;
             double freqB;
             double losc_freq;
+            int af, rf, sql1, sql2;
+            double pwr;
+            bool sql1_on, sql2_on;
 
             if (get_band_stack)
             {
                 CurrentBand = Band.BX1;
 
                 if (DB.GetBandStack(xBand[1].name, band_X1_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
                 else
                 {
                     if (xBand[1].name != "")
                     {
-                        DB.AddBandStack(xBand[1].name, "CWU", "F7", xBand[1].freq_min);
-                        DB.AddBandStack(xBand[1].name, "USB", "F7", xBand[1].freq_min);
-                        DB.AddBandStack(xBand[1].name, "USB", "F7", xBand[1].freq_min);
+                        DB.AddBandStack(xBand[1].name, "CWU", "F7", xBand[1].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                        DB.AddBandStack(xBand[1].name, "USB", "F7", xBand[1].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                        DB.AddBandStack(xBand[1].name, "USB", "F7", xBand[1].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
                         DB.Update();
                         UpdateBandStackRegisters();
                     }
@@ -38801,23 +39088,29 @@ namespace PowerSDR
             double freqA;
             double freqB;
             double losc_freq;
+            int af, rf, sql1, sql2;
+            double pwr;
+            bool sql1_on, sql2_on;
 
             if (get_band_stack)
             {
                 CurrentBand = Band.BX2;
 
                 if (DB.GetBandStack(xBand[2].name, band_X2_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
                 else
                 {
                     if (xBand[2].name != "")
                     {
-                        DB.AddBandStack(xBand[2].name, "CWU", "F7", xBand[2].freq_min);
-                        DB.AddBandStack(xBand[2].name, "USB", "F7", xBand[2].freq_min);
-                        DB.AddBandStack(xBand[2].name, "USB", "F7", xBand[2].freq_min);
+                        DB.AddBandStack(xBand[2].name, "CWU", "F7", xBand[2].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                        DB.AddBandStack(xBand[2].name, "USB", "F7", xBand[2].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                        DB.AddBandStack(xBand[2].name, "USB", "F7", xBand[2].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
                         DB.Update();
                         UpdateBandStackRegisters();
                     }
@@ -38894,23 +39187,29 @@ namespace PowerSDR
             double freqA;
             double freqB;
             double losc_freq;
+            int af, rf, sql1, sql2;
+            double pwr;
+            bool sql1_on, sql2_on;
 
             if (get_band_stack)
             {
                 CurrentBand = Band.BX3;
 
                 if (DB.GetBandStack(xBand[3].name, band_X3_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
                 else
                 {
                     if (xBand[3].name != "")
                     {
-                        DB.AddBandStack(xBand[3].name, "CWU", "F7", xBand[3].freq_min);
-                        DB.AddBandStack(xBand[3].name, "USB", "F7", xBand[3].freq_min);
-                        DB.AddBandStack(xBand[3].name, "USB", "F7", xBand[3].freq_min);
+                        DB.AddBandStack(xBand[3].name, "CWU", "F7", xBand[3].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                        DB.AddBandStack(xBand[3].name, "USB", "F7", xBand[3].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                        DB.AddBandStack(xBand[3].name, "USB", "F7", xBand[3].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
                         DB.Update();
                         UpdateBandStackRegisters();
                     }
@@ -38987,23 +39286,29 @@ namespace PowerSDR
             double freqA;
             double freqB;
             double losc_freq;
+            int af, rf, sql1, sql2;
+            double pwr;
+            bool sql1_on, sql2_on;
 
             if (get_band_stack)
             {
                 CurrentBand = Band.BX4;
 
                 if (DB.GetBandStack(xBand[4].name, band_X4_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
                 else
                 {
                     if (xBand[4].name != "")
                     {
-                        DB.AddBandStack(xBand[4].name, "CWU", "F7", xBand[4].freq_min);
-                        DB.AddBandStack(xBand[4].name, "USB", "F7", xBand[4].freq_min);
-                        DB.AddBandStack(xBand[4].name, "USB", "F7", xBand[4].freq_min);
+                        DB.AddBandStack(xBand[4].name, "CWU", "F7", xBand[4].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                        DB.AddBandStack(xBand[4].name, "USB", "F7", xBand[4].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                        DB.AddBandStack(xBand[4].name, "USB", "F7", xBand[4].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
                         DB.Update();
                         UpdateBandStackRegisters();
                     }
@@ -39080,23 +39385,29 @@ namespace PowerSDR
             double freqA;
             double freqB;
             double losc_freq;
+            int af, rf, sql1, sql2;
+            double pwr;
+            bool sql1_on, sql2_on;
 
             if (get_band_stack)
             {
                 CurrentBand = Band.BX5;
 
                 if (DB.GetBandStack(xBand[5].name, band_X5_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
                 else
                 {
                     if (xBand[5].name != "")
                     {
-                        DB.AddBandStack(xBand[5].name, "CWU", "F7", xBand[5].freq_min);
-                        DB.AddBandStack(xBand[5].name, "USB", "F7", xBand[5].freq_min);
-                        DB.AddBandStack(xBand[5].name, "USB", "F7", xBand[5].freq_min);
+                        DB.AddBandStack(xBand[5].name, "CWU", "F7", xBand[5].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                        DB.AddBandStack(xBand[5].name, "USB", "F7", xBand[5].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                        DB.AddBandStack(xBand[5].name, "USB", "F7", xBand[5].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
                         DB.Update();
                         UpdateBandStackRegisters();
                     }
@@ -39173,23 +39484,29 @@ namespace PowerSDR
             double freqA;
             double freqB;
             double losc_freq;
+            int af, rf, sql1, sql2;
+            double pwr;
+            bool sql1_on, sql2_on;
 
             if (get_band_stack)
             {
                 CurrentBand = Band.BX6;
 
                 if (DB.GetBandStack(xBand[6].name, band_X6_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
                 else
                 {
                     if (xBand[6].name != "")
                     {
-                        DB.AddBandStack(xBand[6].name, "CWU", "F7", xBand[6].freq_min);
-                        DB.AddBandStack(xBand[6].name, "USB", "F7", xBand[6].freq_min);
-                        DB.AddBandStack(xBand[6].name, "USB", "F7", xBand[6].freq_min);
+                        DB.AddBandStack(xBand[6].name, "CWU", "F7", xBand[6].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                        DB.AddBandStack(xBand[6].name, "USB", "F7", xBand[6].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                        DB.AddBandStack(xBand[6].name, "USB", "F7", xBand[6].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
                         DB.Update();
                         UpdateBandStackRegisters();
                     }
@@ -39266,23 +39583,29 @@ namespace PowerSDR
             double freqA;
             double freqB;
             double losc_freq;
+            int af, rf, sql1, sql2;
+            double pwr;
+            bool sql1_on, sql2_on;
 
             if (get_band_stack)
             {
                 CurrentBand = Band.BX7;
 
                 if (DB.GetBandStack(xBand[7].name, band_X7_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
                 else
                 {
                     if (xBand[7].name != "")
                     {
-                        DB.AddBandStack(xBand[7].name, "CWU", "F7", xBand[7].freq_min);
-                        DB.AddBandStack(xBand[7].name, "USB", "F7", xBand[7].freq_min);
-                        DB.AddBandStack(xBand[7].name, "USB", "F7", xBand[7].freq_min);
+                        DB.AddBandStack(xBand[7].name, "CWU", "F7", xBand[7].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                        DB.AddBandStack(xBand[7].name, "USB", "F7", xBand[7].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                        DB.AddBandStack(xBand[7].name, "USB", "F7", xBand[7].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
                         DB.Update();
                         UpdateBandStackRegisters();
                     }
@@ -39358,23 +39681,29 @@ namespace PowerSDR
             double freqA;
             double freqB;
             double losc_freq;
+            int af, rf, sql1, sql2;
+            double pwr;
+            bool sql1_on, sql2_on;
 
             if (get_band_stack)
             {
                 CurrentBand = Band.BX8;
 
                 if (DB.GetBandStack(xBand[8].name, band_X8_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
                 else
                 {
                     if (xBand[8].name != "")
                     {
-                        DB.AddBandStack(xBand[8].name, "CWU", "F7", xBand[8].freq_min);
-                        DB.AddBandStack(xBand[8].name, "USB", "F7", xBand[8].freq_min);
-                        DB.AddBandStack(xBand[8].name, "USB", "F7", xBand[8].freq_min);
+                        DB.AddBandStack(xBand[8].name, "CWU", "F7", xBand[8].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                        DB.AddBandStack(xBand[8].name, "USB", "F7", xBand[8].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                        DB.AddBandStack(xBand[8].name, "USB", "F7", xBand[8].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
                         DB.Update();
                         UpdateBandStackRegisters();
                     }
@@ -39451,23 +39780,29 @@ namespace PowerSDR
             double freqA;
             double freqB;
             double losc_freq;
+            int af, rf, sql1, sql2;
+            double pwr;
+            bool sql1_on, sql2_on;
 
             if (get_band_stack)
             {
                 CurrentBand = Band.BX9;
 
                 if (DB.GetBandStack(xBand[9].name, band_X9_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
                 else
                 {
                     if (xBand[9].name != "")
                     {
-                        DB.AddBandStack(xBand[9].name, "CWU", "F7", xBand[9].freq_min);
-                        DB.AddBandStack(xBand[9].name, "USB", "F7", xBand[9].freq_min);
-                        DB.AddBandStack(xBand[9].name, "USB", "F7", xBand[9].freq_min);
+                        DB.AddBandStack(xBand[9].name, "CWU", "F7", xBand[9].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                        DB.AddBandStack(xBand[9].name, "USB", "F7", xBand[9].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                        DB.AddBandStack(xBand[9].name, "USB", "F7", xBand[9].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
                         DB.Update();
                         UpdateBandStackRegisters();
                     }
@@ -39544,23 +39879,29 @@ namespace PowerSDR
             double freqA;
             double freqB;
             double losc_freq;
+            int af, rf, sql1, sql2;
+            double pwr;
+            bool sql1_on, sql2_on;
 
             if (get_band_stack)
             {
                 CurrentBand = Band.BX10;
 
                 if (DB.GetBandStack(xBand[10].name, band_X10_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
                 else
                 {
                     if (xBand[10].name != "")
                     {
-                        DB.AddBandStack(xBand[10].name, "CWU", "F7", xBand[10].freq_min);
-                        DB.AddBandStack(xBand[10].name, "USB", "F7", xBand[10].freq_min);
-                        DB.AddBandStack(xBand[10].name, "USB", "F7", xBand[10].freq_min);
+                        DB.AddBandStack(xBand[10].name, "CWU", "F7", xBand[10].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                        DB.AddBandStack(xBand[10].name, "USB", "F7", xBand[10].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                        DB.AddBandStack(xBand[10].name, "USB", "F7", xBand[10].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
                         DB.Update();
                         UpdateBandStackRegisters();
                     }
@@ -39637,23 +39978,29 @@ namespace PowerSDR
             double freqA;
             double freqB;
             double losc_freq;
+            int af, rf, sql1, sql2;
+            double pwr;
+            bool sql1_on, sql2_on;
 
             if (get_band_stack)
             {
                 CurrentBand = Band.BX11;
 
                 if (DB.GetBandStack(xBand[11].name, band_X11_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
                 else
                 {
                     if (xBand[11].name != "")
                     {
-                        DB.AddBandStack(xBand[11].name, "CWU", "F7", xBand[11].freq_min);
-                        DB.AddBandStack(xBand[11].name, "USB", "F7", xBand[11].freq_min);
-                        DB.AddBandStack(xBand[11].name, "USB", "F7", xBand[11].freq_min);
+                        DB.AddBandStack(xBand[11].name, "CWU", "F7", xBand[11].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                        DB.AddBandStack(xBand[11].name, "USB", "F7", xBand[11].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                        DB.AddBandStack(xBand[11].name, "USB", "F7", xBand[11].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
                         DB.Update();
                         UpdateBandStackRegisters();
                     }
@@ -39730,23 +40077,29 @@ namespace PowerSDR
             double freqA;
             double freqB;
             double losc_freq;
+            int af, rf, sql1, sql2;
+            double pwr;
+            bool sql1_on, sql2_on;
 
             if (get_band_stack)
             {
                 CurrentBand = Band.BX12;
 
                 if (DB.GetBandStack(xBand[12].name, band_X12_index, out modeMainRX, out modeSubRX, out filterMainRX, out filterSubRX,
-                    out freqA, out freqB, out losc_freq))
+                    out freqA, out freqB, out losc_freq, out af, out rf, out pwr, out sql1, out sql1_on, out sql2, out sql2_on))
                 {
-                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq);
+                    SetBand(modeMainRX, modeSubRX, filterMainRX, filterSubRX, freqA, freqB, losc_freq, af, rf, pwr, sql1, sql1_on, sql2, sql2_on);
                 }
                 else
                 {
                     if (xBand[12].name != "")
                     {
-                        DB.AddBandStack(xBand[12].name, "CWU", "F7", xBand[12].freq_min);
-                        DB.AddBandStack(xBand[12].name, "USB", "F7", xBand[12].freq_min);
-                        DB.AddBandStack(xBand[12].name, "USB", "F7", xBand[12].freq_min);
+                        DB.AddBandStack(xBand[12].name, "CWU", "F7", xBand[12].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                        DB.AddBandStack(xBand[12].name, "USB", "F7", xBand[12].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
+                        DB.AddBandStack(xBand[12].name, "USB", "F7", xBand[12].freq_min, AF, RF, PWR, SquelchMainRX, chkSQLMainRX.Checked,
+                        SquelchSubRX, chkSQLSubRX.Checked);
                         DB.Update();
                         UpdateBandStackRegisters();
                     }
@@ -39940,14 +40293,6 @@ namespace PowerSDR
             {
                 switch (msg)
                 {
-                    case "USB_DISC":
-                        btnUSB.BackColor = Color.Red;
-                        break;
-
-                    case "USB_CONN":
-                        btnUSB.BackColor = Color.Green;
-                        break;
-
                     default:
                         if (debug != null && debug.Visible)
                         {
@@ -39966,6 +40311,44 @@ namespace PowerSDR
         public void DebugInvokeCallback(string msg)
         {
             this.Invoke(new DebugCallbackFunction(DebugCallback), msg);
+        }
+
+        #endregion
+
+        #region G6
+
+        public void GenesisG6CommandCallback(string command)
+        {
+            try
+            {
+                if (debug != null && debug.Visible)
+                {
+                    this.Invoke(new DebugCallbackFunction(DebugCallback), command);
+                }
+
+                switch (command)
+                {
+                    case "USB_DISC":
+                        if (current_model == Model.GENESIS_G6)
+                            btnUSB.BackColor = Color.Red;
+                        break;
+
+                    case "USB_CONN":
+                        if (current_model == Model.GENESIS_G6)
+                            btnUSB_Click(this, EventArgs.Empty);
+                        break;
+
+                    default:
+                        {
+
+                        }
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         #endregion

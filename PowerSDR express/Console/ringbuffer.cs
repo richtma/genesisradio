@@ -591,8 +591,8 @@ namespace PowerSDR
         /// <param name="nfloats">Number of elements to zero.</param>
         public void Restart(int nbytes)
         {
-            Reset();
             Clear(nbytes);
+            Reset();
         }
 
         public int Peek(byte[] dest, int cnt)

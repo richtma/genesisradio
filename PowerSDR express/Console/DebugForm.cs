@@ -67,11 +67,13 @@ namespace PowerSDR
                 {
                     console.g59.SetCallback(console.DebugInvokeCallback);
                     console.g11.SetCallback(console.DebugInvokeCallback);
+                    console.g6.callback_enabled = true;
                 }
                 else
                 {
                     console.g59.callback_enabled = false;
                     console.g11.callback_enabled = false;
+                    console.g6.callback_enabled = false;
                 }
             }
             catch (Exception ex)

@@ -792,6 +792,7 @@ namespace PowerSDR
                 case 12000:
                 case 24000:
                 case 48000:
+                case 44100:
                 case 96000:
                 case 192000:
                     retval = true; break;

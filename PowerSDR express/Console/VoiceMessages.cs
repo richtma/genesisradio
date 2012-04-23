@@ -608,6 +608,9 @@ namespace PowerSDR
                                 case Model.GENESIS_G59NET:
                                     console.net_device.WriteToDevice(26, 1);                // Mic in
                                     break;
+                                case Model.GENESIS_G11:
+                                    console.g11.WriteToDevice(26, 1);
+                                    break;
                                 default:
                                     break;
                             }
@@ -634,6 +637,9 @@ namespace PowerSDR
                                     break;
                                 case Model.GENESIS_G59NET:
                                     console.net_device.WriteToDevice(26, 0);                // Line in
+                                    break;
+                                case Model.GENESIS_G11:
+                                    console.g11.WriteToDevice(26, 0);
                                     break;
                                 default:
                                     break;
@@ -674,6 +680,9 @@ namespace PowerSDR
                                 case Model.GENESIS_G59NET:
                                     console.net_device.WriteToDevice(26, 1);                // Mic in
                                     break;
+                                case Model.GENESIS_G11:
+                                    console.g11.WriteToDevice(26, 1);
+                                    break;
                                 default:
                                     break;
                             }
@@ -700,6 +709,9 @@ namespace PowerSDR
                                     break;
                                 case Model.GENESIS_G59NET:
                                     console.net_device.WriteToDevice(26, 0);                // Line in
+                                    break;
+                                case Model.GENESIS_G11:
+                                    console.g11.WriteToDevice(26, 0);
                                     break;
                                 default:
                                     break;
@@ -740,6 +752,9 @@ namespace PowerSDR
                                 case Model.GENESIS_G59NET:
                                     console.net_device.WriteToDevice(26, 1);                // Mic in
                                     break;
+                                case Model.GENESIS_G11:
+                                    console.g11.WriteToDevice(26, 1);
+                                    break;
                                 default:
                                     break;
                             }
@@ -766,6 +781,9 @@ namespace PowerSDR
                                     break;
                                 case Model.GENESIS_G59NET:
                                     console.net_device.WriteToDevice(26, 0);                // Line in
+                                    break;
+                                case Model.GENESIS_G11:
+                                    console.g11.WriteToDevice(26, 0);
                                     break;
                                 default:
                                     break;
@@ -806,6 +824,9 @@ namespace PowerSDR
                                 case Model.GENESIS_G59NET:
                                     console.net_device.WriteToDevice(26, 1);                // Mic in
                                     break;
+                                case Model.GENESIS_G11:
+                                    console.g11.WriteToDevice(26, 1);
+                                    break;
                                 default:
                                     break;
                             }
@@ -832,6 +853,9 @@ namespace PowerSDR
                                     break;
                                 case Model.GENESIS_G59NET:
                                     console.net_device.WriteToDevice(26, 0);                // Line in
+                                    break;
+                                case Model.GENESIS_G11:
+                                    console.g11.WriteToDevice(26, 0);
                                     break;
                                 default:
                                     break;
@@ -872,6 +896,9 @@ namespace PowerSDR
                                 case Model.GENESIS_G59NET:
                                     console.net_device.WriteToDevice(26, 1);                // Mic in
                                     break;
+                                case Model.GENESIS_G11:
+                                    console.g11.WriteToDevice(26, 1);
+                                    break;
                                 default:
                                     break;
                             }
@@ -898,6 +925,9 @@ namespace PowerSDR
                                     break;
                                 case Model.GENESIS_G59NET:
                                     console.net_device.WriteToDevice(26, 0);                // Line in
+                                    break;
+                                case Model.GENESIS_G11:
+                                    console.g11.WriteToDevice(26, 0);
                                     break;
                                 default:
                                     break;
@@ -938,6 +968,9 @@ namespace PowerSDR
                                 case Model.GENESIS_G59NET:
                                     console.net_device.WriteToDevice(26, 1);                // Mic in
                                     break;
+                                case Model.GENESIS_G11:
+                                    console.g11.WriteToDevice(26, 1);
+                                    break;
                                 default:
                                     break;
                             }
@@ -964,6 +997,9 @@ namespace PowerSDR
                                     break;
                                 case Model.GENESIS_G59NET:
                                     console.net_device.WriteToDevice(26, 0);                // Line in
+                                    break;
+                                case Model.GENESIS_G11:
+                                    console.g11.WriteToDevice(26, 0);
                                     break;
                                 default:
                                     break;

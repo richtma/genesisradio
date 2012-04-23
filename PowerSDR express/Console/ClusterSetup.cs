@@ -1,7 +1,7 @@
 ﻿//=================================================================
-// ClusterSetup.cs
+// DXClusterSetup
 //=================================================================
-// Copyright (C) 2011 YT7PWR
+// Copyright (C) 2011,2012 YT7PWR
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -31,7 +31,7 @@ using System.Runtime.InteropServices;
 
 namespace PowerSDR
 {
-    partial class ClusterSetup : Form
+    public partial class ClusterSetup : Form
     {
         #region DLL imports
 
@@ -61,6 +61,7 @@ namespace PowerSDR
             try
             {
                 string[] vals = txtHosts.Text.Split('\n');
+                ParrentForm.UpdateButtonsText();
                 ParrentForm.UpdateHostsList(vals);
                 this.Close();
             }
@@ -79,9 +80,47 @@ namespace PowerSDR
 
                 foreach (string s in a)
                 {
-                    string b = s.Replace('/', '\n');
-                    txtHosts.AppendText(b);
-                    SendMessage(txtHosts.Handle, WM_VSCROLL, SB_BOTTOM, 0);
+                    string[] vals = s.Split('/');
+                    string name = vals[0];
+                    string val = vals[1];
+
+                    if (s.StartsWith("Cluster"))
+                    {
+                        txtHosts.AppendText(val + "\n");
+                        SendMessage(txtHosts.Handle, WM_VSCROLL, SB_BOTTOM, 0);
+                    }
+                    else if (s.StartsWith("btn1text"))
+                    {
+                        txtButton1.Text = vals[1];
+                    }
+                    else if (s.StartsWith("btn2text"))
+                    {
+                        txtButton2.Text = vals[1];
+                    }
+                    else if (s.StartsWith("btn3text"))
+                    {
+                        txtButton3.Text = vals[1];
+                    }
+                    else if (s.StartsWith("btn4text"))
+                    {
+                        txtButton4.Text = vals[1];
+                    }
+                    else if (s.StartsWith("btn1cmd"))
+                    {
+                        btn1cmd.Text = vals[1];
+                    }
+                    else if (s.StartsWith("btn2cmd"))
+                    {
+                        btn2cmd.Text = vals[1];
+                    }
+                    else if (s.StartsWith("btn3cmd"))
+                    {
+                        btn3cmd.Text = vals[1];
+                    }
+                    else if (s.StartsWith("btn4cmd"))
+                    {
+                        btn4cmd.Text = vals[1];
+                    }
                 }
             }
             catch (Exception ex)

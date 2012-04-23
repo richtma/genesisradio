@@ -243,6 +243,7 @@ namespace PowerSDR
                             if (sp.IsOpen) sp.Close();
                             break;
                         case "USB":
+                        case "QRP2000":
                             primary_comm_port_clossing = true;
                             Thread.Sleep(10);
                             if (sp.IsOpen) sp.Close();
@@ -716,6 +717,13 @@ namespace PowerSDR
                                                                 primary_keyer_dash = false;
                                                                 break;
 
+                                                            case 0xcc:                                          // TUN off
+                                                                console.g11.KEYER = 0xff;
+                                                                primary_keyer_dot = false;
+                                                                primary_keyer_dash = false;
+                                                                tuneCW = false;
+                                                                break;
+
                                                             default:
                                                                 primary_keyer_dash = false;
                                                                 primary_keyer_dot = false;
@@ -753,6 +761,13 @@ namespace PowerSDR
                                                                 console.g59.KEYER = 0xff;
                                                                 primary_keyer_dot = false;
                                                                 primary_keyer_dash = false;
+                                                                break;
+
+                                                            case 0xcc:                                          // TUN off
+                                                                console.g11.KEYER = 0xff;
+                                                                primary_keyer_dot = false;
+                                                                primary_keyer_dash = false;
+                                                                tuneCW = false;
                                                                 break;
 
                                                             default:
@@ -793,6 +808,13 @@ namespace PowerSDR
                                                                 console.g11.KEYER = 0xff;
                                                                 primary_keyer_dot = false;
                                                                 primary_keyer_dash = false;
+                                                                break;
+
+                                                            case 0xcc:                                          // TUN off
+                                                                console.g11.KEYER = 0xff;
+                                                                primary_keyer_dot = false;
+                                                                primary_keyer_dash = false;
+                                                                tuneCW = false;
                                                                 break;
 
                                                             default:

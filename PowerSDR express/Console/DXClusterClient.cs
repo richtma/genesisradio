@@ -1,7 +1,7 @@
 ﻿//=================================================================
 // DXClusterClient.cs
 //=================================================================
-// Copyright (C) 2011 YT7PWR
+// Copyright (C) 2011,2012 YT7PWR
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -35,7 +35,7 @@ using System.Net.Sockets;
 
 namespace PowerSDR
 {
-    partial class DXClusterClient : Form
+    public partial class DXClusterClient : Form
     {
         #region DLL imports
 
@@ -52,7 +52,11 @@ namespace PowerSDR
         public string CALL = "";
         public string NAME = "";
         public string QTH = "";
-        ClusterSetup ClusterSetupForm;
+        public string CMD1 = "";
+        public string CMD2 = "";
+        public string CMD3 = "";
+        public string CMD4 = "";
+        public ClusterSetup ClusterSetupForm;
         public bool closing = false;
 
         #endregion
@@ -71,6 +75,11 @@ namespace PowerSDR
 
             if (comboDXCluster.Items.Count > 0)
                 comboDXCluster.SelectedIndex = 0;
+
+            CMD1 = ClusterSetupForm.btn1cmd.Text.ToString();
+            CMD2 = ClusterSetupForm.btn2cmd.Text.ToString();
+            CMD3 = ClusterSetupForm.btn3cmd.Text.ToString();
+            CMD4 = ClusterSetupForm.btn4cmd.Text.ToString();
         }
 
         #endregion
@@ -113,19 +122,25 @@ namespace PowerSDR
         private void btnNoDX_Click(object sender, EventArgs e)
         {
             if (client.ClusterClient != null && client.ClusterClient.Connected)
-                client.SendMessage(0, "SET/FILTER DX/REJECT");
+                client.SendMessage(0, CMD1);
         }
 
         private void btnShowDX_Click(object sender, EventArgs e)
         {
             if (client.ClusterClient != null && client.ClusterClient.Connected)
-                client.SendMessage(0, "set/filter dx/off");
+                client.SendMessage(0, CMD2);
         }
 
         private void btnNoVHF_Click(object sender, EventArgs e)
         {
             if (client.ClusterClient != null && client.ClusterClient.Connected)
-                client.SendMessage(0, "set/filter vhf/reject");
+                client.SendMessage(0, CMD3);
+        }
+
+        private void btnVHFandUP_Click(object sender, EventArgs e)      // button 4
+        {
+            if (client.ClusterClient != null && client.ClusterClient.Connected)
+                client.SendMessage(0, CMD4);
         }
 
         private void btnClearTxt_Click(object sender, EventArgs e)
@@ -149,17 +164,7 @@ namespace PowerSDR
                             ASCIIEncoding buffer = new ASCIIEncoding();
                             string text = buffer.GetString(data, 0, count);
                             text = text.Replace('\a', ' ');
-                            /*string[] vals = text.Split(':');
-                            text = vals[0] + "       ";
-                            vals = vals[1].Split(' ');
-
-                            foreach (string b in vals)
-                            {
-                                if(b != "")
-                                {
-                                    text += b + " ";
-                                }
-                            }*/
+                            text = text.Replace('\r', ' ');
 
                             rtbDXClusterText.AppendText(text);
                             SendMessage(rtbDXClusterText.Handle, WM_VSCROLL, SB_BOTTOM, 0);
@@ -167,13 +172,19 @@ namespace PowerSDR
                             if (text.StartsWith("login:"))
                             {
                                 client.SendMessage(0, CALL);
-                                //Thread.Sleep(1000);
 
                                 if (NAME != "")
                                     client.SendMessage(0, "set/name " + NAME);
 
                                 if (QTH != "")
                                     client.SendMessage(0, "set/QTH " + QTH);
+                            }
+                            else if (text.Contains("enter your call"))
+                            {
+                                client.SendMessage(0, CALL);
+
+                                if (NAME != "")
+                                    client.SendMessage(0, "set/station/name " + NAME);
                             }
                         }
                         break;
@@ -205,11 +216,25 @@ namespace PowerSDR
 
                 int items = comboDXCluster.Items.Count;
 
-                for(int i=0; i<items; i++)
+                for (int i = 0; i < items; i++)
                 {
                     comboDXCluster.SelectedIndex = i;
-                    a.Add(comboDXCluster.Text + "/");
+                    a.Add("Cluster" + i.ToString() + "/" + comboDXCluster.Text.ToString());
                 }
+
+                a.Add("cluster_top/" + this.Top.ToString());		// save form positions
+                a.Add("cluster_left/" + this.Left.ToString());
+                a.Add("cluster_width/" + this.Width.ToString());
+                a.Add("cluster_height/" + this.Height.ToString());
+
+                a.Add("btn1text/" + btnNoDX.Text.ToString());
+                a.Add("btn2text/" + btnShowDX.Text.ToString());
+                a.Add("btn3text/" + btnNoVHF.Text.ToString());
+                a.Add("btn4text/" + btnVHFandUP.Text.ToString());
+                a.Add("btn1cmd/" + CMD1);
+                a.Add("btn2cmd/" + CMD2);
+                a.Add("btn3cmd/" + CMD3);
+                a.Add("btn4cmd/" + CMD4);
 
                 DB.SaveVars("DXClusterOptions", ref a);		    // save the values to the DB
                 DB.Update();
@@ -225,28 +250,39 @@ namespace PowerSDR
         {
             try
             {
-                // get list of live controls
-                ArrayList temp = new ArrayList();		// list of all first level controls
-                temp.Add(rtbDXClusterText);
-
-                ArrayList combobox_list = new ArrayList();
-
-                foreach (Control c in temp)
-                {
-                    if (c.GetType() == typeof(ComboBox))
-                        combobox_list.Add(c);
-                }
-
                 ArrayList a = DB.GetVars("DXClusterOptions");
                 a.Sort();
 
-                if (a.Count > 0)
-                    comboDXCluster.Items.Clear();
-
                 foreach (string s in a)
                 {
-                    string b = s.Replace('/', ' ');
-                    comboDXCluster.Items.Add(b);
+                    string[] vals = s.Split('/');
+                    string name = vals[0];
+                    string val = vals[1];
+
+                    if (s.StartsWith("cluster_top"))
+                    {
+                        int top = Int32.Parse(vals[1]);
+                        this.Top = top;
+                    }
+                    else if (s.StartsWith("cluster_left"))
+                    {
+                        int left = Int32.Parse(vals[1]);
+                        this.Left = left;
+                    }
+                    else if (s.StartsWith("cluster_width"))
+                    {
+                        int width = Int32.Parse(vals[1]);
+                        this.Width = width;
+                    }
+                    else if (s.StartsWith("cluster_height"))
+                    {
+                        int height = Int32.Parse(vals[1]);
+                        this.Height = height;
+                    }
+                    else if (s.StartsWith("Cluster"))
+                    {
+                        comboDXCluster.Items.Add(val);
+                    }
                 }
             }
             catch (Exception ex)
@@ -268,7 +304,29 @@ namespace PowerSDR
                 }
 
                 if (comboDXCluster.Items.Count > 0)
+                {
                     comboDXCluster.SelectedIndex = 0;
+                    SaveOptions();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        public void UpdateButtonsText()
+        {
+            try
+            {
+                btnNoDX.Text = ClusterSetupForm.txtButton1.Text;
+                btnShowDX.Text = ClusterSetupForm.txtButton2.Text;
+                btnNoVHF.Text = ClusterSetupForm.txtButton3.Text;
+                btnVHFandUP.Text = ClusterSetupForm.txtButton4.Text;
+                CMD1 = ClusterSetupForm.btn1cmd.Text;
+                CMD2 = ClusterSetupForm.btn2cmd.Text;
+                CMD3 = ClusterSetupForm.btn3cmd.Text;
+                CMD4 = ClusterSetupForm.btn4cmd.Text;
             }
             catch (Exception ex)
             {
@@ -309,6 +367,51 @@ namespace PowerSDR
         }
 
         #endregion
+
+        private void DXClusterClient_Resize(object sender, EventArgs e)
+        {
+            try
+            {
+                Point loc = new Point(12, 56);
+                rtbDXClusterText.Location = loc;
+                rtbDXClusterText.Width = this.Width - 40;
+                rtbDXClusterText.Height = this.Height - 154;
+
+                int space = Math.Max((rtbDXClusterText.Width - 24 - btnBye.Width * 8 - 5) / 7, 5);
+                loc = btnConnect.Location;
+                loc.Y = this.Height - 78;
+                btnConnect.Location = loc;
+                loc.X += btnBye.Width + space;
+                btnBye.Location = loc;
+                loc.X += btnBye.Width + space;
+                btnNoDX.Location = loc;
+                loc.X += btnBye.Width + space;
+                btnShowDX.Location = loc;
+                loc.X += btnShowDX.Width + space;
+                btnNoVHF.Location = loc;
+                loc.X += btnBye.Width + space;
+                btnVHFandUP.Location = loc;
+                loc.X += btnBye.Width + space;
+                btnClearTxt.Location = loc;
+                loc.X += btnBye.Width + space;
+                btnSettings.Location = loc;
+                space = (rtbDXClusterText.Width - (lblMessage.Width + txtMessage.Width + comboDXCluster.Width)) / 2;
+                loc.X = space;
+                loc.Y = 22;
+                lblMessage.Location = loc;
+                loc.X += 56;
+                loc.Y = 19;
+                txtMessage.Location = loc;
+                loc.X += 280;
+                loc.Y = 19;
+                comboDXCluster.Location = loc;
+                SendMessage(rtbDXClusterText.Handle, WM_VSCROLL, SB_BOTTOM, 0);
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
     }
 
     #region Telnet Client
