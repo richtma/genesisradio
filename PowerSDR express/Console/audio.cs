@@ -1303,8 +1303,10 @@ namespace PowerSDR
                                 }
                             }
 
-                            CorrectIQBuffer(out_l, out_r, (float)console.SetupForm.udDSPImageGainTX.Value,
-                                (float)console.SetupForm.udDSPImagePhaseTX.Value, frameCount);
+                            float iq_gain = 1.0f + (1.0f - (1.0f + 0.001f * (float)console.SetupForm.udDSPImageGainTX.Value));
+                            float iq_phase = 0.001f * (float)console.SetupForm.udDSPImagePhaseTX.Value;
+
+                            CorrectIQBuffer(out_l, out_r, iq_gain, iq_phase, frameCount);
                         }
                         break;
                     case AudioState.COSL_SINR:
@@ -2388,9 +2390,10 @@ namespace PowerSDR
                                     phase_accumulator1 = SineWave(out_l1, frameCount, phase_accumulator1, sine_freq1 + osc);
                                 }
                             }
+                            float iq_gain = 1.0f + (1.0f - (1.0f + 0.001f * (float)console.SetupForm.udDSPImageGainTX.Value));
+                            float iq_phase = 0.001f * (float)console.SetupForm.udDSPImagePhaseTX.Value;
 
-                            CorrectIQBuffer(out_l1, out_r1, (float)console.SetupForm.udDSPImageGainTX.Value,
-                                (float)console.SetupForm.udDSPImagePhaseTX.Value, frameCount);
+                            CorrectIQBuffer(out_l1, out_r1, iq_gain, iq_phase, frameCount);
                         }
                         break;
                     case AudioState.COSL_SINR:
@@ -3363,8 +3366,10 @@ namespace PowerSDR
                                 }
                             }
 
-                            CorrectIQBuffer(out_l, out_r, (float)console.SetupForm.udDSPImageGainTX.Value,
-                                (float)console.SetupForm.udDSPImagePhaseTX.Value, frameCount);
+                            float iq_gain = 1.0f + (1.0f - (1.0f + 0.001f * (float)console.SetupForm.udDSPImageGainTX.Value));
+                            float iq_phase = 0.001f * (float)console.SetupForm.udDSPImagePhaseTX.Value;
+
+                            CorrectIQBuffer(out_l, out_r, iq_gain, iq_phase, frameCount);
                         }
                         break;
                     case AudioState.COSL_SINR:
@@ -3843,8 +3848,10 @@ namespace PowerSDR
                                 }
                             }
 
-                            CorrectIQBuffer(out_l, out_r, (float)console.SetupForm.udDSPImageGainTX.Value,
-                                (float)console.SetupForm.udDSPImagePhaseTX.Value, frameCount);
+                            float iq_gain = 1.0f + (1.0f - (1.0f + 0.001f * (float)console.SetupForm.udDSPImageGainTX.Value));
+                            float iq_phase = 0.001f * (float)console.SetupForm.udDSPImagePhaseTX.Value;
+
+                            CorrectIQBuffer(out_l, out_r, iq_gain, iq_phase, frameCount);
                         }
                         break;
                     case AudioState.COSL_SINR:
@@ -4822,8 +4829,10 @@ namespace PowerSDR
                                     }
                                 }
 
-                                CorrectIQBuffer(out_l, out_r, (float)console.SetupForm.udDSPImageGainTX.Value,
-                                    (float)console.SetupForm.udDSPImagePhaseTX.Value, frameCount);
+                                float iq_gain = 1.0f + (1.0f - (1.0f + 0.001f * (float)console.SetupForm.udDSPImageGainTX.Value));
+                                float iq_phase = 0.001f * (float)console.SetupForm.udDSPImagePhaseTX.Value;
+
+                                CorrectIQBuffer(out_l, out_r, iq_gain, iq_phase, frameCount);
                             }
                             break;
                         case AudioState.COSL_SINR:
@@ -5653,8 +5662,10 @@ namespace PowerSDR
                                     }
                                 }
 
-                                CorrectIQBuffer(out_l, out_r, (float)console.SetupForm.udDSPImageGainTX.Value,
-                                    (float)console.SetupForm.udDSPImagePhaseTX.Value, frameCount);
+                                float iq_gain = 1.0f + (1.0f - (1.0f + 0.001f * (float)console.SetupForm.udDSPImageGainTX.Value));
+                                float iq_phase = 0.001f * (float)console.SetupForm.udDSPImagePhaseTX.Value;
+
+                                CorrectIQBuffer(out_l, out_r, iq_gain, iq_phase, frameCount);
                             }
                             break;
                         case AudioState.COSL_SINR:
