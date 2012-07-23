@@ -921,6 +921,7 @@ namespace PowerSDR
 
                         timer.Stop();
                         msdel = (float)timer.DurationMsec;
+                        //Debug.Write(msdel.ToString() + "\n");
 
                         if (keyprog || secondary_keyer_mox || tune_CW || ptt_bit_bang_enabled)
                         {

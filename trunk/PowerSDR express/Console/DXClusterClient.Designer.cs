@@ -65,32 +65,38 @@ namespace PowerSDR
             // 
             // btnConnect
             // 
+            this.btnConnect.BackColor = System.Drawing.SystemColors.Control;
+            this.btnConnect.ForeColor = System.Drawing.Color.Black;
             this.btnConnect.Location = new System.Drawing.Point(24, 404);
             this.btnConnect.Name = "btnConnect";
             this.btnConnect.Size = new System.Drawing.Size(55, 23);
             this.btnConnect.TabIndex = 0;
             this.btnConnect.Text = "Connect";
-            this.btnConnect.UseVisualStyleBackColor = true;
+            this.btnConnect.UseVisualStyleBackColor = false;
             this.btnConnect.Click += new System.EventHandler(this.btnConnect_Click);
             // 
             // btnBye
             // 
+            this.btnBye.BackColor = System.Drawing.SystemColors.Control;
+            this.btnBye.ForeColor = System.Drawing.Color.Black;
             this.btnBye.Location = new System.Drawing.Point(85, 404);
             this.btnBye.Name = "btnBye";
             this.btnBye.Size = new System.Drawing.Size(55, 23);
             this.btnBye.TabIndex = 1;
             this.btnBye.Text = "Bye";
-            this.btnBye.UseVisualStyleBackColor = true;
+            this.btnBye.UseVisualStyleBackColor = false;
             this.btnBye.Click += new System.EventHandler(this.btnBye_Click);
             // 
             // btnNoDX
             // 
+            this.btnNoDX.BackColor = System.Drawing.SystemColors.Control;
+            this.btnNoDX.ForeColor = System.Drawing.Color.Black;
             this.btnNoDX.Location = new System.Drawing.Point(146, 404);
             this.btnNoDX.Name = "btnNoDX";
             this.btnNoDX.Size = new System.Drawing.Size(55, 23);
             this.btnNoDX.TabIndex = 2;
             this.btnNoDX.Text = "No DX";
-            this.btnNoDX.UseVisualStyleBackColor = true;
+            this.btnNoDX.UseVisualStyleBackColor = false;
             this.btnNoDX.Click += new System.EventHandler(this.btnNoDX_Click);
             // 
             // rtbDXClusterText
@@ -110,22 +116,26 @@ namespace PowerSDR
             // 
             // btnShowDX
             // 
+            this.btnShowDX.BackColor = System.Drawing.SystemColors.Control;
+            this.btnShowDX.ForeColor = System.Drawing.Color.Black;
             this.btnShowDX.Location = new System.Drawing.Point(207, 404);
             this.btnShowDX.Name = "btnShowDX";
             this.btnShowDX.Size = new System.Drawing.Size(60, 23);
             this.btnShowDX.TabIndex = 4;
             this.btnShowDX.Text = "Show DX";
-            this.btnShowDX.UseVisualStyleBackColor = true;
+            this.btnShowDX.UseVisualStyleBackColor = false;
             this.btnShowDX.Click += new System.EventHandler(this.btnShowDX_Click);
             // 
             // btnNoVHF
             // 
+            this.btnNoVHF.BackColor = System.Drawing.SystemColors.Control;
+            this.btnNoVHF.ForeColor = System.Drawing.Color.Black;
             this.btnNoVHF.Location = new System.Drawing.Point(273, 404);
             this.btnNoVHF.Name = "btnNoVHF";
             this.btnNoVHF.Size = new System.Drawing.Size(55, 23);
             this.btnNoVHF.TabIndex = 5;
             this.btnNoVHF.Text = "No VHF";
-            this.btnNoVHF.UseVisualStyleBackColor = true;
+            this.btnNoVHF.UseVisualStyleBackColor = false;
             this.btnNoVHF.Click += new System.EventHandler(this.btnNoVHF_Click);
             // 
             // comboDXCluster
@@ -139,22 +149,26 @@ namespace PowerSDR
             // 
             // btnSettings
             // 
+            this.btnSettings.BackColor = System.Drawing.SystemColors.Control;
+            this.btnSettings.ForeColor = System.Drawing.Color.Black;
             this.btnSettings.Location = new System.Drawing.Point(456, 404);
             this.btnSettings.Name = "btnSettings";
             this.btnSettings.Size = new System.Drawing.Size(55, 23);
             this.btnSettings.TabIndex = 8;
             this.btnSettings.Text = "Settings";
-            this.btnSettings.UseVisualStyleBackColor = true;
+            this.btnSettings.UseVisualStyleBackColor = false;
             this.btnSettings.Click += new System.EventHandler(this.btnSettings_Click);
             // 
             // btnClearTxt
             // 
+            this.btnClearTxt.BackColor = System.Drawing.SystemColors.Control;
+            this.btnClearTxt.ForeColor = System.Drawing.Color.Black;
             this.btnClearTxt.Location = new System.Drawing.Point(395, 404);
             this.btnClearTxt.Name = "btnClearTxt";
             this.btnClearTxt.Size = new System.Drawing.Size(55, 23);
             this.btnClearTxt.TabIndex = 9;
             this.btnClearTxt.Text = "Clear";
-            this.btnClearTxt.UseVisualStyleBackColor = true;
+            this.btnClearTxt.UseVisualStyleBackColor = false;
             this.btnClearTxt.Click += new System.EventHandler(this.btnClearTxt_Click);
             // 
             // lblMessage
@@ -179,12 +193,14 @@ namespace PowerSDR
             // 
             // btnVHFandUP
             // 
+            this.btnVHFandUP.BackColor = System.Drawing.SystemColors.Control;
+            this.btnVHFandUP.ForeColor = System.Drawing.Color.Black;
             this.btnVHFandUP.Location = new System.Drawing.Point(334, 404);
             this.btnVHFandUP.Name = "btnVHFandUP";
             this.btnVHFandUP.Size = new System.Drawing.Size(55, 23);
             this.btnVHFandUP.TabIndex = 13;
             this.btnVHFandUP.Text = "VHF up";
-            this.btnVHFandUP.UseVisualStyleBackColor = true;
+            this.btnVHFandUP.UseVisualStyleBackColor = false;
             this.btnVHFandUP.Click += new System.EventHandler(this.btnVHFandUP_Click);
             // 
             // DXClusterClient

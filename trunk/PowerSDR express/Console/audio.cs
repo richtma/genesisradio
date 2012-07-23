@@ -28,18 +28,9 @@
 
 /*
  *  Changes for GenesisRadio
- *  Copyright (C)2008,2009,2010,2011,2012 YT7PWR Goran Radivojevic
+ *  Copyright (C)2008-2012 YT7PWR Goran Radivojevic
  *  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 */
-
-
-
-//#define VAC_DEBUG
-//#define MINMAX
-//#define TIMER
-//#define INTERLEAVED
-//#define SPLIT_INTERLEAVED
-
 
 using System;
 using System.Collections;
@@ -189,6 +180,17 @@ namespace PowerSDR
         private static float[] mix_buffer_delay = new float[2048];
         private static bool audio_stop = false;
         private static RingBufferByte g6RB;
+        public static bool CTCSS = false;
+
+        private static double ctcss_freq = 123.0;
+        private static double ctcss_phase1 = 0.0;
+        private static double ctcss_phase2 = 0.0;
+
+        public static double CTCSSFreq
+        {
+            get { return ctcss_freq; }
+            set { ctcss_freq = value; }
+        }
 
         private static float echo_gain = 0.0f;
         public static float EchoGain
@@ -502,6 +504,8 @@ namespace PowerSDR
         private static float[] vac_outr;
         private static float[] vac_inl;
         private static float[] vac_inr;
+        private static float[] ctcss_outl = new float[2048];
+        private static float[] ctcss_outr = new float[2048];
 
         unsafe private static double[] loopDLL_inl;
         unsafe private static double[] loopDLL_inr;
@@ -927,7 +931,32 @@ namespace PowerSDR
 
                 if (voice_message_record)
                 {
-                    voice_msg_file_writer.AddWriteBuffer(in_l_ptr1, in_r_ptr1);
+                    try
+                    {
+                        if (vac_enabled)
+                        {
+                            if (rb_vacIN_l.ReadSpace() >= frameCount &&
+                                rb_vacIN_r.ReadSpace() >= frameCount)
+                            {
+                                Win32.EnterCriticalSection(cs_vac);
+                                rb_vacIN_l.ReadPtr(in_l_ptr1, frameCount);
+                                rb_vacIN_r.ReadPtr(in_r_ptr1, frameCount);
+                                Win32.LeaveCriticalSection(cs_vac);
+                            }
+                            else
+                            {
+                                ClearBuffer(in_l_ptr1, frameCount);
+                                ClearBuffer(in_r_ptr1, frameCount);
+                                VACDebug("rb_vacIN underflow VoiceMsg record");
+                            }
+                        }
+
+                        voice_msg_file_writer.AddWriteBuffer(in_l, in_r);
+                    }
+                    catch (Exception ex)
+                    {
+                        VACDebug("Audio: " + ex.ToString());
+                    }
                 }
 
                 if (!MultiPSK_server_enable && vac_enabled && loopDLL_enabled && mox)
@@ -977,7 +1006,7 @@ namespace PowerSDR
                 {
                     case AudioState.DTTSP:
                         // scale input with mic preamp
-                        if (mox && !vac_enabled &&
+                        if ((mox || voice_message_record) && !vac_enabled &&
                             (dsp_mode == DSPMode.LSB ||
                             dsp_mode == DSPMode.USB ||
                             dsp_mode == DSPMode.DSB ||
@@ -1049,7 +1078,7 @@ namespace PowerSDR
                             rb_vacOUT_l != null && rb_vacOUT_r != null
                              && !voice_message_playback)
                         {
-                            if (mox)
+                            if (mox && !voice_message_record)
                             {
                                 if (rb_vacIN_l.ReadSpace() >= frameCount &&
                                     rb_vacIN_r.ReadSpace() >= frameCount)
@@ -1079,6 +1108,10 @@ namespace PowerSDR
                                         EchoMixer(in_l, in_r, frameCount);
                                     }
                                 }
+                            }
+                            else if(voice_message_record)
+                            {
+
                             }
                         }
                         else if (!MultiPSK_server_enable && loopDLL_enabled && mox)
@@ -1199,6 +1232,7 @@ namespace PowerSDR
                         }
                         else
                             DttSP.CWtoneExchange(out_l, out_r, frameCount);
+                        //DttSP.CWMonitorExchange(out_l, out_r, frameCount);
 
                         break;
                     case AudioState.SINL_COSR:
@@ -1830,7 +1864,7 @@ namespace PowerSDR
                         }
                     }
                 }
-                else if (mox)  // tx
+                else if (mox || voice_message_record)  // tx or voice msg recording
                 {
                     if (console.LineMicShared)
                     {
@@ -1902,7 +1936,34 @@ namespace PowerSDR
                     wave_file_reader.GetPlayBuffer(in_l, in_r);
 
                 if (voice_message_record)       // yt7pwr
-                    voice_msg_file_writer.AddWriteBuffer(in_l, in_r);
+                {
+                    try
+                    {
+                        if (vac_enabled)
+                        {
+                            if (rb_vacIN_l.ReadSpace() >= frameCount &&
+                                rb_vacIN_r.ReadSpace() >= frameCount)
+                            {
+                                Win32.EnterCriticalSection(cs_vac);
+                                rb_vacIN_l.ReadPtr(in_l_ptr1, frameCount);
+                                rb_vacIN_r.ReadPtr(in_r_ptr1, frameCount);
+                                Win32.LeaveCriticalSection(cs_vac);
+                            }
+                            else
+                            {
+                                ClearBuffer(in_l_ptr1, frameCount);
+                                ClearBuffer(in_r_ptr1, frameCount);
+                                VACDebug("rb_vacIN underflow VoiceMsg record");
+                            }
+                        }
+
+                        voice_msg_file_writer.AddWriteBuffer(in_l, in_r);
+                    }
+                    catch (Exception ex)
+                    {
+                        VACDebug("Audio: " + ex.ToString());
+                    }
+                }
 
                 if (wave_record && !mox && record_rx_preprocessed ||
                     wave_record && mox && record_tx_preprocessed)
@@ -2064,7 +2125,7 @@ namespace PowerSDR
                         }
 
                         // scale input with mic preamp
-                        if (mox && !vac_enabled &&
+                        if ((mox || voice_message_record) && !vac_enabled &&
                             (dsp_mode == DSPMode.LSB ||
                             dsp_mode == DSPMode.USB ||
                             dsp_mode == DSPMode.DSB ||
@@ -2390,6 +2451,7 @@ namespace PowerSDR
                                     phase_accumulator1 = SineWave(out_l1, frameCount, phase_accumulator1, sine_freq1 + osc);
                                 }
                             }
+
                             float iq_gain = 1.0f + (1.0f - (1.0f + 0.001f * (float)console.SetupForm.udDSPImageGainTX.Value));
                             float iq_phase = 0.001f * (float)console.SetupForm.udDSPImagePhaseTX.Value;
 
@@ -2856,7 +2918,7 @@ namespace PowerSDR
                 }
                 #endregion
 
-                if (mox)
+                if (mox || voice_message_record)
                 {
                     if (vac_resample)
                     {
@@ -4250,7 +4312,34 @@ namespace PowerSDR
                     }
 
                     if (voice_message_record)
-                        voice_msg_file_writer.AddWriteBuffer(in_l_ptr1, in_r_ptr1);
+                    {
+                        try
+                        {
+                            if (vac_enabled)
+                            {
+                                if (rb_vacIN_l.ReadSpace() >= frameCount &&
+                                    rb_vacIN_r.ReadSpace() >= frameCount)
+                                {
+                                    Win32.EnterCriticalSection(cs_vac);
+                                    rb_vacIN_l.ReadPtr(in_l_ptr1, frameCount);
+                                    rb_vacIN_r.ReadPtr(in_r_ptr1, frameCount);
+                                    Win32.LeaveCriticalSection(cs_vac);
+                                }
+                                else
+                                {
+                                    ClearBuffer(in_l_ptr1, frameCount);
+                                    ClearBuffer(in_r_ptr1, frameCount);
+                                    VACDebug("rb_vacIN underflow VoiceMsg record");
+                                }
+                            }
+
+                            voice_msg_file_writer.AddWriteBuffer(in_l, in_r);
+                        }
+                        catch (Exception ex)
+                        {
+                            VACDebug("Audio: " + ex.ToString());
+                        }
+                    }
 
                     if (vac_enabled && loopDLL_enabled && mox)
                     {
@@ -4282,7 +4371,7 @@ namespace PowerSDR
                         case AudioState.DTTSP:
 
                             // scale input with mic preamp
-                            if (mox && !vac_enabled &&
+                            if ((mox || voice_message_record) && !vac_enabled &&
                                 (dsp_mode == DSPMode.LSB ||
                                 dsp_mode == DSPMode.USB ||
                                 dsp_mode == DSPMode.DSB ||
@@ -5169,7 +5258,34 @@ namespace PowerSDR
                     }
 
                     if (voice_message_record)
-                        voice_msg_file_writer.AddWriteBuffer(in_l, in_r);
+                    {
+                        try
+                        {
+                            if (vac_enabled)
+                            {
+                                if (rb_vacIN_l.ReadSpace() >= frameCount &&
+                                    rb_vacIN_r.ReadSpace() >= frameCount)
+                                {
+                                    Win32.EnterCriticalSection(cs_vac);
+                                    rb_vacIN_l.ReadPtr(in_l_ptr1, frameCount);
+                                    rb_vacIN_r.ReadPtr(in_r_ptr1, frameCount);
+                                    Win32.LeaveCriticalSection(cs_vac);
+                                }
+                                else
+                                {
+                                    ClearBuffer(in_l_ptr1, frameCount);
+                                    ClearBuffer(in_r_ptr1, frameCount);
+                                    VACDebug("rb_vacIN underflow VoiceMsg record");
+                                }
+                            }
+
+                            voice_msg_file_writer.AddWriteBuffer(in_l, in_r);
+                        }
+                        catch (Exception ex)
+                        {
+                            VACDebug("Audio: " + ex.ToString());
+                        }
+                    }
 
                     if (loopDLL_enabled)
                     {
@@ -5206,6 +5322,7 @@ namespace PowerSDR
                             float* vox_l = null, vox_r = null;
                             vox_l = in_l_ptr1;
                             vox_r = in_l_ptr1;
+
                             if (vox_enabled && !vac_enabled)
                             {
                                 if (dsp_mode == DSPMode.LSB ||
@@ -5232,7 +5349,8 @@ namespace PowerSDR
                             else
                             {
                                 // scale input with mic preamp
-                                if (dsp_mode == DSPMode.LSB ||
+                                if ((mox || voice_message_record) &&
+                                    dsp_mode == DSPMode.LSB ||
                                     dsp_mode == DSPMode.USB ||
                                     dsp_mode == DSPMode.DSB ||
                                     dsp_mode == DSPMode.AM ||
@@ -6331,6 +6449,9 @@ namespace PowerSDR
                 buf[i] = (float)(sinval);
 
                 phase += phase_step;
+
+                if (phase > Math.PI)
+                    phase -= 2 * Math.PI;
             }
 
             return phase;
@@ -6355,6 +6476,9 @@ namespace PowerSDR
                 buf[i] = (float)(cosval);
 
                 phase += phase_step;
+
+                if (phase > Math.PI)
+                    phase -= 2 * Math.PI;
             }
 
             return phase;
@@ -7563,12 +7687,10 @@ namespace PowerSDR
                 }
 
                 CATNetwork_mutex.Close();
-                CATNetwork_mutex = null;
                 MultiPSK_mutex.Close();
-                MultiPSK_mutex = null;
                 DttSP_mutex.Close();
-                DttSP_mutex = null;
                 audio_stop = false;
+                Debug.Write("Exit StopAudio!\n");
             }
             catch (Exception ex)
             {
@@ -7585,7 +7707,12 @@ namespace PowerSDR
         {
             try
             {
-                int error = PA19.PA_StopStream(stream5);
+                PA19.PA_AbortStream(stream5);
+                PA19.PA_CloseStream(stream5);
+                PA19.PA_AbortStream(stream6);
+                PA19.PA_CloseStream(stream6);
+
+                /*int error = PA19.PA_StopStream(stream5);
 
                 if (error == (int)PA19.PaErrorCode.paNoError ||
                     error == (int)PA19.PaErrorCode.paStreamIsStopped)
@@ -7608,9 +7735,7 @@ namespace PowerSDR
                 else
                 {
                     //Debug.Write(PA19.PA_GetErrorText(error).ToString());
-                }
-
-                //CleanUpVAC();
+                }*/
             }
             catch (Exception ex)
             {

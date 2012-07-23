@@ -28,7 +28,7 @@
 
 /*
  *  Changes for GenesisRadio
- *  Copyright (C)2009,2010 YT7PWR Goran Radivojevic
+ *  Copyright (C)2009,2010,2011,2012 YT7PWR Goran Radivojevic
  *  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 */
 
@@ -97,7 +97,16 @@ namespace PowerSDR
 
         public SetupWizard(Console c, int sound_card_index)
         {
+            this.AutoScaleMode = AutoScaleMode.Inherit;
             InitializeComponent();
+            float dpi = this.CreateGraphics().DpiX;
+            float ratio = dpi / 96.0f;
+            string font_name = this.Font.Name;
+            float size = (float)(8.25 / ratio);
+            System.Drawing.Font new_font = new System.Drawing.Font(font_name, size);
+            this.Font = new_font;
+            this.PerformAutoScale();
+            this.PerformLayout();
 
             console = c;
 

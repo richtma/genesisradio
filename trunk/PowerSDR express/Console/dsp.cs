@@ -310,6 +310,20 @@ namespace PowerSDR
             }
         }
 
+        private static int tx_fm_filter_low_cut = -6000;
+        public static int TXFMFilterLowCut
+        {
+            get { return tx_fm_filter_low_cut; }
+            set
+            {
+                tx_fm_filter_low_cut = value;
+
+                int i = DttSP.SetTXFilter(0, tx_fm_filter_low_cut, tx_fm_filter_high_cut);
+                if (i != 0)
+                    MessageBox.Show("Error in DttSP.SetFilter(TXFilterLowCut): " + i);
+            }
+        }
+
         private static int tx_filter_high_cut = 3000;
         public static int TXFilterHighCut
         {
@@ -325,6 +339,20 @@ namespace PowerSDR
             }
         }
 
+        private static int tx_fm_filter_high_cut = 6000;
+        public static int TXFMFilterHighCut
+        {
+            get { return tx_fm_filter_high_cut; }
+            set
+            {
+                tx_fm_filter_high_cut = value;
+
+                int i = DttSP.SetTXFilter(0, tx_fm_filter_low_cut, tx_fm_filter_high_cut);
+                if (i != 0)
+                    MessageBox.Show("Error in DttSP.SetFilter(TXFilterHighCut): " + i);
+            }
+        }
+
         private static double sample_rate = 48000;
         public static double SampleRate
         {
@@ -333,8 +361,6 @@ namespace PowerSDR
             {
                 sample_rate = value;
                 int i = SetSampleRate(sample_rate);
-/*                if (i != 0)
-                    MessageBox.Show("Error in DttSP.SetSampleRate: " + i);*/
             }
         }
 
@@ -522,6 +548,15 @@ namespace PowerSDR
 		[DllImport("DttSP.dll", EntryPoint="SetTXOsc")]///
 		public static extern int SetTXOsc(uint thread, double freq);
 
+        [DllImport("DttSP.dll", EntryPoint = "SetCTCSSOscFreq")]
+        public static extern int SetCTCSSOscFreq(uint thread, double freq);
+
+        [DllImport("DttSP.dll", EntryPoint = "SetCTCSSOscAmplitude")]
+        public static extern int SetCTCSSAmplitude(uint thread, double amplitude);
+
+        [DllImport("DttSP.dll", EntryPoint = "EnableCTCSS")]
+        public static extern int EnableCTCSS(uint thread, bool setit);
+
 		[DllImport("DttSP.dll", EntryPoint="SetSampleRate")]
 		public static extern int SetSampleRate(double sampleRate);
 
@@ -560,6 +595,9 @@ namespace PowerSDR
 
 		[DllImport("DttSP.dll", EntryPoint="SetTXEQ")]
 		public static extern void SetTXEQ(uint thread, int[] txeq);
+
+        [DllImport("DttSP.dll", EntryPoint = "SetTXFMDeviation")]///
+        public static extern void SetTXFMDev(uint thread, double deviation);
 
 		[DllImport("DttSP.dll", EntryPoint="SetGrphTXEQcmd")]///
 		public static extern void SetGrphTXEQcmd(uint thread, bool state);
@@ -906,8 +944,8 @@ namespace PowerSDR
                         tx_filter_high_cut = high;
                         break;
                     case DSPMode.FMN:
-                        tx_filter_low_cut = -6000;
-                        tx_filter_high_cut = 6000;
+                        tx_filter_low_cut = tx_fm_filter_low_cut;
+                        tx_filter_high_cut = tx_fm_filter_high_cut;
                         break;
                 }
             }
@@ -937,8 +975,8 @@ namespace PowerSDR
                         tx_filter_high_cut = high;
                         break;
                     case DSPMode.FMN:
-                        tx_filter_low_cut = -6000;
-                        tx_filter_high_cut = 6000;
+                        tx_filter_low_cut = tx_fm_filter_low_cut;
+                        tx_filter_high_cut = tx_fm_filter_high_cut;
                         break;
                 }
             }

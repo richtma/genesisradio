@@ -61,7 +61,17 @@ namespace PowerSDR
 			// Required for Windows Form Designer support
 			//
 			console = c;
-			InitializeComponent();
+            this.AutoScaleMode = AutoScaleMode.Inherit;
+            InitializeComponent();
+            int dpi = (int)this.CreateGraphics().DpiX;
+
+            if (dpi > 96)
+            {
+                string font_name = this.Font.Name;
+                System.Drawing.Font new_font = new System.Drawing.Font(font_name, 6.5f);
+                this.Font = new_font;
+            }
+
 			comboDSPMode.SelectedIndex = 0;	
 			radFilter1.Checked = true;
 		}

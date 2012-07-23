@@ -2,7 +2,7 @@
 //              QRP2000 with USB Si570
 //=================================================================
 //
-// Copyright (C)2010,2011 YT7PWR Goran Radivojevic
+// Copyright (C)2010-2012 YT7PWR Goran Radivojevic
 // contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 //
 // This program is free software; you can redistribute it and/or
@@ -41,9 +41,12 @@ namespace PowerSDR
 {
     unsafe public class QRP2000
     {
+        private delegate void DebugCallbackFunction(string name);
+
         public Console console;
         public bool connected = false;
         int tmp;
+        public bool debug = false;
 
         public QRP2000(Console c)
         {
@@ -75,6 +78,12 @@ namespace PowerSDR
 
         [DllImport("SRDLL.dll", EntryPoint = "srIsOpen")]
         public static extern bool IsOpen();
+
+        [DllImport("SRDLL.dll", EntryPoint = "srSetI2CAddr")]
+        public static extern bool SetI2CAddr(int address);
+
+        [DllImport("SRDLL.dll", EntryPoint = "srGetI2CAddr")]
+        public static extern bool GetI2CAddr(int[] address);
        
         #endregion
 
@@ -105,6 +114,9 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
+                if (debug)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: \n" + ex.ToString());
+
                 Debug.Write(ex.ToString());
             }
         }
@@ -144,6 +156,9 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
+                if (debug)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: \n" + ex.ToString());
+
                 Debug.Write("Error while QRp2000 init!\n"
                     + ex.ToString());
                 return false;
@@ -163,6 +178,9 @@ namespace PowerSDR
             }
             catch(Exception ex)
             {
+                if (debug)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: \n" + ex.ToString());
+
                 Debug.Write("Error while closing USB connection!\n"
                     + ex.ToString());
             }
@@ -174,14 +192,141 @@ namespace PowerSDR
             {
                 if (IsOpen())
                     SetFreq(freq, i2caddr);
+                else
+                {
+                    if (debug)
+                        console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: not connected!");
+                }
 
                 Thread.Sleep(10);
             }
             catch (Exception ex)
             {
+                if (debug)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: \n" + ex.ToString());
+
                 Debug.Write("Error setting new frequency!\nValue is wrong!\n"
                     + ex.ToString());
                 Thread.Sleep(10);
+            }
+        }
+
+        public double Get_SI570_XTAL_freq()
+        {
+            try
+            {
+                double[] freq = new double[1];
+                freq[0] = 114.285;
+
+                if (IsOpen())
+                {
+                    if (!GetXtalFreq(freq))
+                        MessageBox.Show("Wrong value for internal Si570 Xtal reference!\n" +
+                    "Function is not supported or device is not attached!", "Error");
+                }
+                else
+                {
+                    if (debug)
+                        console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: not connected!");
+                }
+
+                return freq[0];
+            }
+            catch (Exception ex)
+            {
+                if (debug)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: \n" + ex.ToString());
+
+                Debug.Write("Error getting Si570 Xtal frequency!\n"
+                    + ex.ToString());
+
+                return 0.0;
+            }
+        }
+
+        public void Set_SI570_Xtal_freq(double freq)
+        {
+            try
+            {
+                if (IsOpen())
+                {
+                    if (!SetXtalFreq(freq))
+                        MessageBox.Show("Wrong value for internal \nSi570 Xtal reference!", "Error");
+                }
+                else
+                {
+                    if (debug)
+                        console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: not connected!");
+                }
+
+                Thread.Sleep(10);
+            }
+            catch (Exception ex)
+            {
+                if (debug)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: \n" + ex.ToString());
+
+                Debug.Write("Error setting new Si570 Xtal frequency!\nValue is wrong!\n"
+                    + ex.ToString());
+            }
+        }
+
+        public int Get_SI570_I2C_address()
+        {
+            try
+            {
+                int[] address = new int[1];
+                address[0] = 85;
+
+                if (IsOpen())
+                {
+                    if (!GetI2CAddr(address))
+                        MessageBox.Show("Function is not supported or device is not attached!", "Error");
+                }
+                else
+                {
+                    if (debug)
+                        console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: not connected!");
+                }
+
+                return Math.Max(0, address[0]);
+            }
+            catch (Exception ex)
+            {
+                if (debug)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: \n" + ex.ToString());
+
+                Debug.Write("Error getting Si570 I2C address!\n"
+                    + ex.ToString());
+
+                return 0;
+            }
+        }
+
+        public void Set_SI570_I2C_adress(int address)
+        {
+            try
+            {
+                if (IsOpen())
+                {
+                    if (!SetI2CAddr(address))
+                        MessageBox.Show("Wrong value for Si570 I2C address \n!", "Error");
+                }
+                else
+                {
+                    if (debug)
+                        console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: not connected!");
+                }
+
+                Thread.Sleep(10);
+            }
+            catch (Exception ex)
+            {
+                if (debug)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: \n" + ex.ToString());
+
+                Debug.Write("Error setting new Si570 I2C address!\nValue is wrong!\n"
+                    + ex.ToString());
             }
         }
 

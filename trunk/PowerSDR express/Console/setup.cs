@@ -530,8 +530,6 @@ namespace PowerSDR
         private GroupBoxTS grpOptQuickQSY;
         private CheckBoxTS chkOptEnableKBShortcuts;
         private CheckBoxTS chkOptQuickQSY;
-        private GroupBoxTS grpGenAutoMute;
-        private CheckBoxTS chkGenAutoMute;
         private GroupBoxTS grpGenTuningOptions;
         private LabelTS lblOptClickTuneDIGL;
         private NumericUpDownTS udOptClickTuneOffsetDIGL;
@@ -1131,6 +1129,13 @@ namespace PowerSDR
         private RadioButtonTS radQRP2000XTRVx2;
         private RadioButtonTS radQRP2000XTRVx1;
         private CheckBoxTS chkCATPushData;
+        private GroupBoxTS groupBoxTS12;
+        private LabelTS labelTS60;
+        private NumericUpDownTS udTXFMDeviation;
+        public NumericUpDownTS udQRP2000_Si570Xtal;
+        private LabelTS labelTS58;
+        private ButtonTS btnQRP2000XtalSet;
+        private ButtonTS btnQRP2000XtalGet;
 		private System.ComponentModel.IContainer components;
 
 		#endregion
@@ -1141,7 +1146,17 @@ namespace PowerSDR
         {
             try
             {
+                this.AutoScaleMode = AutoScaleMode.Inherit;
                 InitializeComponent();
+                float dpi = this.CreateGraphics().DpiX;
+                float ratio = dpi / 96.0f;
+                string font_name = this.Font.Name;
+                float size = (float)(8.25 / ratio);
+                System.Drawing.Font new_font = new System.Drawing.Font(font_name, size);
+                this.Font = new_font;
+                this.PerformAutoScale();
+                this.PerformLayout();
+
                 console = c;
 
 #if(!DEBUG)
@@ -1417,7 +1432,6 @@ namespace PowerSDR
             this.chkOptAlwaysOnTop = new System.Windows.Forms.CheckBoxTS();
             this.chkOptEnableKBShortcuts = new System.Windows.Forms.CheckBoxTS();
             this.chkOptQuickQSY = new System.Windows.Forms.CheckBoxTS();
-            this.chkGenAutoMute = new System.Windows.Forms.CheckBoxTS();
             this.chkGeneralDisablePTT = new System.Windows.Forms.CheckBoxTS();
             this.comboGeneralProcessPriority = new System.Windows.Forms.ComboBoxTS();
             this.btnGeneralCalImageReset = new System.Windows.Forms.ButtonTS();
@@ -1735,6 +1749,10 @@ namespace PowerSDR
             this.tbVACPhase = new System.Windows.Forms.TrackBarTS();
             this.chkVACCorrection = new System.Windows.Forms.CheckBoxTS();
             this.chkVACDirectI_Q = new System.Windows.Forms.CheckBoxTS();
+            this.udQRP2000_Si570Xtal = new System.Windows.Forms.NumericUpDownTS();
+            this.btnQRP2000XtalSet = new System.Windows.Forms.ButtonTS();
+            this.btnQRP2000XtalGet = new System.Windows.Forms.ButtonTS();
+            this.labelTS58 = new System.Windows.Forms.LabelTS();
             this.lblG59PTT = new System.Windows.Forms.LabelTS();
             this.lblG59PTT_ON = new System.Windows.Forms.LabelTS();
             this.lblG59PTT_OFF = new System.Windows.Forms.LabelTS();
@@ -2012,6 +2030,9 @@ namespace PowerSDR
             this.udPAGain160 = new System.Windows.Forms.NumericUpDownTS();
             this.lblPACalPower = new System.Windows.Forms.LabelTS();
             this.tpTransmit = new System.Windows.Forms.TabPage();
+            this.groupBoxTS12 = new System.Windows.Forms.GroupBoxTS();
+            this.labelTS60 = new System.Windows.Forms.LabelTS();
+            this.udTXFMDeviation = new System.Windows.Forms.NumericUpDownTS();
             this.grpGenesis = new System.Windows.Forms.GroupBox();
             this.lblG59TXSwitchTime = new System.Windows.Forms.Label();
             this.grpTXAM = new System.Windows.Forms.GroupBoxTS();
@@ -2231,11 +2252,6 @@ namespace PowerSDR
             this.radGenModelGenesisG6 = new System.Windows.Forms.RadioButtonTS();
             this.grpGeneralHardwareSetup = new System.Windows.Forms.GroupBoxTS();
             this.chkVFOnew = new System.Windows.Forms.CheckBoxTS();
-            this.grpG6 = new System.Windows.Forms.GroupBoxTS();
-            this.lblHighFreq = new System.Windows.Forms.LabelTS();
-            this.udHighFreq = new System.Windows.Forms.NumericUpDownTS();
-            this.lblLowFreq = new System.Windows.Forms.LabelTS();
-            this.udLowFreq = new System.Windows.Forms.NumericUpDownTS();
             this.grpG59 = new System.Windows.Forms.GroupBoxTS();
             this.chkG59MicPreamp = new System.Windows.Forms.CheckBoxTS();
             this.grpXTRV = new System.Windows.Forms.GroupBoxTS();
@@ -2308,13 +2324,17 @@ namespace PowerSDR
             this.grpGenesis500 = new System.Windows.Forms.GroupBoxTS();
             this.grpGenesis40 = new System.Windows.Forms.GroupBoxTS();
             this.grpGenesis3020 = new System.Windows.Forms.GroupBoxTS();
+            this.grpG6 = new System.Windows.Forms.GroupBoxTS();
+            this.lblHighFreq = new System.Windows.Forms.LabelTS();
+            this.udHighFreq = new System.Windows.Forms.NumericUpDownTS();
+            this.lblLowFreq = new System.Windows.Forms.LabelTS();
+            this.udLowFreq = new System.Windows.Forms.NumericUpDownTS();
             this.tpGeneralOptions = new System.Windows.Forms.TabPage();
             this.grpAutoPWR = new System.Windows.Forms.GroupBoxTS();
             this.grpMemoryZap = new System.Windows.Forms.GroupBoxTS();
             this.lblMemoryZapping = new System.Windows.Forms.LabelTS();
             this.grpOptMainConsole = new System.Windows.Forms.GroupBoxTS();
             this.grpOptQuickQSY = new System.Windows.Forms.GroupBoxTS();
-            this.grpGenAutoMute = new System.Windows.Forms.GroupBoxTS();
             this.grpGenTuningOptions = new System.Windows.Forms.GroupBoxTS();
             this.lblOptClickTuneDIGL = new System.Windows.Forms.LabelTS();
             this.udOptClickTuneOffsetDIGL = new System.Windows.Forms.NumericUpDownTS();
@@ -2592,6 +2612,7 @@ namespace PowerSDR
             ((System.ComponentModel.ISupportInitialize)(this.tbPrimaryPhase)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbVACGain)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbVACPhase)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.udQRP2000_Si570Xtal)).BeginInit();
             this.tpTests.SuspendLayout();
             this.grpAudioTests.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.udWBIRindex)).BeginInit();
@@ -2668,6 +2689,8 @@ namespace PowerSDR
             ((System.ComponentModel.ISupportInitialize)(this.udPAGain80)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.udPAGain160)).BeginInit();
             this.tpTransmit.SuspendLayout();
+            this.groupBoxTS12.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.udTXFMDeviation)).BeginInit();
             this.grpGenesis.SuspendLayout();
             this.grpTXAM.SuspendLayout();
             this.grpTXMonitor.SuspendLayout();
@@ -2756,9 +2779,6 @@ namespace PowerSDR
             this.groupBoxTS9.SuspendLayout();
             this.grpGeneralModel.SuspendLayout();
             this.grpGeneralHardwareSetup.SuspendLayout();
-            this.grpG6.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.udHighFreq)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.udLowFreq)).BeginInit();
             this.grpG59.SuspendLayout();
             this.grpXTRV.SuspendLayout();
             this.grpG11.SuspendLayout();
@@ -2777,12 +2797,14 @@ namespace PowerSDR
             this.grpGenesis500.SuspendLayout();
             this.grpGenesis40.SuspendLayout();
             this.grpGenesis3020.SuspendLayout();
+            this.grpG6.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.udHighFreq)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.udLowFreq)).BeginInit();
             this.tpGeneralOptions.SuspendLayout();
             this.grpAutoPWR.SuspendLayout();
             this.grpMemoryZap.SuspendLayout();
             this.grpOptMainConsole.SuspendLayout();
             this.grpOptQuickQSY.SuspendLayout();
-            this.grpGenAutoMute.SuspendLayout();
             this.grpGenTuningOptions.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.udOptClickTuneOffsetDIGL)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.udOptClickTuneOffsetDIGU)).BeginInit();
@@ -3184,18 +3206,6 @@ namespace PowerSDR
             this.toolTip1.SetToolTip(this.chkOptQuickQSY, "Enabled the Quick QSY feature -- directly enter the frequency in MHz while the ma" +
                     "in form has the focus and hit enter.");
             this.chkOptQuickQSY.CheckedChanged += new System.EventHandler(this.chkOptQuickQSY_CheckedChanged);
-            // 
-            // chkGenAutoMute
-            // 
-            this.chkGenAutoMute.Image = null;
-            this.chkGenAutoMute.Location = new System.Drawing.Point(16, 24);
-            this.chkGenAutoMute.Name = "chkGenAutoMute";
-            this.chkGenAutoMute.Size = new System.Drawing.Size(72, 16);
-            this.chkGenAutoMute.TabIndex = 0;
-            this.chkGenAutoMute.Text = "Enabled";
-            this.toolTip1.SetToolTip(this.chkGenAutoMute, "Check this box to enable the software to poll Pin X2-12 to look for a signal to m" +
-                    "ute the radio.");
-            this.chkGenAutoMute.CheckedChanged += new System.EventHandler(this.chkGenAutoMute_CheckedChanged);
             // 
             // chkGeneralDisablePTT
             // 
@@ -5918,7 +5928,7 @@ namespace PowerSDR
             this.udTXFilterLow.TabIndex = 2;
             this.toolTip1.SetToolTip(this.udTXFilterLow, "Low Frequency TX Filter Cutoff");
             this.udTXFilterLow.Value = new decimal(new int[] {
-            200,
+            100,
             0,
             0,
             0});
@@ -7225,6 +7235,7 @@ namespace PowerSDR
             // radMemoryZapUP
             // 
             this.radMemoryZapUP.AutoSize = true;
+            this.radMemoryZapUP.Checked = true;
             this.radMemoryZapUP.Image = null;
             this.radMemoryZapUP.Location = new System.Drawing.Point(17, 20);
             this.radMemoryZapUP.Name = "radMemoryZapUP";
@@ -7244,7 +7255,6 @@ namespace PowerSDR
             this.radMemoryZapDOWN.Name = "radMemoryZapDOWN";
             this.radMemoryZapDOWN.Size = new System.Drawing.Size(51, 17);
             this.radMemoryZapDOWN.TabIndex = 3;
-            this.radMemoryZapDOWN.TabStop = true;
             this.radMemoryZapDOWN.Text = "down";
             this.toolTip1.SetToolTip(this.radMemoryZapDOWN, "Memory zap direction");
             this.radMemoryZapDOWN.UseVisualStyleBackColor = true;
@@ -7254,7 +7264,7 @@ namespace PowerSDR
             // 
             this.chkAutoPowerUp.AutoSize = true;
             this.chkAutoPowerUp.Image = null;
-            this.chkAutoPowerUp.Location = new System.Drawing.Point(15, 37);
+            this.chkAutoPowerUp.Location = new System.Drawing.Point(15, 18);
             this.chkAutoPowerUp.Name = "chkAutoPowerUp";
             this.chkAutoPowerUp.Size = new System.Drawing.Size(99, 17);
             this.chkAutoPowerUp.TabIndex = 0;
@@ -7449,12 +7459,13 @@ namespace PowerSDR
             // 
             // chkQRP2000XTRV
             // 
+            this.chkQRP2000XTRV.AutoSize = true;
             this.chkQRP2000XTRV.Image = null;
-            this.chkQRP2000XTRV.Location = new System.Drawing.Point(14, 18);
+            this.chkQRP2000XTRV.Location = new System.Drawing.Point(14, 15);
             this.chkQRP2000XTRV.Name = "chkQRP2000XTRV";
-            this.chkQRP2000XTRV.Size = new System.Drawing.Size(116, 16);
+            this.chkQRP2000XTRV.Size = new System.Drawing.Size(90, 17);
             this.chkQRP2000XTRV.TabIndex = 20;
-            this.chkQRP2000XTRV.Text = "XTRV";
+            this.chkQRP2000XTRV.Text = "XTRV enable";
             this.toolTip1.SetToolTip(this.chkQRP2000XTRV, "Check if the transverter board present.");
             this.chkQRP2000XTRV.CheckedChanged += new System.EventHandler(this.chkQRP2000XTRV_CheckedChanged);
             // 
@@ -7466,7 +7477,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udQRP2000XTRVIF.Location = new System.Drawing.Point(82, 36);
+            this.udQRP2000XTRVIF.Location = new System.Drawing.Point(82, 34);
             this.udQRP2000XTRVIF.Maximum = new decimal(new int[] {
             52000000,
             0,
@@ -7496,7 +7507,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udSRSi570Addr.Location = new System.Drawing.Point(127, 55);
+            this.udSRSi570Addr.Location = new System.Drawing.Point(127, 41);
             this.udSRSi570Addr.Maximum = new decimal(new int[] {
             255,
             0,
@@ -7521,9 +7532,9 @@ namespace PowerSDR
             // 
             // QRP2000VID
             // 
-            this.QRP2000VID.Location = new System.Drawing.Point(114, 83);
+            this.QRP2000VID.Location = new System.Drawing.Point(55, 65);
             this.QRP2000VID.Name = "QRP2000VID";
-            this.QRP2000VID.Size = new System.Drawing.Size(65, 20);
+            this.QRP2000VID.Size = new System.Drawing.Size(41, 20);
             this.QRP2000VID.TabIndex = 28;
             this.QRP2000VID.Text = "16c0";
             this.QRP2000VID.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
@@ -7532,9 +7543,9 @@ namespace PowerSDR
             // 
             // QRP2000PID
             // 
-            this.QRP2000PID.Location = new System.Drawing.Point(114, 109);
+            this.QRP2000PID.Location = new System.Drawing.Point(135, 65);
             this.QRP2000PID.Name = "QRP2000PID";
-            this.QRP2000PID.Size = new System.Drawing.Size(65, 20);
+            this.QRP2000PID.Size = new System.Drawing.Size(40, 20);
             this.QRP2000PID.TabIndex = 29;
             this.QRP2000PID.Text = "05dc";
             this.QRP2000PID.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
@@ -7545,7 +7556,7 @@ namespace PowerSDR
             this.radQRP2000CW1.AutoSize = true;
             this.radQRP2000CW1.Checked = true;
             this.radQRP2000CW1.Image = null;
-            this.radQRP2000CW1.Location = new System.Drawing.Point(27, 26);
+            this.radQRP2000CW1.Location = new System.Drawing.Point(27, 16);
             this.radQRP2000CW1.Name = "radQRP2000CW1";
             this.radQRP2000CW1.Size = new System.Drawing.Size(49, 17);
             this.radQRP2000CW1.TabIndex = 30;
@@ -7559,7 +7570,7 @@ namespace PowerSDR
             // 
             this.radQRP2000CW2.AutoSize = true;
             this.radQRP2000CW2.Image = null;
-            this.radQRP2000CW2.Location = new System.Drawing.Point(122, 26);
+            this.radQRP2000CW2.Location = new System.Drawing.Point(122, 16);
             this.radQRP2000CW2.Name = "radQRP2000CW2";
             this.radQRP2000CW2.Size = new System.Drawing.Size(49, 17);
             this.radQRP2000CW2.TabIndex = 31;
@@ -9086,6 +9097,71 @@ namespace PowerSDR
             this.toolTip1.SetToolTip(this.chkVACDirectI_Q, "Enable VAC Direct I/Q output.");
             this.chkVACDirectI_Q.UseVisualStyleBackColor = true;
             this.chkVACDirectI_Q.CheckedChanged += new System.EventHandler(this.chkDirectI_Q_CheckedChanged);
+            // 
+            // udQRP2000_Si570Xtal
+            // 
+            this.udQRP2000_Si570Xtal.DecimalPlaces = 6;
+            this.udQRP2000_Si570Xtal.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            196608});
+            this.udQRP2000_Si570Xtal.Location = new System.Drawing.Point(85, 90);
+            this.udQRP2000_Si570Xtal.Maximum = new decimal(new int[] {
+            120,
+            0,
+            0,
+            0});
+            this.udQRP2000_Si570Xtal.Minimum = new decimal(new int[] {
+            110,
+            0,
+            0,
+            0});
+            this.udQRP2000_Si570Xtal.Name = "udQRP2000_Si570Xtal";
+            this.udQRP2000_Si570Xtal.Size = new System.Drawing.Size(93, 20);
+            this.udQRP2000_Si570Xtal.TabIndex = 41;
+            this.udQRP2000_Si570Xtal.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.udQRP2000_Si570Xtal, "Si570 internal Xtal reference");
+            this.udQRP2000_Si570Xtal.Value = new decimal(new int[] {
+            114285000,
+            0,
+            0,
+            393216});
+            // 
+            // btnQRP2000XtalSet
+            // 
+            this.btnQRP2000XtalSet.Image = null;
+            this.btnQRP2000XtalSet.Location = new System.Drawing.Point(104, 118);
+            this.btnQRP2000XtalSet.Name = "btnQRP2000XtalSet";
+            this.btnQRP2000XtalSet.Size = new System.Drawing.Size(63, 22);
+            this.btnQRP2000XtalSet.TabIndex = 43;
+            this.btnQRP2000XtalSet.Text = "Set";
+            this.toolTip1.SetToolTip(this.btnQRP2000XtalSet, "Write new Si570 Xtal reference value into EEPROM");
+            this.btnQRP2000XtalSet.UseVisualStyleBackColor = true;
+            this.btnQRP2000XtalSet.Click += new System.EventHandler(this.btnQRP2000XtalSet_Click);
+            // 
+            // btnQRP2000XtalGet
+            // 
+            this.btnQRP2000XtalGet.Image = null;
+            this.btnQRP2000XtalGet.Location = new System.Drawing.Point(31, 118);
+            this.btnQRP2000XtalGet.Name = "btnQRP2000XtalGet";
+            this.btnQRP2000XtalGet.Size = new System.Drawing.Size(63, 22);
+            this.btnQRP2000XtalGet.TabIndex = 42;
+            this.btnQRP2000XtalGet.Text = "Get";
+            this.toolTip1.SetToolTip(this.btnQRP2000XtalGet, "Read Si570 internal Xtal reference");
+            this.btnQRP2000XtalGet.UseVisualStyleBackColor = true;
+            this.btnQRP2000XtalGet.Click += new System.EventHandler(this.btnQRP2000XtalGet_Click);
+            // 
+            // labelTS58
+            // 
+            this.labelTS58.AutoSize = true;
+            this.labelTS58.Image = null;
+            this.labelTS58.Location = new System.Drawing.Point(26, 94);
+            this.labelTS58.Name = "labelTS58";
+            this.labelTS58.Size = new System.Drawing.Size(55, 13);
+            this.labelTS58.TabIndex = 40;
+            this.labelTS58.Text = "Si570 Xtal";
+            this.toolTip1.SetToolTip(this.labelTS58, "Si570 internal Xtal reference");
             // 
             // lblG59PTT
             // 
@@ -12747,6 +12823,7 @@ namespace PowerSDR
             // 
             // tpTransmit
             // 
+            this.tpTransmit.Controls.Add(this.groupBoxTS12);
             this.tpTransmit.Controls.Add(this.grpGenesis);
             this.tpTransmit.Controls.Add(this.grpTXAM);
             this.tpTransmit.Controls.Add(this.grpTXMonitor);
@@ -12762,6 +12839,55 @@ namespace PowerSDR
             this.tpTransmit.Size = new System.Drawing.Size(584, 331);
             this.tpTransmit.TabIndex = 5;
             this.tpTransmit.Text = "Transmit";
+            // 
+            // groupBoxTS12
+            // 
+            this.groupBoxTS12.Controls.Add(this.labelTS60);
+            this.groupBoxTS12.Controls.Add(this.udTXFMDeviation);
+            this.groupBoxTS12.Location = new System.Drawing.Point(152, 182);
+            this.groupBoxTS12.Name = "groupBoxTS12";
+            this.groupBoxTS12.Size = new System.Drawing.Size(144, 62);
+            this.groupBoxTS12.TabIndex = 54;
+            this.groupBoxTS12.TabStop = false;
+            this.groupBoxTS12.Text = "FM";
+            // 
+            // labelTS60
+            // 
+            this.labelTS60.Image = null;
+            this.labelTS60.Location = new System.Drawing.Point(8, 25);
+            this.labelTS60.Name = "labelTS60";
+            this.labelTS60.Size = new System.Drawing.Size(72, 16);
+            this.labelTS60.TabIndex = 7;
+            this.labelTS60.Text = "FM deviation:";
+            // 
+            // udTXFMDeviation
+            // 
+            this.udTXFMDeviation.Increment = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            this.udTXFMDeviation.Location = new System.Drawing.Point(80, 25);
+            this.udTXFMDeviation.Maximum = new decimal(new int[] {
+            20000,
+            0,
+            0,
+            0});
+            this.udTXFMDeviation.Minimum = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            this.udTXFMDeviation.Name = "udTXFMDeviation";
+            this.udTXFMDeviation.Size = new System.Drawing.Size(56, 20);
+            this.udTXFMDeviation.TabIndex = 6;
+            this.udTXFMDeviation.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.udTXFMDeviation.Value = new decimal(new int[] {
+            6000,
+            0,
+            0,
+            0});
+            this.udTXFMDeviation.ValueChanged += new System.EventHandler(this.udTXFMDeviation_ValueChanged);
             // 
             // grpGenesis
             // 
@@ -12810,9 +12936,9 @@ namespace PowerSDR
             // 
             this.grpTXMonitor.Controls.Add(this.lblTXAF);
             this.grpTXMonitor.Controls.Add(this.udTXAF);
-            this.grpTXMonitor.Location = new System.Drawing.Point(152, 184);
+            this.grpTXMonitor.Location = new System.Drawing.Point(8, 171);
             this.grpTXMonitor.Name = "grpTXMonitor";
-            this.grpTXMonitor.Size = new System.Drawing.Size(120, 56);
+            this.grpTXMonitor.Size = new System.Drawing.Size(138, 56);
             this.grpTXMonitor.TabIndex = 51;
             this.grpTXMonitor.TabStop = false;
             this.grpTXMonitor.Text = "Monitor";
@@ -12833,7 +12959,7 @@ namespace PowerSDR
             this.grpTXVOX.Controls.Add(this.chkTXVOXEnabled);
             this.grpTXVOX.Controls.Add(this.lblTXVOXThreshold);
             this.grpTXVOX.Controls.Add(this.udTXVOXThreshold);
-            this.grpTXVOX.Location = new System.Drawing.Point(8, 208);
+            this.grpTXVOX.Location = new System.Drawing.Point(8, 229);
             this.grpTXVOX.Name = "grpTXVOX";
             this.grpTXVOX.Size = new System.Drawing.Size(136, 96);
             this.grpTXVOX.TabIndex = 50;
@@ -12896,7 +13022,7 @@ namespace PowerSDR
             // 
             this.grpPATune.Controls.Add(this.lblTransmitTunePower);
             this.grpPATune.Controls.Add(this.udTXTunePower);
-            this.grpPATune.Location = new System.Drawing.Point(8, 129);
+            this.grpPATune.Location = new System.Drawing.Point(8, 113);
             this.grpPATune.Name = "grpPATune";
             this.grpPATune.Size = new System.Drawing.Size(136, 56);
             this.grpPATune.TabIndex = 22;
@@ -13270,7 +13396,7 @@ namespace PowerSDR
             this.lblDSPGainValTX.Name = "lblDSPGainValTX";
             this.lblDSPGainValTX.Size = new System.Drawing.Size(163, 16);
             this.lblDSPGainValTX.TabIndex = 15;
-            this.lblDSPGainValTX.Text = "-500    -250       0       250     250";
+            this.lblDSPGainValTX.Text = "-500    -250       0       250     500";
             // 
             // lblDSPPhaseValTX
             // 
@@ -15273,7 +15399,6 @@ namespace PowerSDR
             this.tpGeneralHardware.Controls.Add(this.grpQRP2000);
             this.tpGeneralHardware.Controls.Add(this.grpGeneralModel);
             this.tpGeneralHardware.Controls.Add(this.grpGeneralHardwareSetup);
-            this.tpGeneralHardware.Controls.Add(this.grpG6);
             this.tpGeneralHardware.Controls.Add(this.grpG59);
             this.tpGeneralHardware.Controls.Add(this.grpG11);
             this.tpGeneralHardware.Controls.Add(this.grpNETBox);
@@ -15283,6 +15408,7 @@ namespace PowerSDR
             this.tpGeneralHardware.Controls.Add(this.grpGenesis500);
             this.tpGeneralHardware.Controls.Add(this.grpGenesis40);
             this.tpGeneralHardware.Controls.Add(this.grpGenesis3020);
+            this.tpGeneralHardware.Controls.Add(this.grpG6);
             this.tpGeneralHardware.Location = new System.Drawing.Point(4, 22);
             this.tpGeneralHardware.Name = "tpGeneralHardware";
             this.tpGeneralHardware.Size = new System.Drawing.Size(592, 318);
@@ -15291,6 +15417,10 @@ namespace PowerSDR
             // 
             // grpQRP2000
             // 
+            this.grpQRP2000.Controls.Add(this.btnQRP2000XtalSet);
+            this.grpQRP2000.Controls.Add(this.btnQRP2000XtalGet);
+            this.grpQRP2000.Controls.Add(this.udQRP2000_Si570Xtal);
+            this.grpQRP2000.Controls.Add(this.labelTS58);
             this.grpQRP2000.Controls.Add(this.groupBoxTS10);
             this.grpQRP2000.Controls.Add(this.groupBoxTS9);
             this.grpQRP2000.Controls.Add(this.radQRP2000CW2);
@@ -15317,9 +15447,9 @@ namespace PowerSDR
             this.groupBoxTS10.Controls.Add(this.udQRP2000XTRVIF);
             this.groupBoxTS10.Controls.Add(this.lblSRIFFreq);
             this.groupBoxTS10.Controls.Add(this.chkQRP2000XTRV);
-            this.groupBoxTS10.Location = new System.Drawing.Point(9, 177);
+            this.groupBoxTS10.Location = new System.Drawing.Point(9, 190);
             this.groupBoxTS10.Name = "groupBoxTS10";
-            this.groupBoxTS10.Size = new System.Drawing.Size(180, 110);
+            this.groupBoxTS10.Size = new System.Drawing.Size(180, 97);
             this.groupBoxTS10.TabIndex = 33;
             this.groupBoxTS10.TabStop = false;
             this.groupBoxTS10.Text = "XTRV options";
@@ -15328,7 +15458,7 @@ namespace PowerSDR
             // 
             this.labelTS57.AutoSize = true;
             this.labelTS57.Image = null;
-            this.labelTS57.Location = new System.Drawing.Point(38, 60);
+            this.labelTS57.Location = new System.Drawing.Point(38, 57);
             this.labelTS57.Name = "labelTS57";
             this.labelTS57.Size = new System.Drawing.Size(100, 13);
             this.labelTS57.TabIndex = 39;
@@ -15338,7 +15468,7 @@ namespace PowerSDR
             // 
             this.radQRP2000XTRVx4.AutoSize = true;
             this.radQRP2000XTRVx4.Image = null;
-            this.radQRP2000XTRVx4.Location = new System.Drawing.Point(124, 79);
+            this.radQRP2000XTRVx4.Location = new System.Drawing.Point(124, 75);
             this.radQRP2000XTRVx4.Name = "radQRP2000XTRVx4";
             this.radQRP2000XTRVx4.Size = new System.Drawing.Size(36, 17);
             this.radQRP2000XTRVx4.TabIndex = 38;
@@ -15350,7 +15480,7 @@ namespace PowerSDR
             // 
             this.radQRP2000XTRVx2.AutoSize = true;
             this.radQRP2000XTRVx2.Image = null;
-            this.radQRP2000XTRVx2.Location = new System.Drawing.Point(72, 79);
+            this.radQRP2000XTRVx2.Location = new System.Drawing.Point(72, 75);
             this.radQRP2000XTRVx2.Name = "radQRP2000XTRVx2";
             this.radQRP2000XTRVx2.Size = new System.Drawing.Size(36, 17);
             this.radQRP2000XTRVx2.TabIndex = 37;
@@ -15363,7 +15493,7 @@ namespace PowerSDR
             this.radQRP2000XTRVx1.AutoSize = true;
             this.radQRP2000XTRVx1.Checked = true;
             this.radQRP2000XTRVx1.Image = null;
-            this.radQRP2000XTRVx1.Location = new System.Drawing.Point(20, 79);
+            this.radQRP2000XTRVx1.Location = new System.Drawing.Point(20, 75);
             this.radQRP2000XTRVx1.Name = "radQRP2000XTRVx1";
             this.radQRP2000XTRVx1.Size = new System.Drawing.Size(36, 17);
             this.radQRP2000XTRVx1.TabIndex = 36;
@@ -15376,7 +15506,7 @@ namespace PowerSDR
             // 
             this.lblSRIFFreq.AutoSize = true;
             this.lblSRIFFreq.Image = null;
-            this.lblSRIFFreq.Location = new System.Drawing.Point(13, 41);
+            this.lblSRIFFreq.Location = new System.Drawing.Point(13, 39);
             this.lblSRIFFreq.Name = "lblSRIFFreq";
             this.lblSRIFFreq.Size = new System.Drawing.Size(48, 13);
             this.lblSRIFFreq.TabIndex = 22;
@@ -15387,7 +15517,7 @@ namespace PowerSDR
             this.groupBoxTS9.Controls.Add(this.radQRP2000x4);
             this.groupBoxTS9.Controls.Add(this.radQRP2000x2);
             this.groupBoxTS9.Controls.Add(this.radQRP2000x1);
-            this.groupBoxTS9.Location = new System.Drawing.Point(9, 130);
+            this.groupBoxTS9.Location = new System.Drawing.Point(9, 145);
             this.groupBoxTS9.Name = "groupBoxTS9";
             this.groupBoxTS9.Size = new System.Drawing.Size(180, 45);
             this.groupBoxTS9.TabIndex = 32;
@@ -15435,7 +15565,7 @@ namespace PowerSDR
             // lblQRP2000PID
             // 
             this.lblQRP2000PID.AutoSize = true;
-            this.lblQRP2000PID.Location = new System.Drawing.Point(28, 112);
+            this.lblQRP2000PID.Location = new System.Drawing.Point(103, 69);
             this.lblQRP2000PID.Name = "lblQRP2000PID";
             this.lblQRP2000PID.Size = new System.Drawing.Size(25, 13);
             this.lblQRP2000PID.TabIndex = 27;
@@ -15444,7 +15574,7 @@ namespace PowerSDR
             // lblQRP2000VID
             // 
             this.lblQRP2000VID.AutoSize = true;
-            this.lblQRP2000VID.Location = new System.Drawing.Point(30, 84);
+            this.lblQRP2000VID.Location = new System.Drawing.Point(23, 69);
             this.lblQRP2000VID.Name = "lblQRP2000VID";
             this.lblQRP2000VID.Size = new System.Drawing.Size(25, 13);
             this.lblQRP2000VID.TabIndex = 26;
@@ -15454,7 +15584,7 @@ namespace PowerSDR
             // 
             this.lblSRSi570Addr.AutoSize = true;
             this.lblSRSi570Addr.Image = null;
-            this.lblSRSi570Addr.Location = new System.Drawing.Point(25, 57);
+            this.lblSRSi570Addr.Location = new System.Drawing.Point(25, 43);
             this.lblSRSi570Addr.Name = "lblSRSi570Addr";
             this.lblSRSi570Addr.Size = new System.Drawing.Size(74, 13);
             this.lblSRSi570Addr.TabIndex = 25;
@@ -15522,99 +15652,6 @@ namespace PowerSDR
             this.chkVFOnew.Text = "New VFO look";
             this.chkVFOnew.UseVisualStyleBackColor = true;
             this.chkVFOnew.CheckedChanged += new System.EventHandler(this.chkVFOnew_CheckedChanged);
-            // 
-            // grpG6
-            // 
-            this.grpG6.Controls.Add(this.lblHighFreq);
-            this.grpG6.Controls.Add(this.udHighFreq);
-            this.grpG6.Controls.Add(this.lblLowFreq);
-            this.grpG6.Controls.Add(this.udLowFreq);
-            this.grpG6.Location = new System.Drawing.Point(184, 8);
-            this.grpG6.Name = "grpG6";
-            this.grpG6.Size = new System.Drawing.Size(198, 292);
-            this.grpG6.TabIndex = 35;
-            this.grpG6.TabStop = false;
-            this.grpG6.Text = "G6";
-            // 
-            // lblHighFreq
-            // 
-            this.lblHighFreq.AutoSize = true;
-            this.lblHighFreq.Image = null;
-            this.lblHighFreq.Location = new System.Drawing.Point(18, 79);
-            this.lblHighFreq.Name = "lblHighFreq";
-            this.lblHighFreq.Size = new System.Drawing.Size(53, 13);
-            this.lblHighFreq.TabIndex = 5;
-            this.lblHighFreq.Text = "High freq.";
-            // 
-            // udHighFreq
-            // 
-            this.udHighFreq.DecimalPlaces = 1;
-            this.udHighFreq.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            65536});
-            this.udHighFreq.Location = new System.Drawing.Point(108, 75);
-            this.udHighFreq.Maximum = new decimal(new int[] {
-            60,
-            0,
-            0,
-            0});
-            this.udHighFreq.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.udHighFreq.Name = "udHighFreq";
-            this.udHighFreq.Size = new System.Drawing.Size(72, 20);
-            this.udHighFreq.TabIndex = 4;
-            this.udHighFreq.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.udHighFreq.Value = new decimal(new int[] {
-            40,
-            0,
-            0,
-            65536});
-            this.udHighFreq.ValueChanged += new System.EventHandler(this.udHighFreq_ValueChanged);
-            // 
-            // lblLowFreq
-            // 
-            this.lblLowFreq.AutoSize = true;
-            this.lblLowFreq.Image = null;
-            this.lblLowFreq.Location = new System.Drawing.Point(16, 34);
-            this.lblLowFreq.Name = "lblLowFreq";
-            this.lblLowFreq.Size = new System.Drawing.Size(48, 13);
-            this.lblLowFreq.TabIndex = 3;
-            this.lblLowFreq.Text = "LowFreq";
-            // 
-            // udLowFreq
-            // 
-            this.udLowFreq.DecimalPlaces = 1;
-            this.udLowFreq.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            65536});
-            this.udLowFreq.Location = new System.Drawing.Point(106, 30);
-            this.udLowFreq.Maximum = new decimal(new int[] {
-            60,
-            0,
-            0,
-            0});
-            this.udLowFreq.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.udLowFreq.Name = "udLowFreq";
-            this.udLowFreq.Size = new System.Drawing.Size(72, 20);
-            this.udLowFreq.TabIndex = 2;
-            this.udLowFreq.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.udLowFreq.Value = new decimal(new int[] {
-            35,
-            0,
-            0,
-            65536});
-            this.udLowFreq.ValueChanged += new System.EventHandler(this.udLowFreq_ValueChanged);
             // 
             // grpG59
             // 
@@ -16168,7 +16205,7 @@ namespace PowerSDR
             this.btnG11FiltersShow.Image = null;
             this.btnG11FiltersShow.Location = new System.Drawing.Point(100, 274);
             this.btnG11FiltersShow.Name = "btnG11FiltersShow";
-            this.btnG11FiltersShow.Size = new System.Drawing.Size(89, 23);
+            this.btnG11FiltersShow.Size = new System.Drawing.Size(89, 27);
             this.btnG11FiltersShow.TabIndex = 11;
             this.btnG11FiltersShow.Text = "Band filters";
             this.btnG11FiltersShow.UseVisualStyleBackColor = true;
@@ -16564,13 +16601,105 @@ namespace PowerSDR
             this.grpGenesis3020.Text = "Genesis G3020";
             this.grpGenesis3020.Visible = false;
             // 
+            // grpG6
+            // 
+            this.grpG6.Controls.Add(this.lblHighFreq);
+            this.grpG6.Controls.Add(this.udHighFreq);
+            this.grpG6.Controls.Add(this.lblLowFreq);
+            this.grpG6.Controls.Add(this.udLowFreq);
+            this.grpG6.Location = new System.Drawing.Point(184, 8);
+            this.grpG6.Name = "grpG6";
+            this.grpG6.Size = new System.Drawing.Size(198, 292);
+            this.grpG6.TabIndex = 35;
+            this.grpG6.TabStop = false;
+            this.grpG6.Text = "G6";
+            // 
+            // lblHighFreq
+            // 
+            this.lblHighFreq.AutoSize = true;
+            this.lblHighFreq.Image = null;
+            this.lblHighFreq.Location = new System.Drawing.Point(18, 79);
+            this.lblHighFreq.Name = "lblHighFreq";
+            this.lblHighFreq.Size = new System.Drawing.Size(53, 13);
+            this.lblHighFreq.TabIndex = 5;
+            this.lblHighFreq.Text = "High freq.";
+            // 
+            // udHighFreq
+            // 
+            this.udHighFreq.DecimalPlaces = 1;
+            this.udHighFreq.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            65536});
+            this.udHighFreq.Location = new System.Drawing.Point(108, 75);
+            this.udHighFreq.Maximum = new decimal(new int[] {
+            60,
+            0,
+            0,
+            0});
+            this.udHighFreq.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.udHighFreq.Name = "udHighFreq";
+            this.udHighFreq.Size = new System.Drawing.Size(72, 20);
+            this.udHighFreq.TabIndex = 4;
+            this.udHighFreq.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.udHighFreq.Value = new decimal(new int[] {
+            40,
+            0,
+            0,
+            65536});
+            this.udHighFreq.ValueChanged += new System.EventHandler(this.udHighFreq_ValueChanged);
+            // 
+            // lblLowFreq
+            // 
+            this.lblLowFreq.AutoSize = true;
+            this.lblLowFreq.Image = null;
+            this.lblLowFreq.Location = new System.Drawing.Point(16, 34);
+            this.lblLowFreq.Name = "lblLowFreq";
+            this.lblLowFreq.Size = new System.Drawing.Size(48, 13);
+            this.lblLowFreq.TabIndex = 3;
+            this.lblLowFreq.Text = "LowFreq";
+            // 
+            // udLowFreq
+            // 
+            this.udLowFreq.DecimalPlaces = 1;
+            this.udLowFreq.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            65536});
+            this.udLowFreq.Location = new System.Drawing.Point(106, 30);
+            this.udLowFreq.Maximum = new decimal(new int[] {
+            60,
+            0,
+            0,
+            0});
+            this.udLowFreq.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.udLowFreq.Name = "udLowFreq";
+            this.udLowFreq.Size = new System.Drawing.Size(72, 20);
+            this.udLowFreq.TabIndex = 2;
+            this.udLowFreq.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.udLowFreq.Value = new decimal(new int[] {
+            35,
+            0,
+            0,
+            65536});
+            this.udLowFreq.ValueChanged += new System.EventHandler(this.udLowFreq_ValueChanged);
+            // 
             // tpGeneralOptions
             // 
             this.tpGeneralOptions.Controls.Add(this.grpAutoPWR);
             this.tpGeneralOptions.Controls.Add(this.grpMemoryZap);
             this.tpGeneralOptions.Controls.Add(this.grpOptMainConsole);
             this.tpGeneralOptions.Controls.Add(this.grpOptQuickQSY);
-            this.tpGeneralOptions.Controls.Add(this.grpGenAutoMute);
             this.tpGeneralOptions.Controls.Add(this.grpGenTuningOptions);
             this.tpGeneralOptions.Controls.Add(this.grpGeneralOptions);
             this.tpGeneralOptions.Controls.Add(this.grpGeneralProcessPriority);
@@ -16583,9 +16712,9 @@ namespace PowerSDR
             // grpAutoPWR
             // 
             this.grpAutoPWR.Controls.Add(this.chkAutoPowerUp);
-            this.grpAutoPWR.Location = new System.Drawing.Point(416, 101);
+            this.grpAutoPWR.Location = new System.Drawing.Point(378, 86);
             this.grpAutoPWR.Name = "grpAutoPWR";
-            this.grpAutoPWR.Size = new System.Drawing.Size(125, 90);
+            this.grpAutoPWR.Size = new System.Drawing.Size(144, 49);
             this.grpAutoPWR.TabIndex = 30;
             this.grpAutoPWR.TabStop = false;
             this.grpAutoPWR.Text = "Auto power";
@@ -16596,7 +16725,7 @@ namespace PowerSDR
             this.grpMemoryZap.Controls.Add(this.radMemoryZapUP);
             this.grpMemoryZap.Controls.Add(this.lblMemoryZapping);
             this.grpMemoryZap.Controls.Add(this.udMemoryZapping);
-            this.grpMemoryZap.Location = new System.Drawing.Point(248, 93);
+            this.grpMemoryZap.Location = new System.Drawing.Point(169, 86);
             this.grpMemoryZap.Name = "grpMemoryZap";
             this.grpMemoryZap.Size = new System.Drawing.Size(144, 98);
             this.grpMemoryZap.TabIndex = 29;
@@ -16616,9 +16745,9 @@ namespace PowerSDR
             // grpOptMainConsole
             // 
             this.grpOptMainConsole.Controls.Add(this.chkOptAlwaysOnTop);
-            this.grpOptMainConsole.Location = new System.Drawing.Point(248, 204);
+            this.grpOptMainConsole.Location = new System.Drawing.Point(378, 22);
             this.grpOptMainConsole.Name = "grpOptMainConsole";
-            this.grpOptMainConsole.Size = new System.Drawing.Size(128, 56);
+            this.grpOptMainConsole.Size = new System.Drawing.Size(144, 56);
             this.grpOptMainConsole.TabIndex = 28;
             this.grpOptMainConsole.TabStop = false;
             this.grpOptMainConsole.Text = "Main Console";
@@ -16627,22 +16756,12 @@ namespace PowerSDR
             // 
             this.grpOptQuickQSY.Controls.Add(this.chkOptEnableKBShortcuts);
             this.grpOptQuickQSY.Controls.Add(this.chkOptQuickQSY);
-            this.grpOptQuickQSY.Location = new System.Drawing.Point(51, 130);
+            this.grpOptQuickQSY.Location = new System.Drawing.Point(10, 136);
             this.grpOptQuickQSY.Name = "grpOptQuickQSY";
-            this.grpOptQuickQSY.Size = new System.Drawing.Size(128, 72);
+            this.grpOptQuickQSY.Size = new System.Drawing.Size(144, 72);
             this.grpOptQuickQSY.TabIndex = 27;
             this.grpOptQuickQSY.TabStop = false;
             this.grpOptQuickQSY.Text = "Keyboard";
-            // 
-            // grpGenAutoMute
-            // 
-            this.grpGenAutoMute.Controls.Add(this.chkGenAutoMute);
-            this.grpGenAutoMute.Location = new System.Drawing.Point(445, 24);
-            this.grpGenAutoMute.Name = "grpGenAutoMute";
-            this.grpGenAutoMute.Size = new System.Drawing.Size(96, 56);
-            this.grpGenAutoMute.TabIndex = 26;
-            this.grpGenAutoMute.TabStop = false;
-            this.grpGenAutoMute.Text = "Auto Mute";
             // 
             // grpGenTuningOptions
             // 
@@ -16650,7 +16769,7 @@ namespace PowerSDR
             this.grpGenTuningOptions.Controls.Add(this.udOptClickTuneOffsetDIGL);
             this.grpGenTuningOptions.Controls.Add(this.lblOptClickTuneDIGU);
             this.grpGenTuningOptions.Controls.Add(this.udOptClickTuneOffsetDIGU);
-            this.grpGenTuningOptions.Location = new System.Drawing.Point(51, 219);
+            this.grpGenTuningOptions.Location = new System.Drawing.Point(10, 225);
             this.grpGenTuningOptions.Name = "grpGenTuningOptions";
             this.grpGenTuningOptions.Size = new System.Drawing.Size(144, 80);
             this.grpGenTuningOptions.TabIndex = 25;
@@ -16738,7 +16857,7 @@ namespace PowerSDR
             this.grpGeneralOptions.Controls.Add(this.chkVFOB_extend);
             this.grpGeneralOptions.Controls.Add(this.chkIARU);
             this.grpGeneralOptions.Controls.Add(this.chkGeneralDisablePTT);
-            this.grpGeneralOptions.Location = new System.Drawing.Point(51, 16);
+            this.grpGeneralOptions.Location = new System.Drawing.Point(10, 22);
             this.grpGeneralOptions.Name = "grpGeneralOptions";
             this.grpGeneralOptions.Size = new System.Drawing.Size(144, 108);
             this.grpGeneralOptions.TabIndex = 6;
@@ -16748,7 +16867,7 @@ namespace PowerSDR
             // grpGeneralProcessPriority
             // 
             this.grpGeneralProcessPriority.Controls.Add(this.comboGeneralProcessPriority);
-            this.grpGeneralProcessPriority.Location = new System.Drawing.Point(248, 24);
+            this.grpGeneralProcessPriority.Location = new System.Drawing.Point(169, 22);
             this.grpGeneralProcessPriority.Name = "grpGeneralProcessPriority";
             this.grpGeneralProcessPriority.Size = new System.Drawing.Size(144, 56);
             this.grpGeneralProcessPriority.TabIndex = 23;
@@ -18515,7 +18634,7 @@ namespace PowerSDR
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(624, 423);
+            this.ClientSize = new System.Drawing.Size(624, 418);
             this.Controls.Add(this.btnSave);
             this.Controls.Add(this.tcSetup);
             this.Controls.Add(this.btnApply);
@@ -18653,6 +18772,7 @@ namespace PowerSDR
             ((System.ComponentModel.ISupportInitialize)(this.tbPrimaryPhase)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbVACGain)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.tbVACPhase)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.udQRP2000_Si570Xtal)).EndInit();
             this.tpTests.ResumeLayout(false);
             this.grpAudioTests.ResumeLayout(false);
             this.grpAudioTests.PerformLayout();
@@ -18736,6 +18856,8 @@ namespace PowerSDR
             ((System.ComponentModel.ISupportInitialize)(this.udPAGain80)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.udPAGain160)).EndInit();
             this.tpTransmit.ResumeLayout(false);
+            this.groupBoxTS12.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.udTXFMDeviation)).EndInit();
             this.grpGenesis.ResumeLayout(false);
             this.grpGenesis.PerformLayout();
             this.grpTXAM.ResumeLayout(false);
@@ -18846,10 +18968,6 @@ namespace PowerSDR
             this.grpGeneralModel.PerformLayout();
             this.grpGeneralHardwareSetup.ResumeLayout(false);
             this.grpGeneralHardwareSetup.PerformLayout();
-            this.grpG6.ResumeLayout(false);
-            this.grpG6.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.udHighFreq)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.udLowFreq)).EndInit();
             this.grpG59.ResumeLayout(false);
             this.grpG59.PerformLayout();
             this.grpXTRV.ResumeLayout(false);
@@ -18874,6 +18992,10 @@ namespace PowerSDR
             this.grpGenesis500.ResumeLayout(false);
             this.grpGenesis40.ResumeLayout(false);
             this.grpGenesis3020.ResumeLayout(false);
+            this.grpG6.ResumeLayout(false);
+            this.grpG6.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.udHighFreq)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.udLowFreq)).EndInit();
             this.tpGeneralOptions.ResumeLayout(false);
             this.grpAutoPWR.ResumeLayout(false);
             this.grpAutoPWR.PerformLayout();
@@ -18881,7 +19003,6 @@ namespace PowerSDR
             this.grpMemoryZap.PerformLayout();
             this.grpOptMainConsole.ResumeLayout(false);
             this.grpOptQuickQSY.ResumeLayout(false);
-            this.grpGenAutoMute.ResumeLayout(false);
             this.grpGenTuningOptions.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.udOptClickTuneOffsetDIGL)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.udOptClickTuneOffsetDIGU)).EndInit();
@@ -22231,11 +22352,6 @@ namespace PowerSDR
 			}
 		}
 
-		private void chkGenAutoMute_CheckedChanged(object sender, System.EventArgs e)
-		{
-			console.AutoMute = chkGenAutoMute.Checked;
-		}
-
 		private void chkOptQuickQSY_CheckedChanged(object sender, System.EventArgs e)
 		{
 			console.QuickQSY = chkOptQuickQSY.Checked;
@@ -22866,7 +22982,7 @@ namespace PowerSDR
 
 		private void udAudioVACGainTX_ValueChanged(object sender, System.EventArgs e)
 		{
-			Audio.VACPreamp = Math.Pow(10.0, (int)udAudioVACGainTX.Value/20.0);
+            Audio.VACPreamp = Math.Pow(10.0, (int)udAudioVACGainTX.Value / 20.0);
 			console.VACTXGain = (int)udAudioVACGainTX.Value;
 		}
 
@@ -23525,6 +23641,7 @@ namespace PowerSDR
 							comboAudioOutput1.Text = "Wuschel's ASIO4ALL";
 						}
 					}
+
 					if(comboAudioInput1.Text != "Wuschel's ASIO4ALL")
 					{
 						foreach(PADeviceInfo dev in comboAudioInput1.Items)
@@ -23537,35 +23654,43 @@ namespace PowerSDR
 						}
 					}
 
-					for(int i=0; i<comboAudioMixer1.Items.Count; i++)
-					{
-						if(((string)comboAudioMixer1.Items[i]).StartsWith("SB Audigy 2 ZS"))
-						{
-							comboAudioMixer1.SelectedIndex = i;
-							break;
-						}
-					}
-
-                    GetMuxLineNames1();
-                    for (int i = 0; i < comboAudioReceive1.Items.Count; i++)
+                    switch (console.WinVer)
                     {
-                        if (((string)comboAudioReceive1.Items[i]).StartsWith("Analog") ||
-                            ((string)comboAudioReceive1.Items[i]).Contains("Line"))
-                        {
-                            comboAudioReceive1.SelectedIndex = i;
-                            i = comboAudioReceive1.Items.Count;
-                        }
-                    }
+                        case WindowsVersion.Windows2000:
+                        case WindowsVersion.WindowsXP:
+                            {
+                                for (int i = 0; i < comboAudioMixer1.Items.Count; i++)
+                                {
+                                    if (((string)comboAudioMixer1.Items[i]).StartsWith("SB Audigy 2 ZS"))
+                                    {
+                                        comboAudioMixer1.SelectedIndex = i;
+                                        break;
+                                    }
+                                }
 
-					for(int i=0; i<comboAudioTransmit1.Items.Count; i++)
-					{
-						if(((string)comboAudioTransmit1.Items[i]).StartsWith("Mic") ||
-                            ((string)comboAudioTransmit1.Items[i]).Contains("Mic"))
-						{
-							comboAudioTransmit1.SelectedIndex = i;
-                            i = comboAudioTransmit1.Items.Count;
-						}
-					}
+                                GetMuxLineNames1();
+                                for (int i = 0; i < comboAudioReceive1.Items.Count; i++)
+                                {
+                                    if (((string)comboAudioReceive1.Items[i]).StartsWith("Analog") ||
+                                        ((string)comboAudioReceive1.Items[i]).Contains("Line"))
+                                    {
+                                        comboAudioReceive1.SelectedIndex = i;
+                                        i = comboAudioReceive1.Items.Count;
+                                    }
+                                }
+
+                                for (int i = 0; i < comboAudioTransmit1.Items.Count; i++)
+                                {
+                                    if (((string)comboAudioTransmit1.Items[i]).StartsWith("Mic") ||
+                                        ((string)comboAudioTransmit1.Items[i]).Contains("Mic"))
+                                    {
+                                        comboAudioTransmit1.SelectedIndex = i;
+                                        i = comboAudioTransmit1.Items.Count;
+                                    }
+                                }
+                            }
+                            break;
+                    }
 
 					if(comboAudioMixer1.SelectedIndex < 0 || 
 						!comboAudioMixer1.Text.StartsWith("SB Audigy"))
@@ -28838,6 +28963,45 @@ namespace PowerSDR
                 console.QRP2000_XTRV_Freq_Multiplier = 4;
         }
 
+        private void btnQRP2000XtalGet_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (console.qrp2000 != null)
+                {
+                    double freq = console.qrp2000.Get_SI570_XTAL_freq();
+                    freq = Math.Min((double)udQRP2000_Si570Xtal.Maximum, freq);
+                    freq = Math.Max((double)udQRP2000_Si570Xtal.Minimum, freq);
+                    udQRP2000_Si570Xtal.Value = (decimal)freq;
+                    int addr = console.qrp2000.Get_SI570_I2C_address();
+                    udSRSi570Addr.Value = Math.Min(255, addr);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void btnQRP2000XtalSet_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (console.qrp2000 != null)
+                {
+                    console.qrp2000.Set_SI570_I2C_adress((int)udSRSi570Addr.Value);
+                    Thread.Sleep(10);
+                    console.qrp2000.Set_SI570_Xtal_freq((double)udQRP2000_Si570Xtal.Value);
+                    Thread.Sleep(10);
+                    console.LOSCFreq = console.LOSCFreq;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
         #endregion
 
         #region MultiPSK interface // yt7pwr
@@ -29482,7 +29646,7 @@ namespace PowerSDR
                 chkG11B201715_CH1.Checked = false;
                 chkG11B600_CH1.Checked = false;
                 chkG11B2190_CH1.Checked = false;
-                chkG11B151210_CH2.Checked = false;
+                chkG11B151210_CH1.Checked = false;
                 chkG11B6_CH2.Checked = false;
                 chkG11B4030_CH1.Checked = false;
 
@@ -29816,7 +29980,7 @@ namespace PowerSDR
                 chkG11B6040_CH2.Checked = false;
                 chkG11B1210_CH2.Checked = false;
                 chkG11B201715_CH2.Checked = false;
-                chkG11B151210_CH1.Checked = false;
+                chkG11B151210_CH2.Checked = false;
                 chkG11B6_CH1.Checked = false;
                 chkG11B4030_CH2.Checked = false;
 
@@ -29898,6 +30062,12 @@ namespace PowerSDR
         }
 
         #endregion
+
+        private void udTXFMDeviation_ValueChanged(object sender, EventArgs e)
+        {
+            DttSP.TXFMFilterLowCut = -(int)udTXFMDeviation.Value;
+            DttSP.TXFMFilterHighCut = (int)udTXFMDeviation.Value;
+        }
     }
 
     #region PADeviceInfo Helper Class

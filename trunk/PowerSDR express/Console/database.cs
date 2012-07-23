@@ -63,6 +63,7 @@ namespace PowerSDR
 			AddBandTextTable();
 			AddBandStackTable();
 			AddMemoryTable();
+            AddFMMemoryTable();
 			AddGroupListTable();
             AddTXProfileDefTable();
 		}
@@ -71,6 +72,7 @@ namespace PowerSDR
 		{
 			// initialize tables
             FillMemory();
+            FillFMMemory();
 		}
 
         private static void AddBandTextTable()
@@ -643,6 +645,28 @@ namespace PowerSDR
             memoryTable.Columns.Add("Cleared", typeof(bool));
             memoryTable.Columns.Add("Text", typeof(string));
 		}
+
+        private static void AddFMMemoryTable() // changes yt7pwr
+        {
+            ds.Tables.Add("FMMemory");
+            DataTable memoryTable = ds.Tables["FMMemory"];
+            memoryTable.Columns.Add("MemNumber", typeof(int));
+            memoryTable.Columns.Add("Frequency", typeof(double));
+            memoryTable.Columns.Add("LOSC", typeof(double));
+            memoryTable.Columns.Add("CTCSS", typeof(bool));
+            memoryTable.Columns.Add("CTCSS_freq", typeof(double));
+            memoryTable.Columns.Add("RPTR_mode", typeof(int));
+            memoryTable.Columns.Add("RPTR_offset", typeof(double));
+            memoryTable.Columns.Add("ModeID", typeof(int));
+            memoryTable.Columns.Add("FilterID", typeof(int));
+            memoryTable.Columns.Add("Step", typeof(int));
+            memoryTable.Columns.Add("AGC", typeof(int));
+            memoryTable.Columns.Add("Squelch", typeof(int));
+            memoryTable.Columns.Add("Zoom", typeof(int));
+            memoryTable.Columns.Add("Pan", typeof(int));
+            memoryTable.Columns.Add("Cleared", typeof(bool));
+            memoryTable.Columns.Add("Text", typeof(string));
+        }
 
         private static void AddGroupListTable()
         {
@@ -1359,6 +1383,32 @@ namespace PowerSDR
             }
         }
 
+        private static void FillFMMemory()  // yt7pwr
+        {
+            int i = 0;
+
+            for (i = 1; i < 100; i++)
+            {
+                DataRow newRow = ds.Tables["FMMemory"].NewRow();
+                newRow["MemNumber"] = i;
+                newRow["Frequency"] = 10.1;
+                newRow["LOSC"] = 10.0;
+                newRow["CTCSS"] = false;
+                newRow["CTCSS_freq"] = 67.0;
+                newRow["RPTR_mode"] = (int)RPTRmode.simplex;
+                newRow["RPTR_offset"] = 0.0;
+                newRow["ModeID"] = 1;
+                newRow["FilterID"] = 1;
+                newRow["Step"] = 1;
+                newRow["AGC"] = 1;
+                newRow["Squelch"] = 1;
+                newRow["Zoom"] = 4;
+                newRow["Pan"] = 0;
+                newRow["Cleared"] = true;
+                ds.Tables["FMMemory"].Rows.Add(newRow);
+            }
+        }
+
 		private static void CheckBandTextValid()
 		{
 			ArrayList bad_rows = new ArrayList();
@@ -1414,6 +1464,12 @@ namespace PowerSDR
                         RemoveMemoryTable("BandStack");
                         AddBandStackTable();
                     }
+                }
+
+                if (!ds.Tables.Contains("FMMemory"))
+                {
+                    AddFMMemoryTable();
+                    FillFMMemory();
                 }
 
                 if (!ds.Tables.Contains("Memory"))
@@ -1549,7 +1605,6 @@ namespace PowerSDR
                 }
 
                 VerifyTables();
-
                 CheckBandTextValid();
             }
             catch (Exception ex)
@@ -1884,11 +1939,67 @@ namespace PowerSDR
             }
         }
 
+        public static void ClearFMMemoryTable() // yt7pwr
+        {
+            try
+            {
+                DataRow[] rows = ds.Tables["FMMemory"].Select();
+
+                foreach (DataRow datarow in rows)
+                {
+                    datarow["Frequency"] = 10.1;
+                    datarow["LOSC"] = 10.0;
+                    datarow["CTCSS"] = false;
+                    datarow["CTCSS_freq"] = 67.0;
+                    datarow["RPTR_mode"] = 1;
+                    datarow["RPTR_offset"] = 0.0;
+                    datarow["ModeID"] = 1;
+                    datarow["FilterID"] = 1;
+                    datarow["FilterID"] = 1;
+                    datarow["Step"] = 1;
+                    datarow["AGC"] = 1;
+                    datarow["Squelch"] = 100;
+                    datarow["Zoom"] = 4;
+                    datarow["Pan"] = 0;
+                    datarow["Cleared"] = true;
+                    datarow["Text"] = "";
+                }
+            }
+            catch (Exception ex)
+            {
+                if (!ds.Tables.Contains("FMMemory"))
+                {
+                    AddFMMemoryTable();
+                    FillFMMemory();
+                }
+
+                Debug.Write(ex.ToString());
+            }
+        }
+
         public static bool ClearMemory(int mem_number) // yt7pwr
         {
             try
             {
                 DataRow[] rows = ds.Tables["Memory"].Select("'" + mem_number + "' = MemNumber");
+                foreach (DataRow datarow in rows)
+                {
+                    datarow["Cleared"] = true;
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Eror!" + ex.Message);
+                return false;
+            }
+        }
+
+        public static bool ClearFMMemory(int mem_number) // yt7pwr
+        {
+            try
+            {
+                DataRow[] rows = ds.Tables["FMMemory"].Select("'" + mem_number + "' = MemNumber");
                 foreach (DataRow datarow in rows)
                 {
                     datarow["Cleared"] = true;
@@ -1951,6 +2062,52 @@ namespace PowerSDR
             }
         }
 
+        // yt7pwr
+        public static bool SaveFMMemory(int mem_number, double freq, double losc, int mode, int filter,
+            int step, int agc, int squelch, int zoom, int pan, string text, bool ctcss, double ctcs_freq, 
+            RPTRmode rptr_mode, double rptr_offset)
+        {
+            try
+            {
+                DataRow[] rows = ds.Tables["FMMemory"].Select("'" + mem_number + "' = MemNumber");
+
+                foreach (DataRow datarow in rows)
+                {
+                    if ((int)datarow["MemNumber"] == mem_number)
+                    {
+                        datarow["Frequency"] = freq;
+                        datarow["LOSC"] = losc;
+                        datarow["CTCSS"] = ctcss;
+                        datarow["CTCSS_freq"] = ctcs_freq;
+                        datarow["RPTR_mode"] = (int)rptr_mode;
+                        datarow["RPTR_offset"] = rptr_offset;
+                        datarow["ModeID"] = mode;
+                        datarow["FilterID"] = filter;
+                        datarow["Step"] = step;
+                        datarow["AGC"] = agc;
+                        datarow["Squelch"] = squelch;
+                        datarow["Zoom"] = zoom;
+                        datarow["Pan"] = pan;
+                        datarow["Cleared"] = false;
+                        datarow["Text"] = text;
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                if (!ds.Tables.Contains("FMMemory"))
+                {
+                    AddFMMemoryTable();
+                    FillFMMemory();
+                }
+
+                Debug.Write(ex.ToString());
+
+                return false;
+            }
+        }
+
         public static ArrayList GetTX_Phase_Gain() // yt7pwr
         {
             ArrayList list = new ArrayList();
@@ -1996,6 +2153,40 @@ namespace PowerSDR
                         AddMemoryTable();
                         FillMemory();
                     }
+                }
+
+                Debug.Write(ex.ToString());
+
+                return null;
+            }
+        }
+
+        public static ArrayList GetFMMemory(int mem_number)         // yt7pwr
+        {
+            try
+            {
+                ArrayList list = new ArrayList();
+
+                DataRow[] rows = ds.Tables["FMMemory"].Select("'" + mem_number + "' = MemNumber");
+
+                foreach (DataRow dr in rows)
+                {
+                    list.Add(dr[0].ToString() + "/" + dr[1].ToString() + "/" + dr[2].ToString()
+                        + "/" + dr[3].ToString() + "/" + dr[4].ToString() + "/" + dr[5].ToString()
+                        + "/" + dr[6].ToString() + "/" + dr[7].ToString() + "/" + dr[8].ToString()
+                        + "/" + dr[9].ToString() + "/" + dr[10].ToString() + "/" + dr[11].ToString()
+                        + "/" + dr[12].ToString() + "/" + dr[13].ToString() + "/" + dr[14].ToString()
+                        + "/" + dr[15].ToString());
+                }
+
+                return list;
+            }
+            catch (Exception ex)
+            {
+                if (!ds.Tables.Contains("FMMemory"))
+                {
+                    AddFMMemoryTable();
+                    FillFMMemory();
                 }
 
                 Debug.Write(ex.ToString());
