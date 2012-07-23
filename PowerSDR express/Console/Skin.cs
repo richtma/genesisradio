@@ -198,6 +198,7 @@ namespace PowerSDR
                 if (File.Exists(path + "\\" + f.Name + "\\" + "lbl" + pic_file_ext))
                 {
                     if (temp.Name != console.lblMemoryNumber.Name &&
+                        temp.Name != console.lblFMMemory.Name &&
                         temp.Name != console.lblVFOATX.Name &&
                         temp.Name != console.lblVFOBTX.Name &&
                         temp.Name != console.btnUSB.Name &&
@@ -214,6 +215,13 @@ namespace PowerSDR
                 else
                 {
                     if (temp.Name != console.lblMemoryNumber.Name)
+                    {
+                        c.BackgroundImage = null;
+                        c.ForeColor = console.SkinsButtonTxtColor;
+                        console.menuStrip1.BackgroundImage = null;
+                        console.menuStrip1.BackColor = SystemColors.Control;
+                    }
+                    else if (temp.Name != console.lblFMMemory.Name)
                     {
                         c.BackgroundImage = null;
                         c.ForeColor = console.SkinsButtonTxtColor;

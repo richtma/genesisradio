@@ -46,7 +46,17 @@ namespace PowerSDR
 
         public ClusterSetup(DXClusterClient form)
         {
+            this.AutoScaleMode = AutoScaleMode.Inherit;
             InitializeComponent();
+            int dpi = (int)this.CreateGraphics().DpiX;
+
+            if (dpi > 96)
+            {
+                string font_name = this.Font.Name;
+                System.Drawing.Font new_font = new System.Drawing.Font(font_name, 6.5f);
+                this.Font = new_font;
+            }
+
             ParrentForm = form;
             GetOptions();
         }

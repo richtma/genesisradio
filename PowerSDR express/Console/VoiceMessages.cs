@@ -2,7 +2,7 @@
 // VoiceMessages control
 //=================================================================
 //
-//  Copyright (C)2009,2010 YT7PWR Goran Radivojevic
+//  Copyright (C)2009,2010,2011,2012 YT7PWR Goran Radivojevic
 //  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 //
 // This program is free software; you can redistribute it and/or
@@ -108,11 +108,37 @@ namespace PowerSDR
             }
         }
 
+        public bool RecordingEnd
+        {
+            set
+            {
+                if (value)
+                {
+                    btnRecMsg1.Checked = false;
+                    btnRecMsg2.Checked = false;
+                    btnRecMsg3.Checked = false;
+                    btnRecMsg4.Checked = false;
+                    btnRecMsg5.Checked = false;
+                    btnRecMsg6.Checked = false;
+                }
+            }
+        }
+
         #endregion
 
         public VoiceMessages(Console c)
         {
+            this.AutoScaleMode = AutoScaleMode.Inherit;
             InitializeComponent();
+            float dpi = this.CreateGraphics().DpiX;
+            float ratio = dpi / 96.0f;
+            string font_name = this.Font.Name;
+            float size = (float)(8.25 / ratio);
+            System.Drawing.Font new_font = new System.Drawing.Font(font_name, size);
+            this.Font = new_font;
+            this.PerformAutoScale();
+            this.PerformLayout();
+
             console = c;
             RestoreSettings();
         }
@@ -120,6 +146,19 @@ namespace PowerSDR
         ~VoiceMessages()
         {
             SaveSettings();
+        }
+
+        private void FormClosing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            try
+            {
+                this.Hide();
+                e.Cancel = true;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void VoiceMessages_Load(object sender, EventArgs e)
@@ -590,13 +629,13 @@ namespace PowerSDR
                 Audio.voice_msg_file_reader.playback = false;
         }
 
-        private void btnRecMsg1_Click(object sender, EventArgs e)
+        private void btnRecMsg1_CheckedChanged(object sender, EventArgs e)
         {
             if (console.chkPower.Checked)
             {
                 try
                 {
-                    if (btnRecMsg1.Checked && console.chkPower.Checked)
+                    if (btnRecMsg1.Checked && console.chkPower.Checked && !console.MOX)
                     {
                         if (console.LineMicShared)
                         {
@@ -660,15 +699,21 @@ namespace PowerSDR
                     console.VoiceMSG = false;
                 }
             }
+            else
+            {
+                btnRecMsg1.Checked = false;
+                btnRecMsg1.Text = "REC";
+                btnRecMsg1.BackColor = SystemColors.Control;
+            }
         }
 
-        private void btnRecMsg2_Click(object sender, EventArgs e)
+        private void btnRecMsg2_CheckedChanged(object sender, EventArgs e)
         {
             if (console.chkPower.Checked)
             {
                 try
                 {
-                    if (btnRecMsg2.Checked && console.chkPower.Checked)
+                    if (btnRecMsg2.Checked && console.chkPower.Checked && !console.MOX)
                     {
                         if (console.LineMicShared)
                         {
@@ -732,15 +777,21 @@ namespace PowerSDR
                     console.VoiceMSG = false;
                 }
             }
+            else
+            {
+                btnRecMsg2.Checked = false;
+                btnRecMsg2.Text = "REC";
+                btnRecMsg2.BackColor = SystemColors.Control;
+            }
         }
 
-        private void btnRecMsg3_Click(object sender, EventArgs e)
+        private void btnRecMsg3_CheckedChanged(object sender, EventArgs e)
         {
             if (console.chkPower.Checked)
             {
                 try
                 {
-                    if (btnRecMsg3.Checked && console.chkPower.Checked)
+                    if (btnRecMsg3.Checked && console.chkPower.Checked && !console.MOX)
                     {
                         if (console.LineMicShared)
                         {
@@ -804,15 +855,21 @@ namespace PowerSDR
                     console.VoiceMSG = false;
                 }
             }
+            else
+            {
+                btnRecMsg3.Checked = false;
+                btnRecMsg3.Text = "REC";
+                btnRecMsg3.BackColor = SystemColors.Control;
+            }
         }
 
-        private void btnRecMsg4_Click(object sender, EventArgs e)
+        private void btnRecMsg4_CheckedChanged(object sender, EventArgs e)
         {
             if (console.chkPower.Checked)
             {
                 try
                 {
-                    if (btnRecMsg4.Checked && console.chkPower.Checked)
+                    if (btnRecMsg4.Checked && console.chkPower.Checked && !console.MOX)
                     {
                         if (console.LineMicShared)
                         {
@@ -876,15 +933,21 @@ namespace PowerSDR
                     console.VoiceMSG = false;
                 }
             }
+            else
+            {
+                btnRecMsg4.Checked = false;
+                btnRecMsg4.Text = "REC";
+                btnRecMsg4.BackColor = SystemColors.Control;
+            }
         }
 
-        private void btnRecMsg5_Click(object sender, EventArgs e)
+        private void btnRecMsg5_CheckedChanged(object sender, EventArgs e)
         {
             if (console.chkPower.Checked)
             {
                 try
                 {
-                    if (btnRecMsg5.Checked && console.chkPower.Checked)
+                    if (btnRecMsg5.Checked && console.chkPower.Checked && !console.MOX)
                     {
                         if (console.LineMicShared)
                         {
@@ -940,6 +1003,7 @@ namespace PowerSDR
                         console.VoiceMSG = false;
                         btnRecMsg5.Text = "REC";
                     }
+
                     Audio.voice_message_record = btnRecMsg5.Checked;
                 }
                 catch (Exception ex)
@@ -948,15 +1012,21 @@ namespace PowerSDR
                     console.VoiceMSG = false;
                 }
             }
+            else
+            {
+                btnRecMsg5.Checked = false;
+                btnRecMsg5.Text = "REC";
+                btnRecMsg5.BackColor = SystemColors.Control;
+            }
         }
 
-        private void btnRecMsg6_Click(object sender, EventArgs e)
+        private void btnRecMsg6_CheckedChanged(object sender, EventArgs e)
         {
             if (console.chkPower.Checked)
             {
                 try
                 {
-                    if (btnRecMsg6.Checked && console.chkPower.Checked)
+                    if (btnRecMsg6.Checked && console.chkPower.Checked && !console.MOX)
                     {
                         if (console.LineMicShared)
                         {
@@ -1019,6 +1089,12 @@ namespace PowerSDR
                     MessageBox.Show("Error!" + ex.ToString());
                     console.VoiceMSG = false;
                 }
+            }
+            else
+            {
+                btnRecMsg6.Checked = false;
+                btnRecMsg6.Text = "REC";
+                btnRecMsg6.BackColor = SystemColors.Control;
             }
         }
     }
@@ -1434,20 +1510,20 @@ namespace PowerSDR
 
         private void WriteWaveHeader(ref BinaryWriter writer, short channels, int sample_rate, short bit_depth, int data_length)
         {
-            writer.Write(0x46464952);								// "RIFF"		-- descriptor chunk ID
-            writer.Write(data_length + 36);							// size of whole file -- 1 for now
-            writer.Write(0x45564157);								// "WAVE"		-- descriptor type
-            writer.Write(0x20746d66);								// "fmt "		-- format chunk ID
-            writer.Write((int)16);									// size of fmt chunk
-            writer.Write((short)3);									// FormatTag	-- 3 for floats
-            writer.Write(channels);									// wChannels
-            writer.Write(sample_rate);								// dwSamplesPerSec
+            writer.Write(0x46464952);								        // "RIFF"		-- descriptor chunk ID
+            writer.Write(data_length + 36);							        // size of whole file -- 1 for now
+            writer.Write(0x45564157);								        // "WAVE"		-- descriptor type
+            writer.Write(0x20746d66);								        // "fmt "		-- format chunk ID
+            writer.Write((int)16);									        // size of fmt chunk
+            writer.Write((short)3);									        // FormatTag	-- 3 for floats
+            writer.Write((short)channels);									// wChannels
+            writer.Write((int)sample_rate);								    // dwSamplesPerSec
             writer.Write((int)(channels * sample_rate * bit_depth / 8));	// dwAvgBytesPerSec
-            writer.Write((short)(channels * bit_depth / 8));			// wBlockAlign
-            writer.Write(bit_depth);								// wBitsPerSample
-            writer.Write(0x61746164);								// "data" -- data chunk ID
-            writer.Write(data_length);								// chunkSize = length of data
-            writer.Flush();											// write the file
+            writer.Write((short)(channels * bit_depth / 8));			    // wBlockAlign
+            writer.Write((short)bit_depth);								    // wBitsPerSample
+            writer.Write(0x61746164);								        // "data" -- data chunk ID
+            writer.Write(data_length);								        // chunkSize = length of data
+            writer.Flush();											        // write the file
         }
     }
 

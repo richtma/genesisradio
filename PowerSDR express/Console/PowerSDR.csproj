@@ -141,17 +141,30 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="G59, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64" />
+    <Reference Include="G11, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Dependency\G11.dll</HintPath>
+    </Reference>
+    <Reference Include="G59, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Dependency\G59.dll</HintPath>
+    </Reference>
     <Reference Include="G6, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\bin\Debug\G6.dll</HintPath>
+      <HintPath>..\Dependency\G6.dll</HintPath>
     </Reference>
-    <Reference Include="MemCompressor, Version=1.0.0.3, Culture=neutral, PublicKeyToken=d7dc4571284f76c3, processorArchitecture=x86" />
+    <Reference Include="MemCompressor, Version=1.0.0.3, Culture=neutral, PublicKeyToken=d7dc4571284f76c3, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Dependency\MemCompressor.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.VisualBasic" />
-    <Reference Include="NetworkControl, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86" />
+    <Reference Include="NetworkControl, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Dependency\NetworkControl.dll</HintPath>
+    </Reference>
     <Reference Include="ProgressODoom, Version=1.0.4386.37036, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\bin\Release_new\ProgressODoom.dll</HintPath>
+      <HintPath>..\Dependency\ProgressODoom.dll</HintPath>
     </Reference>
     <Reference Include="SlimDX, Version=2.0.12.43, Culture=neutral, PublicKeyToken=b1b0c32fd1ffe4f9, processorArchitecture=x86" />
     <Reference Include="System">
@@ -494,12 +507,6 @@
     <EmbeddedResource Include="XTRV.resx">
       <DependentUpon>XTRV.cs</DependentUpon>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\G11\G11\G11.csproj">
-      <Project>{240B17F6-4FD1-4F61-8DD8-79CAF64EFBD7}</Project>
-      <Name>G11</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />

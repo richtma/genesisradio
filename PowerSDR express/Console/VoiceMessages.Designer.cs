@@ -64,7 +64,7 @@ namespace PowerSDR
             // btnOK
             // 
             this.btnOK.Image = null;
-            this.btnOK.Location = new System.Drawing.Point(177, 211);
+            this.btnOK.Location = new System.Drawing.Point(189, 152);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 0;
@@ -75,7 +75,7 @@ namespace PowerSDR
             // btnApply
             // 
             this.btnApply.Image = null;
-            this.btnApply.Location = new System.Drawing.Point(313, 211);
+            this.btnApply.Location = new System.Drawing.Point(293, 152);
             this.btnApply.Name = "btnApply";
             this.btnApply.Size = new System.Drawing.Size(75, 23);
             this.btnApply.TabIndex = 1;
@@ -87,7 +87,7 @@ namespace PowerSDR
             // 
             this.btnMsg1.Appearance = System.Windows.Forms.Appearance.Button;
             this.btnMsg1.Image = null;
-            this.btnMsg1.Location = new System.Drawing.Point(65, 42);
+            this.btnMsg1.Location = new System.Drawing.Point(62, 26);
             this.btnMsg1.Name = "btnMsg1";
             this.btnMsg1.Size = new System.Drawing.Size(24, 20);
             this.btnMsg1.TabIndex = 2;
@@ -100,7 +100,7 @@ namespace PowerSDR
             // 
             this.btnMsg2.Appearance = System.Windows.Forms.Appearance.Button;
             this.btnMsg2.Image = null;
-            this.btnMsg2.Location = new System.Drawing.Point(65, 78);
+            this.btnMsg2.Location = new System.Drawing.Point(62, 62);
             this.btnMsg2.Name = "btnMsg2";
             this.btnMsg2.Size = new System.Drawing.Size(24, 20);
             this.btnMsg2.TabIndex = 3;
@@ -113,7 +113,7 @@ namespace PowerSDR
             // 
             this.btnMsg3.Appearance = System.Windows.Forms.Appearance.Button;
             this.btnMsg3.Image = null;
-            this.btnMsg3.Location = new System.Drawing.Point(65, 116);
+            this.btnMsg3.Location = new System.Drawing.Point(62, 100);
             this.btnMsg3.Name = "btnMsg3";
             this.btnMsg3.Size = new System.Drawing.Size(24, 20);
             this.btnMsg3.TabIndex = 4;
@@ -124,7 +124,7 @@ namespace PowerSDR
             // 
             // txtMsg1
             // 
-            this.txtMsg1.Location = new System.Drawing.Point(100, 43);
+            this.txtMsg1.Location = new System.Drawing.Point(97, 27);
             this.txtMsg1.MaxLength = 64;
             this.txtMsg1.Name = "txtMsg1";
             this.txtMsg1.Size = new System.Drawing.Size(176, 20);
@@ -132,7 +132,7 @@ namespace PowerSDR
             // 
             // txtMsg2
             // 
-            this.txtMsg2.Location = new System.Drawing.Point(100, 78);
+            this.txtMsg2.Location = new System.Drawing.Point(97, 62);
             this.txtMsg2.MaxLength = 64;
             this.txtMsg2.Name = "txtMsg2";
             this.txtMsg2.Size = new System.Drawing.Size(176, 20);
@@ -140,7 +140,7 @@ namespace PowerSDR
             // 
             // txtMsg3
             // 
-            this.txtMsg3.Location = new System.Drawing.Point(100, 117);
+            this.txtMsg3.Location = new System.Drawing.Point(97, 101);
             this.txtMsg3.MaxLength = 64;
             this.txtMsg3.Name = "txtMsg3";
             this.txtMsg3.Size = new System.Drawing.Size(176, 20);
@@ -148,7 +148,7 @@ namespace PowerSDR
             // 
             // txtMsg6
             // 
-            this.txtMsg6.Location = new System.Drawing.Point(376, 117);
+            this.txtMsg6.Location = new System.Drawing.Point(363, 101);
             this.txtMsg6.MaxLength = 64;
             this.txtMsg6.Name = "txtMsg6";
             this.txtMsg6.Size = new System.Drawing.Size(176, 20);
@@ -156,7 +156,7 @@ namespace PowerSDR
             // 
             // txtMsg5
             // 
-            this.txtMsg5.Location = new System.Drawing.Point(376, 78);
+            this.txtMsg5.Location = new System.Drawing.Point(363, 62);
             this.txtMsg5.MaxLength = 64;
             this.txtMsg5.Name = "txtMsg5";
             this.txtMsg5.Size = new System.Drawing.Size(176, 20);
@@ -164,7 +164,7 @@ namespace PowerSDR
             // 
             // txtMsg4
             // 
-            this.txtMsg4.Location = new System.Drawing.Point(376, 43);
+            this.txtMsg4.Location = new System.Drawing.Point(363, 27);
             this.txtMsg4.MaxLength = 64;
             this.txtMsg4.Name = "txtMsg4";
             this.txtMsg4.Size = new System.Drawing.Size(176, 20);
@@ -174,7 +174,7 @@ namespace PowerSDR
             // 
             this.btnMsg6.Appearance = System.Windows.Forms.Appearance.Button;
             this.btnMsg6.Image = null;
-            this.btnMsg6.Location = new System.Drawing.Point(341, 116);
+            this.btnMsg6.Location = new System.Drawing.Point(328, 100);
             this.btnMsg6.Name = "btnMsg6";
             this.btnMsg6.Size = new System.Drawing.Size(24, 20);
             this.btnMsg6.TabIndex = 13;
@@ -187,7 +187,7 @@ namespace PowerSDR
             // 
             this.btnMsg5.Appearance = System.Windows.Forms.Appearance.Button;
             this.btnMsg5.Image = null;
-            this.btnMsg5.Location = new System.Drawing.Point(341, 78);
+            this.btnMsg5.Location = new System.Drawing.Point(328, 62);
             this.btnMsg5.Name = "btnMsg5";
             this.btnMsg5.Size = new System.Drawing.Size(24, 20);
             this.btnMsg5.TabIndex = 12;
@@ -200,7 +200,7 @@ namespace PowerSDR
             // 
             this.btnMsg4.Appearance = System.Windows.Forms.Appearance.Button;
             this.btnMsg4.Image = null;
-            this.btnMsg4.Location = new System.Drawing.Point(341, 43);
+            this.btnMsg4.Location = new System.Drawing.Point(328, 27);
             this.btnMsg4.Name = "btnMsg4";
             this.btnMsg4.Size = new System.Drawing.Size(24, 20);
             this.btnMsg4.TabIndex = 11;
@@ -213,79 +213,79 @@ namespace PowerSDR
             // 
             this.btnRecMsg1.Appearance = System.Windows.Forms.Appearance.Button;
             this.btnRecMsg1.Image = null;
-            this.btnRecMsg1.Location = new System.Drawing.Point(13, 42);
+            this.btnRecMsg1.Location = new System.Drawing.Point(17, 26);
             this.btnRecMsg1.Name = "btnRecMsg1";
             this.btnRecMsg1.Size = new System.Drawing.Size(41, 20);
             this.btnRecMsg1.TabIndex = 17;
             this.btnRecMsg1.Text = "REC";
             this.btnRecMsg1.UseVisualStyleBackColor = true;
-            this.btnRecMsg1.Click += new System.EventHandler(this.btnRecMsg1_Click);
+            this.btnRecMsg1.CheckedChanged += new System.EventHandler(this.btnRecMsg1_CheckedChanged);
             // 
             // btnRecMsg2
             // 
             this.btnRecMsg2.Appearance = System.Windows.Forms.Appearance.Button;
             this.btnRecMsg2.Image = null;
-            this.btnRecMsg2.Location = new System.Drawing.Point(13, 78);
+            this.btnRecMsg2.Location = new System.Drawing.Point(17, 62);
             this.btnRecMsg2.Name = "btnRecMsg2";
             this.btnRecMsg2.Size = new System.Drawing.Size(41, 20);
             this.btnRecMsg2.TabIndex = 18;
             this.btnRecMsg2.Text = "REC";
             this.btnRecMsg2.UseVisualStyleBackColor = true;
-            this.btnRecMsg2.Click += new System.EventHandler(this.btnRecMsg2_Click);
+            this.btnRecMsg2.CheckedChanged += new System.EventHandler(this.btnRecMsg2_CheckedChanged);
             // 
             // btnRecMsg3
             // 
             this.btnRecMsg3.Appearance = System.Windows.Forms.Appearance.Button;
             this.btnRecMsg3.Image = null;
-            this.btnRecMsg3.Location = new System.Drawing.Point(13, 117);
+            this.btnRecMsg3.Location = new System.Drawing.Point(17, 101);
             this.btnRecMsg3.Name = "btnRecMsg3";
             this.btnRecMsg3.Size = new System.Drawing.Size(41, 20);
             this.btnRecMsg3.TabIndex = 19;
             this.btnRecMsg3.Text = "REC";
             this.btnRecMsg3.UseVisualStyleBackColor = true;
-            this.btnRecMsg3.Click += new System.EventHandler(this.btnRecMsg3_Click);
+            this.btnRecMsg3.CheckedChanged += new System.EventHandler(this.btnRecMsg3_CheckedChanged);
             // 
             // btnRecMsg4
             // 
             this.btnRecMsg4.Appearance = System.Windows.Forms.Appearance.Button;
             this.btnRecMsg4.Image = null;
-            this.btnRecMsg4.Location = new System.Drawing.Point(289, 43);
+            this.btnRecMsg4.Location = new System.Drawing.Point(281, 27);
             this.btnRecMsg4.Name = "btnRecMsg4";
             this.btnRecMsg4.Size = new System.Drawing.Size(41, 20);
             this.btnRecMsg4.TabIndex = 20;
             this.btnRecMsg4.Text = "REC";
             this.btnRecMsg4.UseVisualStyleBackColor = true;
-            this.btnRecMsg4.Click += new System.EventHandler(this.btnRecMsg4_Click);
+            this.btnRecMsg4.CheckedChanged += new System.EventHandler(this.btnRecMsg4_CheckedChanged);
             // 
             // btnRecMsg5
             // 
             this.btnRecMsg5.Appearance = System.Windows.Forms.Appearance.Button;
             this.btnRecMsg5.Image = null;
-            this.btnRecMsg5.Location = new System.Drawing.Point(289, 78);
+            this.btnRecMsg5.Location = new System.Drawing.Point(281, 62);
             this.btnRecMsg5.Name = "btnRecMsg5";
             this.btnRecMsg5.Size = new System.Drawing.Size(41, 20);
             this.btnRecMsg5.TabIndex = 21;
             this.btnRecMsg5.Text = "REC";
             this.btnRecMsg5.UseVisualStyleBackColor = true;
-            this.btnRecMsg5.Click += new System.EventHandler(this.btnRecMsg5_Click);
+            this.btnRecMsg5.CheckedChanged += new System.EventHandler(this.btnRecMsg5_CheckedChanged);
             // 
             // btnRecMsg6
             // 
             this.btnRecMsg6.Appearance = System.Windows.Forms.Appearance.Button;
             this.btnRecMsg6.Image = null;
-            this.btnRecMsg6.Location = new System.Drawing.Point(289, 116);
+            this.btnRecMsg6.Location = new System.Drawing.Point(281, 100);
             this.btnRecMsg6.Name = "btnRecMsg6";
             this.btnRecMsg6.Size = new System.Drawing.Size(41, 20);
             this.btnRecMsg6.TabIndex = 22;
             this.btnRecMsg6.Text = "REC";
             this.btnRecMsg6.UseVisualStyleBackColor = true;
-            this.btnRecMsg6.Click += new System.EventHandler(this.btnRecMsg6_Click);
+            this.btnRecMsg6.CheckedChanged += new System.EventHandler(this.btnRecMsg6_CheckedChanged);
             // 
             // VoiceMessages
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(565, 278);
+            this.ClientSize = new System.Drawing.Size(557, 190);
             this.Controls.Add(this.btnRecMsg6);
             this.Controls.Add(this.btnRecMsg5);
             this.Controls.Add(this.btnRecMsg4);
@@ -308,12 +308,13 @@ namespace PowerSDR
             this.Controls.Add(this.btnOK);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
-            this.MaximumSize = new System.Drawing.Size(573, 310);
+            this.MaximumSize = new System.Drawing.Size(573, 228);
             this.MinimizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(373, 310);
+            this.MinimumSize = new System.Drawing.Size(573, 228);
             this.Name = "VoiceMessages";
             this.Text = "VoiceMessages";
             this.Load += new System.EventHandler(this.VoiceMessages_Load);
+            this.Closing += new System.ComponentModel.CancelEventHandler(this.FormClosing);
             this.ResumeLayout(false);
             this.PerformLayout();
 

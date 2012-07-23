@@ -236,8 +236,6 @@ namespace PowerSDR
             keyDisplayThread.IsBackground = true;					// if app closes, kill this thread
             keyDisplayThread.Priority = ThreadPriority.Normal;
             keyDisplayThread.Start();
-
-            //			ttdel = 50;
         }
 
         ~CWX()
@@ -380,17 +378,6 @@ namespace PowerSDR
             keying = false;
             console.Keyer.MemoryPTT = false;
             console.Keyer.MemoryKey = false;
-
-            /*if (console.CurrentModel == Model.GENESIS_G59USB)
-            {
-                console.g59.KEYER = 0xff;
-                console.g59.WriteToDevice(24, 0); // turn off CW monitor
-            }
-            else if (console.CurrentModel == Model.GENESIS_G59NET)
-            {
-                console.net_device.KEYER = 0xff;
-                console.net_device.WriteToDevice(24, 0); // turn off CW monitor
-            }*/
         }
 
 		private void clear_fifo()

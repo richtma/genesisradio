@@ -28,7 +28,7 @@
 
 /*
  *  Changes for GenesisRadio
- *  Copyright (C)2008,2009,2010,2011,2012 YT7PWR Goran Radivojevic
+ *  Copyright (C)2008-2012 YT7PWR Goran Radivojevic
  *  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 */
 
@@ -64,14 +64,21 @@ namespace PowerSDR
 {
 	#region Enums
 
-        public enum FilterMode		// yt7pwr
-        {
-            LOW_PASS=0,
-            HIGH_PASS,
-            STOP_BAND,
-            PASS_BAND,
-            NOTCH,
-        }
+    public enum RPTRmode            // yt7pwr
+    {
+        low = 0,
+        simplex,
+        high,
+    }
+
+    public enum FilterMode		    // yt7pwr
+    {
+        LOW_PASS = 0,
+        HIGH_PASS,
+        STOP_BAND,
+        PASS_BAND,
+        NOTCH,
+    }
 
     public enum ATUMode             // yt7pwr
     {
@@ -116,6 +123,7 @@ namespace PowerSDR
         ModeSpecificPhone,
         ModeSpecificCW,
         ModeSpecificDigital,
+        ModeSpecificFM,
         Zoom,
         BandHF,
         RXSettings,
@@ -560,7 +568,6 @@ namespace PowerSDR
         private Thread network_thread;                      // thread for net_device
         private Thread wbir_thread;
         private Thread MemoryZap_thread;                    // memory zapping thread
-        private Thread spectrum_thread;                     // spectrum analyzer thread
 
         public About AboutForm;
         public Setup SetupForm;
@@ -1107,6 +1114,30 @@ namespace PowerSDR
         private ToolStripMenuItem debugToolStripMenuItem;
         public PictureBox picAGauge;
         private PictureBox picSmallAGauge;
+        private GroupBoxTS grpModeSpecificFM;
+        private TextBoxTS txtFMmemory;
+        public LabelTS lblFMMemory;
+        private ButtonTS btnFMMC;
+        private ButtonTS btnFMMR;
+        private ButtonTS btnFMMS;
+        private GroupBoxTS grpFMVoiceMsg;
+        public CheckBoxTS chkFMMsg6;
+        public CheckBoxTS chkFMMsg5;
+        public CheckBoxTS chkFMMsg4;
+        public CheckBoxTS chkFMMsg3;
+        public CheckBoxTS chkFMMsg2;
+        public CheckBoxTS chkFMMsg1;
+        private PrettyTrackBar ptbFMMicGain;
+        private LabelTS labelTS8;
+        private ComboBoxTS comboFMCTCSSFreq;
+        public CheckBoxTS chkCTCSS;
+        private RadioButtonTS radFMModeLow;
+        private RadioButtonTS radFMModeSimplex;
+        private RadioButtonTS radFMModeHigh;
+        private LabelTS labelTS7;
+        private NumericUpDownTS udFMOffset;
+        private ContextMenuStrip contextMenuFMMemory;
+        private ToolStripMenuItem eraseAllMemoryToolStripMenuItem1;
         private System.ComponentModel.IContainer components;
 
         #endregion
@@ -1124,6 +1155,18 @@ namespace PowerSDR
 
             Splash.SetStatus("Initializing Components");		// Set progress point
             InitializeComponent();								// Windows Forms Generated Code
+            Splash.SetStatus("DPI resize");
+            float dpi = this.CreateGraphics().DpiX;
+            this.AutoScaleMode = AutoScaleMode.Dpi;
+            SizeF d = this.AutoScaleDimensions;
+            d.Height = dpi;
+            d.Width = dpi;
+            this.AutoScaleDimensions = d;
+            float ratio = dpi / 96.0f;
+            string font_name = this.Font.Name;
+            float size = (float)(8.25 / ratio);
+            System.Drawing.Font new_font = new System.Drawing.Font(font_name, size);
+            this.Font = new_font;
 
             Splash.SetStatus("Initializing Database");			// Set progress point
             DB.AppDataPath = Application.StartupPath;
@@ -1486,9 +1529,23 @@ namespace PowerSDR
             this.radBandHF = new System.Windows.Forms.RadioButtonTS();
             this.radBand600 = new System.Windows.Forms.RadioButtonTS();
             this.radBand2190 = new System.Windows.Forms.RadioButtonTS();
-            this.timer_clock = new System.Windows.Forms.Timer(this.components);
+            this.btnFMMC = new System.Windows.Forms.ButtonTS();
+            this.btnFMMR = new System.Windows.Forms.ButtonTS();
+            this.btnFMMS = new System.Windows.Forms.ButtonTS();
+            this.lblMemoryNumber = new System.Windows.Forms.LabelTS();
             this.contextMemoryMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.eraseAllMemoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.lblFMMemory = new System.Windows.Forms.LabelTS();
+            this.contextMenuFMMemory = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.eraseAllMemoryToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.udFMOffset = new System.Windows.Forms.NumericUpDownTS();
+            this.radFMModeHigh = new System.Windows.Forms.RadioButtonTS();
+            this.radFMModeSimplex = new System.Windows.Forms.RadioButtonTS();
+            this.radFMModeLow = new System.Windows.Forms.RadioButtonTS();
+            this.chkCTCSS = new System.Windows.Forms.CheckBoxTS();
+            this.comboFMCTCSSFreq = new System.Windows.Forms.ComboBoxTS();
+            this.ptbFMMicGain = new PowerSDR.PrettyTrackBar();
+            this.timer_clock = new System.Windows.Forms.Timer(this.components);
             this.contextLOSCMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.xtal1ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
@@ -1625,7 +1682,6 @@ namespace PowerSDR
             this.grpBandHF = new System.Windows.Forms.GroupBoxTS();
             this.grpVFOBetween = new System.Windows.Forms.GroupBoxTS();
             this.txtMemory = new System.Windows.Forms.TextBoxTS();
-            this.lblMemoryNumber = new System.Windows.Forms.LabelTS();
             this.grpDisplay2 = new System.Windows.Forms.GroupBoxTS();
             this.grpOptions = new System.Windows.Forms.GroupBoxTS();
             this.btnChangeTuneStepLarger = new System.Windows.Forms.ButtonTS();
@@ -1717,6 +1773,17 @@ namespace PowerSDR
             this.radBandX3 = new System.Windows.Forms.RadioButtonTS();
             this.radBandX2 = new System.Windows.Forms.RadioButtonTS();
             this.radBandX1 = new System.Windows.Forms.RadioButtonTS();
+            this.grpModeSpecificFM = new System.Windows.Forms.GroupBoxTS();
+            this.labelTS7 = new System.Windows.Forms.LabelTS();
+            this.grpFMVoiceMsg = new System.Windows.Forms.GroupBoxTS();
+            this.chkFMMsg6 = new System.Windows.Forms.CheckBoxTS();
+            this.chkFMMsg5 = new System.Windows.Forms.CheckBoxTS();
+            this.chkFMMsg4 = new System.Windows.Forms.CheckBoxTS();
+            this.chkFMMsg3 = new System.Windows.Forms.CheckBoxTS();
+            this.chkFMMsg2 = new System.Windows.Forms.CheckBoxTS();
+            this.chkFMMsg1 = new System.Windows.Forms.CheckBoxTS();
+            this.labelTS8 = new System.Windows.Forms.LabelTS();
+            this.txtFMmemory = new System.Windows.Forms.TextBoxTS();
             ((System.ComponentModel.ISupportInitialize)(this.ptbPWR)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ptbRF)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ptbAF)).BeginInit();
@@ -1751,6 +1818,9 @@ namespace PowerSDR
             ((System.ComponentModel.ISupportInitialize)(this.ptbNotchWidth)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ptbNotchShift)).BeginInit();
             this.contextMemoryMenu.SuspendLayout();
+            this.contextMenuFMMemory.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.udFMOffset)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.ptbFMMicGain)).BeginInit();
             this.contextLOSCMenu.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.contextNewVFOSmeter.SuspendLayout();
@@ -1817,6 +1887,8 @@ namespace PowerSDR
             this.grpMainRXMode.SuspendLayout();
             this.grpG11.SuspendLayout();
             this.grpMoreBands.SuspendLayout();
+            this.grpModeSpecificFM.SuspendLayout();
+            this.grpFMVoiceMsg.SuspendLayout();
             this.SuspendLayout();
             // 
             // mnuWave
@@ -3744,6 +3816,47 @@ namespace PowerSDR
             this.radBand2190.Click += new System.EventHandler(this.radBand2190_Click);
             this.radBand2190.CheckedChanged += new System.EventHandler(this.radBand2190_CheckedChanged);
             // 
+            // btnFMMC
+            // 
+            this.btnFMMC.FlatAppearance.BorderSize = 0;
+            resources.ApplyResources(this.btnFMMC, "btnFMMC");
+            this.btnFMMC.Image = null;
+            this.btnFMMC.Name = "btnFMMC";
+            this.toolTip1.SetToolTip(this.btnFMMC, resources.GetString("btnFMMC.ToolTip"));
+            this.btnFMMC.Click += new System.EventHandler(this.btnFMMC_Click);
+            // 
+            // btnFMMR
+            // 
+            this.btnFMMR.FlatAppearance.BorderSize = 0;
+            resources.ApplyResources(this.btnFMMR, "btnFMMR");
+            this.btnFMMR.Image = null;
+            this.btnFMMR.Name = "btnFMMR";
+            this.toolTip1.SetToolTip(this.btnFMMR, resources.GetString("btnFMMR.ToolTip"));
+            this.btnFMMR.Click += new System.EventHandler(this.btnFMMR_Click);
+            // 
+            // btnFMMS
+            // 
+            this.btnFMMS.FlatAppearance.BorderSize = 0;
+            resources.ApplyResources(this.btnFMMS, "btnFMMS");
+            this.btnFMMS.Image = null;
+            this.btnFMMS.Name = "btnFMMS";
+            this.toolTip1.SetToolTip(this.btnFMMS, resources.GetString("btnFMMS.ToolTip"));
+            this.btnFMMS.Click += new System.EventHandler(this.btnFMMS_Click);
+            // 
+            // lblMemoryNumber
+            // 
+            resources.ApplyResources(this.lblMemoryNumber, "lblMemoryNumber");
+            this.lblMemoryNumber.BackColor = System.Drawing.Color.Blue;
+            this.lblMemoryNumber.ContextMenuStrip = this.contextMemoryMenu;
+            this.lblMemoryNumber.ForeColor = System.Drawing.Color.White;
+            this.lblMemoryNumber.Image = null;
+            this.lblMemoryNumber.MinimumSize = new System.Drawing.Size(27, 20);
+            this.lblMemoryNumber.Name = "lblMemoryNumber";
+            this.toolTip1.SetToolTip(this.lblMemoryNumber, resources.GetString("lblMemoryNumber.ToolTip"));
+            this.lblMemoryNumber.MouseLeave += new System.EventHandler(this.MemoryButton_MouseLeave);
+            this.lblMemoryNumber.Click += new System.EventHandler(this.lblMemoryNumber_Click);
+            this.lblMemoryNumber.MouseHover += new System.EventHandler(this.MemoryButton_MouseHover);
+            // 
             // contextMemoryMenu
             // 
             this.contextMemoryMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -3756,6 +3869,162 @@ namespace PowerSDR
             this.eraseAllMemoryToolStripMenuItem.Name = "eraseAllMemoryToolStripMenuItem";
             resources.ApplyResources(this.eraseAllMemoryToolStripMenuItem, "eraseAllMemoryToolStripMenuItem");
             this.eraseAllMemoryToolStripMenuItem.Click += new System.EventHandler(this.eraseAllMemoryToolStripMenuItem_Click);
+            // 
+            // lblFMMemory
+            // 
+            resources.ApplyResources(this.lblFMMemory, "lblFMMemory");
+            this.lblFMMemory.BackColor = System.Drawing.Color.Blue;
+            this.lblFMMemory.ContextMenuStrip = this.contextMenuFMMemory;
+            this.lblFMMemory.ForeColor = System.Drawing.Color.White;
+            this.lblFMMemory.Image = null;
+            this.lblFMMemory.MinimumSize = new System.Drawing.Size(27, 20);
+            this.lblFMMemory.Name = "lblFMMemory";
+            this.toolTip1.SetToolTip(this.lblFMMemory, resources.GetString("lblFMMemory.ToolTip"));
+            this.lblFMMemory.MouseLeave += new System.EventHandler(this.lblFMMemory_MouseLeave);
+            this.lblFMMemory.Click += new System.EventHandler(this.lblFMMemory_Click);
+            this.lblFMMemory.MouseHover += new System.EventHandler(this.lblFMMemory_MouseHover);
+            // 
+            // contextMenuFMMemory
+            // 
+            this.contextMenuFMMemory.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.eraseAllMemoryToolStripMenuItem1});
+            this.contextMenuFMMemory.Name = "contextMenuFMMemory";
+            resources.ApplyResources(this.contextMenuFMMemory, "contextMenuFMMemory");
+            // 
+            // eraseAllMemoryToolStripMenuItem1
+            // 
+            this.eraseAllMemoryToolStripMenuItem1.Name = "eraseAllMemoryToolStripMenuItem1";
+            resources.ApplyResources(this.eraseAllMemoryToolStripMenuItem1, "eraseAllMemoryToolStripMenuItem1");
+            this.eraseAllMemoryToolStripMenuItem1.Click += new System.EventHandler(this.eraseAllMemoryToolStripMenuItem1_Click);
+            // 
+            // udFMOffset
+            // 
+            this.udFMOffset.Increment = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            resources.ApplyResources(this.udFMOffset, "udFMOffset");
+            this.udFMOffset.Maximum = new decimal(new int[] {
+            5000,
+            0,
+            0,
+            0});
+            this.udFMOffset.Minimum = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+            this.udFMOffset.Name = "udFMOffset";
+            this.toolTip1.SetToolTip(this.udFMOffset, resources.GetString("udFMOffset.ToolTip"));
+            this.udFMOffset.Value = new decimal(new int[] {
+            600,
+            0,
+            0,
+            0});
+            // 
+            // radFMModeHigh
+            // 
+            resources.ApplyResources(this.radFMModeHigh, "radFMModeHigh");
+            this.radFMModeHigh.FlatAppearance.BorderSize = 0;
+            this.radFMModeHigh.Image = null;
+            this.radFMModeHigh.Name = "radFMModeHigh";
+            this.toolTip1.SetToolTip(this.radFMModeHigh, resources.GetString("radFMModeHigh.ToolTip"));
+            this.radFMModeHigh.CheckedChanged += new System.EventHandler(this.radFMModeHigh_CheckedChanged);
+            // 
+            // radFMModeSimplex
+            // 
+            resources.ApplyResources(this.radFMModeSimplex, "radFMModeSimplex");
+            this.radFMModeSimplex.Checked = true;
+            this.radFMModeSimplex.FlatAppearance.BorderSize = 0;
+            this.radFMModeSimplex.Image = null;
+            this.radFMModeSimplex.Name = "radFMModeSimplex";
+            this.radFMModeSimplex.TabStop = true;
+            this.toolTip1.SetToolTip(this.radFMModeSimplex, resources.GetString("radFMModeSimplex.ToolTip"));
+            this.radFMModeSimplex.CheckedChanged += new System.EventHandler(this.radFMModeSimplex_CheckedChanged);
+            // 
+            // radFMModeLow
+            // 
+            resources.ApplyResources(this.radFMModeLow, "radFMModeLow");
+            this.radFMModeLow.FlatAppearance.BorderSize = 0;
+            this.radFMModeLow.Image = null;
+            this.radFMModeLow.Name = "radFMModeLow";
+            this.toolTip1.SetToolTip(this.radFMModeLow, resources.GetString("radFMModeLow.ToolTip"));
+            this.radFMModeLow.CheckedChanged += new System.EventHandler(this.radFMModeLow_CheckedChanged);
+            // 
+            // chkCTCSS
+            // 
+            resources.ApplyResources(this.chkCTCSS, "chkCTCSS");
+            this.chkCTCSS.FlatAppearance.BorderSize = 0;
+            this.chkCTCSS.Image = null;
+            this.chkCTCSS.Name = "chkCTCSS";
+            this.toolTip1.SetToolTip(this.chkCTCSS, resources.GetString("chkCTCSS.ToolTip"));
+            this.chkCTCSS.UseVisualStyleBackColor = false;
+            this.chkCTCSS.CheckedChanged += new System.EventHandler(this.chkCTCSS_CheckedChanged);
+            // 
+            // comboFMCTCSSFreq
+            // 
+            this.comboFMCTCSSFreq.FormattingEnabled = true;
+            this.comboFMCTCSSFreq.Items.AddRange(new object[] {
+            resources.GetString("comboFMCTCSSFreq.Items"),
+            resources.GetString("comboFMCTCSSFreq.Items1"),
+            resources.GetString("comboFMCTCSSFreq.Items2"),
+            resources.GetString("comboFMCTCSSFreq.Items3"),
+            resources.GetString("comboFMCTCSSFreq.Items4"),
+            resources.GetString("comboFMCTCSSFreq.Items5"),
+            resources.GetString("comboFMCTCSSFreq.Items6"),
+            resources.GetString("comboFMCTCSSFreq.Items7"),
+            resources.GetString("comboFMCTCSSFreq.Items8"),
+            resources.GetString("comboFMCTCSSFreq.Items9"),
+            resources.GetString("comboFMCTCSSFreq.Items10"),
+            resources.GetString("comboFMCTCSSFreq.Items11"),
+            resources.GetString("comboFMCTCSSFreq.Items12"),
+            resources.GetString("comboFMCTCSSFreq.Items13"),
+            resources.GetString("comboFMCTCSSFreq.Items14"),
+            resources.GetString("comboFMCTCSSFreq.Items15"),
+            resources.GetString("comboFMCTCSSFreq.Items16"),
+            resources.GetString("comboFMCTCSSFreq.Items17"),
+            resources.GetString("comboFMCTCSSFreq.Items18"),
+            resources.GetString("comboFMCTCSSFreq.Items19"),
+            resources.GetString("comboFMCTCSSFreq.Items20"),
+            resources.GetString("comboFMCTCSSFreq.Items21"),
+            resources.GetString("comboFMCTCSSFreq.Items22"),
+            resources.GetString("comboFMCTCSSFreq.Items23"),
+            resources.GetString("comboFMCTCSSFreq.Items24"),
+            resources.GetString("comboFMCTCSSFreq.Items25"),
+            resources.GetString("comboFMCTCSSFreq.Items26"),
+            resources.GetString("comboFMCTCSSFreq.Items27"),
+            resources.GetString("comboFMCTCSSFreq.Items28"),
+            resources.GetString("comboFMCTCSSFreq.Items29"),
+            resources.GetString("comboFMCTCSSFreq.Items30"),
+            resources.GetString("comboFMCTCSSFreq.Items31"),
+            resources.GetString("comboFMCTCSSFreq.Items32"),
+            resources.GetString("comboFMCTCSSFreq.Items33"),
+            resources.GetString("comboFMCTCSSFreq.Items34"),
+            resources.GetString("comboFMCTCSSFreq.Items35"),
+            resources.GetString("comboFMCTCSSFreq.Items36"),
+            resources.GetString("comboFMCTCSSFreq.Items37"),
+            resources.GetString("comboFMCTCSSFreq.Items38")});
+            resources.ApplyResources(this.comboFMCTCSSFreq, "comboFMCTCSSFreq");
+            this.comboFMCTCSSFreq.Name = "comboFMCTCSSFreq";
+            this.toolTip1.SetToolTip(this.comboFMCTCSSFreq, resources.GetString("comboFMCTCSSFreq.ToolTip"));
+            this.comboFMCTCSSFreq.SelectedIndexChanged += new System.EventHandler(this.comboFMCTCSSFreq_SelectedIndexChanged);
+            // 
+            // ptbFMMicGain
+            // 
+            resources.ApplyResources(this.ptbFMMicGain, "ptbFMMicGain");
+            this.ptbFMMicGain.HeadImage = null;
+            this.ptbFMMicGain.LargeChange = 1;
+            this.ptbFMMicGain.Maximum = 70;
+            this.ptbFMMicGain.Minimum = 0;
+            this.ptbFMMicGain.Name = "ptbFMMicGain";
+            this.ptbFMMicGain.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.ptbFMMicGain.SmallChange = 1;
+            this.ptbFMMicGain.TabStop = false;
+            this.toolTip1.SetToolTip(this.ptbFMMicGain, resources.GetString("ptbFMMicGain.ToolTip"));
+            this.ptbFMMicGain.Value = 35;
+            this.ptbFMMicGain.OnWheel += new PowerSDR.PrettyTrackBar.WheelHandler(this.ptbFMMicGain_OnWheel);
+            this.ptbFMMicGain.Scroll += new PowerSDR.PrettyTrackBar.ScrollHandler(this.ptbFMMicGain_Scroll);
             // 
             // contextLOSCMenu
             // 
@@ -3993,7 +4262,7 @@ namespace PowerSDR
             this.btnMsg6.Name = "btnMsg6";
             this.btnMsg6.UseVisualStyleBackColor = true;
             this.btnMsg6.Click += new System.EventHandler(this.btnMsg6_Click);
-            this.btnMsg6.MouseHover += new System.EventHandler(this.btnMsg6_MouseMove);
+            this.btnMsg6.MouseHover += new System.EventHandler(this.btnMsg6_MouseHover);
             // 
             // btnMsg5
             // 
@@ -4003,7 +4272,7 @@ namespace PowerSDR
             this.btnMsg5.Name = "btnMsg5";
             this.btnMsg5.UseVisualStyleBackColor = true;
             this.btnMsg5.Click += new System.EventHandler(this.btnMsg5_Click);
-            this.btnMsg5.MouseHover += new System.EventHandler(this.btnMsg5_MouseMove);
+            this.btnMsg5.MouseHover += new System.EventHandler(this.btnMsg5_MouseHover);
             // 
             // btnMsg4
             // 
@@ -4013,7 +4282,7 @@ namespace PowerSDR
             this.btnMsg4.Name = "btnMsg4";
             this.btnMsg4.UseVisualStyleBackColor = true;
             this.btnMsg4.Click += new System.EventHandler(this.btnMsg4_Click);
-            this.btnMsg4.MouseHover += new System.EventHandler(this.btnMsg4_MouseMove);
+            this.btnMsg4.MouseHover += new System.EventHandler(this.btnMsg4_MousHover);
             // 
             // btnMsg3
             // 
@@ -4023,7 +4292,7 @@ namespace PowerSDR
             this.btnMsg3.Name = "btnMsg3";
             this.btnMsg3.UseVisualStyleBackColor = true;
             this.btnMsg3.Click += new System.EventHandler(this.btnMsg3_Click);
-            this.btnMsg3.MouseHover += new System.EventHandler(this.btnMsg3_MouseMove);
+            this.btnMsg3.MouseHover += new System.EventHandler(this.btnMsg3_MouseHover);
             // 
             // btnMsg2
             // 
@@ -4033,7 +4302,7 @@ namespace PowerSDR
             this.btnMsg2.Name = "btnMsg2";
             this.btnMsg2.UseVisualStyleBackColor = true;
             this.btnMsg2.Click += new System.EventHandler(this.btnMsg2_Click);
-            this.btnMsg2.MouseHover += new System.EventHandler(this.btnMsg2_MouseMove);
+            this.btnMsg2.MouseHover += new System.EventHandler(this.btnMsg2_MouseHover);
             // 
             // btnMsg1
             // 
@@ -4044,7 +4313,7 @@ namespace PowerSDR
             this.btnMsg1.Name = "btnMsg1";
             this.btnMsg1.UseVisualStyleBackColor = false;
             this.btnMsg1.Click += new System.EventHandler(this.btnMsg1_Click);
-            this.btnMsg1.MouseHover += new System.EventHandler(this.btnMsg1_MouseMove);
+            this.btnMsg1.MouseHover += new System.EventHandler(this.btnMsg1_MouseHover);
             // 
             // udNoiseGate
             // 
@@ -5182,19 +5451,6 @@ namespace PowerSDR
             resources.ApplyResources(this.txtMemory, "txtMemory");
             this.txtMemory.Name = "txtMemory";
             // 
-            // lblMemoryNumber
-            // 
-            resources.ApplyResources(this.lblMemoryNumber, "lblMemoryNumber");
-            this.lblMemoryNumber.BackColor = System.Drawing.Color.Blue;
-            this.lblMemoryNumber.ContextMenuStrip = this.contextMemoryMenu;
-            this.lblMemoryNumber.ForeColor = System.Drawing.Color.White;
-            this.lblMemoryNumber.Image = null;
-            this.lblMemoryNumber.MinimumSize = new System.Drawing.Size(27, 20);
-            this.lblMemoryNumber.Name = "lblMemoryNumber";
-            this.lblMemoryNumber.MouseLeave += new System.EventHandler(this.MemoryButton_MouseLeave);
-            this.lblMemoryNumber.Click += new System.EventHandler(this.lblMemoryNumber_Click);
-            this.lblMemoryNumber.MouseHover += new System.EventHandler(this.MemoryButton_MouseHover);
-            // 
             // grpDisplay2
             // 
             resources.ApplyResources(this.grpDisplay2, "grpDisplay2");
@@ -6072,12 +6328,124 @@ namespace PowerSDR
             this.radBandX1.Click += new System.EventHandler(this.radBandX1_Click);
             this.radBandX1.CheckedChanged += new System.EventHandler(this.radBandX1_CheckedChanged);
             // 
+            // grpModeSpecificFM
+            // 
+            resources.ApplyResources(this.grpModeSpecificFM, "grpModeSpecificFM");
+            this.grpModeSpecificFM.Controls.Add(this.udFMOffset);
+            this.grpModeSpecificFM.Controls.Add(this.labelTS7);
+            this.grpModeSpecificFM.Controls.Add(this.radFMModeHigh);
+            this.grpModeSpecificFM.Controls.Add(this.radFMModeSimplex);
+            this.grpModeSpecificFM.Controls.Add(this.radFMModeLow);
+            this.grpModeSpecificFM.Controls.Add(this.chkCTCSS);
+            this.grpModeSpecificFM.Controls.Add(this.comboFMCTCSSFreq);
+            this.grpModeSpecificFM.Controls.Add(this.grpFMVoiceMsg);
+            this.grpModeSpecificFM.Controls.Add(this.ptbFMMicGain);
+            this.grpModeSpecificFM.Controls.Add(this.labelTS8);
+            this.grpModeSpecificFM.Controls.Add(this.txtFMmemory);
+            this.grpModeSpecificFM.Controls.Add(this.lblFMMemory);
+            this.grpModeSpecificFM.Controls.Add(this.btnFMMC);
+            this.grpModeSpecificFM.Controls.Add(this.btnFMMR);
+            this.grpModeSpecificFM.Controls.Add(this.btnFMMS);
+            this.grpModeSpecificFM.Name = "grpModeSpecificFM";
+            this.grpModeSpecificFM.TabStop = false;
+            // 
+            // labelTS7
+            // 
+            resources.ApplyResources(this.labelTS7, "labelTS7");
+            this.labelTS7.Image = null;
+            this.labelTS7.Name = "labelTS7";
+            // 
+            // grpFMVoiceMsg
+            // 
+            this.grpFMVoiceMsg.Controls.Add(this.chkFMMsg6);
+            this.grpFMVoiceMsg.Controls.Add(this.chkFMMsg5);
+            this.grpFMVoiceMsg.Controls.Add(this.chkFMMsg4);
+            this.grpFMVoiceMsg.Controls.Add(this.chkFMMsg3);
+            this.grpFMVoiceMsg.Controls.Add(this.chkFMMsg2);
+            this.grpFMVoiceMsg.Controls.Add(this.chkFMMsg1);
+            resources.ApplyResources(this.grpFMVoiceMsg, "grpFMVoiceMsg");
+            this.grpFMVoiceMsg.Name = "grpFMVoiceMsg";
+            this.grpFMVoiceMsg.TabStop = false;
+            // 
+            // chkFMMsg6
+            // 
+            resources.ApplyResources(this.chkFMMsg6, "chkFMMsg6");
+            this.chkFMMsg6.FlatAppearance.BorderSize = 0;
+            this.chkFMMsg6.Image = null;
+            this.chkFMMsg6.Name = "chkFMMsg6";
+            this.chkFMMsg6.UseVisualStyleBackColor = true;
+            this.chkFMMsg6.CheckedChanged += new System.EventHandler(this.chkFMMsg6_CheckedChanged);
+            this.chkFMMsg6.MouseHover += new System.EventHandler(this.chkFMMsg6_MouseHover);
+            // 
+            // chkFMMsg5
+            // 
+            resources.ApplyResources(this.chkFMMsg5, "chkFMMsg5");
+            this.chkFMMsg5.FlatAppearance.BorderSize = 0;
+            this.chkFMMsg5.Image = null;
+            this.chkFMMsg5.Name = "chkFMMsg5";
+            this.chkFMMsg5.UseVisualStyleBackColor = true;
+            this.chkFMMsg5.CheckedChanged += new System.EventHandler(this.chkFMMsg5_CheckedChanged);
+            this.chkFMMsg5.MouseHover += new System.EventHandler(this.chkFMMsg5_MouseHover);
+            // 
+            // chkFMMsg4
+            // 
+            resources.ApplyResources(this.chkFMMsg4, "chkFMMsg4");
+            this.chkFMMsg4.FlatAppearance.BorderSize = 0;
+            this.chkFMMsg4.Image = null;
+            this.chkFMMsg4.Name = "chkFMMsg4";
+            this.chkFMMsg4.UseVisualStyleBackColor = true;
+            this.chkFMMsg4.CheckedChanged += new System.EventHandler(this.chkFMMsg4_CheckedChanged);
+            this.chkFMMsg4.MouseHover += new System.EventHandler(this.chkFMMsg4_MouseHover);
+            // 
+            // chkFMMsg3
+            // 
+            resources.ApplyResources(this.chkFMMsg3, "chkFMMsg3");
+            this.chkFMMsg3.FlatAppearance.BorderSize = 0;
+            this.chkFMMsg3.Image = null;
+            this.chkFMMsg3.Name = "chkFMMsg3";
+            this.chkFMMsg3.UseVisualStyleBackColor = true;
+            this.chkFMMsg3.CheckedChanged += new System.EventHandler(this.chkFMMsg3_CheckedChanged);
+            this.chkFMMsg3.MouseHover += new System.EventHandler(this.chkFMMsg3_MouseHover);
+            // 
+            // chkFMMsg2
+            // 
+            resources.ApplyResources(this.chkFMMsg2, "chkFMMsg2");
+            this.chkFMMsg2.FlatAppearance.BorderSize = 0;
+            this.chkFMMsg2.Image = null;
+            this.chkFMMsg2.Name = "chkFMMsg2";
+            this.chkFMMsg2.UseVisualStyleBackColor = true;
+            this.chkFMMsg2.CheckedChanged += new System.EventHandler(this.chkFMMsg2_CheckedChanged);
+            this.chkFMMsg2.MouseHover += new System.EventHandler(this.chkFMMsg2_MouseHover);
+            // 
+            // chkFMMsg1
+            // 
+            resources.ApplyResources(this.chkFMMsg1, "chkFMMsg1");
+            this.chkFMMsg1.FlatAppearance.BorderSize = 0;
+            this.chkFMMsg1.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.chkFMMsg1.Image = null;
+            this.chkFMMsg1.Name = "chkFMMsg1";
+            this.chkFMMsg1.UseVisualStyleBackColor = false;
+            this.chkFMMsg1.CheckedChanged += new System.EventHandler(this.chkFMMsg1_CheckedChanged);
+            this.chkFMMsg1.MouseHover += new System.EventHandler(this.chkFMMsg1_MouseHover);
+            // 
+            // labelTS8
+            // 
+            this.labelTS8.Image = null;
+            resources.ApplyResources(this.labelTS8, "labelTS8");
+            this.labelTS8.Name = "labelTS8";
+            // 
+            // txtFMmemory
+            // 
+            resources.ApplyResources(this.txtFMmemory, "txtFMmemory");
+            this.txtFMmemory.Name = "txtFMmemory";
+            // 
             // Console
             // 
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.SystemColors.Control;
             resources.ApplyResources(this, "$this");
+            this.Controls.Add(this.grpModeSpecificFM);
             this.Controls.Add(this.grpModeSpecificDigital);
-            this.Controls.Add(this.grpModeSpecificPhone);
             this.Controls.Add(this.grpG11);
             this.Controls.Add(this.grpMainRXMode);
             this.Controls.Add(this.grpSubRXMode);
@@ -6116,6 +6484,7 @@ namespace PowerSDR
             this.Controls.Add(this.picSmallAGauge);
             this.Controls.Add(this.grpMultimeter);
             this.Controls.Add(this.grpMoreBands);
+            this.Controls.Add(this.grpModeSpecificPhone);
             this.DoubleBuffered = true;
             this.KeyPreview = true;
             this.MainMenuStrip = this.menuStrip1;
@@ -6159,6 +6528,9 @@ namespace PowerSDR
             ((System.ComponentModel.ISupportInitialize)(this.ptbNotchWidth)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ptbNotchShift)).EndInit();
             this.contextMemoryMenu.ResumeLayout(false);
+            this.contextMenuFMMemory.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.udFMOffset)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.ptbFMMicGain)).EndInit();
             this.contextLOSCMenu.ResumeLayout(false);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
@@ -6237,6 +6609,9 @@ namespace PowerSDR
             this.grpMainRXMode.ResumeLayout(false);
             this.grpG11.ResumeLayout(false);
             this.grpMoreBands.ResumeLayout(false);
+            this.grpModeSpecificFM.ResumeLayout(false);
+            this.grpModeSpecificFM.PerformLayout();
+            this.grpFMVoiceMsg.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -6489,6 +6864,7 @@ namespace PowerSDR
             int tmp_x = 0;
             int tmp_y = 0;
 
+            grpModeSpecificFM.Visible = false;
             grpModeSpecificPhone.Visible = false;
             grpModeSpecificDigital.Visible = false;
             grpModeSpecificCW.Visible = false;
@@ -6627,6 +7003,16 @@ namespace PowerSDR
                         Visible_group_position.Y = 31;
                         grpModeSpecificPhone.Location = Visible_group_position;
                         grpVFOnew.Width = (this.Width - grpModeSpecificPhone.Width - 28);
+                        Visible_group_position.X = grpDisplay.Location.X;
+                        Visible_group_position.Y = 31;
+                        grpVFOnew.Location = Visible_group_position;
+                        break;
+                    case VisibleGroup.ModeSpecificFM:
+                        grpModeSpecificFM.Visible = true;
+                        Visible_group_position.X = this.Width - grpModeSpecificFM.Width - 20;
+                        Visible_group_position.Y = 31;
+                        grpModeSpecificFM.Location = Visible_group_position;
+                        grpVFOnew.Width = (this.Width - grpModeSpecificFM.Width - 28);
                         Visible_group_position.X = grpDisplay.Location.X;
                         Visible_group_position.Y = 31;
                         grpVFOnew.Location = Visible_group_position;
@@ -7066,6 +7452,25 @@ namespace PowerSDR
                         Visible_group_position.Y = tmp_y;
                         grpModeSpecificPhone.Location = Visible_group_position;
                         break;
+                    case VisibleGroup.ModeSpecificFM:
+                        grpModeSpecificFM.Visible = true;
+                        tmp_x = (this.Width - (3 * grpVFOA.Width + grpModeSpecificFM.Width)) / 5;
+                        grpDisplay.Height = (this.Height - grpModeSpecificFM.Height - 78);
+                        tmp_y = (this.Height - (grpDisplay.Height + grpModeSpecificFM.Height)) / 2;
+                        Visible_group_position.X = 4;
+                        Visible_group_position.Y = tmp_y + grpModeSpecificFM.Height;
+                        grpDisplay.Location = Visible_group_position;
+                        Visible_group_position.X = tmp_x;
+                        Visible_group_position.Y = (grpModeSpecificFM.Height - grpVFOA.Height) / 2 + tmp_y;
+                        grpVFOA.Location = Visible_group_position;
+                        Visible_group_position.X = grpVFOA.Location.X + grpVFOA.Width + tmp_x;
+                        grpVFOB.Location = Visible_group_position;
+                        Visible_group_position.X = grpVFOB.Location.X + grpVFOB.Width + tmp_x;
+                        grpLOSC.Location = Visible_group_position;
+                        Visible_group_position.X = grpLOSC.Location.X + grpLOSC.Width + tmp_x;
+                        Visible_group_position.Y = tmp_y;
+                        grpModeSpecificFM.Location = Visible_group_position;
+                        break;
                     case VisibleGroup.ModeSpecificCW:
                         grpModeSpecificCW.Visible = true;
                         tmp_x = (this.Width - (3 * grpVFOA.Width + grpModeSpecificCW.Width)) / 5;
@@ -7406,9 +7811,6 @@ namespace PowerSDR
         }
 
         public bool pause_DisplayThread = false;
-        int dpi = 0;
-        Size base_size = new Size(0, 0);
-        bool dpi_resize_done = false;
         public void Console_Resize(object sender, EventArgs e)  // yt7pwr
         {
             try
@@ -7428,18 +7830,6 @@ namespace PowerSDR
                         }
 
                         pause_DisplayThread = true;
-
-                        if (dpi == 0)
-                            dpi = (int)picDisplay.CreateGraphics().DpiX;
-
-                        if (dpi > 96 && !dpi_resize_done)
-                        {
-                            if (base_size.Width == 0)
-                                base_size = this.AutoScaleBaseSize;
-
-                            if (this.AutoScaleBaseSize != base_size)
-                                dpi_resize_done = true;
-                        }
 
                         #region compact screen
 
@@ -7713,6 +8103,7 @@ namespace PowerSDR
                                 sMeterDigital.Visible = false;
                             }
 
+                            grpModeSpecificFM.Visible = true;
                             grpModeSpecificPhone.Visible = true;
                             grpModeSpecificDigital.Visible = true;
                             grpModeSpecificCW.Visible = true;
@@ -7932,15 +8323,24 @@ namespace PowerSDR
                                     grpModeSpecificCW.BringToFront();
                                     grpModeSpecificDigital.SendToBack();
                                     grpModeSpecificPhone.SendToBack();
+                                    grpModeSpecificFM.SendToBack();
                                     break;
                                 case DSPMode.DIGL:
                                 case DSPMode.DIGU:
                                     grpModeSpecificDigital.BringToFront();
                                     grpModeSpecificCW.SendToBack();
                                     grpModeSpecificPhone.SendToBack();
+                                    grpModeSpecificFM.SendToBack();
+                                    break;
+                                case DSPMode.FMN:
+                                    grpModeSpecificDigital.SendToBack();
+                                    grpModeSpecificCW.SendToBack();
+                                    grpModeSpecificPhone.SendToBack();
+                                    grpModeSpecificFM.BringToFront();
                                     break;
                                 default:
                                     grpModeSpecificPhone.BringToFront();
+                                    grpModeSpecificFM.SendToBack();
                                     grpModeSpecificDigital.SendToBack();
                                     grpModeSpecificCW.SendToBack();
                                     break;
@@ -8332,6 +8732,7 @@ namespace PowerSDR
                                 grpModeSpecificPhone.Location = grp_position;
                                 grpModeSpecificDigital.Location = grp_position;         // Digital grp
                                 grpModeSpecificCW.Location = grp_position;              // CW grp
+                                grpModeSpecificFM.Location = grp_position;              // FM grp
                                 grp_position = grpZoom.Location;
                                 grp_position.X = ((this.Width - 1006) / 6) + grpModeSpecificPhone.Location.X + grpModeSpecificPhone.Width;
                                 grp_position.Y = this.Height - 205;                     // Zoom
@@ -8775,6 +9176,7 @@ namespace PowerSDR
             CurrentDSPModeSubRX = DSPMode.CWU;
             old_dsp_mode = DSPMode.CWU;
             old_dsp_mode_subRX = DSPMode.CWU;
+            Splash.SetStatus("Restore Console state...");
             GetState();							// recall saved state
 
             if (current_dsp_mode == DSPMode.FIRST || current_dsp_mode == DSPMode.LAST)
@@ -8940,6 +9342,7 @@ namespace PowerSDR
             }
 
             txtMemory_fill();
+            txtFMmemory_fill();
 
             SetTXOscFreqs(false, false);
 
@@ -9063,6 +9466,9 @@ namespace PowerSDR
                         break;
                 }
             }
+
+            SetTXOscFreqs(true, true);
+            SetTXOscFreqs(false, true);
         }
 
         public void ExitConsole()
@@ -12463,7 +12869,7 @@ namespace PowerSDR
                     if (G59_XTRV_enabled && current_band == Band.B2M)
                         losc_freq -= g59_2m_Xtrv_losc_freq;
 
-                    g59.Set_frequency((long)losc_freq, true);
+                    g59.Set_frequency((long)Math.Round(losc_freq, 6), true);
                 }
                 else if (current_model == Model.GENESIS_G11)
                 {
@@ -12512,7 +12918,7 @@ namespace PowerSDR
                         }
                     }
 
-                    g11.Set_frequency((long)losc_freq, true);
+                    g11.Set_frequency((long)Math.Round(losc_freq, 6), true);
                 }
                 else if (current_model == Model.GENESIS_G59NET)
                 {
@@ -12804,7 +13210,7 @@ namespace PowerSDR
                         }
                     }
 
-                    g59.Set_frequency((long)losc_freq, true);
+                    g59.Set_frequency((long)Math.Round(losc_freq, 6), true);
                 }
                 else if (current_model == Model.GENESIS_G11)
                 {
@@ -12853,7 +13259,7 @@ namespace PowerSDR
                         }
                     }
 
-                    g11.Set_frequency((long)losc_freq, true);
+                    g11.Set_frequency((long)Math.Round(losc_freq, 6), true);
                 }
                 else if (current_model == Model.GENESIS_G59NET)
                 {
@@ -13421,7 +13827,6 @@ namespace PowerSDR
         public double G80Xtal4 = 3.835;
         public double G160Xtal1 = 1.838;
         public double G160Xtal2 = 1.845;
-
         private double vfoa_restore = 10.0;
         private double vfob_restore = 10.0;
         private double losc_restore = 10.0;
@@ -13436,6 +13841,65 @@ namespace PowerSDR
         public ATUMode ExtATU_tuning_mode = ATUMode.FULL_TUNE;
         public int TXSwitchTime = 10;
         public bool cat_push_data = false;
+
+        private int fm_memory_number = 1;
+        public int FMmemoryNumber
+        {
+            get { return fm_memory_number; }
+
+            set
+            {
+                fm_memory_number = value;
+                lblFMMemory.Text = fm_memory_number.ToString();
+            }
+        }
+
+        private bool ctcss = false;
+        public bool CTCSS
+        {
+            set { ctcss = value; }
+        }
+
+        private double ctcss_freq = 67.0;
+        public double CTCSSfreq
+        {
+            set { ctcss_freq = value; }
+        }
+
+        private RPTRmode rptr_mode = RPTRmode.simplex;
+        public RPTRmode RPTRmode
+        {
+            set 
+            {
+                rptr_mode = value;
+
+                switch (rptr_mode)
+                {
+                    case RPTRmode.high:
+                        radFMModeHigh.Checked = true;
+                        break;
+
+                    case RPTRmode.low:
+                        radFMModeLow.Checked = true;
+                        break;
+
+                    case RPTRmode.simplex:
+                        radFMModeSimplex.Checked = true;
+                        break;
+                }
+            }
+        }
+
+        private double rptr_offset = 0.0;
+        public double RPTR_offset
+        {
+            get { return (double)(udFMOffset.Value) / 1e3; }
+            set 
+            {
+                rptr_offset = value;
+                udFMOffset.Value = (decimal)value;
+            }
+        }
 
         private bool cwx_playing = false;
         public bool CWX_Playing
@@ -15057,13 +15521,6 @@ namespace PowerSDR
             }
         }
 
-        private bool auto_mute = false;
-        public bool AutoMute
-        {
-            get { return auto_mute; }
-            set { auto_mute = value; }
-        }
-
         public float multimeter_avg_mult_old = 0.75f;  //1 - (float)1 / 10;
         public float multimeter_avg_mult_new = 0.25f;   //(float)1 / 10;
         private int multimeter_avg_num_blocks = 10;
@@ -15483,7 +15940,7 @@ namespace PowerSDR
                                 {
                                     losc_freq *= 1e6;
                                     losc_freq -= g59_2m_Xtrv_losc_freq;
-                                    g59.Set_frequency((long)losc_freq, false);
+                                    g59.Set_frequency((long)Math.Round(losc_freq, 6), false);
                                 }
                                 else if (G59_XTRV_enabled)
                                 {
@@ -15527,10 +15984,10 @@ namespace PowerSDR
                                             break;
                                     }
 
-                                    g59.Set_frequency((long)(losc_freq * 1e6), false);
+                                    g59.Set_frequency((long)(Math.Round(losc_freq * 1e6, 6)), false);
                                 }
                                 else
-                                    g59.Set_frequency((long)(losc_freq * 1e6), false);
+                                    g59.Set_frequency((long)(Math.Round(losc_freq * 1e6, 6)), false);
                             }
                             else if (current_model == Model.GENESIS_G11)
                             {
@@ -15538,7 +15995,7 @@ namespace PowerSDR
                                 {
                                     losc_freq *= 1e6;
                                     losc_freq -= g11_Xtrv_losc_freq;
-                                    g11.Set_frequency((long)losc_freq, false);
+                                    g11.Set_frequency((long)Math.Round(losc_freq, 6), false);
                                 }
                                 else if (G11_XTRV_enabled)
                                 {
@@ -15582,10 +16039,10 @@ namespace PowerSDR
                                             break;
                                     }
 
-                                    g11.Set_frequency((long)(losc_freq * 1e6), false);
+                                    g11.Set_frequency((long)(Math.Round(losc_freq * 1e6, 6)), false);
                                 }
                                 else
-                                    g11.Set_frequency((long)(losc_freq * 1e6), false);
+                                    g11.Set_frequency((long)(Math.Round(losc_freq * 1e6,6)), false);
                             }
                             else if (current_model == Model.GENESIS_G59NET)
                             {
@@ -15634,7 +16091,7 @@ namespace PowerSDR
                                     }
                                 }
 
-                                net_device.SetLOSC((long)(losc_freq * 1e6), false);
+                                net_device.SetLOSC((long)(Math.Round(losc_freq * 1e6,6)), false);
                             }
                             else if (current_model == Model.QRP2000)
                             {
@@ -15644,7 +16101,7 @@ namespace PowerSDR
                                 {
                                     losc_freq -= QRP2000_IF_Freq;
                                     Math.Round(losc_freq, 6);
-                                    qrp2000.Set_SI570_freq((losc_freq / 1e6) * qrp2000_xtrv_freq_multiplier);
+                                    qrp2000.Set_SI570_freq(Math.Round((losc_freq / 1e6) * qrp2000_xtrv_freq_multiplier, 6));
                                 }
                                 else if (QRP2000_XTRV_enabled)
                                 {
@@ -15689,12 +16146,12 @@ namespace PowerSDR
                                     }
 
                                     Math.Round(losc_freq, 6);
-                                    qrp2000.Set_SI570_freq((losc_freq / 1e6) * qrp2000_xtrv_freq_multiplier);
+                                    qrp2000.Set_SI570_freq(Math.Round((losc_freq / 1e6) * qrp2000_xtrv_freq_multiplier, 6));
                                 }
                                 else
                                 {
                                     Math.Round(losc_freq, 6);
-                                    qrp2000.Set_SI570_freq((losc_freq / 1e6) * qrp2000_freq_multiplier);
+                                    qrp2000.Set_SI570_freq(Math.Round((losc_freq / 1e6) * qrp2000_freq_multiplier, 6));
                                 }
                             }
                             else if (current_model == Model.GENESIS_G6)
@@ -15741,10 +16198,10 @@ namespace PowerSDR
                                             break;
                                     }
 
-                                    g6.Set_frequency((long)(losc_freq * 1e6), false);
+                                    g6.Set_frequency((long)(Math.Round(losc_freq * 1e6, 6)), false);
                                 }
                                 else
-                                    g6.Set_frequency((long)(losc_freq * 1e6), false);
+                                    g6.Set_frequency((long)(Math.Round(losc_freq * 1e6, 6)), false);
                             }
                         }
 
@@ -15765,6 +16222,12 @@ namespace PowerSDR
                                 this.Invoke(new SIOListenerCommand(siolisten.CrossThreadCallback), "send", bfreq);
                             }
                             catch { }
+                        }
+
+                        if (debug_enabled && debug != null && debug.Visible)
+                        {
+                            debug.rtbDebugMsg.AppendText("LOSC freq: " + Math.Round(loscFreq, 6).ToString() + "\n");
+                            SendMessage(debug.rtbDebugMsg.Handle, WM_VSCROLL, SB_BOTTOM, 0);
                         }
                     }
                 }
@@ -15863,6 +16326,22 @@ namespace PowerSDR
                     btnMsg4.BackColor = SystemColors.Control;
                     btnMsg5.BackColor = SystemColors.Control;
                     btnMsg6.BackColor = SystemColors.Control;
+
+                    if (grpModeSpecificFM.Visible)
+                    {
+                        chkFMMsg1.Checked = false;
+                        chkFMMsg2.Checked = false;
+                        chkFMMsg3.Checked = false;
+                        chkFMMsg4.Checked = false;
+                        chkFMMsg5.Checked = false;
+                        chkFMMsg6.Checked = false;
+                        chkFMMsg1.BackColor = SystemColors.Control;
+                        chkFMMsg2.BackColor = SystemColors.Control;
+                        chkFMMsg3.BackColor = SystemColors.Control;
+                        chkFMMsg4.BackColor = SystemColors.Control;
+                        chkFMMsg5.BackColor = SystemColors.Control;
+                        chkFMMsg6.BackColor = SystemColors.Control;
+                    }
                 }
             }
         }
@@ -17550,9 +18029,24 @@ namespace PowerSDR
             set { break_in_delay = value; }
         }
 
+        DSPMode voice_mscg_rec_saved = DSPMode.USB;
         public bool VoiceMSG        // yt7pwr
         {
-            set { AudioMOXChanged(value); }
+            set 
+            {
+                if (value)
+                {
+                    voice_mscg_rec_saved = current_dsp_mode;
+                    CurrentDSPMode = DSPMode.USB;
+                    cw_key_mode = false;
+                }
+                else
+                {
+                    CurrentDSPMode = voice_mscg_rec_saved;
+                }
+
+                AudioMOXChanged(value); 
+            }
         }
 
         private bool cat_ptt = false;
@@ -20940,26 +21434,34 @@ namespace PowerSDR
                 }
             }
 
-            NewVFOSignalGauge.Value = 0.0f;
-            AnalogSignalGauge.Value = 0.0f;
-            sMeterDigital.SignalValue = 0.0f;
-            sMeterDigital.swrValue = 0.0f;
+            try
+            {
+
+                NewVFOSignalGauge.Value = 0.0f;
+                AnalogSignalGauge.Value = 0.0f;
+                sMeterDigital.SignalValue = 0.0f;
+                sMeterDigital.swrValue = 0.0f;
 
 #if DirectX
-            if (current_display_engine == DisplayEngine.DIRECT_X && !pause_multimeter_thread)
-            {
-                if (VFOnewlook && !digital_smeter)
+                if (current_display_engine == DisplayEngine.DIRECT_X && !pause_multimeter_thread)
                 {
-                    NewVFOSignalGauge.RenderGauge();
+                    if (VFOnewlook && !digital_smeter)
+                    {
+                        NewVFOSignalGauge.RenderGauge();
+                    }
                 }
-            }
 #endif
 
-            new_meter_data = -200.0f;
-            avg_num = -200.0f;
-            meter_data_ready = true;
-            txtMultiText.Text = "";
-            picMultiMeterDigital.Invalidate();
+                new_meter_data = -200.0f;
+                avg_num = -200.0f;
+                meter_data_ready = true;
+                txtMultiText.Text = "";
+                picMultiMeterDigital.Invalidate();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString() + "\n");
+            }
         }
 
 
@@ -21650,7 +22152,6 @@ namespace PowerSDR
                     case (DSPMode.USB):
                     case (DSPMode.LSB):
                     case (DSPMode.AM):
-                    case (DSPMode.FMN):
                         {
                             if (e.KeyCode == voice_msg1)
                             {
@@ -21658,6 +22159,7 @@ namespace PowerSDR
                                     btnMsg1.Checked = true;
                                 else
                                     btnMsg1.Checked = false;
+
                                 btnMsg1_Click(null, null);
                             }
                             if (e.KeyCode == voice_msg2)
@@ -21666,6 +22168,7 @@ namespace PowerSDR
                                     btnMsg2.Checked = true;
                                 else
                                     btnMsg2.Checked = false;
+
                                 btnMsg2_Click(null, null);
                             }
                             if (e.KeyCode == voice_msg3)
@@ -21674,6 +22177,7 @@ namespace PowerSDR
                                     btnMsg3.Checked = true;
                                 else
                                     btnMsg3.Checked = false;
+
                                 btnMsg3_Click(null, null);
                             }
                             if (e.KeyCode == voice_msg4)
@@ -21682,6 +22186,7 @@ namespace PowerSDR
                                     btnMsg4.Checked = true;
                                 else
                                     btnMsg4.Checked = false;
+
                                 btnMsg4_Click(null, null);
                             }
                             if (e.KeyCode == voice_msg5)
@@ -21690,6 +22195,7 @@ namespace PowerSDR
                                     btnMsg5.Checked = true;
                                 else
                                     btnMsg5.Checked = false;
+
                                 btnMsg5_Click(null, null);
                             }
                             if (e.KeyCode == voice_msg6)
@@ -21698,7 +22204,56 @@ namespace PowerSDR
                                     btnMsg6.Checked = true;
                                 else
                                     btnMsg6.Checked = false;
+
                                 btnMsg6_Click(null, null);
+                            }
+
+                        }
+                        break;
+
+                    case (DSPMode.FMN):
+                        {
+                            if (e.KeyCode == voice_msg1)
+                            {
+                                if (!chkFMMsg1.Checked)
+                                    chkFMMsg1.Checked = true;
+                                else
+                                    chkFMMsg1.Checked = false;
+                            }
+                            if (e.KeyCode == voice_msg2)
+                            {
+                                if (!chkFMMsg2.Checked)
+                                    chkFMMsg2.Checked = true;
+                                else
+                                    chkFMMsg2.Checked = false;
+                            }
+                            if (e.KeyCode == voice_msg3)
+                            {
+                                if (!chkFMMsg3.Checked)
+                                    chkFMMsg3.Checked = true;
+                                else
+                                    chkFMMsg3.Checked = false;
+                            }
+                            if (e.KeyCode == voice_msg4)
+                            {
+                                if (!chkFMMsg4.Checked)
+                                    chkFMMsg4.Checked = true;
+                                else
+                                    chkFMMsg4.Checked = false;
+                            }
+                            if (e.KeyCode == voice_msg5)
+                            {
+                                if (!chkFMMsg5.Checked)
+                                    chkFMMsg5.Checked = true;
+                                else
+                                    chkFMMsg5.Checked = false;
+                            }
+                            if (e.KeyCode == voice_msg6)
+                            {
+                                if (!chkFMMsg6.Checked)
+                                    chkFMMsg5.Checked = true;
+                                else
+                                    chkFMMsg5.Checked = false;
                             }
 
                         }
@@ -21890,19 +22445,29 @@ namespace PowerSDR
                                     grpModeSpecificDigital.SendToBack();
                                     grpModeSpecificCW.SendToBack();
                                     grpModeSpecificPhone.BringToFront();
+                                    grpModeSpecificFM.SendToBack();
                                     break;
                                 case VisibleGroup.ModeSpecificDigital:
                                     current_visible_group = VisibleGroup.ModeSpecificCW;
                                     grpModeSpecificCW.BringToFront();
                                     grpModeSpecificDigital.SendToBack();
                                     grpModeSpecificPhone.SendToBack();
+                                    grpModeSpecificFM.SendToBack();
+                                    break;
+                                case VisibleGroup.ModeSpecificFM:
+                                    current_visible_group = VisibleGroup.ModeSpecificDigital;
+                                    grpModeSpecificFM.SendToBack();
+                                    grpModeSpecificCW.SendToBack();
+                                    grpModeSpecificDigital.BringToFront();
+                                    grpModeSpecificPhone.SendToBack();
                                     break;
                                 case VisibleGroup.Zoom:
-                                    current_visible_group = VisibleGroup.ModeSpecificDigital;
+                                    current_visible_group = VisibleGroup.ModeSpecificFM;
                                     grpZoom.Visible = false;
-                                    grpModeSpecificDigital.BringToFront();
+                                    grpModeSpecificFM.BringToFront();
                                     grpModeSpecificCW.SendToBack();
                                     grpModeSpecificPhone.SendToBack();
+                                    grpModeSpecificDigital.SendToBack();
                                     break;
                                 case VisibleGroup.BandHF:
                                     current_visible_group = VisibleGroup.Zoom;
@@ -22112,18 +22677,28 @@ namespace PowerSDR
                                     grpDisplay2.Visible = false;
                                     grpModeSpecificPhone.BringToFront();
                                     grpModeSpecificDigital.SendToBack();
+                                    grpModeSpecificFM.SendToBack();
                                     grpModeSpecificCW.SendToBack();
                                     break;
                                 case VisibleGroup.ModeSpecificPhone:
                                     current_visible_group = VisibleGroup.ModeSpecificCW;
                                     grpModeSpecificDigital.SendToBack();
                                     grpModeSpecificPhone.SendToBack();
+                                    grpModeSpecificFM.SendToBack();
                                     grpModeSpecificCW.BringToFront();
                                     break;
                                 case VisibleGroup.ModeSpecificCW:
+                                    current_visible_group = VisibleGroup.ModeSpecificFM;
+                                    grpModeSpecificCW.SendToBack();
+                                    grpModeSpecificPhone.SendToBack();
+                                    grpModeSpecificFM.BringToFront();
+                                    grpModeSpecificDigital.SendToBack();
+                                    break;
+                                case VisibleGroup.ModeSpecificFM:
                                     current_visible_group = VisibleGroup.ModeSpecificDigital;
                                     grpModeSpecificCW.SendToBack();
                                     grpModeSpecificPhone.SendToBack();
+                                    grpModeSpecificFM.SendToBack();
                                     grpModeSpecificDigital.BringToFront();
                                     break;
                                 case VisibleGroup.ModeSpecificDigital:
@@ -23148,6 +23723,12 @@ namespace PowerSDR
                 MultiPSKServer.IsPTT = false;
                 Audio.MOX = false;
 
+                if (Audio.voice_message_record && VoiceMsgForm != null)
+                {
+                    VoiceMsgForm.RecordingEnd = true;
+                    Thread.Sleep(100);
+                }
+
                 double freq;
                 if (chkPower.Checked)
                 {
@@ -23579,6 +24160,8 @@ namespace PowerSDR
                     CAT_client_socket.ClientServerSync("ZZPS;");        // sync with server
 
                 Thread.Sleep(meter_delay);
+
+                Debug.Write("PWR off! \n");
             }
             catch (Exception ex)
             {
@@ -24090,7 +24673,6 @@ namespace PowerSDR
                     }
                     else
                         Audio.MicPreamp = Math.Pow(10.0, gain_db / 20.0); // convert to scalar
-                    break;
                     break;
             }
 
@@ -24703,6 +25285,12 @@ namespace PowerSDR
 
             if (tx)
             {
+                if (Audio.voice_message_record && VoiceMsgForm != null)
+                {
+                    VoiceMsgForm.RecordingEnd = true;
+                    Thread.Sleep(100);
+                }
+
                 MOX = true;
                 SetTXOscFreqs(tx, true);
 
@@ -24792,9 +25380,7 @@ namespace PowerSDR
                         case (DSPMode.CWL):
                         case (DSPMode.CWU):
                             {
-                                //if (current_display_mode != DisplayMode.PANASCOPE)
-                                    pause_DisplayThread = true;
-
+                                pause_DisplayThread = true;
                                 cw_key_mode = true;
                                 DttSP.CWRingRestart();
                             }
@@ -24804,8 +25390,6 @@ namespace PowerSDR
                                 cw_key_mode = false;
                                 saved_tbDisplayZoom = ptbDisplayZoom.Value;
                                 saved_tbDisplayPan = ptbDisplayPan.Value;
-                                //ptbDisplayPan.Value = 0;
-                                //ptbDisplayZoom.Value = 4;
                                 CalcDisplayFreq();
                             }
                             break;
@@ -24840,20 +25424,39 @@ namespace PowerSDR
                         btnCWX5_Click(null, null);
                         btnCWX6_Click(null, null);
                     }
+
                     if (VoiceMsgPlayback)
                     {
-                        btnMsg1.Checked = false;            // stop VoiceMsg!
-                        btnMsg2.Checked = false;
-                        btnMsg3.Checked = false;
-                        btnMsg4.Checked = false;
-                        btnMsg5.Checked = false;
-                        btnMsg6.Checked = false;
-                        btnMsg1_Click(null, null);
-                        btnMsg2_Click(null, null);
-                        btnMsg3_Click(null, null);
-                        btnMsg4_Click(null, null);
-                        btnMsg5_Click(null, null);
-                        btnMsg6_Click(null, null);
+                        if (grpModeSpecificFM.Visible)
+                        {
+                            chkFMMsg1.Checked = false;
+                            chkFMMsg2.Checked = false;
+                            chkFMMsg3.Checked = false;
+                            chkFMMsg4.Checked = false;
+                            chkFMMsg5.Checked = false;
+                            chkFMMsg6.Checked = false;
+                            chkFMMsg1_CheckedChanged(this, EventArgs.Empty);
+                            chkFMMsg2_CheckedChanged(this, EventArgs.Empty);
+                            chkFMMsg3_CheckedChanged(this, EventArgs.Empty);
+                            chkFMMsg4_CheckedChanged(this, EventArgs.Empty);
+                            chkFMMsg5_CheckedChanged(this, EventArgs.Empty);
+                            chkFMMsg6_CheckedChanged(this, EventArgs.Empty);
+                        }
+                        else
+                        {
+                            btnMsg1.Checked = false;            // stop VoiceMsg!
+                            btnMsg2.Checked = false;
+                            btnMsg3.Checked = false;
+                            btnMsg4.Checked = false;
+                            btnMsg5.Checked = false;
+                            btnMsg6.Checked = false;
+                            btnMsg1_Click(null, null);
+                            btnMsg2_Click(null, null);
+                            btnMsg3_Click(null, null);
+                            btnMsg4_Click(null, null);
+                            btnMsg5_Click(null, null);
+                            btnMsg6_Click(null, null);
+                        }
                     }
 
                     MessageBox.Show("The frequency " + freq.ToString("f6") + "MHz is not within the " +
@@ -24883,20 +25486,39 @@ namespace PowerSDR
                         btnCWX5_Click(null, null);
                         btnCWX6_Click(null, null);
                     }
+
                     if (VoiceMsgPlayback)
                     {
-                        btnMsg1.Checked = false;    // stop VoiceMsg!
-                        btnMsg2.Checked = false;
-                        btnMsg3.Checked = false;
-                        btnMsg4.Checked = false;
-                        btnMsg5.Checked = false;
-                        btnMsg6.Checked = false;
-                        btnMsg1_Click(null, null);
-                        btnMsg2_Click(null, null);
-                        btnMsg3_Click(null, null);
-                        btnMsg4_Click(null, null);
-                        btnMsg5_Click(null, null);
-                        btnMsg6_Click(null, null);
+                        if (grpModeSpecificFM.Visible)
+                        {
+                            chkFMMsg1.Checked = false;
+                            chkFMMsg2.Checked = false;
+                            chkFMMsg3.Checked = false;
+                            chkFMMsg4.Checked = false;
+                            chkFMMsg5.Checked = false;
+                            chkFMMsg6.Checked = false;
+                            chkFMMsg1_CheckedChanged(this, EventArgs.Empty);
+                            chkFMMsg2_CheckedChanged(this, EventArgs.Empty);
+                            chkFMMsg3_CheckedChanged(this, EventArgs.Empty);
+                            chkFMMsg4_CheckedChanged(this, EventArgs.Empty);
+                            chkFMMsg5_CheckedChanged(this, EventArgs.Empty);
+                            chkFMMsg6_CheckedChanged(this, EventArgs.Empty);
+                        }
+                        else
+                        {
+                            btnMsg1.Checked = false;    // stop VoiceMsg!
+                            btnMsg2.Checked = false;
+                            btnMsg3.Checked = false;
+                            btnMsg4.Checked = false;
+                            btnMsg5.Checked = false;
+                            btnMsg6.Checked = false;
+                            btnMsg1_Click(null, null);
+                            btnMsg2_Click(null, null);
+                            btnMsg3_Click(null, null);
+                            btnMsg4_Click(null, null);
+                            btnMsg5_Click(null, null);
+                            btnMsg6_Click(null, null);
+                        }
                     }
 
                     MessageBox.Show(DttSP.CurrentMode.ToString() + " mode is not allowed on 60M band.",
@@ -25155,18 +25777,36 @@ namespace PowerSDR
                     VoiceMsgForm.PlayStop = true;
                     Audio.voice_message_playback = false;
 
-                    btnMsg1.Checked = false;    // stop VoiceMsg!
-                    btnMsg2.Checked = false;
-                    btnMsg3.Checked = false;
-                    btnMsg4.Checked = false;
-                    btnMsg5.Checked = false;
-                    btnMsg6.Checked = false;
-                    btnMsg1_Click(null, null);
-                    btnMsg2_Click(null, null);
-                    btnMsg3_Click(null, null);
-                    btnMsg4_Click(null, null);
-                    btnMsg5_Click(null, null);
-                    btnMsg6_Click(null, null);
+                    if (grpModeSpecificFM.Visible)
+                    {
+                        chkFMMsg1.Checked = false;
+                        chkFMMsg2.Checked = false;
+                        chkFMMsg3.Checked = false;
+                        chkFMMsg4.Checked = false;
+                        chkFMMsg5.Checked = false;
+                        chkFMMsg6.Checked = false;
+                        chkFMMsg1_CheckedChanged(this, EventArgs.Empty);
+                        chkFMMsg2_CheckedChanged(this, EventArgs.Empty);
+                        chkFMMsg3_CheckedChanged(this, EventArgs.Empty);
+                        chkFMMsg4_CheckedChanged(this, EventArgs.Empty);
+                        chkFMMsg5_CheckedChanged(this, EventArgs.Empty);
+                        chkFMMsg6_CheckedChanged(this, EventArgs.Empty);
+                    }
+                    else
+                    {
+                        btnMsg1.Checked = false;    // stop VoiceMsg!
+                        btnMsg2.Checked = false;
+                        btnMsg3.Checked = false;
+                        btnMsg4.Checked = false;
+                        btnMsg5.Checked = false;
+                        btnMsg6.Checked = false;
+                        btnMsg1_Click(null, null);
+                        btnMsg2_Click(null, null);
+                        btnMsg3_Click(null, null);
+                        btnMsg4_Click(null, null);
+                        btnMsg5_Click(null, null);
+                        btnMsg6_Click(null, null);
+                    }
                 }
 
                 if (chkTUN.Checked)
@@ -25723,11 +26363,12 @@ namespace PowerSDR
                     else
                     {
                         freq = vfoAFreq;
-                        freq = Math.Round(freq, 6);
                     }
 
+                    freq = Math.Round(freq, 6);
+
                     if (tx)
-                    {
+                    {                       
                         if (tx_IF)
                         {
                             if (chkXIT.Checked)
@@ -25763,9 +26404,30 @@ namespace PowerSDR
                         {
                             tmpFreq = (freq - (TX_IF_shift / 10));
                             tmpFreq = Math.Round(tmpFreq, 6);
+                            
+                            if (current_dsp_mode == DSPMode.FMN)
+                            {
+                                switch (rptr_mode)
+                                {
+                                    case RPTRmode.simplex:
+                                        break;
+
+                                    case RPTRmode.low:
+                                        tmpFreq -= RPTR_offset;
+                                        break;
+
+                                    case RPTRmode.high:
+                                        tmpFreq += RPTR_offset;
+                                        break;
+                                }
+
+                                tmpFreq = Math.Round(tmpFreq, 6);
+                            }
 
                             if (usb_si570_enable)
+                            {
                                 SI570.Set_SI570_osc((long)(tmpFreq * 1e6));
+                            }
                             else
                             {
                                 tmpFreq *= 1e6;
@@ -25836,7 +26498,13 @@ namespace PowerSDR
                                         g59.WriteToDevice(3, (long)new_band_filter);
                                     }
 
-                                    g59.Set_frequency((long)tmpFreq, true);
+                                    if (debug_enabled && debug != null && debug.Visible)
+                                    {
+                                        debug.rtbDebugMsg.AppendText("G59 LOSC freq: " + Math.Round(tmpFreq, 6).ToString() + "\n");
+                                        SendMessage(debug.rtbDebugMsg.Handle, WM_VSCROLL, SB_BOTTOM, 0);
+                                    }
+
+                                    g59.Set_frequency((long)(Math.Round(tmpFreq, 6)), true);
                                 }
                                 else if (current_model == Model.GENESIS_G59NET)
                                 {
@@ -25904,6 +26572,12 @@ namespace PowerSDR
                                         net_device.WriteToDevice(3, (long)new_band_filter);
                                     }
 
+                                    if (debug_enabled && debug != null && debug.Visible)
+                                    {
+                                        debug.rtbDebugMsg.AppendText("G59 LOSC freq: " + Math.Round(tmpFreq, 6).ToString() + "\n");
+                                        SendMessage(debug.rtbDebugMsg.Handle, WM_VSCROLL, SB_BOTTOM, 0);
+                                    }
+
                                     net_device.SetLOSC((long)tmpFreq, true);
                                 }
                                 else if (current_model == Model.GENESIS_G11)
@@ -25969,7 +26643,13 @@ namespace PowerSDR
                                     if (current_band != new_band)
                                         G11SetBandFilter(new_band);
 
-                                    g11.Set_frequency((long)tmpFreq, true);
+                                    if (debug_enabled && debug != null && debug.Visible)
+                                    {
+                                        debug.rtbDebugMsg.AppendText("G11 LOSC freq: " + Math.Round(tmpFreq, 6).ToString() + "\n");
+                                        SendMessage(debug.rtbDebugMsg.Handle, WM_VSCROLL, SB_BOTTOM, 0);
+                                    }
+
+                                    g11.Set_frequency((long)Math.Round(tmpFreq, 6), true);
                                 }
                                 else if (current_model == Model.QRP2000)
                                 {
@@ -26050,6 +26730,23 @@ namespace PowerSDR
                                 freq = loscFreq;
                                 freq = Math.Round(freq, 6);
 
+                                if (current_dsp_mode == DSPMode.FMN)
+                                {
+                                    switch (rptr_mode)
+                                    {
+                                        case RPTRmode.simplex:
+                                            break;
+
+                                        case RPTRmode.low:
+                                            freq -= RPTR_offset;
+                                            break;
+
+                                        case RPTRmode.high:
+                                            freq += RPTR_offset;
+                                            break;
+                                    }
+                                }
+
                             if (usb_si570_enable)
                                 SI570.Set_SI570_osc((long)(freq * 1e6));
                             else
@@ -26120,7 +26817,13 @@ namespace PowerSDR
                                         Thread.Sleep(1);
                                     }
 
-                                    g59.Set_frequency((long)freq, true);
+                                    if (debug_enabled && debug != null && debug.Visible)
+                                    {
+                                        debug.rtbDebugMsg.AppendText("G59 LOSC freq: " + Math.Round(freq, 6).ToString() + "\n");
+                                        SendMessage(debug.rtbDebugMsg.Handle, WM_VSCROLL, SB_BOTTOM, 0);
+                                    }
+
+                                    g59.Set_frequency((long)(Math.Round(freq, 6)), true);
                                 }
                                 else if (current_model == Model.GENESIS_G59NET)
                                 {
@@ -26185,6 +26888,12 @@ namespace PowerSDR
                                     {
                                         BandFilter new_band_filter = BandFilterByFreq(tmpFreq / 1e6);
                                         net_device.WriteToDevice(3, (long)new_band_filter);
+                                    }
+
+                                    if (debug_enabled && debug != null && debug.Visible)
+                                    {
+                                        debug.rtbDebugMsg.AppendText("G59 LOSC freq: " + Math.Round(freq, 6).ToString() + "\n");
+                                        SendMessage(debug.rtbDebugMsg.Handle, WM_VSCROLL, SB_BOTTOM, 0);
                                     }
 
                                     net_device.SetLOSC((long)freq, true);
@@ -26256,8 +26965,13 @@ namespace PowerSDR
                                         G11SetBandFilter(new_band);
                                         Thread.Sleep(1);
                                     }
+                                    if (debug_enabled && debug != null && debug.Visible)
+                                    {
+                                        debug.rtbDebugMsg.AppendText("G11 LOSC freq: " + Math.Round(freq, 6).ToString() + "\n");
+                                        SendMessage(debug.rtbDebugMsg.Handle, WM_VSCROLL, SB_BOTTOM, 0);
+                                    }
 
-                                    g11.Set_frequency((long)freq, true);
+                                    g11.Set_frequency((long)Math.Round(freq, 6), true);
 
                                 }
                                 else if (current_model == Model.QRP2000)
@@ -26411,7 +27125,13 @@ namespace PowerSDR
                                         Thread.Sleep(1);
                                     }
 
-                                    g59.Set_frequency((long)(freq), true);        // force reload Si570
+                                    if (debug_enabled && debug != null && debug.Visible)
+                                    {
+                                        debug.rtbDebugMsg.AppendText("G59 LOSC freq: " + Math.Round(freq, 6).ToString() + "\n");
+                                        SendMessage(debug.rtbDebugMsg.Handle, WM_VSCROLL, SB_BOTTOM, 0);
+                                    }
+
+                                    g59.Set_frequency((long)Math.Round(freq, 6), true);        // force reload Si570
                                 }
                                 else if (current_model == Model.GENESIS_G59NET)
                                 {
@@ -26478,6 +27198,12 @@ namespace PowerSDR
                                         {
                                             BandFilter new_band_filter = BandFilterByFreq(freq / 1e6);
                                             net_device.WriteToDevice(3, (long)new_band_filter);
+                                        }
+
+                                        if (debug_enabled && debug != null && debug.Visible)
+                                        {
+                                            debug.rtbDebugMsg.AppendText("G59 LOSC freq: " + Math.Round(freq, 6).ToString() + "\n");
+                                            SendMessage(debug.rtbDebugMsg.Handle, WM_VSCROLL, SB_BOTTOM, 0);
                                         }
 
                                         net_device.SetLOSC((long)(freq), true);
@@ -26549,7 +27275,13 @@ namespace PowerSDR
                                         Thread.Sleep(1);
                                     }
 
-                                    g11.Set_frequency((long)(freq), true);              // force reload Si570
+                                    if (debug_enabled && debug != null && debug.Visible)
+                                    {
+                                        debug.rtbDebugMsg.AppendText("G11 LOSC freq: " + Math.Round(freq, 6).ToString() + "\n");
+                                        SendMessage(debug.rtbDebugMsg.Handle, WM_VSCROLL, SB_BOTTOM, 0);
+                                    }
+
+                                    g11.Set_frequency((long)(Math.Round(freq, 6)), true);              // force reload Si570
                                 }
                                 else if (current_model == Model.QRP2000)
                                 {
@@ -27356,8 +28088,39 @@ namespace PowerSDR
                             else if (MemoryNumber == 1)
                                 MemoryNumber = 99;
                         }
+
                         txtMemory_fill();
                         return;
+                    }
+
+                    if (grpModeSpecificFM.Visible && current_dsp_mode == DSPMode.FMN)
+                    {
+                        left = grpModeSpecificFM.Left + lblFMMemory.Left;
+                        right = left + lblFMMemory.Width;
+                        top = grpModeSpecificFM.Top + lblFMMemory.Top;
+                        bottom = top + lblFMMemory.Height;
+
+                        if (e.X > left && e.X < right &&		// Update FM memory number
+                            e.Y > top && e.Y < bottom)
+                        {
+                            if (numberToMove > 0)
+                            {
+                                if (FMmemoryNumber < 99)
+                                    FMmemoryNumber++;
+                                else if (FMmemoryNumber == 99)
+                                    FMmemoryNumber = 1;
+                            }
+                            else if (numberToMove < 0)
+                            {
+                                if (FMmemoryNumber > 1)
+                                    FMmemoryNumber--;
+                                else if (FMmemoryNumber == 1)
+                                    FMmemoryNumber = 99;
+                            }
+                            
+                            txtFMmemory_fill();
+                            return;
+                        }
                     }
 
                     left = grpSoundControls.Left + lblAFValue.Left;
@@ -29038,7 +29801,6 @@ namespace PowerSDR
                             {
                                 case DSPMode.AM:
                                 case DSPMode.DSB:
-                                case DSPMode.FMN:
                                 case DSPMode.LSB:
                                 case DSPMode.SAM:
                                 case DSPMode.SPEC:
@@ -29046,12 +29808,14 @@ namespace PowerSDR
                                     grpModeSpecificDigital.SendToBack();
                                     grpModeSpecificCW.SendToBack();
                                     grpModeSpecificPhone.BringToFront();
+                                    grpModeSpecificFM.SendToBack();
                                     break;
                                 case DSPMode.CWL:
                                 case DSPMode.CWU:
                                     grpModeSpecificCW.BringToFront();
                                     grpModeSpecificDigital.SendToBack();
                                     grpModeSpecificPhone.SendToBack();
+                                    grpModeSpecificFM.SendToBack();
                                     break;
                                 case DSPMode.DIGL:
                                 case DSPMode.DIGU:
@@ -29059,11 +29823,19 @@ namespace PowerSDR
                                     grpModeSpecificDigital.BringToFront();
                                     grpModeSpecificCW.SendToBack();
                                     grpModeSpecificPhone.SendToBack();
+                                    grpModeSpecificFM.SendToBack();
+                                    break;
+                                case DSPMode.FMN:
+                                    grpModeSpecificDigital.SendToBack();
+                                    grpModeSpecificCW.SendToBack();
+                                    grpModeSpecificFM.BringToFront();
+                                    grpModeSpecificPhone.SendToBack();
                                     break;
                                 default:
                                     grpModeSpecificDigital.SendToBack();
                                     grpModeSpecificCW.SendToBack();
                                     grpModeSpecificPhone.BringToFront();
+                                    grpModeSpecificFM.SendToBack();
                                     break;
                             }
                         }
@@ -29087,7 +29859,6 @@ namespace PowerSDR
                                     case DSPMode.AM:
                                     case DSPMode.DRM:
                                     case DSPMode.DSB:
-                                    case DSPMode.FMN:
                                     case DSPMode.LSB:
                                     case DSPMode.SAM:
                                     case DSPMode.SPEC:
@@ -29095,23 +29866,33 @@ namespace PowerSDR
                                         grpModeSpecificDigital.SendToBack();
                                         grpModeSpecificCW.SendToBack();
                                         grpModeSpecificPhone.BringToFront();
+                                        grpModeSpecificFM.SendToBack();
                                         break;
                                     case DSPMode.CWL:
                                     case DSPMode.CWU:
                                         grpModeSpecificCW.BringToFront();
                                         grpModeSpecificDigital.SendToBack();
                                         grpModeSpecificPhone.SendToBack();
+                                        grpModeSpecificFM.SendToBack();
                                         break;
                                     case DSPMode.DIGL:
                                     case DSPMode.DIGU:
                                         grpModeSpecificCW.SendToBack();
                                         grpModeSpecificPhone.SendToBack();
                                         grpModeSpecificDigital.BringToFront();
+                                        grpModeSpecificFM.SendToBack();
+                                        break;
+                                    case DSPMode.FMN:
+                                        grpModeSpecificDigital.SendToBack();
+                                        grpModeSpecificCW.SendToBack();
+                                        grpModeSpecificFM.BringToFront();
+                                        grpModeSpecificPhone.SendToBack();
                                         break;
                                     default:
                                         grpModeSpecificDigital.SendToBack();
                                         grpModeSpecificCW.SendToBack();
                                         grpModeSpecificPhone.BringToFront();
+                                        grpModeSpecificFM.SendToBack();
                                         break;
                                 }
                             }
@@ -29135,7 +29916,6 @@ namespace PowerSDR
                                     case DSPMode.AM:
                                     case DSPMode.DRM:
                                     case DSPMode.DSB:
-                                    case DSPMode.FMN:
                                     case DSPMode.LSB:
                                     case DSPMode.SAM:
                                     case DSPMode.SPEC:
@@ -29143,23 +29923,33 @@ namespace PowerSDR
                                         grpModeSpecificDigital.SendToBack();
                                         grpModeSpecificCW.SendToBack();
                                         grpModeSpecificPhone.BringToFront();
+                                        grpModeSpecificFM.SendToBack();
                                         break;
                                     case DSPMode.CWL:
                                     case DSPMode.CWU:
                                         grpModeSpecificCW.BringToFront();
                                         grpModeSpecificDigital.SendToBack();
                                         grpModeSpecificPhone.SendToBack();
+                                        grpModeSpecificFM.SendToBack();
                                         break;
                                     case DSPMode.DIGL:
                                     case DSPMode.DIGU:
                                         grpModeSpecificCW.SendToBack();
                                         grpModeSpecificPhone.SendToBack();
                                         grpModeSpecificDigital.BringToFront();
+                                        grpModeSpecificFM.SendToBack();
+                                        break;
+                                    case DSPMode.FMN:
+                                        grpModeSpecificDigital.SendToBack();
+                                        grpModeSpecificCW.SendToBack();
+                                        grpModeSpecificFM.BringToFront();
+                                        grpModeSpecificPhone.SendToBack();
                                         break;
                                     default:
                                         grpModeSpecificDigital.SendToBack();
                                         grpModeSpecificCW.SendToBack();
                                         grpModeSpecificPhone.BringToFront();
+                                        grpModeSpecificFM.SendToBack();
                                         break;
                                 }
                             }
@@ -29184,7 +29974,6 @@ namespace PowerSDR
                                     case DSPMode.AM:
                                     case DSPMode.DRM:
                                     case DSPMode.DSB:
-                                    case DSPMode.FMN:
                                     case DSPMode.LSB:
                                     case DSPMode.SAM:
                                     case DSPMode.SPEC:
@@ -29192,22 +29981,32 @@ namespace PowerSDR
                                         grpModeSpecificDigital.SendToBack();
                                         grpModeSpecificCW.SendToBack();
                                         grpModeSpecificPhone.BringToFront();
+                                        grpModeSpecificFM.SendToBack();
                                         break;
                                     case DSPMode.CWL:
                                     case DSPMode.CWU:
                                         grpModeSpecificCW.BringToFront();
                                         grpModeSpecificDigital.SendToBack();
                                         grpModeSpecificPhone.SendToBack();
+                                        grpModeSpecificFM.SendToBack();
                                         break;
                                     case DSPMode.DIGL:
                                     case DSPMode.DIGU:
                                         grpModeSpecificCW.SendToBack();
                                         grpModeSpecificPhone.SendToBack();
                                         grpModeSpecificDigital.BringToFront();
+                                        grpModeSpecificFM.SendToBack();
+                                        break;
+                                    case DSPMode.FMN:
+                                        grpModeSpecificDigital.SendToBack();
+                                        grpModeSpecificCW.SendToBack();
+                                        grpModeSpecificFM.BringToFront();
+                                        grpModeSpecificPhone.SendToBack();
                                         break;
                                     default:
                                         grpModeSpecificDigital.SendToBack();
                                         grpModeSpecificCW.SendToBack();
+                                        grpModeSpecificFM.SendToBack();
                                         grpModeSpecificPhone.BringToFront();
                                         break;
                                 }
@@ -30855,6 +31654,7 @@ namespace PowerSDR
                     if (!minimal_screen)
                     {
                         grpModeSpecificPhone.BringToFront();
+                        grpModeSpecificFM.SendToBack();
                         grpModeSpecificDigital.SendToBack();
                         grpModeSpecificCW.SendToBack();
                     }
@@ -30873,6 +31673,7 @@ namespace PowerSDR
                     if (!minimal_screen)
                     {
                         grpModeSpecificPhone.BringToFront();
+                        grpModeSpecificFM.SendToBack();
                         grpModeSpecificDigital.SendToBack();
                         grpModeSpecificCW.SendToBack();
                     }
@@ -30893,6 +31694,7 @@ namespace PowerSDR
                     if (!minimal_screen)
                     {
                         grpModeSpecificPhone.BringToFront();
+                        grpModeSpecificFM.SendToBack();
                         grpModeSpecificDigital.SendToBack();
                         grpModeSpecificCW.SendToBack();
                     }
@@ -30929,6 +31731,7 @@ namespace PowerSDR
                     {
                         grpModeSpecificDigital.SendToBack();
                         grpModeSpecificPhone.SendToBack();
+                        grpModeSpecificFM.SendToBack();
                         grpModeSpecificCW.BringToFront();
                     }
 
@@ -30964,6 +31767,7 @@ namespace PowerSDR
                     {
                         grpModeSpecificDigital.SendToBack();
                         grpModeSpecificPhone.SendToBack();
+                        grpModeSpecificFM.SendToBack();
                         grpModeSpecificCW.BringToFront();
                     }
 
@@ -30983,7 +31787,8 @@ namespace PowerSDR
                     DttSP.SetTXFilters(tx_filter_low, tx_filter_high);
                     if (!minimal_screen)
                     {
-                        grpModeSpecificPhone.BringToFront();
+                        grpModeSpecificPhone.SendToBack();
+                        grpModeSpecificFM.BringToFront();
                         grpModeSpecificDigital.SendToBack();
                         grpModeSpecificCW.SendToBack();
                     }
@@ -31005,6 +31810,7 @@ namespace PowerSDR
                     if (!minimal_screen)
                     {
                         grpModeSpecificPhone.BringToFront();
+                        grpModeSpecificFM.SendToBack();
                         grpModeSpecificDigital.SendToBack();
                         grpModeSpecificCW.SendToBack();
                     }
@@ -31026,6 +31832,7 @@ namespace PowerSDR
                     if (!minimal_screen)
                     {
                         grpModeSpecificPhone.BringToFront();
+                        grpModeSpecificFM.SendToBack();
                         grpModeSpecificDigital.SendToBack();
                         grpModeSpecificCW.SendToBack();
                     }
@@ -31057,6 +31864,7 @@ namespace PowerSDR
                     if (!minimal_screen)
                     {
                         grpModeSpecificPhone.BringToFront();
+                        grpModeSpecificFM.SendToBack();
                         grpModeSpecificDigital.SendToBack();
                         grpModeSpecificCW.SendToBack();
                     }
@@ -31077,6 +31885,7 @@ namespace PowerSDR
                     {
                         grpModeSpecificCW.SendToBack();
                         grpModeSpecificPhone.SendToBack();
+                        grpModeSpecificFM.SendToBack();
                         grpModeSpecificDigital.BringToFront();
                     }
                     if (old_dsp_mode != DSPMode.DIGL && old_dsp_mode != DSPMode.DIGU)
@@ -31095,6 +31904,7 @@ namespace PowerSDR
                     {
                         grpModeSpecificCW.SendToBack();
                         grpModeSpecificPhone.SendToBack();
+                        grpModeSpecificFM.SendToBack();
                         grpModeSpecificDigital.BringToFront();
                     }
                     if (old_dsp_mode != DSPMode.DIGL && old_dsp_mode != DSPMode.DIGU)
@@ -31119,6 +31929,7 @@ namespace PowerSDR
                     {
                         grpModeSpecificCW.SendToBack();
                         grpModeSpecificPhone.SendToBack();
+                        grpModeSpecificFM.SendToBack();
                         grpModeSpecificDigital.BringToFront();
                     }
                     if (old_dsp_mode == DSPMode.DIGL || old_dsp_mode == DSPMode.DIGU ||
@@ -33747,7 +34558,7 @@ namespace PowerSDR
                 else
                     g59.si570_fxtal = si570_fxtal3;
 
-                g59.Set_frequency((long)freq, true);
+                g59.Set_frequency((long)(Math.Round(freq, 6)), true);
             }
             else if (current_model == Model.GENESIS_G59NET)
             {
@@ -33777,7 +34588,7 @@ namespace PowerSDR
                 else
                     g11.si570_fxtal = si570_fxtal3;
 
-                g11.Set_frequency((long)freq, true);
+                g11.Set_frequency((long)Math.Round(freq, 6), true);
             }
         }
 
@@ -34523,6 +35334,7 @@ namespace PowerSDR
             int number;
             btnZAP.Checked = false;
             Int32.TryParse(lblMemoryNumber.Text, out number);
+
             if (DB.ClearMemory(number))
                 txtMemory_fill();
         }
@@ -35129,44 +35941,44 @@ namespace PowerSDR
 
         private void mnuVoiceMessages_Click(object sender, EventArgs e)
         {
-            if (VoiceMsgForm.IsDisposed)
+            if (VoiceMsgForm == null || VoiceMsgForm.IsDisposed)
                 VoiceMsgForm = new VoiceMessages(this);
 
             VoiceMsgForm.Show();
             VoiceMsgForm.Focus();
         }
 
-        private void btnMsg1_MouseMove(object sender, EventArgs e)
+        private void btnMsg1_MouseHover(object sender, EventArgs e)
         {
             if (VoiceMsgForm.txtMsg1 != null)
                 toolTip1.SetToolTip(btnMsg1, VoiceMsgForm.txtMsg1.Text);
         }
 
-        private void btnMsg2_MouseMove(object sender, EventArgs e)
+        private void btnMsg2_MouseHover(object sender, EventArgs e)
         {
             if (VoiceMsgForm.txtMsg2 != null)
                 toolTip1.SetToolTip(btnMsg2, VoiceMsgForm.txtMsg2.Text);
         }
 
-        private void btnMsg3_MouseMove(object sender, EventArgs e)
+        private void btnMsg3_MouseHover(object sender, EventArgs e)
         {
             if (VoiceMsgForm.txtMsg3 != null)
                 toolTip1.SetToolTip(btnMsg3, VoiceMsgForm.txtMsg3.Text);
         }
 
-        private void btnMsg4_MouseMove(object sender, EventArgs e)
+        private void btnMsg4_MousHover(object sender, EventArgs e)
         {
             if (VoiceMsgForm.txtMsg4 != null)
                 toolTip1.SetToolTip(btnMsg4, VoiceMsgForm.txtMsg4.Text);
         }
 
-        private void btnMsg5_MouseMove(object sender, EventArgs e)
+        private void btnMsg5_MouseHover(object sender, EventArgs e)
         {
             if (VoiceMsgForm.txtMsg5 != null)
                 toolTip1.SetToolTip(btnMsg5, VoiceMsgForm.txtMsg5.Text);
         }
 
-        private void btnMsg6_MouseMove(object sender, EventArgs e)
+        private void btnMsg6_MouseHover(object sender, EventArgs e)
         {
             if (VoiceMsgForm.txtMsg6 != null)
                 toolTip1.SetToolTip(btnMsg6, VoiceMsgForm.txtMsg6.Text);
@@ -36060,6 +36872,7 @@ namespace PowerSDR
                     if (current_click_tune_mode == ClickTuneMode.VFOB && !minimal_screen)
                     {
                         grpModeSpecificPhone.BringToFront();
+                        grpModeSpecificFM.SendToBack();
                         grpModeSpecificDigital.SendToBack();
                         grpModeSpecificCW.SendToBack();
                         SetupForm.grpCWXKeys.Visible = false;
@@ -36073,6 +36886,7 @@ namespace PowerSDR
                     if (current_click_tune_mode == ClickTuneMode.VFOB && !minimal_screen)
                     {
                         grpModeSpecificPhone.BringToFront();
+                        grpModeSpecificFM.SendToBack();
                         grpModeSpecificDigital.SendToBack();
                         grpModeSpecificCW.SendToBack();
                         SetupForm.grpCWXKeys.Visible = false;
@@ -36086,6 +36900,7 @@ namespace PowerSDR
                     if (current_click_tune_mode == ClickTuneMode.VFOB && !minimal_screen)
                     {
                         grpModeSpecificPhone.BringToFront();
+                        grpModeSpecificFM.SendToBack();
                         grpModeSpecificDigital.SendToBack();
                         grpModeSpecificCW.SendToBack();
                         SetupForm.grpCWXKeys.Visible = false;
@@ -36114,6 +36929,7 @@ namespace PowerSDR
                     {
                         grpModeSpecificDigital.SendToBack();
                         grpModeSpecificPhone.SendToBack();
+                        grpModeSpecificFM.SendToBack();
                         grpModeSpecificCW.BringToFront();
                         SetupForm.grpCWXKeys.Visible = true;
                         SetupForm.grpVoiceMsgSetup.Visible = false;
@@ -36149,6 +36965,7 @@ namespace PowerSDR
                         SetupForm.grpCWXKeys.Visible = true;
                         SetupForm.grpVoiceMsgSetup.Visible = false;
                         grpModeSpecificDigital.SendToBack();
+                        grpModeSpecificFM.SendToBack();
                         grpModeSpecificPhone.SendToBack();
                         grpModeSpecificCW.BringToFront();
                     }
@@ -36173,7 +36990,8 @@ namespace PowerSDR
                     {
                         SetupForm.grpCWXKeys.Visible = false;
                         SetupForm.grpVoiceMsgSetup.Visible = true;
-                        grpModeSpecificPhone.BringToFront();
+                        grpModeSpecificPhone.SendToBack();
+                        grpModeSpecificFM.BringToFront();
                         grpModeSpecificDigital.SendToBack();
                         grpModeSpecificCW.SendToBack();
                     }
@@ -36191,6 +37009,7 @@ namespace PowerSDR
                         SetupForm.grpCWXKeys.Visible = false;
                         SetupForm.grpVoiceMsgSetup.Visible = true;
                         grpModeSpecificPhone.BringToFront();
+                        grpModeSpecificFM.SendToBack();
                         grpModeSpecificDigital.SendToBack();
                         grpModeSpecificCW.SendToBack();
                     }
@@ -36209,6 +37028,7 @@ namespace PowerSDR
                         SetupForm.grpVoiceMsgSetup.Visible = true;
                         grpModeSpecificPhone.BringToFront();
                         grpModeSpecificDigital.SendToBack();
+                        grpModeSpecificFM.SendToBack();
                         grpModeSpecificCW.SendToBack();
                     }
                     break;
@@ -36226,6 +37046,7 @@ namespace PowerSDR
                     {
                         grpModeSpecificPhone.BringToFront();
                         grpModeSpecificDigital.SendToBack();
+                        grpModeSpecificFM.SendToBack();
                         grpModeSpecificCW.SendToBack();
                     }
                     break;
@@ -36241,6 +37062,7 @@ namespace PowerSDR
                     {
                         grpModeSpecificDigital.BringToFront();
                         grpModeSpecificCW.SendToBack();
+                        grpModeSpecificFM.SendToBack();
                         grpModeSpecificPhone.SendToBack();
                     }
                     break;
@@ -36256,6 +37078,7 @@ namespace PowerSDR
                     {
                         grpModeSpecificCW.SendToBack();
                         grpModeSpecificPhone.SendToBack();
+                        grpModeSpecificFM.SendToBack();
                         grpModeSpecificDigital.BringToFront();
                     }
                     break;
@@ -36267,6 +37090,7 @@ namespace PowerSDR
                     {
                         grpModeSpecificCW.SendToBack();
                         grpModeSpecificPhone.SendToBack();
+                        grpModeSpecificFM.SendToBack();
                         grpModeSpecificDigital.BringToFront();
                     }
                     break;
@@ -38231,7 +39055,7 @@ namespace PowerSDR
                     if (G59_XTRV_enabled && current_band == Band.B2M)
                         freq -= g59_2m_Xtrv_losc_freq;
 
-                    g59.Set_frequency((long)freq, true);
+                    g59.Set_frequency((long)(Math.Round(freq, 6)), true);
                 }
                 else if (current_model == Model.GENESIS_G59NET && net_device.Connected)
                 {
@@ -38481,7 +39305,7 @@ namespace PowerSDR
                 if (G11_XTRV_enabled && current_band == Band.B2M)
                     freq -= g11_Xtrv_losc_freq;
 
-                g11.Set_frequency((long)freq, true);
+                g11.Set_frequency((long)Math.Round(freq, 6), true);
 
                 return true;
             }
@@ -40349,6 +41173,535 @@ namespace PowerSDR
             {
                 Debug.Write(ex.ToString());
             }
+        }
+
+        #endregion
+
+        #region FM group
+
+        private void chkCTCSS_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                double freq = 67.0;
+                DttSP.EnableCTCSS(0, chkCTCSS.Checked);
+                freq = Math.Max(67.0, double.Parse(comboFMCTCSSFreq.Text, CultureInfo.InvariantCulture));
+                DttSP.SetCTCSSOscFreq(0, freq);
+                DttSP.SetCTCSSAmplitude(0, 0.05);
+                ctcss = chkCTCSS.Checked;
+
+                if (debug != null && debug.Visible)
+                {
+                    this.Invoke(new DebugCallbackFunction(DebugCallback), "CTCSS freq: " + freq.ToString("f1"));
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void comboFMCTCSSFreq_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                double freq = 67.0;
+                freq = Math.Max(67.0, double.Parse(comboFMCTCSSFreq.Text, CultureInfo.InvariantCulture));
+                DttSP.SetCTCSSOscFreq(0, freq);
+                DttSP.SetCTCSSAmplitude(0, 0.05);
+                ctcss_freq = freq;
+
+                if (debug != null && debug.Visible)
+                {
+                    this.Invoke(new DebugCallbackFunction(DebugCallback), "CTCSS freq: " + freq.ToString("f1"));
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void radFMModeLow_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (radFMModeLow.Checked)
+                    rptr_mode = RPTRmode.low;
+
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void radFMModeSimplex_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (radFMModeSimplex.Checked)
+                    rptr_mode = RPTRmode.simplex;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void radFMModeHigh_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (radFMModeHigh.Checked)
+                    rptr_mode = RPTRmode.high;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void lblFMMemory_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                btnFMMR_Click(this, EventArgs.Empty);
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void lblFMMemory_MouseHover(object sender, EventArgs e)
+        {
+            try
+            {
+                lblFMMemory.Focus();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void lblFMMemory_MouseLeave(object sender, EventArgs e)
+        {
+            try
+            {
+                if (lblFMMemory.Focused)
+                    btnHidden.Focus();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void btnFMMR_Click(object sender, EventArgs e)      // read memory
+        {
+            try
+            {
+                int number;
+                Int32.TryParse(lblFMMemory.Text, out number);
+                double vfoa, losc_freq;
+                int modeID, filterID, stepID, agcID, squelchID, zoomID, panID;
+                bool in_use = false;
+                bool ctcss_local = false;
+                int rptr_m = 1; // simplex
+                double ctcss_f = 67.0;
+                double rptr_o = 0.0;
+                string text = "";
+                ArrayList memory_list;
+
+                memory_list = DB.GetFMMemory(number);
+
+                if (memory_list != null)
+                {
+                    foreach (string s in memory_list)				// string is in the format "freq,losc,mode,filter,cleared,text"
+                    {
+                        string[] vals = s.Split('/');
+
+                        string freq = vals[1];
+                        Double.TryParse(freq, out vfoa);
+                        string losc = vals[2];
+                        Double.TryParse(losc, out losc_freq);
+                        string ctcss_s = vals[3];
+                        bool.TryParse(ctcss_s, out ctcss_local);
+                        string ctcss_freq_s = vals[4];
+                        Double.TryParse(ctcss_freq_s, out ctcss_f);
+                        string rptr_mode_s = vals[5];
+                        int.TryParse(rptr_mode_s, out rptr_m);
+                        string rptr_s = vals[6];
+                        Double.TryParse(rptr_s, out rptr_o);
+                        string mode = vals[7];
+                        Int32.TryParse(mode, out modeID);
+                        string filter = vals[8];
+                        Int32.TryParse(filter, out filterID);
+                        string step = vals[9];
+                        Int32.TryParse(step, out stepID);
+                        string agc = vals[10];
+                        Int32.TryParse(agc, out agcID);
+                        string squelch = vals[11];
+                        Int32.TryParse(squelch, out squelchID);
+                        string DisplayZoom = vals[12];
+                        Int32.TryParse(DisplayZoom, out zoomID);
+                        string DisplayPan = vals[13];
+                        Int32.TryParse(DisplayPan, out panID);
+                        string cleared = vals[14];
+                        bool.TryParse(cleared, out in_use);
+
+                        chkCTCSS.Checked = ctcss_local;
+                        ctcss_freq = ctcss_f;
+                        comboFMCTCSSFreq.Text = ctcss_f.ToString("f1", CultureInfo.InvariantCulture);
+                        RPTRmode = (RPTRmode)rptr_m;
+                        RPTR_offset = rptr_o;
+
+                        if (!in_use)
+                        {
+                            memory = true;
+                            text = vals[15];
+                            txtNewVFOBand.Text = text;
+                            txtNewVFOBand.Refresh();
+                            txtVFOABand.Text = text;
+                            txtVFOABand.Refresh();
+                            MemoryRecall(modeID, filterID, vfoa, losc_freq, stepID, agcID, squelchID);
+                            ptbDisplayPan.Value = panID;
+                            ptbDisplayZoom.Value = zoomID;
+                            CalcDisplayFreq();
+                            tbDisplayZoom_Scroll(this, EventArgs.Empty);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void btnFMMS_Click(object sender, EventArgs e)      // store memory
+        {
+            try
+            {
+                int number;
+                Int32.TryParse(lblFMMemory.Text, out number);               
+
+                if (DB.SaveFMMemory(number, VFOAFreq, LOSCFreq, (int)CurrentDSPMode, (int)current_filter, StepSize,
+                    comboAGCMainRX.SelectedIndex, (int)udSQLMainRX.Value, (int)ptbDisplayZoom.Value, (int)ptbDisplayPan.Value,
+                    txtNewVFOBand.Text, ctcss, ctcss_freq, rptr_mode, (double)udFMOffset.Value))
+                    txtFMmemory_fill();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void btnFMMC_Click(object sender, EventArgs e)      // clear memory
+        {
+            try
+            {
+                int number;
+                btnZAP.Checked = false;
+                Int32.TryParse(lblFMMemory.Text, out number);
+
+                if (DB.ClearFMMemory(number))
+                    txtFMmemory_fill();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void txtFMmemory_fill()
+        {
+            try
+            {
+                int number;
+                Int32.TryParse(lblFMMemory.Text, out number);
+                double vfoa;
+                DSPMode mem_mode;
+                int modeID;
+                ArrayList memory;
+
+                memory = DB.GetFMMemory(number);
+
+                if (memory != null)
+                {
+                    foreach (string s in memory)				// string is in the format "freq,losc,mode,filter,cleared"
+                    {
+                        bool in_use = false;
+                        string[] vals = s.Split('/');
+
+                        string freq = vals[1];
+                        Double.TryParse(freq, out vfoa);
+                        string mode = vals[7];
+                        Int32.TryParse(mode, out modeID);
+                        mem_mode = (DSPMode)modeID;
+                        string cleared = vals[14];
+                        bool.TryParse(cleared, out in_use);
+
+                        if (!in_use)
+                        {
+                            txtFMmemory.Text = freq + mem_mode.ToString();
+                            lblFMMemory.BackColor = Color.Blue;
+                        }
+                        else
+                        {
+                            txtFMmemory.Text = "empty";
+                            lblFMMemory.BackColor = Color.Red;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void eraseAllMemoryToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                DB.ClearFMMemoryTable();
+                txtFMmemory_fill();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void ptbFMMicGain_OnWheel(MouseEventArgs e)
+        {
+            try
+            {
+
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void ptbFMMicGain_Scroll(object sender, EventArgs e)
+        {
+            try
+            {
+                udMIC.Value = ptbFMMicGain.Value;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void chkFMMsg1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkFMMsg1.Checked && !VoiceMsgPlayback && !TUN)
+            {
+                if (!MOX)
+                {
+                    VoiceMsgPlayback = true;
+
+                    if (VoiceMsgForm != null || VoiceMsgForm.IsDisposed)
+                        VoiceMsgForm.Msg1Play = true;
+
+                    chkFMMsg1.BackColor = button_selected_color;
+                }
+                else
+                {
+                    VoiceMsgForm.PlayStop = true;
+                    VoiceMsgPlayback = false;
+                    MOX = false;
+                }
+            }
+            else
+            {
+                VoiceMsgForm.Msg1Play = false;
+                VoiceMsgPlayback = false;
+                MOX = false;
+            }
+        }
+
+        private void chkFMMsg2_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkFMMsg2.Checked && !VoiceMsgPlayback && !TUN)
+            {
+                if (!MOX)
+                {
+                    VoiceMsgPlayback = true;
+
+                    if (VoiceMsgForm != null || VoiceMsgForm.IsDisposed)
+                        VoiceMsgForm.Msg2Play = true;
+
+                    chkFMMsg2.BackColor = button_selected_color;
+                }
+                else
+                {
+                    VoiceMsgForm.PlayStop = true;
+                    VoiceMsgPlayback = false;
+                    MOX = false;
+                }
+            }
+            else
+            {
+                VoiceMsgForm.Msg2Play = false;
+                VoiceMsgPlayback = false;
+                MOX = false;
+            }
+        }
+
+        private void chkFMMsg3_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkFMMsg3.Checked && !VoiceMsgPlayback && !TUN)
+            {
+                if (!MOX)
+                {
+                    VoiceMsgPlayback = true;
+
+                    if (VoiceMsgForm != null || VoiceMsgForm.IsDisposed)
+                        VoiceMsgForm.Msg3Play = true;
+
+                    chkFMMsg3.BackColor = button_selected_color;
+                }
+                else
+                {
+                    VoiceMsgForm.PlayStop = true;
+                    VoiceMsgPlayback = false;
+                    MOX = false;
+                }
+            }
+            else
+            {
+                VoiceMsgForm.Msg3Play = false;
+                VoiceMsgPlayback = false;
+                MOX = false;
+            }
+        }
+
+        private void chkFMMsg4_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkFMMsg4.Checked && !VoiceMsgPlayback && !TUN)
+            {
+                if (!MOX)
+                {
+                    VoiceMsgPlayback = true;
+
+                    if (VoiceMsgForm != null || VoiceMsgForm.IsDisposed)
+                        VoiceMsgForm.Msg4Play = true;
+
+                    chkFMMsg4.BackColor = button_selected_color;
+                }
+                else
+                {
+                    VoiceMsgForm.PlayStop = true;
+                    VoiceMsgPlayback = false;
+                    MOX = false;
+                }
+            }
+            else
+            {
+                VoiceMsgForm.Msg4Play = false;
+                VoiceMsgPlayback = false;
+                MOX = false;
+            }
+        }
+
+        private void chkFMMsg5_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkFMMsg5.Checked && !VoiceMsgPlayback && !TUN)
+            {
+                if (!MOX)
+                {
+                    VoiceMsgPlayback = true;
+
+                    if (VoiceMsgForm != null || VoiceMsgForm.IsDisposed)
+                        VoiceMsgForm.Msg5Play = true;
+
+                    chkFMMsg5.BackColor = button_selected_color;
+                }
+                else
+                {
+                    VoiceMsgForm.PlayStop = true;
+                    VoiceMsgPlayback = false;
+                    MOX = false;
+                }
+            }
+            else
+            {
+                VoiceMsgForm.Msg5Play = false;
+                VoiceMsgPlayback = false;
+                MOX = false;
+            }
+        }
+
+        private void chkFMMsg6_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkFMMsg6.Checked && !VoiceMsgPlayback && !TUN)
+            {
+                if (!MOX)
+                {
+                    VoiceMsgPlayback = true;
+
+                    if (VoiceMsgForm != null || VoiceMsgForm.IsDisposed)
+                        VoiceMsgForm.Msg6Play = true;
+
+                    chkFMMsg6.BackColor = button_selected_color;
+                }
+                else
+                {
+                    VoiceMsgForm.PlayStop = true;
+                    VoiceMsgPlayback = false;
+                    MOX = false;
+                }
+            }
+            else
+            {
+                VoiceMsgForm.Msg6Play = false;
+                VoiceMsgPlayback = false;
+                MOX = false;
+            }
+        }
+
+        private void chkFMMsg1_MouseHover(object sender, EventArgs e)
+        {
+            if (VoiceMsgForm.txtMsg1 != null)
+                toolTip1.SetToolTip(chkFMMsg1, VoiceMsgForm.txtMsg1.Text);
+        }
+
+        private void chkFMMsg2_MouseHover(object sender, EventArgs e)
+        {
+            if (VoiceMsgForm.txtMsg2 != null)
+                toolTip1.SetToolTip(chkFMMsg2, VoiceMsgForm.txtMsg2.Text);
+        }
+
+        private void chkFMMsg3_MouseHover(object sender, EventArgs e)
+        {
+            if (VoiceMsgForm.txtMsg3 != null)
+                toolTip1.SetToolTip(chkFMMsg3, VoiceMsgForm.txtMsg3.Text);
+        }
+
+        private void chkFMMsg4_MouseHover(object sender, EventArgs e)
+        {
+            if (VoiceMsgForm.txtMsg4 != null)
+                toolTip1.SetToolTip(chkFMMsg4, VoiceMsgForm.txtMsg4.Text);
+        }
+
+        private void chkFMMsg5_MouseHover(object sender, EventArgs e)
+        {
+            if (VoiceMsgForm.txtMsg5 != null)
+                toolTip1.SetToolTip(chkFMMsg5, VoiceMsgForm.txtMsg5.Text);
+        }
+
+        private void chkFMMsg6_MouseHover(object sender, EventArgs e)
+        {
+            if (VoiceMsgForm.txtMsg6 != null)
+                toolTip1.SetToolTip(chkFMMsg6, VoiceMsgForm.txtMsg6.Text);
         }
 
         #endregion

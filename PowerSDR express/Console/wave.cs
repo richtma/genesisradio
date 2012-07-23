@@ -75,7 +75,17 @@ namespace PowerSDR
 
 		public WaveControl(Console c)
 		{
-			InitializeComponent();
+            this.AutoScaleMode = AutoScaleMode.Inherit;
+            InitializeComponent();
+            float dpi = this.CreateGraphics().DpiX;
+            float ratio = dpi / 96.0f;
+            string font_name = this.Font.Name;
+            float size = (float)(8.25 / ratio);
+            System.Drawing.Font new_font = new System.Drawing.Font(font_name, size);
+            this.Font = new_font;
+            this.PerformAutoScale();
+            this.PerformLayout();
+
 			console = c;
 			file_list = new ArrayList();
 			currently_playing = -1;
@@ -795,8 +805,10 @@ namespace PowerSDR
                 case 44100:
                 case 96000:
                 case 192000:
-                    retval = true; break;
+                    retval = true;
+                    break;
             }
+
             return retval;
         }
 
@@ -1466,23 +1478,23 @@ namespace PowerSDR
             count += out_cnt * 2 * 4;
         }
 
-		private void WriteWaveHeader(ref BinaryWriter writer, short channels, int sample_rate, short bit_depth, int data_length)
-		{
-			writer.Write(0x46464952);								// "RIFF"		-- descriptor chunk ID
-			writer.Write(data_length + 36);							// size of whole file -- 1 for now
-			writer.Write(0x45564157);								// "WAVE"		-- descriptor type
-			writer.Write(0x20746d66);								// "fmt "		-- format chunk ID
-			writer.Write((int)16);									// size of fmt chunk
-			writer.Write((short)3);									// FormatTag	-- 3 for floats
-			writer.Write(channels);									// wChannels
-			writer.Write(sample_rate);								// dwSamplesPerSec
-			writer.Write((int)(channels*sample_rate*bit_depth/8));	// dwAvgBytesPerSec
-			writer.Write((short)(channels*bit_depth/8));			// wBlockAlign
-			writer.Write(bit_depth);								// wBitsPerSample
-			writer.Write(0x61746164);								// "data" -- data chunk ID
-			writer.Write(data_length);								// chunkSize = length of data
-			writer.Flush();											// write the file
-		}
+        private void WriteWaveHeader(ref BinaryWriter writer, short channels, int sample_rate, short bit_depth, int data_length)
+        {
+            writer.Write(0x46464952);								        // "RIFF"		-- descriptor chunk ID
+            writer.Write(data_length + 36);							        // size of whole file -- 1 for now
+            writer.Write(0x45564157);								        // "WAVE"		-- descriptor type
+            writer.Write(0x20746d66);								        // "fmt "		-- format chunk ID
+            writer.Write((int)16);									        // size of fmt chunk
+            writer.Write((short)3);									        // FormatTag	-- 3 for floats
+            writer.Write((short)channels);							        // wChannels
+            writer.Write((int)sample_rate);							        // dwSamplesPerSec
+            writer.Write((int)(channels * sample_rate * bit_depth / 8));	// dwAvgBytesPerSec
+            writer.Write((short)(channels * bit_depth / 8));			    // wBlockAlign
+            writer.Write((short)bit_depth);							        // wBitsPerSample
+            writer.Write(0x61746164);								        // "data" -- data chunk ID
+            writer.Write(data_length);								        // chunkSize = length of data
+            writer.Flush();											        // write the file
+        }
 	}
 
 	#endregion
