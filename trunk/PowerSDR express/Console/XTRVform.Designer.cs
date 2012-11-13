@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(XTRV));
             this.groupBoxTS1 = new System.Windows.Forms.GroupBoxTS();
             this.udBandX12Losc = new System.Windows.Forms.NumericUpDownTS();
             this.udBandX11Losc = new System.Windows.Forms.NumericUpDownTS();
@@ -350,13 +351,13 @@
             // 
             // udBandX12Losc
             // 
-            this.udBandX12Losc.DecimalPlaces = 1;
+            this.udBandX12Losc.DecimalPlaces = 2;
             this.udBandX12Losc.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            65536});
-            this.udBandX12Losc.Location = new System.Drawing.Point(288, 353);
+            131072});
+            this.udBandX12Losc.Location = new System.Drawing.Point(286, 353);
             this.udBandX12Losc.Maximum = new decimal(new int[] {
             50000,
             0,
@@ -368,7 +369,7 @@
             0,
             0});
             this.udBandX12Losc.Name = "udBandX12Losc";
-            this.udBandX12Losc.Size = new System.Drawing.Size(68, 20);
+            this.udBandX12Losc.Size = new System.Drawing.Size(72, 20);
             this.udBandX12Losc.TabIndex = 117;
             this.udBandX12Losc.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.udBandX12Losc.Value = new decimal(new int[] {
@@ -376,16 +377,17 @@
             0,
             0,
             0});
+            this.udBandX12Losc.ValueChanged += new System.EventHandler(this.udBandX12Losc_ValueChanged);
             // 
             // udBandX11Losc
             // 
-            this.udBandX11Losc.DecimalPlaces = 1;
+            this.udBandX11Losc.DecimalPlaces = 2;
             this.udBandX11Losc.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            65536});
-            this.udBandX11Losc.Location = new System.Drawing.Point(288, 327);
+            131072});
+            this.udBandX11Losc.Location = new System.Drawing.Point(286, 327);
             this.udBandX11Losc.Maximum = new decimal(new int[] {
             50000,
             0,
@@ -397,7 +399,7 @@
             0,
             0});
             this.udBandX11Losc.Name = "udBandX11Losc";
-            this.udBandX11Losc.Size = new System.Drawing.Size(68, 20);
+            this.udBandX11Losc.Size = new System.Drawing.Size(72, 20);
             this.udBandX11Losc.TabIndex = 116;
             this.udBandX11Losc.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.udBandX11Losc.Value = new decimal(new int[] {
@@ -405,16 +407,17 @@
             0,
             0,
             0});
+            this.udBandX11Losc.ValueChanged += new System.EventHandler(this.udBandX11Losc_ValueChanged);
             // 
             // udBandX10Losc
             // 
-            this.udBandX10Losc.DecimalPlaces = 1;
+            this.udBandX10Losc.DecimalPlaces = 2;
             this.udBandX10Losc.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            65536});
-            this.udBandX10Losc.Location = new System.Drawing.Point(288, 301);
+            131072});
+            this.udBandX10Losc.Location = new System.Drawing.Point(286, 301);
             this.udBandX10Losc.Maximum = new decimal(new int[] {
             50000,
             0,
@@ -426,7 +429,7 @@
             0,
             0});
             this.udBandX10Losc.Name = "udBandX10Losc";
-            this.udBandX10Losc.Size = new System.Drawing.Size(68, 20);
+            this.udBandX10Losc.Size = new System.Drawing.Size(72, 20);
             this.udBandX10Losc.TabIndex = 115;
             this.udBandX10Losc.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.udBandX10Losc.Value = new decimal(new int[] {
@@ -434,16 +437,17 @@
             0,
             0,
             0});
+            this.udBandX10Losc.ValueChanged += new System.EventHandler(this.udBandX10Losc_ValueChanged);
             // 
             // udBandX9Losc
             // 
-            this.udBandX9Losc.DecimalPlaces = 1;
+            this.udBandX9Losc.DecimalPlaces = 2;
             this.udBandX9Losc.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            65536});
-            this.udBandX9Losc.Location = new System.Drawing.Point(288, 275);
+            131072});
+            this.udBandX9Losc.Location = new System.Drawing.Point(286, 275);
             this.udBandX9Losc.Maximum = new decimal(new int[] {
             50000,
             0,
@@ -455,7 +459,7 @@
             0,
             0});
             this.udBandX9Losc.Name = "udBandX9Losc";
-            this.udBandX9Losc.Size = new System.Drawing.Size(68, 20);
+            this.udBandX9Losc.Size = new System.Drawing.Size(72, 20);
             this.udBandX9Losc.TabIndex = 114;
             this.udBandX9Losc.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.udBandX9Losc.Value = new decimal(new int[] {
@@ -463,16 +467,17 @@
             0,
             0,
             0});
+            this.udBandX9Losc.ValueChanged += new System.EventHandler(this.udBandX9Losc_ValueChanged);
             // 
             // udBandX8Losc
             // 
-            this.udBandX8Losc.DecimalPlaces = 1;
+            this.udBandX8Losc.DecimalPlaces = 2;
             this.udBandX8Losc.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            65536});
-            this.udBandX8Losc.Location = new System.Drawing.Point(288, 249);
+            131072});
+            this.udBandX8Losc.Location = new System.Drawing.Point(286, 249);
             this.udBandX8Losc.Maximum = new decimal(new int[] {
             50000,
             0,
@@ -484,7 +489,7 @@
             0,
             0});
             this.udBandX8Losc.Name = "udBandX8Losc";
-            this.udBandX8Losc.Size = new System.Drawing.Size(68, 20);
+            this.udBandX8Losc.Size = new System.Drawing.Size(72, 20);
             this.udBandX8Losc.TabIndex = 113;
             this.udBandX8Losc.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.udBandX8Losc.Value = new decimal(new int[] {
@@ -492,16 +497,17 @@
             0,
             0,
             0});
+            this.udBandX8Losc.ValueChanged += new System.EventHandler(this.udBandX8Losc_ValueChanged);
             // 
             // udBandX7Losc
             // 
-            this.udBandX7Losc.DecimalPlaces = 1;
+            this.udBandX7Losc.DecimalPlaces = 2;
             this.udBandX7Losc.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            65536});
-            this.udBandX7Losc.Location = new System.Drawing.Point(288, 223);
+            131072});
+            this.udBandX7Losc.Location = new System.Drawing.Point(286, 223);
             this.udBandX7Losc.Maximum = new decimal(new int[] {
             50000,
             0,
@@ -513,7 +519,7 @@
             0,
             0});
             this.udBandX7Losc.Name = "udBandX7Losc";
-            this.udBandX7Losc.Size = new System.Drawing.Size(68, 20);
+            this.udBandX7Losc.Size = new System.Drawing.Size(72, 20);
             this.udBandX7Losc.TabIndex = 112;
             this.udBandX7Losc.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.udBandX7Losc.Value = new decimal(new int[] {
@@ -521,16 +527,17 @@
             0,
             0,
             0});
+            this.udBandX7Losc.ValueChanged += new System.EventHandler(this.udBandX7Losc_ValueChanged);
             // 
             // udBandX6Losc
             // 
-            this.udBandX6Losc.DecimalPlaces = 1;
+            this.udBandX6Losc.DecimalPlaces = 2;
             this.udBandX6Losc.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            65536});
-            this.udBandX6Losc.Location = new System.Drawing.Point(288, 197);
+            131072});
+            this.udBandX6Losc.Location = new System.Drawing.Point(286, 197);
             this.udBandX6Losc.Maximum = new decimal(new int[] {
             50000,
             0,
@@ -542,7 +549,7 @@
             0,
             0});
             this.udBandX6Losc.Name = "udBandX6Losc";
-            this.udBandX6Losc.Size = new System.Drawing.Size(68, 20);
+            this.udBandX6Losc.Size = new System.Drawing.Size(72, 20);
             this.udBandX6Losc.TabIndex = 111;
             this.udBandX6Losc.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.udBandX6Losc.Value = new decimal(new int[] {
@@ -550,16 +557,17 @@
             0,
             0,
             0});
+            this.udBandX6Losc.ValueChanged += new System.EventHandler(this.udBandX6Losc_ValueChanged);
             // 
             // udBandX5Losc
             // 
-            this.udBandX5Losc.DecimalPlaces = 1;
+            this.udBandX5Losc.DecimalPlaces = 2;
             this.udBandX5Losc.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            65536});
-            this.udBandX5Losc.Location = new System.Drawing.Point(288, 171);
+            131072});
+            this.udBandX5Losc.Location = new System.Drawing.Point(286, 171);
             this.udBandX5Losc.Maximum = new decimal(new int[] {
             50000,
             0,
@@ -571,7 +579,7 @@
             0,
             0});
             this.udBandX5Losc.Name = "udBandX5Losc";
-            this.udBandX5Losc.Size = new System.Drawing.Size(68, 20);
+            this.udBandX5Losc.Size = new System.Drawing.Size(72, 20);
             this.udBandX5Losc.TabIndex = 110;
             this.udBandX5Losc.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.udBandX5Losc.Value = new decimal(new int[] {
@@ -579,16 +587,17 @@
             0,
             0,
             0});
+            this.udBandX5Losc.ValueChanged += new System.EventHandler(this.udBandX5Losc_ValueChanged);
             // 
             // udBandX4Losc
             // 
-            this.udBandX4Losc.DecimalPlaces = 1;
+            this.udBandX4Losc.DecimalPlaces = 2;
             this.udBandX4Losc.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            65536});
-            this.udBandX4Losc.Location = new System.Drawing.Point(288, 144);
+            131072});
+            this.udBandX4Losc.Location = new System.Drawing.Point(286, 144);
             this.udBandX4Losc.Maximum = new decimal(new int[] {
             50000,
             0,
@@ -600,7 +609,7 @@
             0,
             0});
             this.udBandX4Losc.Name = "udBandX4Losc";
-            this.udBandX4Losc.Size = new System.Drawing.Size(68, 20);
+            this.udBandX4Losc.Size = new System.Drawing.Size(72, 20);
             this.udBandX4Losc.TabIndex = 109;
             this.udBandX4Losc.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.udBandX4Losc.Value = new decimal(new int[] {
@@ -608,16 +617,17 @@
             0,
             0,
             0});
+            this.udBandX4Losc.ValueChanged += new System.EventHandler(this.udBandX4Losc_ValueChanged);
             // 
             // udBandX3Losc
             // 
-            this.udBandX3Losc.DecimalPlaces = 1;
+            this.udBandX3Losc.DecimalPlaces = 2;
             this.udBandX3Losc.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            65536});
-            this.udBandX3Losc.Location = new System.Drawing.Point(288, 118);
+            131072});
+            this.udBandX3Losc.Location = new System.Drawing.Point(286, 118);
             this.udBandX3Losc.Maximum = new decimal(new int[] {
             50000,
             0,
@@ -629,7 +639,7 @@
             0,
             0});
             this.udBandX3Losc.Name = "udBandX3Losc";
-            this.udBandX3Losc.Size = new System.Drawing.Size(68, 20);
+            this.udBandX3Losc.Size = new System.Drawing.Size(72, 20);
             this.udBandX3Losc.TabIndex = 108;
             this.udBandX3Losc.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.udBandX3Losc.Value = new decimal(new int[] {
@@ -637,16 +647,17 @@
             0,
             0,
             0});
+            this.udBandX3Losc.ValueChanged += new System.EventHandler(this.udBandX3Losc_ValueChanged);
             // 
             // udBandX2Losc
             // 
-            this.udBandX2Losc.DecimalPlaces = 1;
+            this.udBandX2Losc.DecimalPlaces = 2;
             this.udBandX2Losc.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            65536});
-            this.udBandX2Losc.Location = new System.Drawing.Point(288, 92);
+            131072});
+            this.udBandX2Losc.Location = new System.Drawing.Point(286, 92);
             this.udBandX2Losc.Maximum = new decimal(new int[] {
             50000,
             0,
@@ -658,7 +669,7 @@
             0,
             0});
             this.udBandX2Losc.Name = "udBandX2Losc";
-            this.udBandX2Losc.Size = new System.Drawing.Size(68, 20);
+            this.udBandX2Losc.Size = new System.Drawing.Size(72, 20);
             this.udBandX2Losc.TabIndex = 107;
             this.udBandX2Losc.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.udBandX2Losc.Value = new decimal(new int[] {
@@ -666,16 +677,17 @@
             0,
             0,
             0});
+            this.udBandX2Losc.ValueChanged += new System.EventHandler(this.udBandX2Losc_ValueChanged);
             // 
             // udBandX1Losc
             // 
-            this.udBandX1Losc.DecimalPlaces = 1;
+            this.udBandX1Losc.DecimalPlaces = 2;
             this.udBandX1Losc.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            65536});
-            this.udBandX1Losc.Location = new System.Drawing.Point(288, 66);
+            131072});
+            this.udBandX1Losc.Location = new System.Drawing.Point(286, 66);
             this.udBandX1Losc.Maximum = new decimal(new int[] {
             50000,
             0,
@@ -687,7 +699,7 @@
             0,
             0});
             this.udBandX1Losc.Name = "udBandX1Losc";
-            this.udBandX1Losc.Size = new System.Drawing.Size(68, 20);
+            this.udBandX1Losc.Size = new System.Drawing.Size(72, 20);
             this.udBandX1Losc.TabIndex = 106;
             this.udBandX1Losc.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.udBandX1Losc.Value = new decimal(new int[] {
@@ -778,20 +790,20 @@
             // 
             // udBandX12LoscErr
             // 
-            this.udBandX12LoscErr.DecimalPlaces = 2;
+            this.udBandX12LoscErr.DecimalPlaces = 3;
             this.udBandX12LoscErr.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            131072});
+            196608});
             this.udBandX12LoscErr.Location = new System.Drawing.Point(366, 353);
             this.udBandX12LoscErr.Maximum = new decimal(new int[] {
-            50000,
+            10,
             0,
             0,
             0});
             this.udBandX12LoscErr.Minimum = new decimal(new int[] {
-            50000,
+            10,
             0,
             0,
             -2147483648});
@@ -829,7 +841,7 @@
             this.udBandX12FreqMax.TabIndex = 100;
             this.udBandX12FreqMax.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.udBandX12FreqMax.Value = new decimal(new int[] {
-            50000,
+            50,
             0,
             0,
             0});
@@ -858,7 +870,7 @@
             this.udBandX12FreqMin.TabIndex = 99;
             this.udBandX12FreqMin.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.udBandX12FreqMin.Value = new decimal(new int[] {
-            50000,
+            50,
             0,
             0,
             0});
@@ -952,20 +964,20 @@
             // 
             // udBandX11LoscErr
             // 
-            this.udBandX11LoscErr.DecimalPlaces = 2;
+            this.udBandX11LoscErr.DecimalPlaces = 3;
             this.udBandX11LoscErr.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            131072});
+            196608});
             this.udBandX11LoscErr.Location = new System.Drawing.Point(366, 327);
             this.udBandX11LoscErr.Maximum = new decimal(new int[] {
-            50000,
+            10,
             0,
             0,
             0});
             this.udBandX11LoscErr.Minimum = new decimal(new int[] {
-            50000,
+            10,
             0,
             0,
             -2147483648});
@@ -1003,7 +1015,7 @@
             this.udBandX11FreqMax.TabIndex = 92;
             this.udBandX11FreqMax.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.udBandX11FreqMax.Value = new decimal(new int[] {
-            50000,
+            50,
             0,
             0,
             0});
@@ -1032,7 +1044,7 @@
             this.udBandX11FreqMin.TabIndex = 91;
             this.udBandX11FreqMin.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.udBandX11FreqMin.Value = new decimal(new int[] {
-            50000,
+            50,
             0,
             0,
             0});
@@ -1126,20 +1138,20 @@
             // 
             // udBandX10LoscErr
             // 
-            this.udBandX10LoscErr.DecimalPlaces = 2;
+            this.udBandX10LoscErr.DecimalPlaces = 3;
             this.udBandX10LoscErr.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            131072});
+            196608});
             this.udBandX10LoscErr.Location = new System.Drawing.Point(366, 301);
             this.udBandX10LoscErr.Maximum = new decimal(new int[] {
-            50000,
+            10,
             0,
             0,
             0});
             this.udBandX10LoscErr.Minimum = new decimal(new int[] {
-            50000,
+            10,
             0,
             0,
             -2147483648});
@@ -1177,7 +1189,7 @@
             this.udBandX10FreqMax.TabIndex = 84;
             this.udBandX10FreqMax.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.udBandX10FreqMax.Value = new decimal(new int[] {
-            50000,
+            50,
             0,
             0,
             0});
@@ -1206,7 +1218,7 @@
             this.udBandX10FreqMin.TabIndex = 83;
             this.udBandX10FreqMin.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.udBandX10FreqMin.Value = new decimal(new int[] {
-            50000,
+            50,
             0,
             0,
             0});
@@ -1300,20 +1312,20 @@
             // 
             // udBandX9LoscErr
             // 
-            this.udBandX9LoscErr.DecimalPlaces = 2;
+            this.udBandX9LoscErr.DecimalPlaces = 3;
             this.udBandX9LoscErr.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            131072});
+            196608});
             this.udBandX9LoscErr.Location = new System.Drawing.Point(366, 275);
             this.udBandX9LoscErr.Maximum = new decimal(new int[] {
-            50000,
+            10,
             0,
             0,
             0});
             this.udBandX9LoscErr.Minimum = new decimal(new int[] {
-            50000,
+            10,
             0,
             0,
             -2147483648});
@@ -1351,7 +1363,7 @@
             this.udBandX9FreqMax.TabIndex = 76;
             this.udBandX9FreqMax.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.udBandX9FreqMax.Value = new decimal(new int[] {
-            50000,
+            50,
             0,
             0,
             0});
@@ -1380,7 +1392,7 @@
             this.udBandX9FreqMin.TabIndex = 75;
             this.udBandX9FreqMin.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.udBandX9FreqMin.Value = new decimal(new int[] {
-            50000,
+            50,
             0,
             0,
             0});
@@ -1474,20 +1486,20 @@
             // 
             // udBandX8LoscErr
             // 
-            this.udBandX8LoscErr.DecimalPlaces = 2;
+            this.udBandX8LoscErr.DecimalPlaces = 3;
             this.udBandX8LoscErr.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            131072});
+            196608});
             this.udBandX8LoscErr.Location = new System.Drawing.Point(366, 249);
             this.udBandX8LoscErr.Maximum = new decimal(new int[] {
-            50000,
+            10,
             0,
             0,
             0});
             this.udBandX8LoscErr.Minimum = new decimal(new int[] {
-            50000,
+            10,
             0,
             0,
             -2147483648});
@@ -1525,7 +1537,7 @@
             this.udBandX8FreqMax.TabIndex = 68;
             this.udBandX8FreqMax.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.udBandX8FreqMax.Value = new decimal(new int[] {
-            50000,
+            50,
             0,
             0,
             0});
@@ -1554,7 +1566,7 @@
             this.udBandX8FreqMin.TabIndex = 67;
             this.udBandX8FreqMin.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.udBandX8FreqMin.Value = new decimal(new int[] {
-            50000,
+            50,
             0,
             0,
             0});
@@ -1648,20 +1660,20 @@
             // 
             // udBandX7LoscErr
             // 
-            this.udBandX7LoscErr.DecimalPlaces = 2;
+            this.udBandX7LoscErr.DecimalPlaces = 3;
             this.udBandX7LoscErr.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            131072});
+            196608});
             this.udBandX7LoscErr.Location = new System.Drawing.Point(366, 223);
             this.udBandX7LoscErr.Maximum = new decimal(new int[] {
-            50000,
+            10,
             0,
             0,
             0});
             this.udBandX7LoscErr.Minimum = new decimal(new int[] {
-            50000,
+            10,
             0,
             0,
             -2147483648});
@@ -1823,20 +1835,20 @@
             // 
             // udBandX6LoscErr
             // 
-            this.udBandX6LoscErr.DecimalPlaces = 2;
+            this.udBandX6LoscErr.DecimalPlaces = 3;
             this.udBandX6LoscErr.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            131072});
+            196608});
             this.udBandX6LoscErr.Location = new System.Drawing.Point(366, 197);
             this.udBandX6LoscErr.Maximum = new decimal(new int[] {
-            50000,
+            10,
             0,
             0,
             0});
             this.udBandX6LoscErr.Minimum = new decimal(new int[] {
-            50000,
+            10,
             0,
             0,
             -2147483648});
@@ -1998,20 +2010,20 @@
             // 
             // udBandX5LoscErr
             // 
-            this.udBandX5LoscErr.DecimalPlaces = 2;
+            this.udBandX5LoscErr.DecimalPlaces = 3;
             this.udBandX5LoscErr.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            131072});
+            196608});
             this.udBandX5LoscErr.Location = new System.Drawing.Point(366, 171);
             this.udBandX5LoscErr.Maximum = new decimal(new int[] {
-            50000,
+            10,
             0,
             0,
             0});
             this.udBandX5LoscErr.Minimum = new decimal(new int[] {
-            50000,
+            10,
             0,
             0,
             -2147483648});
@@ -2173,20 +2185,20 @@
             // 
             // udBandX4LoscErr
             // 
-            this.udBandX4LoscErr.DecimalPlaces = 2;
+            this.udBandX4LoscErr.DecimalPlaces = 3;
             this.udBandX4LoscErr.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            131072});
+            196608});
             this.udBandX4LoscErr.Location = new System.Drawing.Point(366, 144);
             this.udBandX4LoscErr.Maximum = new decimal(new int[] {
-            50000,
+            10,
             0,
             0,
             0});
             this.udBandX4LoscErr.Minimum = new decimal(new int[] {
-            50000,
+            10,
             0,
             0,
             -2147483648});
@@ -2348,20 +2360,20 @@
             // 
             // udBandX3LoscErr
             // 
-            this.udBandX3LoscErr.DecimalPlaces = 2;
+            this.udBandX3LoscErr.DecimalPlaces = 3;
             this.udBandX3LoscErr.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            131072});
+            196608});
             this.udBandX3LoscErr.Location = new System.Drawing.Point(366, 118);
             this.udBandX3LoscErr.Maximum = new decimal(new int[] {
-            50000,
+            10,
             0,
             0,
             0});
             this.udBandX3LoscErr.Minimum = new decimal(new int[] {
-            50000,
+            10,
             0,
             0,
             -2147483648});
@@ -2523,20 +2535,20 @@
             // 
             // udBandX2LoscErr
             // 
-            this.udBandX2LoscErr.DecimalPlaces = 2;
+            this.udBandX2LoscErr.DecimalPlaces = 3;
             this.udBandX2LoscErr.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            131072});
+            196608});
             this.udBandX2LoscErr.Location = new System.Drawing.Point(366, 92);
             this.udBandX2LoscErr.Maximum = new decimal(new int[] {
-            50000,
+            10,
             0,
             0,
             0});
             this.udBandX2LoscErr.Minimum = new decimal(new int[] {
-            50000,
+            10,
             0,
             0,
             -2147483648});
@@ -2698,20 +2710,20 @@
             // 
             // udBandX1LoscErr
             // 
-            this.udBandX1LoscErr.DecimalPlaces = 2;
+            this.udBandX1LoscErr.DecimalPlaces = 3;
             this.udBandX1LoscErr.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            131072});
+            196608});
             this.udBandX1LoscErr.Location = new System.Drawing.Point(366, 66);
             this.udBandX1LoscErr.Maximum = new decimal(new int[] {
-            50000,
+            10,
             0,
             0,
             0});
             this.udBandX1LoscErr.Minimum = new decimal(new int[] {
-            50000,
+            10,
             0,
             0,
             -2147483648});
@@ -2899,6 +2911,7 @@
             this.ClientSize = new System.Drawing.Size(634, 431);
             this.Controls.Add(this.btnApply);
             this.Controls.Add(this.groupBoxTS1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MaximumSize = new System.Drawing.Size(650, 469);
             this.MinimizeBox = false;

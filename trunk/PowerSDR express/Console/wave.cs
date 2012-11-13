@@ -1556,8 +1556,8 @@ namespace PowerSDR
                     if (channels > 1) resamp_r = DttSP.NewResamplerF(sample_rate, Audio.SampleRate1);
                 }
             }
-			io_buf = new byte[io_buf_size];
 
+			io_buf = new byte[io_buf_size];
 			playback = true;
 			reader = binread;
 

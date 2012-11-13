@@ -428,7 +428,7 @@ namespace PowerSDR
 
         private void send_buffer_size_thread()
         {
-            while (run_buffer_send_thread && console.power && console.MOX)
+            while (run_buffer_send_thread && console.PowerOn && console.MOX)
             {
                 send_buffer[0] = 0x01;
                 send_buffer[1] = 0x02;

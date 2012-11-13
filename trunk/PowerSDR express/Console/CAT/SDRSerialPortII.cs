@@ -64,7 +64,8 @@ namespace SDRSerialSupportII
 			return StopBits.ONE; // error -- default 
 		}
 
-		public enum DataBits { FIRST=-1, EIGHT, SEVEN, SIX } 
+		public enum DataBits { FIRST=-1, EIGHT, SEVEN, SIX }
+        public enum HandshakeBits { FIRST = -1, None, RTS, XOnXOff } 
 
 		public static DataBits stringToDataBits(string s) 
 		{
@@ -73,6 +74,13 @@ namespace SDRSerialSupportII
 			if ( s == "6" ) return DataBits.SIX; 
 			return DataBits.EIGHT; 
 		}
+
+        public static HandshakeBits stringToHandshakeBits(string s)
+        {
+            if (s == "RTS") return HandshakeBits.RTS;
+            if (s == "XOnXOff") return HandshakeBits.XOnXOff;
+            return HandshakeBits.None;
+        }
 
 		public SDRSerialPort(int portidx)
 		{
@@ -97,7 +105,7 @@ namespace SDRSerialSupportII
 		}
 		// set the comm parms ... can only be done if port is not open -- silently fails if port is open (fixme -- add some error checking) 
 		// 
-		public void setCommParms(int baudrate, Parity p, DataBits data, StopBits stop)  
+		public void setCommParms(int baudrate, Parity p, DataBits data, StopBits stop, HandshakeBits h)  
 		{ 
 			if ( commPort.IsOpen ) return; // bail out if it's already open 
 			
@@ -155,7 +163,18 @@ namespace SDRSerialSupportII
 				default: 
 					commPort.DataBits = 8; 
 					break; 
-			}			
+			}
+
+            switch (h)
+            {
+                case HandshakeBits.RTS:
+                    commPort.Handshake = Handshake.RequestToSend;
+                    break;
+
+                case HandshakeBits.XOnXOff:
+                    commPort.Handshake = Handshake.XOnXOff;
+                    break;
+            }
 		}
 		
 		public uint put(byte[] b, uint count) 

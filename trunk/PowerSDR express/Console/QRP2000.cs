@@ -114,7 +114,7 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
-                if (debug)
+                if (debug && !console.ConsoleClosing)
                     console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: \n" + ex.ToString());
 
                 Debug.Write(ex.ToString());
@@ -156,7 +156,7 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
-                if (debug)
+                if (debug && !console.ConsoleClosing)
                     console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: \n" + ex.ToString());
 
                 Debug.Write("Error while QRp2000 init!\n"
@@ -178,7 +178,7 @@ namespace PowerSDR
             }
             catch(Exception ex)
             {
-                if (debug)
+                if (debug && !console.ConsoleClosing)
                     console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: \n" + ex.ToString());
 
                 Debug.Write("Error while closing USB connection!\n"
@@ -194,7 +194,7 @@ namespace PowerSDR
                     SetFreq(freq, i2caddr);
                 else
                 {
-                    if (debug)
+                    if (debug && !console.ConsoleClosing)
                         console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: not connected!");
                 }
 
@@ -202,7 +202,7 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
-                if (debug)
+                if (debug && !console.ConsoleClosing)
                     console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: \n" + ex.ToString());
 
                 Debug.Write("Error setting new frequency!\nValue is wrong!\n"
@@ -226,7 +226,7 @@ namespace PowerSDR
                 }
                 else
                 {
-                    if (debug)
+                    if (debug && !console.ConsoleClosing)
                         console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: not connected!");
                 }
 
@@ -234,7 +234,7 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
-                if (debug)
+                if (debug && !console.ConsoleClosing)
                     console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: \n" + ex.ToString());
 
                 Debug.Write("Error getting Si570 Xtal frequency!\n"
@@ -255,7 +255,7 @@ namespace PowerSDR
                 }
                 else
                 {
-                    if (debug)
+                    if (debug && !console.ConsoleClosing)
                         console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: not connected!");
                 }
 
@@ -263,7 +263,7 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
-                if (debug)
+                if (debug && !console.ConsoleClosing)
                     console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: \n" + ex.ToString());
 
                 Debug.Write("Error setting new Si570 Xtal frequency!\nValue is wrong!\n"
@@ -285,7 +285,7 @@ namespace PowerSDR
                 }
                 else
                 {
-                    if (debug)
+                    if (debug && !console.ConsoleClosing)
                         console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: not connected!");
                 }
 
@@ -293,7 +293,7 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
-                if (debug)
+                if (debug && !console.ConsoleClosing)
                     console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: \n" + ex.ToString());
 
                 Debug.Write("Error getting Si570 I2C address!\n"
@@ -314,7 +314,7 @@ namespace PowerSDR
                 }
                 else
                 {
-                    if (debug)
+                    if (debug && !console.ConsoleClosing)
                         console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: not connected!");
                 }
 
@@ -322,7 +322,7 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
-                if (debug)
+                if (debug && !console.ConsoleClosing)
                     console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: \n" + ex.ToString());
 
                 Debug.Write("Error setting new Si570 I2C address!\nValue is wrong!\n"

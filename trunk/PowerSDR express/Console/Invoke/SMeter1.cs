@@ -1,10 +1,34 @@
-﻿using System;
+﻿//=================================================================
+//              SMeter1 class
+//=================================================================
+//
+// Copyright (C)2011-2012 YT7PWR Goran Radivojevic
+// contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 3
+// of the License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+//
+//=================================================================
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Text;
 using System.Windows.Forms;
+using System.Collections;
 
 namespace PowerSDR.Invoke
 {
@@ -21,6 +45,28 @@ namespace PowerSDR.Invoke
         {
             this.SetStyle(ControlStyles.UserPaint, true);
             InitializeComponent();
+            float dpi = this.CreateGraphics().DpiX;
+            float ratio = dpi / 96.0f;
+            string font_name = this.Font.Name;
+            float size = (float)(8.25 / ratio);
+            System.Drawing.Font new_font = new System.Drawing.Font(font_name, size);
+            this.Font = new_font;
+            this.PerformAutoScale();
+            this.PerformLayout();
+        }
+
+        public Color MeterForeColor
+        {
+            set
+            {
+                ArrayList list = new ArrayList();
+                ControlList(this, ref list);
+
+                foreach (Label l in list)
+                {
+                    l.ForeColor = value;
+                }
+            }
         }
 
         public Single SignalMaxValue
@@ -107,8 +153,6 @@ namespace PowerSDR.Invoke
                 }
 
                 progressSignal.Value = (int)signal_m_value;
-                //progressTop.Value = (int)signal_m_value;
-                //progressBottom.Value = (int)signal_m_value;
             }
         }
 
@@ -176,13 +220,16 @@ namespace PowerSDR.Invoke
             }
         }
 
-        private void SMeter_Paint(object sender, PaintEventArgs e)
+        private void ControlList(Control c, ref ArrayList a)
         {
-            progressSignal.Value = (int)signal_m_value;
-            //progressSWR.Value = (int)swr_m_value;
-            progressBottom.Value = (int)swr_m_value;
-            progressTop.Value = (int)swr_m_value;
+            if (c.Controls.Count > 0)
+            {
+                foreach (Control c2 in c.Controls)
+                    ControlList(c2, ref a);
+            }
 
+            if (c.GetType() == typeof(LabelTS))
+                a.Add(c);
         }
     }
 }

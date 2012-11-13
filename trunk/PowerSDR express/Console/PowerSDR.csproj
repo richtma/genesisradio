@@ -2,7 +2,7 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>..\..\..\bin\Release_new\</OutputPath>
-    <DefineConstants>TRACE;WIN32;DirectX</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;WIN32;DirectX</DefineConstants>
     <BaseAddress>285212672</BaseAddress>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
@@ -191,7 +191,7 @@
     <Compile Include="About.Designer.cs">
       <DependentUpon>About.cs</DependentUpon>
     </Compile>
-    <Compile Include="AGauge.cs">
+    <Compile Include="Invoke\AGauge.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="audio.cs">
@@ -222,6 +222,12 @@
     </Compile>
     <Compile Include="InputBox.cs">
       <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Invoke\SMeter2.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Invoke\SMeter2.Designer.cs">
+      <DependentUpon>SMeter2.cs</DependentUpon>
     </Compile>
     <Compile Include="Invoke\SMeter1.cs">
       <SubType>UserControl</SubType>
@@ -369,6 +375,7 @@
     <Compile Include="win32.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="WinLIRC.cs" />
     <Compile Include="wizard.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -496,6 +503,9 @@
     <EmbeddedResource Include="InputBox.resx">
       <DependentUpon>InputBox.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Invoke\SMeter2.resx">
+      <DependentUpon>SMeter2.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Invoke\SMeter1.resx">
       <DependentUpon>SMeter1.cs</DependentUpon>

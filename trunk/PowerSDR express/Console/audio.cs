@@ -55,6 +55,14 @@ namespace PowerSDR
         None,
     }
 
+    public enum MuteChannels
+    {
+        Left = 0,
+        Right,
+        Both,
+        None,
+    }
+
     #endregion
 
     public class Audio
@@ -113,9 +121,6 @@ namespace PowerSDR
         unsafe private static PA19.PaStreamCallback ServerCallbackAFSpectar = new PA19.PaStreamCallback(NetworkServerCallbackAFSpectar);
         unsafe private static PA19.PaStreamCallback ServerCallbackVACAFSpectar = new PA19.PaStreamCallback(NetworkServerCallbackVACAFSpectar);
         unsafe private static PA19.PaStreamCallback ServerCallback4portAFSpectar = new PA19.PaStreamCallback(NetworkServerCallback4PortAFSpectar);
-
-        unsafe private static PA19.PaStreamCallback SA_callback = new PA19.PaStreamCallback(SA_Callback);
-        unsafe private static PA19.PaStreamCallback SA_callback4port = new PA19.PaStreamCallback(SA_Callback4Port);
 
         public static int callback_return = 0;
         public static int VAC_callback_return = 0;
@@ -179,18 +184,11 @@ namespace PowerSDR
         private static float[] mix_buffer = new float[2048];
         private static float[] mix_buffer_delay = new float[2048];
         private static bool audio_stop = false;
+        private static bool VAC_audio_stop = false;
         private static RingBufferByte g6RB;
         public static bool CTCSS = false;
-
-        private static double ctcss_freq = 123.0;
-        private static double ctcss_phase1 = 0.0;
-        private static double ctcss_phase2 = 0.0;
-
-        public static double CTCSSFreq
-        {
-            get { return ctcss_freq; }
-            set { ctcss_freq = value; }
-        }
+        public static MuteChannels vac_mute_ch = MuteChannels.None;
+        public static MuteChannels mute_ch = MuteChannels.None;
 
         private static float echo_gain = 0.0f;
         public static float EchoGain
@@ -372,11 +370,32 @@ namespace PowerSDR
             set { wave_preamp = value; }
         }
 
-        private static double monitor_volume = 0.0;
-        public static double MonitorVolume
+        private static double monitor_volume_left = 0.0;
+        public static double MonitorVolumeLeft
         {
-            get { return monitor_volume; }
-            set { monitor_volume = value; }
+            get { return monitor_volume_left; }
+            set { monitor_volume_left = value; }
+        }
+
+        private static double monitor_volume_right = 0.0;
+        public static double MonitorVolumeRight
+        {
+            get { return monitor_volume_right; }
+            set { monitor_volume_right = value; }
+        }
+
+        private static double vac_volume_left = 0.0;
+        public static double VACVolumeLeft
+        {
+            get { return vac_volume_left; }
+            set { vac_volume_left = value; }
+        }
+
+        private static double vac_volume_right = 0.0;
+        public static double VACVolumeRight
+        {
+            get { return vac_volume_right; }
+            set { vac_volume_right = value; }
         }
 
         private static double radio_volume = 0.0;
@@ -650,6 +669,7 @@ namespace PowerSDR
             set
             {
                 vac_enabled = value;
+
                 if (vac_enabled)
                     InitVAC();
                 else
@@ -842,6 +862,10 @@ namespace PowerSDR
         {
             try
             {
+                if (audio_stop)
+                    return callback_return;
+
+                //audio_run.WaitOne(100);
 #if(WIN64)
                 Int64* array_ptr = (Int64*)input;
                 float* in_l_ptr1 = (float*)array_ptr[0];
@@ -899,11 +923,6 @@ namespace PowerSDR
                 }
                 else if (mox && !voice_message_record)
                 {       // tx
-                    if (voice_message_playback)
-                    {
-                        voice_msg_file_reader.GetPlayBuffer(in_l_ptr1, in_r_ptr1);
-                    }
-
                     if (!console.TX_IQ_channel_swap)
                     {
                         in_r = in_l_ptr1;
@@ -919,6 +938,11 @@ namespace PowerSDR
 
                         out_l = out_l_ptr1;
                         out_r = out_r_ptr1;
+                    }
+
+                    if (voice_message_playback)
+                    {
+                        voice_msg_file_reader.GetPlayBuffer(in_l, in_r);
                     }
                 }
                 else if (voice_message_record)
@@ -951,6 +975,8 @@ namespace PowerSDR
                             }
                         }
 
+                        ScaleBuffer(in_l, in_l, frameCount, (float)mic_preamp);
+                        ScaleBuffer(in_r, in_r, frameCount, (float)mic_preamp);
                         voice_msg_file_writer.AddWriteBuffer(in_l, in_r);
                     }
                     catch (Exception ex)
@@ -1608,29 +1634,28 @@ namespace PowerSDR
                     console.CurrentDisplayMode == DisplayMode.PANASCOPE)
                     DoScope(out_l, frameCount);
 
-                double vol = monitor_volume;
+                double vol_l = monitor_volume_left;
+                double vol_r = monitor_volume_right;
+
                 if (mox)
                 {
-                    vol = TXScale;
+                    vol_l = TXScale;
+                    vol_r = TXScale;
 
                     if (high_pwr_am)
                     {
                         if (dsp_mode == DSPMode.AM ||
                             dsp_mode == DSPMode.SAM)
-                            vol *= 1.414;
+                        {
+                            vol_l *= 1.414;
+                            vol_r *= 1.414;
+                        }
                     }
                 }
 
                 if ((wave_record && !mox && !record_rx_preprocessed) ||     // post process audio
                     (wave_record && mox && !record_tx_preprocessed))
                     wave_file_writer.AddWriteBuffer(out_r_ptr1, out_l_ptr1);
-
-                if (VACPrimaryAudiodevice && !mox && current_audio_state1 == AudioState.DTTSP &&
-                    !loopDLL_enabled && !VACDirectI_Q)
-                {
-                    ClearBuffer(out_l_ptr1, frameCount);
-                    ClearBuffer(out_r_ptr1, frameCount);
-                }
 
                 if (PrimaryDirectI_Q && !mox)
                 {
@@ -1639,8 +1664,8 @@ namespace PowerSDR
                         CorrectIQBuffer(in_l, in_r, primary_iq_gain, primary_iq_phase, frameCount);
                     }
 
-                    ScaleBuffer(in_l, out_r, frameCount, (float)vol);
-                    ScaleBuffer(in_r, out_l, frameCount, (float)vol);
+                    ScaleBuffer(in_l, out_r, frameCount, (float)vol_l);
+                    ScaleBuffer(in_r, out_l, frameCount, (float)vol_r);
                 }
                 else if (!MultiPSK_server_enable && loopDLL_enabled && vac_enabled && !mox)
                 {
@@ -1651,12 +1676,12 @@ namespace PowerSDR
                     fixed (double* buffer_ptr = &(buffer[0]))
                     fixed (float* res_outl_ptr = &(res_outl[0]))
                     {
-                        ScaleBuffer(out_l, res_outl_ptr, frameCount, (float)vol);
+                        ScaleBuffer(out_l, res_outl_ptr, frameCount, (float)vol_l);
 
                         if (mon)
                         {
-                            ScaleBuffer(out_l, out_l, frameCount, (float)monitor_volume);
-                            ScaleBuffer(out_r, out_r, frameCount, (float)monitor_volume);
+                            ScaleBuffer(out_l, out_l, frameCount, (float)monitor_volume_left);
+                            ScaleBuffer(out_r, out_r, frameCount, (float)monitor_volume_right);
                         }
                         else
                         {
@@ -1680,7 +1705,7 @@ namespace PowerSDR
                     {
                         int outsamps;
 
-                        ScaleBuffer(out_l, out_l, frameCount, (float)vol);
+                        ScaleBuffer(out_l, out_l, frameCount, (float)vol_l);
                         DttSP.DoResamplerF(out_l, res_outl_ptr, frameCount, &outsamps, resampPtrOut_l);
                         ScaleBuffer(out_l, out_l, frameCount, 0.0f);
                         ScaleBuffer(out_r, out_r, frameCount, 0.0f);
@@ -1773,9 +1798,37 @@ namespace PowerSDR
                             out_r_b++;
                             out_l_b++;
                         }*/
+                    if (mox)
+                    {
+                        ScaleBuffer(out_l, out_l, frameCount, (float)vol_l);
+                        ScaleBuffer(out_r, out_r, frameCount, (float)vol_r);
+                    }
+                    else
+                    {
+                        switch (mute_ch)
+                        {
+                            case MuteChannels.Left:
+                                ScaleBuffer(out_r, out_r, frameCount, (float)vol_r);
+                                ScaleBuffer(out_r, out_l, frameCount, 1.0f);
+                                break;
 
-                    ScaleBuffer(out_l, out_l, frameCount, (float)vol);
-                    ScaleBuffer(out_r, out_r, frameCount, (float)vol);
+                            case MuteChannels.Right:
+                                ScaleBuffer(out_l, out_l, frameCount, (float)vol_l);
+                                ScaleBuffer(out_l, out_r, frameCount, 1.0f);
+                                break;
+
+
+                            case MuteChannels.Both:
+                                ClearBuffer(out_l, frameCount);
+                                ClearBuffer(out_r, frameCount);
+                                break;
+
+                            case MuteChannels.None:
+                                ScaleBuffer(out_l, out_l, frameCount, (float)vol_l);
+                                ScaleBuffer(out_r, out_r, frameCount, (float)vol_r);
+                                break;
+                        }
+                    }
                     //}
                 }
 
@@ -1793,42 +1846,39 @@ namespace PowerSDR
         {
             try
             {
-                float* in_l = null, in_l_VAC = null, in_r = null, in_r_VAC = null;
-                float* out_l1 = null, out_r1 = null, out_l2 = null, out_r2 = null;
-                float* in_l_ptr1 = null;
-                float* in_l_ptr2 = null;
-                float* in_r_ptr1 = null;
-                float* in_r_ptr2 = null;
-                float* out_l_ptr1 = null;
-                float* out_l_ptr2 = null;
-                float* out_r_ptr1 = null;
-                float* out_r_ptr2 = null;
+                if (audio_stop)
+                    return callback_return;
+
+                //audio_run.WaitOne(100);
 
 #if(WIN64)
                     Int64* array_ptr = (Int64*)input;
-                    in_l_ptr1 = (float*)array_ptr[0];
-                    in_r_ptr1 = (float*)array_ptr[1];
-                    in_l_ptr2 = (float*)array_ptr[2];
-                    in_r_ptr2 = (float*)array_ptr[3];
+                    float* in_l_ptr1 = (float*)array_ptr[0];
+                    float* in_r_ptr1 = (float*)array_ptr[1];
+                    float* in_l_ptr2 = (float*)array_ptr[2];
+                    float* in_r_ptr2 = (float*)array_ptr[3];
                     array_ptr = (Int64*)output;
-                    out_l_ptr1 = (float*)array_ptr[0];
-                    out_r_ptr1 = (float*)array_ptr[1];
-                    out_l_ptr2 = (float*)array_ptr[2];
-                    out_r_ptr2 = (float*)array_ptr[3];
+                    float* out_l_ptr1 = (float*)array_ptr[0];
+                    float* out_r_ptr1 = (float*)array_ptr[1];
+                    float* out_l_ptr2 = (float*)array_ptr[2];
+                    float* out_r_ptr2 = (float*)array_ptr[3];
 #endif
 
 #if(WIN32)
                 int* array_ptr = (int*)input;
-                in_l_ptr1 = (float*)array_ptr[0];
-                in_r_ptr1 = (float*)array_ptr[1];
-                in_l_ptr2 = (float*)array_ptr[2];
-                in_r_ptr2 = (float*)array_ptr[3];
+                float*  in_l_ptr1 = (float*)array_ptr[0];
+                float*  in_r_ptr1 = (float*)array_ptr[1];
+                float* in_l_ptr2 = (float*)array_ptr[2];
+                float* in_r_ptr2 = (float*)array_ptr[3];
                 array_ptr = (int*)output;
-                out_l_ptr1 = (float*)array_ptr[0];
-                out_r_ptr1 = (float*)array_ptr[1];
-                out_l_ptr2 = (float*)array_ptr[2];
-                out_r_ptr2 = (float*)array_ptr[3];
+                float* out_l_ptr1 = (float*)array_ptr[0];
+                float* out_r_ptr1 = (float*)array_ptr[1];
+                float* out_l_ptr2 = (float*)array_ptr[2];
+                float* out_r_ptr2 = (float*)array_ptr[3];
 #endif
+
+                float* in_l = null, in_l_VAC = null, in_r = null, in_r_VAC = null;
+                float* out_l1 = null, out_r1 = null, out_l2 = null, out_r2 = null;
 
                 out_l1 = out_l_ptr1;
                 out_r1 = out_r_ptr1;
@@ -1957,6 +2007,8 @@ namespace PowerSDR
                             }
                         }
 
+                        ScaleBuffer(in_l, in_l, frameCount, (float)mic_preamp);
+                        ScaleBuffer(in_r, in_r, frameCount, (float)mic_preamp);
                         voice_msg_file_writer.AddWriteBuffer(in_l, in_r);
                     }
                     catch (Exception ex)
@@ -2704,7 +2756,8 @@ namespace PowerSDR
                 console.CurrentDisplayMode == DisplayMode.PANASCOPE)
                     DoScope(out_l1, frameCount);
 
-                double vol = monitor_volume;
+                double vol_l = monitor_volume_left;
+                double vol_r = monitor_volume_right;
 
                 if (PrimaryDirectI_Q && !mox)
                 {
@@ -2713,8 +2766,8 @@ namespace PowerSDR
                         CorrectIQBuffer(in_l, in_r, primary_iq_gain, primary_iq_phase, frameCount);
                     }
 
-                    ScaleBuffer(in_l, out_l1, frameCount, (float)vol);
-                    ScaleBuffer(in_r, out_r1, frameCount, (float)vol);
+                    ScaleBuffer(in_l, out_l1, frameCount, (float)vol_l);
+                    ScaleBuffer(in_r, out_r1, frameCount, (float)vol_r);
                 }
                 else if (!MultiPSK_server_enable && loopDLL_enabled && vac_enabled && !mox)
                 {
@@ -2724,14 +2777,14 @@ namespace PowerSDR
                     fixed (double* buffer_ptr = &(buffer[0]))
                     fixed (float* res_outl_ptr = &(res_outl[0]))
                     {
-                        ScaleBuffer(out_l1, res_outl_ptr, frameCount, (float)vol);
+                        ScaleBuffer(out_l1, res_outl_ptr, frameCount, (float)vol_l);
 
                         if (mon)
                         {
-                            ScaleBuffer(out_l1, out_l1, frameCount, (float)vol);
-                            ScaleBuffer(out_r1, out_r1, frameCount, (float)vol);
-                            ScaleBuffer(out_l1, out_l2, frameCount, (float)vol);
-                            ScaleBuffer(out_r1, out_r2, frameCount, (float)vol);
+                            ScaleBuffer(out_l1, out_l1, frameCount, (float)vol_l);
+                            ScaleBuffer(out_r1, out_r1, frameCount, (float)vol_r);
+                            ScaleBuffer(out_l1, out_l2, frameCount, (float)vol_l);
+                            ScaleBuffer(out_r1, out_r2, frameCount, (float)vol_r);
                         }
                         else
                         {
@@ -2764,7 +2817,7 @@ namespace PowerSDR
                     {
                         int outsamps;
 
-                        ScaleBuffer(out_l1, out_l1, frameCount, (float)monitor_volume);
+                        ScaleBuffer(out_l1, out_l1, frameCount, (float)monitor_volume_left);
                         DttSP.DoResamplerF(out_l1, res_outl_ptr, frameCount, &outsamps, resampPtrOut_l);
 
                         if (mon)
@@ -2773,10 +2826,10 @@ namespace PowerSDR
                             float[] mon_out_r = new float[frameCount];
                             Marshal.Copy((IntPtr)out_l1, mon_out_l, 0, frameCount);
                             Marshal.Copy((IntPtr)out_r1, mon_out_r, 0, frameCount);
-                            ChangeVolume(mon_out_l, out_l1, frameCount, (float)monitor_volume);
-                            ChangeVolume(mon_out_r, out_r1, frameCount, (float)monitor_volume);
-                            ChangeVolume(mon_out_l, out_l2, frameCount, (float)monitor_volume);
-                            ChangeVolume(mon_out_r, out_r2, frameCount, (float)monitor_volume);
+                            ChangeVolume(mon_out_l, out_l1, frameCount, (float)monitor_volume_left);
+                            ChangeVolume(mon_out_r, out_r1, frameCount, (float)monitor_volume_right);
+                            ChangeVolume(mon_out_l, out_l2, frameCount, (float)monitor_volume_left);
+                            ChangeVolume(mon_out_r, out_r2, frameCount, (float)monitor_volume_right);
                         }
                         else
                         {
@@ -2793,10 +2846,37 @@ namespace PowerSDR
                 {
                     if (!mox)                           // RX
                     {
-                        ScaleBuffer(out_l1, out_l1, frameCount, (float)monitor_volume);
-                        ScaleBuffer(out_r1, out_r1, frameCount, (float)monitor_volume);
-                        ScaleBuffer(out_l1, out_l2, frameCount, (float)monitor_volume);
-                        ScaleBuffer(out_r1, out_r2, frameCount, (float)monitor_volume);
+                        switch (mute_ch)
+                        {
+                            case MuteChannels.Left:
+                                ScaleBuffer(out_r1, out_r1, frameCount, (float)vol_r);
+                                ScaleBuffer(out_r1, out_l1, frameCount, 1.0f);
+                                ScaleBuffer(out_r1, out_r2, frameCount, 1.0f);
+                                ScaleBuffer(out_r1, out_l2, frameCount, 1.0f);
+                                break;
+
+                            case MuteChannels.Right:
+                                ScaleBuffer(out_l1, out_l1, frameCount, (float)vol_l);
+                                ScaleBuffer(out_l1, out_r1, frameCount, 1.0f);
+                                ScaleBuffer(out_l1, out_r2, frameCount, 1.0f);
+                                ScaleBuffer(out_l1, out_l2, frameCount, 1.0f);
+                                break;
+
+
+                            case MuteChannels.Both:
+                                ClearBuffer(out_l1, frameCount);
+                                ClearBuffer(out_r1, frameCount);
+                                ClearBuffer(out_l2, frameCount);
+                                ClearBuffer(out_r2, frameCount);
+                                break;
+
+                            case MuteChannels.None:
+                                ScaleBuffer(out_l1, out_l1, frameCount, (float)vol_l);
+                                ScaleBuffer(out_r1, out_r1, frameCount, (float)vol_r);
+                                ScaleBuffer(out_l1, out_l2, frameCount, (float)vol_l);
+                                ScaleBuffer(out_r1, out_r2, frameCount, (float)vol_r);
+                                break;
+                        }
                     }
                     else
                     {                                   // TX
@@ -2819,13 +2899,13 @@ namespace PowerSDR
                         if (mon && !vac_mon && (dsp_mode == DSPMode.CWL || dsp_mode == DSPMode.CWU))
                         {
                             DttSP.CWMonitorExchange(out_l2, out_r2, frameCount);
-                            ScaleBuffer(out_l2, out_l2, frameCount, (float)monitor_volume);
-                            ScaleBuffer(out_r2, out_r2, frameCount, (float)monitor_volume);
+                            ScaleBuffer(out_l2, out_l2, frameCount, (float)monitor_volume_left);
+                            ScaleBuffer(out_r2, out_r2, frameCount, (float)monitor_volume_right);
                         }
                         else if (mon && !vac_mon)
                         {
-                            ChangeVolume(tmp_out_l, out_l2, frameCount, (float)monitor_volume);
-                            ChangeVolume(tmp_out_r, out_r2, frameCount, (float)monitor_volume);
+                            ChangeVolume(tmp_out_l, out_l2, frameCount, (float)monitor_volume_left);
+                            ChangeVolume(tmp_out_r, out_r2, frameCount, (float)monitor_volume_right);
                         }
                         else
                         {
@@ -2842,11 +2922,13 @@ namespace PowerSDR
                     ScaleBuffer(out_r1, out_r1, frameCount, (float)(1.5f / audio_volts1));
                 }
 
+                //audio_run.ReleaseMutex();
                 return callback_return;
             }
 
             catch (Exception ex)
             {
+                //audio_run.ReleaseMutex();
                 Debug.Write(ex.ToString());
                 return 0;
             }
@@ -2857,6 +2939,10 @@ namespace PowerSDR
         {
             try
             {
+                if (audio_stop)
+                    return callback_return;
+
+                //audio_run_VAC.WaitOne(100);
 #if(WIN64)
                 Int64* array_ptr = (Int64*)input;
                 float* in_l_ptr1 = (float*)array_ptr[0];
@@ -2890,6 +2976,7 @@ namespace PowerSDR
                     rb_vacOUT_l.Reset();
                     rb_vacOUT_r.Reset();
                     Win32.LeaveCriticalSection(cs_vac);
+                    //audio_run_VAC.ReleaseMutex();
                     return 0;
                 }
 
@@ -3019,7 +3106,14 @@ namespace PowerSDR
                     ClearBuffer(out_r_ptr1, frameCount);
                 }                
 
-                double vol = monitor_volume;
+                double vol_l = vac_volume_left;
+                double vol_r = vac_volume_right;
+
+                if (!vac_primary_audiodev)
+                {
+                    vol_l = console.AF / 100.0;
+                    vol_r = console.AF / 100.0;
+                }
 
                 if (Audio.VACDirectI_Q && !mox)
                 {
@@ -3028,8 +3122,34 @@ namespace PowerSDR
                 }
                 else
                 {
-                    ScaleBuffer(out_l_ptr1, out_l_ptr1, frameCount, (float)vol);
-                    ScaleBuffer(out_r_ptr1, out_r_ptr1, frameCount, (float)vol);
+                    switch (vac_mute_ch)
+                    {
+                        case MuteChannels.Left:
+                            ScaleBuffer(out_r_ptr1, out_r_ptr1, frameCount, (float)vol_r);
+                            ScaleBuffer(out_r_ptr1, out_l_ptr1, frameCount, 1.0f);
+                            break;
+
+                        case MuteChannels.Right:
+                            {
+                                ScaleBuffer(out_l_ptr1, out_l_ptr1, frameCount, (float)vol_l);
+                                ScaleBuffer(out_l_ptr1, out_r_ptr1, frameCount, 1.0f);
+                            }
+                            break;
+
+                        case MuteChannels.Both:
+                            {
+                                ClearBuffer(out_l_ptr1, frameCount);
+                                ClearBuffer(out_r_ptr1, frameCount);
+                            }
+                            break;
+
+                        case MuteChannels.None:
+                            {
+                                ScaleBuffer(out_l_ptr1, out_l_ptr1, frameCount, (float)vol_l);
+                                ScaleBuffer(out_r_ptr1, out_r_ptr1, frameCount, (float)vol_r);
+                            }
+                            break;
+                    }
                 }
 
                 return VAC_callback_return;
@@ -3050,8 +3170,12 @@ namespace PowerSDR
         {
             try
             {
-                double* VAC_in = (double*)input;
+                if (audio_stop)
+                    return callback_return;
 
+                //audio_run.WaitOne(100);
+
+                double* VAC_in = (double*)input;
                 int* out_array_ptr = (int*)output;
                 float* out_l_ptr1 = (float*)out_array_ptr[0];
                 float* out_r_ptr1 = (float*)out_array_ptr[1];
@@ -3561,7 +3685,8 @@ namespace PowerSDR
                         break;
                 }
 
-                double vol = monitor_volume;
+                double vol = monitor_volume_left;
+
                 if (mox)
                 {
                     vol = TXScale;
@@ -3651,10 +3776,13 @@ namespace PowerSDR
                     ScaleBuffer(out_r, out_r, frameCount, (float)vol);
                 }
 
+                //audio_run.ReleaseMutex();
                 return callback_return;
             }
             catch (Exception ex)
             {
+                CATNetwork_mutex.ReleaseMutex();
+                //audio_run.ReleaseMutex();
                 Debug.Write(ex.ToString());
                 return 0;
             }
@@ -4063,7 +4191,8 @@ namespace PowerSDR
 
                 console.ServerSocket.sendEvent.Set();
 
-                double vol = monitor_volume;
+                double vol = monitor_volume_left;
+
                 if (mox)
                 {
                     vol = TXScale;
@@ -4093,6 +4222,11 @@ namespace PowerSDR
         {
             try
             {
+                if (audio_stop)
+                    return callback_return;
+
+                //audio_run.WaitOne(100);
+
                 int* array_ptr = (int*)input;
                 float* in_ptr = (float*)array_ptr[0];
                 byte* tmp_ptr = (byte*)in_ptr;
@@ -4104,21 +4238,23 @@ namespace PowerSDR
                     tmp_ptr++;
                 }
 
-                CATNetwork_mutex.WaitOne();
+                //CATNetwork_mutex.WaitOne();
 
                 // prepare for sending new data
                 fixed (void* rptr = &buffer[0])
                 fixed (void* wptr = &console.ServerSocket.send_buffer[0])
-                    Win32.memcpy(wptr, rptr, buffer.Length);
+                    Win32.memcpy(wptr, rptr, frameCount * sizeof(float) * 2);
 
-                CATNetwork_mutex.ReleaseMutex();
-
+                //CATNetwork_mutex.ReleaseMutex();
                 console.ServerSocket.sendEvent.Set();
+                //audio_run.ReleaseMutex();
 
-                return 0;
+                return callback_return;
             }
             catch (Exception e)
             {
+                //CATNetwork_mutex.ReleaseMutex();
+                //audio_run.ReleaseMutex();
                 Debug.Print(e.ToString());
                 return -1;
             }
@@ -4180,65 +4316,6 @@ namespace PowerSDR
         #endregion
 
         #region Spectrum Analyzer callback  // yt7pwr
-
-        unsafe public static int SA_Callback(void* input, void* output, int frameCount,
-            PA19.PaStreamCallbackTimeInfo* timeInfo, int statusFlags, void* userData)
-        {
-            try
-            {
-                int* array_ptr = (int*)input;
-                float* in_l_ptr1 = (float*)array_ptr[0];
-                float* in_r_ptr1 = (float*)array_ptr[1];
-                double* VAC_in = (double*)input;
-                array_ptr = (int*)output;
-                float* out_l_ptr1 = (float*)array_ptr[1];
-                float* out_r_ptr1 = (float*)array_ptr[0];
-
-                if ((wave_record && !mox && record_rx_preprocessed) ||
-                    (wave_record && mox && record_tx_preprocessed))
-                    wave_file_writer.AddWriteBuffer(in_l_ptr1, in_r_ptr1);
-
-                float* in_l = null, in_l_VAC = null, in_r = null, in_r_VAC = null, out_l = null, out_r = null;
-
-                if (!console.RX_IQ_channel_swap)
-                {
-                    in_l = in_l_ptr1;
-                    in_r = in_r_ptr1;
-
-                    out_l = out_l_ptr1;
-                    out_r = out_r_ptr1;
-                }
-                else
-                {
-                    in_l = in_r_ptr1;
-                    in_r = in_l_ptr1;
-
-                    out_l = out_r_ptr1;
-                    out_r = out_l_ptr1;
-                }
-
-                if (voice_message_record)
-                    voice_msg_file_writer.AddWriteBuffer(in_l_ptr1, in_r_ptr1);
-
-                DttSP.ExchangeSamples(thread_no, in_l, in_r, out_l, out_r, frameCount);
-
-                ScaleBuffer(out_l, out_l, frameCount, 0.0f);
-                ScaleBuffer(out_r, out_r, frameCount, 0.0f);
-
-                return callback_return;
-            }
-            catch (Exception ex)
-            {
-                Debug.Write(ex.ToString());
-                return 0;
-            }
-        }
-
-        unsafe public static int SA_Callback4Port(void* input, void* output, int frameCount,
-            PA19.PaStreamCallbackTimeInfo* timeInfo, int statusFlags, void* userData)
-        {
-            return 1;
-        }
 
         #endregion
 
@@ -4333,6 +4410,8 @@ namespace PowerSDR
                                 }
                             }
 
+                            ScaleBuffer(in_l, in_l, frameCount, (float)mic_preamp);
+                            ScaleBuffer(in_r, in_r, frameCount, (float)mic_preamp);
                             voice_msg_file_writer.AddWriteBuffer(in_l, in_r);
                         }
                         catch (Exception ex)
@@ -4666,8 +4745,8 @@ namespace PowerSDR
                     if (mon)
                     {
                         DttSP.CWMonitorExchange(out_l_ptr1, out_r_ptr1, frameCount);
-                        ScaleBuffer(out_l_ptr1, out_l_ptr1, frameCount, (float)monitor_volume);
-                        ScaleBuffer(out_r_ptr1, out_r_ptr1, frameCount, (float)monitor_volume);
+                        ScaleBuffer(out_l_ptr1, out_l_ptr1, frameCount, (float)monitor_volume_left);
+                        ScaleBuffer(out_r_ptr1, out_r_ptr1, frameCount, (float)monitor_volume_right);
                     }
                     else
                     {
@@ -5131,16 +5210,22 @@ namespace PowerSDR
                     console.CurrentDisplayMode == DisplayMode.PANASCOPE)
                         DoScope(out_l, frameCount);
 
-                    double vol = monitor_volume;
+                    double vol_l = monitor_volume_left;
+                    double vol_r = monitor_volume_right;
+
                     if (mox)
                     {
-                        vol = TXScale;
+                        vol_l = TXScale;
+                        vol_r = TXScale;
 
                         if (high_pwr_am)
                         {
                             if (dsp_mode == DSPMode.AM ||
                                 dsp_mode == DSPMode.SAM)
-                                vol *= 1.414;
+                            {
+                                vol_l *= 1.414;
+                                vol_r *= 1.414;
+                            }
                         }
                     }
 
@@ -5164,12 +5249,12 @@ namespace PowerSDR
                         fixed (double* buffer_ptr = &(buffer[0]))
                         fixed (float* res_outl_ptr = &(res_outl[0]))
                         {
-                            ScaleBuffer(out_l, res_outl_ptr, frameCount, (float)vol);
+                            ScaleBuffer(out_l, res_outl_ptr, frameCount, (float)vol_l);
 
                             if (mon)
                             {
-                                ScaleBuffer(out_l, out_l, frameCount, (float)vol);
-                                ScaleBuffer(out_r, out_r, frameCount, (float)vol);
+                                ScaleBuffer(out_l, out_l, frameCount, (float)vol_l);
+                                ScaleBuffer(out_r, out_r, frameCount, (float)vol_r);
                             }
                             else
                             {
@@ -5189,16 +5274,16 @@ namespace PowerSDR
                     }
                     else
                     {
-                        ScaleBuffer(out_l, out_l, frameCount, (float)vol);
-                        ScaleBuffer(out_r, out_r, frameCount, (float)vol);
+                        ScaleBuffer(out_l, out_l, frameCount, (float)vol_l);
+                        ScaleBuffer(out_r, out_r, frameCount, (float)vol_r);
                     }
                 }
                 else
                 {
                     if (mon)
                     {
-                        ScaleBuffer(out_l_ptr1, out_l_ptr1, frameCount, (float)monitor_volume);
-                        ScaleBuffer(out_r_ptr1, out_r_ptr1, frameCount, (float)monitor_volume);
+                        ScaleBuffer(out_l_ptr1, out_l_ptr1, frameCount, (float)monitor_volume_left);
+                        ScaleBuffer(out_r_ptr1, out_r_ptr1, frameCount, (float)monitor_volume_right);
                     }
                     else
                     {
@@ -5279,6 +5364,8 @@ namespace PowerSDR
                                 }
                             }
 
+                            ScaleBuffer(in_l, in_l, frameCount, (float)mic_preamp);
+                            ScaleBuffer(in_r, in_r, frameCount, (float)mic_preamp);
                             voice_msg_file_writer.AddWriteBuffer(in_l, in_r);
                         }
                         catch (Exception ex)
@@ -5968,21 +6055,27 @@ namespace PowerSDR
                         console.CurrentDisplayMode == DisplayMode.PANASCOPE)
                         DoScope(out_l, frameCount);
 
-                    double vol = monitor_volume;
+                    double vol_l = monitor_volume_left;
+                    double vol_r = monitor_volume_right;
+
                     if (mox)
                     {
-                        vol = TXScale;
+                        vol_l = TXScale;
+                        vol_r = TXScale;
 
                         if (high_pwr_am)
                         {
                             if (dsp_mode == DSPMode.AM ||
                                 dsp_mode == DSPMode.SAM)
-                                vol *= 1.414;
+                            {
+                                vol_l *= 1.414;
+                                vol_r *= 1.414;
+                            }
                         }
                     }
 
-                    ScaleBuffer(out_l, out_l, frameCount, (float)vol);
-                    ScaleBuffer(out_r, out_r, frameCount, (float)vol);
+                    ScaleBuffer(out_l, out_l, frameCount, (float)vol_l);
+                    ScaleBuffer(out_r, out_r, frameCount, (float)vol_r);
 
                 }
                 else
@@ -5994,8 +6087,8 @@ namespace PowerSDR
                     if (mon && (dsp_mode == DSPMode.CWL || dsp_mode == DSPMode.CWU))
                     {
                         DttSP.CWMonitorExchange(out_l_ptr1, out_r_ptr1, frameCount);
-                        ScaleBuffer(out_l_ptr1, out_l_ptr1, frameCount, (float)monitor_volume);
-                        ScaleBuffer(out_r_ptr1, out_r_ptr1, frameCount, (float)monitor_volume);
+                        ScaleBuffer(out_l_ptr1, out_l_ptr1, frameCount, (float)monitor_volume_left);
+                        ScaleBuffer(out_r_ptr1, out_r_ptr1, frameCount, (float)monitor_volume_right);
                     }
                     else
                     {
@@ -6206,7 +6299,8 @@ namespace PowerSDR
                     return 0;
                 }
 
-                double vol = monitor_volume;
+                double vol_l = vac_volume_left;
+                double vol_r = vac_volume_right;
 
                 if (mox && mon && vac_mon)
                 {
@@ -6276,8 +6370,36 @@ namespace PowerSDR
                 }
                 else
                 {
-                    ScaleBuffer(out_l_ptr1, out_l_ptr1, frameCount, (float)vol);
-                    ScaleBuffer(out_r_ptr1, out_r_ptr1, frameCount, (float)vol);
+                    switch (vac_mute_ch)
+                    {
+                        case MuteChannels.Left:
+                            {
+                                ScaleBuffer(out_r_ptr1, out_r_ptr1, frameCount, (float)vol_r);
+                                ScaleBuffer(out_r_ptr1, out_l_ptr1, frameCount, 1.0f);
+                            }
+                            break;
+
+                        case MuteChannels.Right:
+                            {
+                                ScaleBuffer(out_l_ptr1, out_l_ptr1, frameCount, (float)vol_l);
+                                ScaleBuffer(out_l_ptr1, out_r_ptr1, frameCount, 1.0f);
+                            }
+                            break;
+
+                        case MuteChannels.Both:
+                            {
+                                ClearBuffer(out_l_ptr1, frameCount);
+                                ClearBuffer(out_r_ptr1, frameCount);
+                            }
+                            break;
+
+                        case MuteChannels.None:
+                            {
+                                ScaleBuffer(out_l_ptr1, out_l_ptr1, frameCount, (float)vol_l);
+                                ScaleBuffer(out_r_ptr1, out_r_ptr1, frameCount, (float)vol_r);
+                            }
+                            break;
+                    }
                 }
 
                 return VAC_callback_return;
@@ -6301,7 +6423,7 @@ namespace PowerSDR
         {
             try
             {
-                double vol = monitor_volume;
+                double vol = monitor_volume_left;
 
                 while (run_MultiPSK_server_thread)
                 {
@@ -6669,7 +6791,7 @@ namespace PowerSDR
         {
 			Debug.WriteLine(s);
 
-            if (debug)
+            if (debug && !console.ConsoleClosing)
                 console.Invoke(new DebugCallbackFunction(console.DebugCallback), "Audio:" + s);
         }
 
@@ -6724,7 +6846,7 @@ namespace PowerSDR
             {
                 Debug.Write(ex.ToString());
 
-                if (debug)
+                if (debug && console.ConsoleClosing)
                     VACDebug(ex.ToString());
             }
         }
@@ -6805,7 +6927,7 @@ namespace PowerSDR
 
         unsafe public static bool Start()      // changes yt7pwr
         {
-            if (audio_stop)
+            if (audio_stop || VAC_audio_stop)
                 return false;
 
             bool retval = false;
@@ -6860,7 +6982,8 @@ namespace PowerSDR
                 if (audio_exclusive)
                 {
                     if (console.CurrentSoundCard == SoundCard.UNSUPPORTED_CARD &&
-                        (console.WinVer == WindowsVersion.Windows7 || console.WinVer == WindowsVersion.WindowsVista))
+                        (console.WinVer == WindowsVersion.Windows7 || console.WinVer == WindowsVersion.Windows8 ||
+                        console.WinVer == WindowsVersion.WindowsVista))
                     {
                         if (num_channels == 2)
                         {
@@ -6882,7 +7005,8 @@ namespace PowerSDR
                         }
                     }
                     else if (console.CurrentSoundCard == SoundCard.UNSUPPORTED_CARD &&
-                        (console.WinVer == WindowsVersion.Windows7 || console.WinVer == WindowsVersion.WindowsVista))
+                        (console.WinVer == WindowsVersion.Windows7 || console.WinVer == WindowsVersion.Windows8 ||
+                        console.WinVer == WindowsVersion.WindowsVista))
                     {
                         if (num_channels == 2)
                         {
@@ -6923,20 +7047,20 @@ namespace PowerSDR
             #region ethernet client
             else if (enable_ethernet_client)    // act as network client
             {
-                /*
-                                network_input_bufer_l = new byte[block_size1 * sizeof(float) * 2];
-                                network_input_bufer_r = new byte[block_size1 * sizeof(float) * 2];
 
-                                if (client_rf_spectar)
-                                {
-                                    retval = StartAudio(ref ClientCallback1, (uint)block_size1, sample_rate1,
-                                        host1, input_dev1, output_dev1, num_channels, 1, latency1);
-                                }
-                                else
-                                {
-                                    retval = StartAudio(ref ClientCallback1, (uint)block_size1, sample_rate1,
-                                        host1, input_dev1, output_dev1, num_channels, 0, latency1);
-                                }*/
+                network_input_bufer_l = new byte[block_size1 * sizeof(float) * 2];
+                network_input_bufer_r = new byte[block_size1 * sizeof(float) * 2];
+
+                if (client_rf_spectar)
+                {
+                    retval = StartAudio(ref ClientCallback1, (uint)block_size1, sample_rate1,
+                        host1, input_dev1, output_dev1, num_channels, 1, latency1);
+                }
+                else
+                {
+                    retval = StartAudio(ref ClientCallback1, (uint)block_size1, sample_rate1,
+                        host1, input_dev1, output_dev1, num_channels, 0, latency1);
+                }
             }
             #endregion
 
@@ -7091,7 +7215,8 @@ namespace PowerSDR
                     outparam.suggestedLatency = ((float)latency_ms / 1000);
 
                     if (host_api_index == PA19.PA_HostApiTypeIdToHostApiIndex(PA19.PaHostApiTypeId.paWASAPI) &&
-                        (console.WinVer == WindowsVersion.Windows7 || console.WinVer == WindowsVersion.WindowsVista))
+                        (console.WinVer == WindowsVersion.Windows7 || console.WinVer == WindowsVersion.Windows8 ||
+                        console.WinVer == WindowsVersion.WindowsVista))
                     {
                         PA19.PaWasapiStreamInfo stream_info = new PA19.PaWasapiStreamInfo();
                         stream_info.hostApiType = PA19.PaHostApiTypeId.paWASAPI;
@@ -7444,8 +7569,8 @@ namespace PowerSDR
                         inparam.suggestedLatency = ((float)latency_ms / 1000);
 
                         if (host_api_index == PA19.PA_HostApiTypeIdToHostApiIndex(PA19.PaHostApiTypeId.paWASAPI) &&
-                            audio_exclusive && (console.WinVer == WindowsVersion.Windows7
-                            || console.WinVer == WindowsVersion.WindowsVista))
+                            audio_exclusive && (console.WinVer == WindowsVersion.Windows7 | console.WinVer == WindowsVersion.Windows8 ||
+                            console.WinVer == WindowsVersion.WindowsVista))
                         {
                             PA19.PaWasapiStreamInfo input_stream_info = new PA19.PaWasapiStreamInfo();
                             input_stream_info.hostApiType = PA19.PaHostApiTypeId.paWASAPI;
@@ -7458,6 +7583,7 @@ namespace PowerSDR
                         }
 
                         error = 0;
+
                         if (callback_num == 0)
                             error = PA19.PA_OpenStream(out stream1, &inparam, null,
                                 sample_rate, block_size, 0, callback, 0, callback_id);
@@ -7493,8 +7619,8 @@ namespace PowerSDR
                         inparam.suggestedLatency = ((float)latency_ms / 1000);
 
                         if (host_api_index == PA19.PA_HostApiTypeIdToHostApiIndex(PA19.PaHostApiTypeId.paWASAPI) &&
-                            audio_exclusive && (console.WinVer == WindowsVersion.Windows7
-                            || console.WinVer == WindowsVersion.WindowsVista))
+                            audio_exclusive && (console.WinVer == WindowsVersion.Windows7 || console.WinVer == WindowsVersion.Windows8 ||
+                            console.WinVer == WindowsVersion.WindowsVista))
                         {
                             PA19.PaWasapiStreamInfo input_stream_info = new PA19.PaWasapiStreamInfo();
                             input_stream_info.hostApiType = PA19.PaHostApiTypeId.paWASAPI;
@@ -7534,7 +7660,8 @@ namespace PowerSDR
                         outparam.suggestedLatency = ((float)latency_ms / 1000);
 
                         if (host_api_index == PA19.PA_HostApiTypeIdToHostApiIndex(PA19.PaHostApiTypeId.paWASAPI) &&
-                            (console.WinVer == WindowsVersion.Windows7 || console.WinVer == WindowsVersion.WindowsVista))
+                            (console.WinVer == WindowsVersion.Windows7 || console.WinVer == WindowsVersion.Windows8 ||
+                            console.WinVer == WindowsVersion.WindowsVista))
                         {
                             PA19.PaWasapiStreamInfo output_stream_info = new PA19.PaWasapiStreamInfo();
                             output_stream_info.hostApiType = PA19.PaHostApiTypeId.paWASAPI;
@@ -7580,7 +7707,8 @@ namespace PowerSDR
                         outparam.suggestedLatency = ((float)latency_ms / 1000);
 
                         if (host_api_index == PA19.PA_HostApiTypeIdToHostApiIndex(PA19.PaHostApiTypeId.paWASAPI) &&
-                            (console.WinVer == WindowsVersion.Windows7 || console.WinVer == WindowsVersion.WindowsVista))
+                            (console.WinVer == WindowsVersion.Windows7 || console.WinVer == WindowsVersion.Windows8 ||
+                            console.WinVer == WindowsVersion.WindowsVista))
                         {
                             PA19.PaWasapiStreamInfo output_stream_info = new PA19.PaWasapiStreamInfo();
                             output_stream_info.hostApiType = PA19.PaHostApiTypeId.paWASAPI;
@@ -7632,6 +7760,8 @@ namespace PowerSDR
             try
             {
                 audio_stop = true;
+                Thread.Sleep(100);
+                //audio_run.WaitOne(5000);
 
                 if (MultiPSK_server_enable)
                 {
@@ -7642,63 +7772,72 @@ namespace PowerSDR
                 }
 
                 error = PA19.PA_StopStream(stream1);
-                if (error == (int)PA19.PaErrorCode.paNoError ||
+
+                /*if (error == (int)PA19.PaErrorCode.paNoError ||
                     error == (int)PA19.PaErrorCode.paStreamIsStopped)
-                {
+                {*/
                     PA19.PA_AbortStream(stream1);
                     PA19.PA_CloseStream(stream1);
-                }
+                /*}
                 else
                 {
-                    Debug.Write(PA19.PA_GetErrorText(error).ToString());
-                }
+                    Debug.Write(PA19.PA_GetErrorText(error).ToString() + "\n");
+                }*/
+
                 error = PA19.PA_StopStream(stream2);
-                if (error == (int)PA19.PaErrorCode.paNoError ||
+
+                /*if (error == (int)PA19.PaErrorCode.paNoError ||
                     error == (int)PA19.PaErrorCode.paStreamIsStopped)
-                {
+                {*/
                     PA19.PA_AbortStream(stream2);
                     PA19.PA_CloseStream(stream2);
-                }
+                /*}
                 else
                 {
-                    Debug.Write(PA19.PA_GetErrorText(error).ToString());
-                }
+                    Debug.Write(PA19.PA_GetErrorText(error).ToString() + "\n");
+                }*/
+
                 error = PA19.PA_StopStream(stream3);
-                if (error == (int)PA19.PaErrorCode.paNoError ||
+
+                /*if (error == (int)PA19.PaErrorCode.paNoError ||
                     error == (int)PA19.PaErrorCode.paStreamIsStopped)
-                {
+                {*/
                     PA19.PA_AbortStream(stream3);
                     PA19.PA_CloseStream(stream3);
-                }
+                /*}
                 else
                 {
-                    Debug.Write(PA19.PA_GetErrorText(error).ToString());
-                }
+                    Debug.Write(PA19.PA_GetErrorText(error).ToString() + "\n");
+                }*/
+
                 error = PA19.PA_StopStream(stream4);
-                if (error == (int)PA19.PaErrorCode.paNoError ||
+
+                /*if (error == (int)PA19.PaErrorCode.paNoError ||
                     error == (int)PA19.PaErrorCode.paStreamIsStopped)
-                {
+                {*/
                     PA19.PA_AbortStream(stream4);
                     PA19.PA_CloseStream(stream4);
-                }
+                /*}
                 else
                 {
-                    Debug.Write(PA19.PA_GetErrorText(error).ToString());
-                }
+                    Debug.Write(PA19.PA_GetErrorText(error).ToString() + "\n");
+                }*/
 
-                CATNetwork_mutex.Close();
-                MultiPSK_mutex.Close();
-                DttSP_mutex.Close();
+                //CATNetwork_mutex.Close();
+                //MultiPSK_mutex.Close();
+                //DttSP_mutex.Close();
                 audio_stop = false;
+                //audio_run.ReleaseMutex();
                 Debug.Write("Exit StopAudio!\n");
             }
             catch (Exception ex)
             {
                 Debug.Write(ex.ToString());
 
-                if (debug)
+                if (debug && !console.ConsoleClosing)
                     VACDebug(ex.ToString());
 
+                //audio_run.ReleaseMutex();
                 audio_stop = false;
             }
         }
@@ -7707,6 +7846,10 @@ namespace PowerSDR
         {
             try
             {
+                VAC_audio_stop = true;
+                Thread.Sleep(100);
+                //audio_run_VAC.WaitOne(5000);
+
                 PA19.PA_AbortStream(stream5);
                 PA19.PA_CloseStream(stream5);
                 PA19.PA_AbortStream(stream6);
@@ -7736,12 +7879,16 @@ namespace PowerSDR
                 {
                     //Debug.Write(PA19.PA_GetErrorText(error).ToString());
                 }*/
+
+                VAC_audio_stop = false;
+                //audio_run_VAC.ReleaseMutex();
             }
             catch (Exception ex)
             {
+                //audio_run_VAC.ReleaseMutex();
                 Debug.Write(ex.ToString());
 
-                if (debug)
+                if (debug && console.ConsoleClosing)
                     VACDebug(ex.ToString());
             }
         }
@@ -7868,7 +8015,7 @@ namespace PowerSDR
             {
                 Debug.Write(ex.ToString());
 
-                if (debug)
+                if (debug && !console.ConsoleClosing)
                     console.Invoke(new DebugCallbackFunction(console.DebugCallback),
                         "DoScope error!\n" + ex.ToString());
             }

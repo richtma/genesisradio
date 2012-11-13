@@ -2,7 +2,6 @@
 // XTRV form
 //=================================================================
 //
-//  USB communication with External Si570(QRP2000 from www.sdr-kits.net)
 //  Copyright (C)2011 YT7PWR Goran Radivojevic
 //  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 //
@@ -223,57 +222,112 @@ namespace PowerSDR
             try
             {
                 console.Invoke(new XTRV_cross_thread_callback(console.XTRV_cross_thread_callback), 1, txtBandX1.Text.ToString(),
-                    (double)udBandX1FreqMin.Value, (double)udBandX1FreqMax.Value, (double)udBandX1Losc.Value + (double)udBandX1LoscErr.Value,
+                    (double)udBandX1FreqMin.Value, (double)udBandX1FreqMax.Value, (double)udBandX1Losc.Value + (double)udBandX1LoscErr.Value / 1e3,
                     (double)udBandX1Pwr.Value, (double)udBandX1PwrGain.Value, chkBandX1RXonly.Checked);
 
                 console.Invoke(new XTRV_cross_thread_callback(console.XTRV_cross_thread_callback), 2, txtBandX2.Text.ToString(),
-                    (double)udBandX2FreqMin.Value, (double)udBandX2FreqMax.Value, (double)udBandX2Losc.Value + (double)udBandX2LoscErr.Value,
+                    (double)udBandX2FreqMin.Value, (double)udBandX2FreqMax.Value, (double)udBandX2Losc.Value + (double)udBandX2LoscErr.Value / 1e3,
                     (double)udBandX2Pwr.Value, (double)udBandX2PwrGain.Value, chkBandX2RXonly.Checked);
 
                 console.Invoke(new XTRV_cross_thread_callback(console.XTRV_cross_thread_callback), 3, txtBandX3.Text.ToString(),
-                    (double)udBandX3FreqMin.Value, (double)udBandX3FreqMax.Value, (double)udBandX3Losc.Value + (double)udBandX3LoscErr.Value,
+                    (double)udBandX3FreqMin.Value, (double)udBandX3FreqMax.Value, (double)udBandX3Losc.Value + (double)udBandX3LoscErr.Value / 1e3,
                     (double)udBandX3Pwr.Value, (double)udBandX3PwrGain.Value, chkBandX3RXonly.Checked);
 
                 console.Invoke(new XTRV_cross_thread_callback(console.XTRV_cross_thread_callback), 4, txtBandX4.Text.ToString(),
-                    (double)udBandX4FreqMin.Value, (double)udBandX4FreqMax.Value, (double)udBandX4Losc.Value + (double)udBandX4LoscErr.Value,
+                    (double)udBandX4FreqMin.Value, (double)udBandX4FreqMax.Value, (double)udBandX4Losc.Value + (double)udBandX4LoscErr.Value / 1e3,
                     (double)udBandX4Pwr.Value, (double)udBandX4PwrGain.Value, chkBandX4RXonly.Checked);
 
                 console.Invoke(new XTRV_cross_thread_callback(console.XTRV_cross_thread_callback), 5, txtBandX5.Text.ToString(),
-                    (double)udBandX5FreqMin.Value, (double)udBandX5FreqMax.Value, (double)udBandX5Losc.Value + (double)udBandX5LoscErr.Value,
+                    (double)udBandX5FreqMin.Value, (double)udBandX5FreqMax.Value, (double)udBandX5Losc.Value + (double)udBandX5LoscErr.Value / 1e3,
                     (double)udBandX5Pwr.Value, (double)udBandX5PwrGain.Value, chkBandX5RXonly.Checked);
 
                 console.Invoke(new XTRV_cross_thread_callback(console.XTRV_cross_thread_callback), 6, txtBandX6.Text.ToString(),
-                    (double)udBandX6FreqMin.Value, (double)udBandX6FreqMax.Value, (double)udBandX6Losc.Value + (double)udBandX6LoscErr.Value,
+                    (double)udBandX6FreqMin.Value, (double)udBandX6FreqMax.Value, (double)udBandX6Losc.Value + (double)udBandX6LoscErr.Value / 1e3,
                     (double)udBandX6Pwr.Value, (double)udBandX6PwrGain.Value, chkBandX6RXonly.Checked);
 
                 console.Invoke(new XTRV_cross_thread_callback(console.XTRV_cross_thread_callback), 7, txtBandX7.Text.ToString(),
-                    (double)udBandX7FreqMin.Value, (double)udBandX7FreqMax.Value, (double)udBandX7Losc.Value + (double)udBandX7LoscErr.Value,
+                    (double)udBandX7FreqMin.Value, (double)udBandX7FreqMax.Value, (double)udBandX7Losc.Value + (double)udBandX7LoscErr.Value / 1e3,
                     (double)udBandX7Pwr.Value, (double)udBandX7PwrGain.Value, chkBandX7RXonly.Checked);
 
                 console.Invoke(new XTRV_cross_thread_callback(console.XTRV_cross_thread_callback), 8, txtBandX8.Text.ToString(),
-                    (double)udBandX8FreqMin.Value, (double)udBandX8FreqMax.Value, (double)udBandX8Losc.Value + (double)udBandX8LoscErr.Value,
+                    (double)udBandX8FreqMin.Value, (double)udBandX8FreqMax.Value, (double)udBandX8Losc.Value + (double)udBandX8LoscErr.Value / 1e3,
                     (double)udBandX8Pwr.Value, (double)udBandX8PwrGain.Value, chkBandX8RXonly.Checked);
 
                 console.Invoke(new XTRV_cross_thread_callback(console.XTRV_cross_thread_callback), 9, txtBandX9.Text.ToString(),
-                    (double)udBandX9FreqMin.Value, (double)udBandX9FreqMax.Value, (double)udBandX9Losc.Value + (double)udBandX9LoscErr.Value,
+                    (double)udBandX9FreqMin.Value, (double)udBandX9FreqMax.Value, (double)udBandX9Losc.Value + (double)udBandX9LoscErr.Value / 1e3,
                     (double)udBandX9Pwr.Value, (double)udBandX9PwrGain.Value, chkBandX9RXonly.Checked);
 
                 console.Invoke(new XTRV_cross_thread_callback(console.XTRV_cross_thread_callback), 10, txtBandX10.Text.ToString(),
-                    (double)udBandX10FreqMin.Value, (double)udBandX10FreqMax.Value, (double)udBandX10Losc.Value + (double)udBandX10LoscErr.Value,
+                    (double)udBandX10FreqMin.Value, (double)udBandX10FreqMax.Value, (double)udBandX10Losc.Value + (double)udBandX10LoscErr.Value / 1e3,
                     (double)udBandX10Pwr.Value, (double)udBandX10PwrGain.Value, chkBandX10RXonly.Checked);
 
                 console.Invoke(new XTRV_cross_thread_callback(console.XTRV_cross_thread_callback), 11, txtBandX11.Text.ToString(),
-                    (double)udBandX11FreqMin.Value, (double)udBandX11FreqMax.Value, (double)udBandX11Losc.Value + (double)udBandX11LoscErr.Value,
+                    (double)udBandX11FreqMin.Value, (double)udBandX11FreqMax.Value, (double)udBandX11Losc.Value + (double)udBandX11LoscErr.Value / 1e3,
                     (double)udBandX11Pwr.Value, (double)udBandX11PwrGain.Value, chkBandX11RXonly.Checked);
 
                 console.Invoke(new XTRV_cross_thread_callback(console.XTRV_cross_thread_callback), 12, txtBandX12.Text.ToString(),
-                    (double)udBandX12FreqMin.Value, (double)udBandX12FreqMax.Value, (double)udBandX12Losc.Value + (double)udBandX12LoscErr.Value,
+                    (double)udBandX12FreqMin.Value, (double)udBandX12FreqMax.Value, (double)udBandX12Losc.Value + (double)udBandX12LoscErr.Value / 1e3,
                     (double)udBandX12Pwr.Value, (double)udBandX12PwrGain.Value, chkBandX12RXonly.Checked);
             }
             catch (Exception ex)
             {
                 Debug.Write(ex.ToString());
             }
+        }
+
+        private void udBandX2Losc_ValueChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void udBandX3Losc_ValueChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void udBandX4Losc_ValueChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void udBandX5Losc_ValueChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void udBandX6Losc_ValueChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void udBandX7Losc_ValueChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void udBandX8Losc_ValueChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void udBandX9Losc_ValueChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void udBandX10Losc_ValueChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void udBandX11Losc_ValueChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void udBandX12Losc_ValueChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

@@ -72,6 +72,60 @@ namespace PowerSDR
 
         #region CAT Properties
 
+        public int CATVFOMODE
+        {
+            get
+            {
+                switch (current_click_tune_mode)
+                {
+
+                    case ClickTuneMode.VFOB:
+                        return 1;
+
+                    default:
+                        return 0;
+                }
+            }
+
+            set
+            {
+                switch (value)
+                {
+                    case 0:
+                        current_click_tune_mode = ClickTuneMode.VFOA;
+                        break;
+
+                    case 1:
+                        current_click_tune_mode = ClickTuneMode.VFOB;
+                        break;
+
+                    case 0xa0:                          // equalize freq
+                        VFOBFreq = VFOAFreq;
+                        break;
+
+                    case 0xb0:                          // exchange
+                        double freq = vfoBFreq;
+                        VFOAFreq = VFOBFreq;
+                        VFOBFreq = freq;
+                        break;
+
+                    case 0xb1:                          // uqualize freq,mode,filters
+                        VFOBFreq = VFOAFreq;
+                        CurrentDSPModeSubRX = CurrentDSPMode;
+                        CurrentFilterSubRX = CurrentFilter;
+                        break;
+
+                    case 0xc0:
+                        chkEnableSubRX.Checked = false;
+                        break;
+
+                    case 0xc1:
+                        chkEnableSubRX.Checked = true;
+                        break;
+                }
+            }
+        }
+
         public double CATVFOA
         {
             get { return vfoAFreq; }
@@ -107,7 +161,7 @@ namespace PowerSDR
             }
         }
 
-        public string CATPanSwap
+       /* public string CATPanSwap
         {
             get
             {
@@ -123,7 +177,7 @@ namespace PowerSDR
                 else
                     chkPanSwap.Checked = false;
             }
-        }
+        }*/
 
         public string CATCWMonitor      // yt7pwr
         {
@@ -330,8 +384,24 @@ namespace PowerSDR
             }
         }
 
+        private int cat_nr_gain = 0;
+        public int CATNRgain
+        {
+            get { return (int)SetupForm.udLMSNRgain.Value; }
+            set
+            {
+                if (SetupForm.udLMSNRgain != null)
+                {
+                    value = Math.Max(1, value);
+                    value = Math.Min(9999, value);
+                    SetupForm.udLMSNRgain.Value = value;
+                    cat_nr_gain = value;
+                }
+            }
+        }
+
         private int cat_notch_status = 0;
-        public int CATNOTCH
+        public int CATNOTCHenable
         {
             get { return cat_notch_status; }
             set
@@ -346,6 +416,30 @@ namespace PowerSDR
                     chkManualNotchFilter.Checked = true;
                     cat_notch_status = 1;
                 }
+            }
+        }
+
+        public int CATNOTCHgain
+        {
+            get { return (int)SetupForm.udLMSANFgain.Value; }
+            set
+            {
+                value = Math.Max(1, value);
+                value = Math.Min(9999, value);
+                SetupForm.udLMSANFgain.Value = value;
+                cat_notch_status = 0;
+            }
+        }
+
+        public int CATNOTCHManual
+        {
+            get { return (int)ptbNotchShift.Value; }
+            set
+            {
+                value = Math.Max(-5000, value);
+                value = Math.Min(5000, value);
+                ptbNotchShift.Value = value;
+                ptbNotchShift_Scroll(this, EventArgs.Empty);
             }
         }
 
@@ -556,8 +650,7 @@ namespace PowerSDR
         {
             get
             {
-                if (chkSQLMainRX.Checked || chkSQLMainRX.Checked
-                    || chkSQLSubRX.Checked)
+                if (chkSQLMainRX.Checked)
                     cat_squelch_status = 1;
                 else
                     cat_squelch_status = 0;
@@ -626,11 +719,19 @@ namespace PowerSDR
             set { cat_stop_bits = value; }
             get { return cat_stop_bits; }
         }
+
         private SDRSerialSupportII.SDRSerialPort.DataBits cat_data_bits;
         public SDRSerialSupportII.SDRSerialPort.DataBits CATDataBits
         {
             set { cat_data_bits = value; }
             get { return cat_data_bits; }
+        }
+
+        private SDRSerialSupportII.SDRSerialPort.HandshakeBits cat_handshake = SDRSerialPort.HandshakeBits.None;       // yt7pwr
+        public SDRSerialSupportII.SDRSerialPort.HandshakeBits CATHandshake
+        {
+            set { cat_handshake = value; }
+            get { return cat_handshake; }
         }
 
         private int cat_baud_rate;
@@ -668,6 +769,20 @@ namespace PowerSDR
         {
             get { return cat_rig_type; }
             set { cat_rig_type = value; }
+        }
+
+        private int cat_rig_address = 0x70;         // 112 0x70 ICOM IC-7000 default
+        public int CATRigAddress
+        {
+            get { return cat_rig_address; }
+            set { cat_rig_address = value; }
+        }
+
+        private bool cat_echo = false;
+        public bool CATEcho
+        {
+            get { return cat_echo; }
+            set { cat_echo = value; }
         }
 
         private int cat_port;
@@ -752,16 +867,102 @@ namespace PowerSDR
             set { kw_auto_information = value; }
         }
 
+        private int cat_rf_preamp_status = 0;       // yt7pwr
+        public int CATRFPreampStatus
+        {
+            get { return cat_rf_preamp_status; }
+            set
+            {
+                if (value == 0)
+                {
+                    switch (current_model)
+                    {
+                        case Model.GENESIS_G59USB:
+                        case Model.GENESIS_G59NET:
+                            btnHIGH_RF.Checked = false;
+                            break;
+
+                        case Model.GENESIS_G11:
+                            chkG11RFbtn.Checked = false;
+                            break;
+                    }
+                }
+                else if (value == 1)
+                {
+                    switch (current_model)
+                    {
+                        case Model.GENESIS_G59USB:
+                        case Model.GENESIS_G59NET:
+                            btnHIGH_RF.Checked = true;
+                            break;
+
+                        case Model.GENESIS_G11:
+                            chkG11RFbtn.Checked = true;
+                            break;
+                    }                    
+                }
+
+                cat_rf_preamp_status = value;
+            }
+        }
+
+        private int cat_af_preamp_status = 0;       // yt7pwr
+        public int CATAFPreampStatus
+        {
+            get { return cat_af_preamp_status; }
+            set
+            {
+                if (value == 0)
+                {
+                    btnHIGH_AF.Checked = false;
+                    cat_af_preamp_status = 0;
+                }
+                else if (value == 1)
+                {
+                    btnHIGH_AF.Checked = true;
+                    cat_af_preamp_status = 1;
+                }
+            }
+        }
+
+        public bool CATCTCSSEnable          // yt7pwr
+        {
+            get { return chkCTCSS.Checked; }
+            set
+            {
+                chkCTCSS.Checked = value;
+            }
+        }
+
         #endregion
 
         #region crossthread callbacks
 
-        public void CATCallback(string type, int parm1, int[] parm2)
+        public void CATCallback(string type, int parm1, int[] parm2, string parm3)
         {
             switch (type)
             {
+                case "Restore":
+                    if (this.WindowState == FormWindowState.Minimized)
+                    {
+                        this.WindowState = FormWindowState.Normal;
+                        this.BringToFront();
+                        this.Show();
+                    }
+                    else
+                        this.WindowState = FormWindowState.Minimized;
+                    break;
                 case "AF":
                     AF = parm1;
+                    break;
+                case "AF_mute":
+                    chkMUT.Checked = !chkMUT.Checked;
+                    break;
+                case "AF+":
+                    AF += 1;
+                    break;
+                case "AF-":
+                    AF -= 1;
                     break;
                 case "RF":
                     RF = parm1;
@@ -814,6 +1015,11 @@ namespace PowerSDR
                 case "COMP Threshold":
                     SetupForm.CATCompThreshold = parm1;
                     break;
+                case "COMP level":
+                    parm1 = (int)Math.Min(udCOMP.Maximum, parm1);
+                    parm1 = (int)Math.Max(udCOMP.Minimum, parm1);
+                    udCOMP.Value = parm1;
+                    break;
                 case "CMPD":
                     CATCmpd = parm1;
                     break;
@@ -828,12 +1034,15 @@ namespace PowerSDR
                     break;
                 case "VOX Gain":
                     VOXSens = parm1;
-                     break;
+                    break;
                 case "DSP Mode VFOA":
                     CurrentDSPMode = (DSPMode)parm1;
                     break;
                 case "DSP Mode VFOB":
                     CurrentDSPModeSubRX = (DSPMode)parm1;
+                    break;
+                case "AGC mode":
+                    CurrentAGCMode = (AGCMode)parm1;
                     break;
                 case "Filter":
                     CurrentFilter = (Filter)parm1;
@@ -891,7 +1100,7 @@ namespace PowerSDR
                         {
                             CWXForm = new CWX(this);
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             Debug.Write(ex.ToString());
                         }
@@ -945,11 +1154,17 @@ namespace PowerSDR
                 case "VFOA down":
                     VFOAFreq = vfoAFreq - Step2Freq(parm1);
                     break;
+                case "VFOA step down":
+                    VFOAFreq = vfoAFreq - wheel_tune_list[StepSize];
+                    break;
+                case "VFOA step up":
+                    VFOAFreq = vfoAFreq + wheel_tune_list[StepSize];
+                    break;
                 case "VFOA up":
                     VFOAFreq = vfoAFreq + Step2Freq(parm1);
                     break;
-                case "VFOA set":
-                    //VFOAFreq = 
+                case "VFOA freq":
+                    VFOAFreq = double.Parse(parm3) / 1e6;
                     break;
                 case "VFOB down":
                     VFOAFreq = vfoBFreq - Step2Freq(parm1);
@@ -965,6 +1180,9 @@ namespace PowerSDR
                     break;
                 case "VFO Swap":
                     CATVFOSwap(parm1.ToString());
+                    break;
+                case "VFO mode":
+                    CATVFOMODE = parm1;
                     break;
                 case "BandGrp":
                     CATBandGroup = parm1;
@@ -1007,9 +1225,12 @@ namespace PowerSDR
                     break;
                 case "Power":
                     if (parm1 == 1)
-                        PowerOn = true;
+                        chkPower.Checked = true;
                     else
-                        PowerOn = false;
+                        chkPower.Checked = false;
+                    break;
+                case "Power toggle":
+                    chkPower.Checked = !chkPower.Checked;
                     break;
                 case "Memory Recall":
                     CATMemoryQR();
@@ -1029,19 +1250,13 @@ namespace PowerSDR
                     else
                         EnableSubRX = false;
                     break;
-                case "SPLIT":
-                    if (parm1 == 1)
-                        VFOSplit = true;
-                    else
-                        VFOSplit = false;
-                    break;
                 case "MOX":
                     if (parm1 == 1)
                         MOX = true;
                     else
                         MOX = false;
                     break;
-                case"RXOnly":
+                case "RXOnly":
                     if (parm1 == 1)
                         SetupForm.RXOnly = true;
                     else
@@ -1080,29 +1295,34 @@ namespace PowerSDR
                 case "Band set":
                     CurrentBand = (Band)parm1;
                     break;
+                case "Band up":
+                    int band = Math.Min((int)Band.LAST, (int)(current_band + 1));
+                    CurrentBand = (Band)band;
+                    break;
+                case "Band down":
+                    band = Math.Max((int)Band.FIRST, (int)(current_band - 1));
+                    CurrentBand = (Band)band;
+                    break;
                 case "Meter RXMode":
                     CurrentMeterRXMode = (MeterRXMode)parm1;
                     break;
                 case "Meter TXMode":
                     CurrentMeterTXMode = (MeterTXMode)parm1;
                     break;
-                case "G59 AF":
+                case "AF preamp":
                     if (parm1 == 1)
-                        G59_AF_button = true;
+                        AF_button = true;
                     else
-                        G59_AF_button = false;
+                        AF_button = false;
                     break;
-                case "G59 RF":
-                    if (parm1 == 1)
-                        G59_RF_button = true;
-                    else
-                        G59_RF_button = false;
+                case "RF preamp":
+                    CATRFPreampStatus = parm1;
                     break;
-                case "G59 ATT":
+                case "ATT":
                     if (parm1 == 1)
-                        G59_ATT_button = true;
+                        ATT_button = true;
                     else
-                        G59_ATT_button = false;
+                        ATT_button = false;
                     break;
                 case "Noise Gate":
                     if (parm1 == 1)
@@ -1129,7 +1349,7 @@ namespace PowerSDR
                         MON = false;
                     break;
                 case "PAN Swap":
-                    CATPanSwap = parm1.ToString();
+                    //CATPanSwap = parm1.ToString();
                     break;
                 case "SUB Rx":
                     CATSubRX = parm1.ToString();
@@ -1149,8 +1369,78 @@ namespace PowerSDR
                 case "NR":
                     CATNR = parm1;
                     break;
+                case "NR gain":
+                    CATNRgain = parm1;
+                    break;
                 case "ANF":
                     CATANF = parm1;
+                    break;
+                case "ANF gain":
+                    CATNOTCHgain = parm1;
+                    break;
+                case "NOTCH manual":
+                    CATNOTCHManual = parm1;
+                    break;
+                case "NOTCH manual enable":
+                    CATNOTCHenable = parm1;
+                    break;
+                case "RPT tone":
+                    if (parm1 == 1)
+                        CTCSS = true;
+                    else
+                        CTCSS = false;
+                    break;
+                case "SPLIT":
+                    switch (parm1)
+                    {
+                        case 0:             // SPLIT disable
+                            SplitAB_TX = false;
+                            break;
+
+                        case 1:             // SPLIT enable
+                            SplitAB_TX = true;
+                            break;
+
+                        case 0x10:          // cancel DUPLEX
+                            RPTRmode = RPTRmode.simplex;
+                            break;
+
+                        case 0x11:          // DUP-
+                            RPTRmode = RPTRmode.low;
+                            break;
+
+                        case 0x12:          // DUP+
+                            RPTRmode = RPTRmode.high;
+                            break;
+                    }
+                    break;
+                case "Memory up":
+                    if (MemoryNumber < 99)
+                        MemoryNumber++;
+                    else if (MemoryNumber == 99)
+                        MemoryNumber = 1;
+
+                    txtMemory_fill();
+                    break;
+                case "Memory down":
+                    if (MemoryNumber > 1)
+                        MemoryNumber--;
+                    else if (MemoryNumber == 1)
+                        MemoryNumber = 99;
+
+                    txtMemory_fill();
+                    break;
+                case "Memory recall":
+                    btnMemoryQuickRestore_Click(this, EventArgs.Empty);
+                    break;
+                case "Memory store":
+                    btnMemoryQuickSave_Click(this, EventArgs.Empty);
+                    break;
+                case "memory clear":
+                    btnEraseMemory_Click(this, EventArgs.Empty);
+                    break;
+                case "Restore VFOA":
+                    btnVFOA_Click(this, EventArgs.Empty);
                     break;
                 case "CLOSE":
                     this.Close();

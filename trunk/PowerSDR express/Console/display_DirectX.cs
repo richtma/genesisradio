@@ -190,6 +190,12 @@ namespace PowerSDR
             set { scope_max = value; }
         }
 
+        private static bool refresh_grid = true;                            // yt7pwr
+        public static bool RefreshGrid
+        {
+            set { refresh_grid = value; }
+        }
+
         private static bool refresh_panadapter_grid = true;                 // yt7pwr
         public static bool RefreshPanadapterGrid
         {
@@ -388,7 +394,14 @@ namespace PowerSDR
         public static long LOSC
         {
             get { return losc_hz; }
-            set { losc_hz = value; }
+            set 
+            {
+                losc_hz = value;
+
+                if (debug && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                        "New LOSC value: " + losc_hz.ToString());
+            }
         }
 
         private static long vfoa_hz;
@@ -1066,7 +1079,7 @@ namespace PowerSDR
                                 }
                                 catch (Direct3D9Exception ex)
                                 {
-                                    if (debug)
+                                    if (debug && !console.ConsoleClosing)
                                         console.Invoke(new DebugCallbackFunction(console.DebugCallback),
                                             "DirectX hardware init error!" + ex.ToString());
                                 }
@@ -1085,7 +1098,7 @@ namespace PowerSDR
                                 }
                                 catch (Direct3D9Exception exe)
                                 {
-                                    if (debug)
+                                    if (debug && !console.ConsoleClosing)
                                         console.Invoke(new DebugCallbackFunction(console.DebugCallback),
                                             "DirectX software init error!" + exe.ToString());
 
@@ -1228,7 +1241,7 @@ namespace PowerSDR
                         //MessageBox.Show("DirectX init general fault!\n" + ex.ToString());
                         DX_reinit = false;
 
-                        if (debug)
+                        if (debug && !console.ConsoleClosing)
                             console.Invoke(new DebugCallbackFunction(console.DebugCallback),
                                 "DirectX init general fault!\n" + ex.ToString());
 
@@ -1383,7 +1396,7 @@ namespace PowerSDR
             {
                 Debug.Write("DX release error!" + ex.ToString());
 
-                if (debug)
+                if (debug && !console.ConsoleClosing)
                     console.Invoke(new DebugCallbackFunction(console.DebugCallback),
                         "DirectX release fault!\n" + ex.ToString());
 
@@ -1768,7 +1781,7 @@ namespace PowerSDR
                 {
                     Debug.Write(ex.ToString());
 
-                    if (debug)
+                    if (debug && !console.ConsoleClosing)
                         console.Invoke(new DebugCallbackFunction(console.DebugCallback),
                             "Render Rectangle fault!\n" + ex.ToString());
                 }
@@ -1885,7 +1898,7 @@ namespace PowerSDR
             {
                 Debug.Write(ex.ToString());
 
-                if (debug)
+                if (debug && !console.ConsoleClosing)
                     console.Invoke(new DebugCallbackFunction(console.DebugCallback),
                         "Rendering Histogram fault!\n" + ex.ToString());
             }
@@ -1916,7 +1929,7 @@ namespace PowerSDR
             {
                 Debug.Write(ex.ToString());
 
-                if (debug)
+                if (debug && !console.ConsoleClosing)
                     console.Invoke(new DebugCallbackFunction(console.DebugCallback),
                         "Rendering Scope fault!\n" + ex.ToString());
             }
@@ -2058,6 +2071,7 @@ namespace PowerSDR
 
                 // Calculate horizontal step size
                 int width = high - low;
+
                 while (width / freq_step_size > 10)
                 {
                     freq_step_size = step_list[step_index] * (int)Math.Pow(10.0, step_power);
@@ -2067,7 +2081,6 @@ namespace PowerSDR
 
                 // calculate vertical step size
                 h_steps = (spectrum_grid_max - spectrum_grid_min) / spectrum_grid_step;
-
                 double vfo;
 
                 if (mox && !(console.CurrentDSPMode == DSPMode.CWL || console.CurrentDSPMode == DSPMode.CWU))
@@ -2081,7 +2094,12 @@ namespace PowerSDR
                 }
                 else
                 {
-                    vfo = losc_hz; //  +rit_hz;
+                    vfo = LOSC; //  +rit_hz;
+
+                    if (debug && !console.ConsoleClosing)
+                        console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                            "Rendering Panadapter grid! " + losc_hz.ToString());
+
                 }
 
                 float scale = 0.0f;
@@ -2099,7 +2117,7 @@ namespace PowerSDR
                 }
                 if (vertical_label == null)
                     vertical_label = new VerticalString[40 + 2];
-                if (horizontal_label == null)
+                if (horizontal_label == null || horizontal_label.Length < h_steps)
                     horizontal_label = new HorizontalString[h_steps];
 
                 h_steps_old = h_steps;
@@ -2137,8 +2155,19 @@ namespace PowerSDR
                         actual_fgrid == 21.0 || actual_fgrid == 21.45 ||
                         actual_fgrid == 28.0 || actual_fgrid == 29.7 ||
                         actual_fgrid == 50.0 || actual_fgrid == 54.0 ||
-                        actual_fgrid == 70.0 || actual_fgrid == 70.5 ||
-                        actual_fgrid == 144.0 || actual_fgrid == 148.0)
+                        actual_fgrid == 144.0 || actual_fgrid == 146.0 ||
+                        actual_fgrid == console.xBand[1].freq_max || actual_fgrid == console.xBand[1].freq_min ||
+                        actual_fgrid == console.xBand[2].freq_max || actual_fgrid == console.xBand[2].freq_min ||
+                        actual_fgrid == console.xBand[3].freq_max || actual_fgrid == console.xBand[3].freq_min ||
+                        actual_fgrid == console.xBand[4].freq_max || actual_fgrid == console.xBand[4].freq_min ||
+                        actual_fgrid == console.xBand[5].freq_max || actual_fgrid == console.xBand[5].freq_min ||
+                        actual_fgrid == console.xBand[6].freq_max || actual_fgrid == console.xBand[6].freq_min ||
+                        actual_fgrid == console.xBand[7].freq_max || actual_fgrid == console.xBand[7].freq_min ||
+                        actual_fgrid == console.xBand[8].freq_max || actual_fgrid == console.xBand[8].freq_min ||
+                        actual_fgrid == console.xBand[9].freq_max || actual_fgrid == console.xBand[9].freq_min ||
+                        actual_fgrid == console.xBand[10].freq_max || actual_fgrid == console.xBand[10].freq_min ||
+                        actual_fgrid == console.xBand[11].freq_max || actual_fgrid == console.xBand[11].freq_min ||
+                        actual_fgrid == console.xBand[12].freq_max || actual_fgrid == console.xBand[12].freq_min)
                     {
                         VerLines_vb.Lock(i * 40, 40, LockFlags.None).WriteRange(new[] {
                         new Vertex() { Color = band_edge_color.ToArgb(), Position = new Vector4((float)vgrid, (float)pan_font.Height, 0.0f, 0.0f) },
@@ -2449,6 +2478,7 @@ namespace PowerSDR
                     int xOffset = 0;
                     int num = spectrum_grid_max - i * spectrum_grid_step;
                     int y = (int)((double)(spectrum_grid_max - num) * H / y_range); // +(int)pan_font.Size;
+
                     if (show_horizontal_grid)
                     {
                         HorLines_vb.Lock(i * 40, 40, LockFlags.None).WriteRange(new[] {
@@ -2463,6 +2493,7 @@ namespace PowerSDR
                     // Draw horizontal line labels
                     num = spectrum_grid_max - i * spectrum_grid_step;
                     horizontal_label[i].label = num.ToString();
+
                     if (horizontal_label[i].label.Length == 3) xOffset = 5;
                     //int offset = (int)(label.Length*4.1);
                     if (display_label_align != DisplayLabelAlignment.LEFT &&
@@ -2869,7 +2900,7 @@ namespace PowerSDR
             max_y = Int32.MinValue;
             int R = 0, G = 0, B = 0;	                                	 // variables to save Red, Green and Blue component values
 
-            if (console.power)
+            if (console.PowerOn)
             {
                 int yRange = spectrum_grid_max - spectrum_grid_min;
 
@@ -2898,10 +2929,12 @@ namespace PowerSDR
                 start_sample_index = (BUFFER_SIZE >> 1) + (int)((low * BUFFER_SIZE) / DttSP.SampleRate);
                 num_samples = (int)((high - low) * BUFFER_SIZE / DttSP.SampleRate);
                 start_sample_index = (start_sample_index + 4096) % 4096;
+
                 if ((num_samples - start_sample_index) > (BUFFER_SIZE + 1))
                     num_samples = BUFFER_SIZE - start_sample_index;
 
                 slope = (float)num_samples / (float)W;
+
                 for (int i = 0; i < W; i++)
                 {
                     float max = float.MinValue;
@@ -3272,7 +3305,7 @@ namespace PowerSDR
                         {
                             Debug.Write(ex.ToString());
 
-                            if (debug)
+                            if (debug && !console.ConsoleClosing)
                                 console.Invoke(new DebugCallbackFunction(console.DebugCallback),
                                     "Rendering Panadapter Sprite error!\n" + ex.ToString());
                         }
@@ -3306,7 +3339,7 @@ namespace PowerSDR
                         {
                             Debug.Write(ex.ToString());
 
-                            if (debug)
+                            if (debug && !console.ConsoleClosing)
                                 console.Invoke(new DebugCallbackFunction(console.DebugCallback),
                                     "Rendering Panascope fault!\n" + ex.ToString());
                         }
@@ -3366,18 +3399,24 @@ namespace PowerSDR
                                     {
                                         Debug.Write(ex.ToString());
 
-                                        if (debug)
+                                        if (debug && !console.ConsoleClosing)
                                             console.Invoke(new DebugCallbackFunction(console.DebugCallback),
                                                 "Rendering Waterfall fault!\n" + ex.ToString());
                                     }
                                 }
 
-                                if (refresh_panadapter_grid)
+                                if (refresh_panadapter_grid || refresh_grid)
                                 {
                                     vertical_label = null;
                                     horizontal_label = null;
+
+                                    if (refresh_panadapter_grid)
+                                        refresh_panadapter_grid = false;
+
+                                    if (refresh_grid)
+                                        refresh_grid = false;
+
                                     RenderPanadapterGrid(panadapter_W, panadapter_H);
-                                    refresh_panadapter_grid = false;
                                 }
                                 else
                                 {
@@ -3396,7 +3435,7 @@ namespace PowerSDR
                                     {
                                         Debug.Write("Error rendering grid\n" + ex.ToString());
 
-                                        if (debug)
+                                        if (debug && !console.ConsoleClosing)
                                             console.Invoke(new DebugCallbackFunction(console.DebugCallback),
                                                 "Render grid fault!\n" + ex.ToString());
 
@@ -3435,12 +3474,18 @@ namespace PowerSDR
                         case DisplayMode.HISTOGRAM:
                             if (console.chkPower.Checked)
                             {
-                                if (refresh_panadapter_grid)
+                                if (refresh_panadapter_grid || refresh_grid)
                                 {
                                     vertical_label = null;
                                     horizontal_label = null;
+
+                                    if (refresh_panadapter_grid)
+                                        refresh_panadapter_grid = false;
+
+                                    if (refresh_grid)
+                                        refresh_grid = false;
+
                                     RenderPanadapterGrid(panadapter_W, panadapter_H);
-                                    refresh_panadapter_grid = false;
                                 }
                                 else
                                 {
@@ -3484,7 +3529,7 @@ namespace PowerSDR
                 {
                     Debug.Write(ex.ToString());
 
-                    if (debug)
+                    if (debug && !console.ConsoleClosing)
                         console.Invoke(new DebugCallbackFunction(console.DebugCallback),
                             "Render DirectX fault!\n" + ex.ToString());
 
@@ -3497,7 +3542,7 @@ namespace PowerSDR
             {
                 Debug.Write("Error in RenderDirectX()\n" + ex.ToString());
 
-                if (debug)
+                if (debug && !console.ConsoleClosing)
                     console.Invoke(new DebugCallbackFunction(console.DebugCallback),
                         "Render DirectX fault!\n" + ex.ToString());
 
@@ -3604,7 +3649,7 @@ namespace PowerSDR
             {
                 Debug.Write(ex.ToString());
 
-                if (debug)
+                if (debug && !console.ConsoleClosing)
                     console.Invoke(new DebugCallbackFunction(console.DebugCallback),
                         "Convert data for Panadapter fault!\n" + ex.ToString());
             }
@@ -3828,7 +3873,8 @@ namespace PowerSDR
                         max_x = i;
                     }
 
-                    panadapterX_data[i] = (int)Math.Min((Math.Floor((spectrum_grid_max - max) * panadapter_H / yRange)), panadapter_H);
+                    panadapterX_data[i] = (int)Math.Min((Math.Floor((spectrum_grid_max - max) * panadapter_H / yRange)),
+                        panadapter_H);
                 }
             }
             catch (Exception ex)
@@ -3935,7 +3981,7 @@ namespace PowerSDR
             {
                 Debug.Write(ex.ToString());
 
-                if (debug)
+                if (debug && !console.ConsoleClosing)
                     console.Invoke(new DebugCallbackFunction(console.DebugCallback),
                         "Rendering Scope Grid error!\n" + ex.ToString());
             }
