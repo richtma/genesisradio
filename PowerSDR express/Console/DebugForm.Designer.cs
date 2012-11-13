@@ -38,6 +38,8 @@
             this.buttonTS1 = new System.Windows.Forms.ButtonTS();
             this.chkConsole = new System.Windows.Forms.CheckBoxTS();
             this.chkUSB = new System.Windows.Forms.CheckBoxTS();
+            this.chkEthernet = new System.Windows.Forms.CheckBoxTS();
+            this.chkIRRemote = new System.Windows.Forms.CheckBoxTS();
             this.SuspendLayout();
             // 
             // rtbDebugMsg
@@ -75,7 +77,7 @@
             // 
             this.chkAudio.AutoSize = true;
             this.chkAudio.Image = null;
-            this.chkAudio.Location = new System.Drawing.Point(22, 58);
+            this.chkAudio.Location = new System.Drawing.Point(15, 29);
             this.chkAudio.Name = "chkAudio";
             this.chkAudio.Size = new System.Drawing.Size(53, 17);
             this.chkAudio.TabIndex = 3;
@@ -87,7 +89,7 @@
             // 
             this.chkDirectX.AutoSize = true;
             this.chkDirectX.Image = null;
-            this.chkDirectX.Location = new System.Drawing.Point(22, 97);
+            this.chkDirectX.Location = new System.Drawing.Point(15, 66);
             this.chkDirectX.Name = "chkDirectX";
             this.chkDirectX.Size = new System.Drawing.Size(61, 17);
             this.chkDirectX.TabIndex = 4;
@@ -99,7 +101,7 @@
             // 
             this.chkCAT.AutoSize = true;
             this.chkCAT.Image = null;
-            this.chkCAT.Location = new System.Drawing.Point(22, 136);
+            this.chkCAT.Location = new System.Drawing.Point(15, 103);
             this.chkCAT.Name = "chkCAT";
             this.chkCAT.Size = new System.Drawing.Size(47, 17);
             this.chkCAT.TabIndex = 5;
@@ -115,7 +117,7 @@
             // buttonTS1
             // 
             this.buttonTS1.Image = null;
-            this.buttonTS1.Location = new System.Drawing.Point(15, 253);
+            this.buttonTS1.Location = new System.Drawing.Point(12, 304);
             this.buttonTS1.Name = "buttonTS1";
             this.buttonTS1.Size = new System.Drawing.Size(54, 53);
             this.buttonTS1.TabIndex = 6;
@@ -127,7 +129,7 @@
             // 
             this.chkConsole.AutoSize = true;
             this.chkConsole.Image = null;
-            this.chkConsole.Location = new System.Drawing.Point(22, 175);
+            this.chkConsole.Location = new System.Drawing.Point(15, 140);
             this.chkConsole.Name = "chkConsole";
             this.chkConsole.Size = new System.Drawing.Size(64, 17);
             this.chkConsole.TabIndex = 7;
@@ -139,7 +141,7 @@
             // 
             this.chkUSB.AutoSize = true;
             this.chkUSB.Image = null;
-            this.chkUSB.Location = new System.Drawing.Point(22, 214);
+            this.chkUSB.Location = new System.Drawing.Point(15, 177);
             this.chkUSB.Name = "chkUSB";
             this.chkUSB.Size = new System.Drawing.Size(48, 17);
             this.chkUSB.TabIndex = 8;
@@ -147,12 +149,38 @@
             this.chkUSB.UseVisualStyleBackColor = true;
             this.chkUSB.CheckedChanged += new System.EventHandler(this.chkUSB_CheckedChanged);
             // 
+            // chkEthernet
+            // 
+            this.chkEthernet.AutoSize = true;
+            this.chkEthernet.Image = null;
+            this.chkEthernet.Location = new System.Drawing.Point(15, 214);
+            this.chkEthernet.Name = "chkEthernet";
+            this.chkEthernet.Size = new System.Drawing.Size(66, 17);
+            this.chkEthernet.TabIndex = 9;
+            this.chkEthernet.Text = "Ethernet";
+            this.chkEthernet.UseVisualStyleBackColor = true;
+            this.chkEthernet.CheckedChanged += new System.EventHandler(this.chkEthernet_CheckedChanged);
+            // 
+            // chkIRRemote
+            // 
+            this.chkIRRemote.AutoSize = true;
+            this.chkIRRemote.Image = null;
+            this.chkIRRemote.Location = new System.Drawing.Point(15, 251);
+            this.chkIRRemote.Name = "chkIRRemote";
+            this.chkIRRemote.Size = new System.Drawing.Size(72, 17);
+            this.chkIRRemote.TabIndex = 10;
+            this.chkIRRemote.Text = "IR remote";
+            this.chkIRRemote.UseVisualStyleBackColor = true;
+            this.chkIRRemote.CheckedChanged += new System.EventHandler(this.chkIRRemote_CheckedChanged);
+            // 
             // DebugForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.ClientSize = new System.Drawing.Size(527, 417);
+            this.Controls.Add(this.chkIRRemote);
+            this.Controls.Add(this.chkEthernet);
             this.Controls.Add(this.chkUSB);
             this.Controls.Add(this.chkConsole);
             this.Controls.Add(this.buttonTS1);
@@ -196,5 +224,7 @@
         private System.Windows.Forms.ButtonTS buttonTS1;
         private System.Windows.Forms.CheckBoxTS chkConsole;
         private System.Windows.Forms.CheckBoxTS chkUSB;
+        private System.Windows.Forms.CheckBoxTS chkEthernet;
+        private System.Windows.Forms.CheckBoxTS chkIRRemote;
     }
 }

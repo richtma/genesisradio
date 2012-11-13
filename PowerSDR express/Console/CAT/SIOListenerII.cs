@@ -131,7 +131,8 @@ namespace PowerSDR
 			SIO.setCommParms(console.CATBaudRate, 
 							(SDRSerialSupportII.SDRSerialPort.Parity)console.CATParity, 
 							(SDRSerialSupportII.SDRSerialPort.DataBits)console.CATDataBits, 
-							(SDRSerialSupportII.SDRSerialPort.StopBits)console.CATStopBits); 
+							(SDRSerialSupportII.SDRSerialPort.StopBits)console.CATStopBits,
+                            (SDRSerialSupportII.SDRSerialPort.HandshakeBits)console.CATHandshake); 
 		
 			Initialize();
             SIOMonitorCount = 0;
@@ -261,61 +262,109 @@ namespace PowerSDR
 			}
 		}
 
-		/*private void console_Activated(object sender, EventArgs e)
-		{
-			if ( console.CATEnabled ) 
-			{ 
-				// Initialize();   // wjt enable CAT calls Initialize 
-				enableCAT(); 
-			}
-		}*/
-
 		private void SerialRXEventHandler(object source, SDRSerialSupportII.SerialRXEvent e)
 		{
             try
             {
-                //			SIOMonitor.Interval = 5000;		// set the timer for 5 seconds
-                //			SIOMonitor.Enabled = true;		// start or restart the timer
-                //ParseString(e.buffer, e.count);  // Replace with regular expression parser
-                // Added Regex.Replace 2/25/07 BT Removes whitespaces and non-alphanumeric
-                // characters from input string. ^start at beginning \w any non-alphanumeric
-                // \;. except a semicolon or period.
-
-                //CommBuffer += Regex.Replace(AE.GetString(e.buffer), @"[^\w\;.]", "");
-                //			CommBuffer += AE.GetString(e.buffer);
-
                 lock (this)
                 {
                     SIOMonitorCount = 0;        // reset watch dog!
                 }
 
-                CommBuffer += AE.GetString(e.buffer, 0, e.buffer.Length);
                 Regex rex = new Regex(".*?;");
-                string answer;
                 byte[] out_string = new byte[1024];
+                CommBuffer += AE.GetString(e.buffer, 0, e.buffer.Length);
 
-                for (Match m = rex.Match(CommBuffer); m.Success; m = m.NextMatch())
+                if (console.CATRigType == 1)
                 {
-                    answer = parser.Get(m.Value);
+                    byte[] buffer = new byte[e.buffer.Length+1];
+                    byte[] question = new byte[16];
+                    byte[] answer = new byte[16];
+                    byte[] question1 = new byte[1];
+                    int j = 0;
 
-                    if (debug)
+                    for (int i = 0; i < e.buffer.Length; i++)
                     {
-                        console.Invoke(new DebugCallbackFunction(console.DebugCallback),
-                            "CAT command: " + m.Value.ToString());
+                        if (e.buffer[i] == 0xfd)
+                        {
+                            question[j] = e.buffer[i];
+
+                            if (question[2] == console.CATRigAddress)
+                            {
+                                if (debug && !console.ConsoleClosing)
+                                {
+                                    string dbg_msg = "";
+
+                                    for (int k = 0; k < j + 1; k++)
+                                    {
+                                        dbg_msg += question[k].ToString("X").PadLeft(2, '0');
+                                        dbg_msg += " ";
+                                    }
+
+                                    if (!console.ConsoleClosing)
+                                        console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                                            "CAT command: " + dbg_msg);
+                                }
+
+                                if (console.CATEcho)
+                                {
+                                    if (question1.Length != j)
+                                        question1 = new byte[j + 1];
+
+                                    for (int k = 0; k < j + 1; k++)
+                                        question1[k] = question[k];
+
+                                    send_data = question1;           // echo
+                                    send_event.Set();
+                                    Thread.Sleep(10);
+                                }
+
+                                answer = parser.Get(question);
+                                send_data = answer;
+                                send_event.Set();
+                                j = 0;
+                            }
+                            else
+                            {
+
+                            }                                    
+                        }
+                        else
+                        {
+                            question[j] = e.buffer[i];
+                            j++;
+                        }
                     }
 
-                    out_string = AE.GetBytes(answer);
-                    send_data = out_string;
-                    send_event.Set();
+                    CommBuffer = "";
                 }
+                else
+                {
+                    for (Match m = rex.Match(CommBuffer); m.Success; m = m.NextMatch())
+                    {
+                        string answer;
+                        answer = parser.Get(m.Value);
 
-                CommBuffer = "";
+                        if (debug && !console.ConsoleClosing)
+                        {
+                            console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                                "CAT command: " + m.Value.ToString());
+                        }
+
+                        out_string = AE.GetBytes(answer);
+                        send_data = out_string;
+                        send_event.Set();
+                    }
+
+                    CommBuffer = "";
+                }
             }
             catch (Exception ex)
             {
                 Debug.Write(ex.ToString());
+                CommBuffer = "";
 
-                if (debug)
+                if (debug && !console.ConsoleClosing)
                 {
                     console.Invoke(new DebugCallbackFunction(console.DebugCallback),
                         "CAT SerialRXEvent error! \n" + ex.ToString());
@@ -350,7 +399,7 @@ namespace PowerSDR
             {
                 Debug.Write(ex.ToString());
 
-                if (debug)
+                if (debug && !console.ConsoleClosing)
                 {
                     console.Invoke(new DebugCallbackFunction(console.DebugCallback),
                         "CAT CrossThreasCallback error! \n" + ex.ToString());
@@ -362,6 +411,7 @@ namespace PowerSDR
         {
             ASCIIEncoding buffer = new ASCIIEncoding();
             string out_string = "";
+            uint length = 0;
 
             while (run_thread)
             {
@@ -369,18 +419,39 @@ namespace PowerSDR
 
                 lock (this)
                 {
-                    SIO.put(send_data, (uint)send_data.Length);
+                    if (SIO != null)
+                    {
+                        SIO.put(send_data, (uint)send_data.Length);
+                    }
                 }
 
                 out_string = buffer.GetString(send_data);
 
-                if (debug)
+                if (debug && !console.ConsoleClosing)
                 {
-                    console.Invoke(new DebugCallbackFunction(console.DebugCallback),
-                        "CAT answer: " + out_string);
-                }
+                    if (console.CATRigType == 1)
+                    {
+                        string dbg_msg = "";
 
-                Debug.Write(out_string + "\n");
+                        for (int k = 0; k < send_data.Length; k++)
+                        {
+                            dbg_msg += send_data[k].ToString("X").PadLeft(2, '0');
+                            dbg_msg += " ";
+                        }
+
+                        if (!console.ConsoleClosing)
+                            console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                                "CAT answer: " + dbg_msg);
+                    }
+                    else
+                    {
+                        if (!console.ConsoleClosing)
+                        {
+                            console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                                "CAT answer: " + out_string);
+                        }
+                    }
+                }
             }
         }
 

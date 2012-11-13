@@ -23,7 +23,7 @@
 
 /*
  *  Changes for GenesisRadio
- *  Copyright (C)2008,2009,2010,2011 YT7PWR Goran Radivojevic
+ *  Copyright (C)2008,2009,2010,2011,2012 YT7PWR Goran Radivojevic
  *  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 */
 
@@ -90,22 +90,150 @@ namespace PowerSDR
         }
 
         // Overloaded Get method accepts either byte or string
-        public string Get(byte[] pCmdString)
+        public byte[] Get(byte[] pCmdString)
         {
-            string rtncmd = Get(AE.GetString(pCmdString));
-            return rtncmd;
+            byte[] answer = new byte[16];
+
+            switch (pCmdString[4])
+            {
+                case 0:
+                    answer = cmdlist.CMD_00(pCmdString);
+                    break;
+
+                case 1:
+                    answer = cmdlist.CMD_01(pCmdString);
+                    break;
+
+                case 2:
+                    answer = cmdlist.CMD_02(pCmdString);
+                    break;
+
+                case 3:
+                    answer = cmdlist.CMD_03(pCmdString);
+                    break;
+
+                case 4:
+                    answer = cmdlist.CMD_04(pCmdString);
+                    break;
+
+                case 5:
+                    answer = cmdlist.CMD_05(pCmdString);
+                    break;
+
+                case 6:
+                    answer = cmdlist.CMD_06(pCmdString);
+                    break;
+
+                case 7:
+                    answer = cmdlist.CMD_07(pCmdString);
+                    break;
+
+                case 0x0f:
+                    answer = cmdlist.CMD_0F(pCmdString);
+                    break;
+
+                case 0x11:
+                    answer = cmdlist.CMD_11(pCmdString);
+                    break;
+
+                case 0x14:
+                    answer = cmdlist.CMD_14(pCmdString);                // Various Level Settings
+                    break;
+
+                case 0x15:
+                    answer = cmdlist.CMD_15(pCmdString);                // S meter
+                    break;
+
+                case 0x16:
+                    answer = cmdlist.CMD_16(pCmdString);
+                    break;
+
+                case 0x19:
+                    answer = cmdlist.CMD_19(pCmdString);
+                    break;
+
+                case 0x1A:
+                    switch (pCmdString[5])
+                    {
+                        case 0x00:
+                            answer = cmdlist.CMD_1A_00(pCmdString);
+                            break;
+
+                        case 0x03:
+                            answer = cmdlist.CMD_1A_03(pCmdString);
+                            break;
+
+                        case 0x05:
+                            answer = cmdlist.CMD_1A_03(pCmdString);
+                            break;
+
+                        default:
+                            answer[0] = 0xfe;
+                            answer[1] = 0xfe;
+                            answer[2] = pCmdString[3];
+                            answer[3] = pCmdString[2];
+                            answer[4] = 0xfa;           // error code
+                            answer[6] = 0xfd;
+                            break;
+                    }
+                    break;
+
+                case 0x1b:
+                    answer = cmdlist.CMD_1B(pCmdString);
+                    break;
+
+                case 0x1C:
+                    switch (pCmdString[5])
+                    {
+                        case 0x00:
+                            answer = cmdlist.CMD_1C_00(pCmdString);
+                            break;
+
+                        case 0x01:
+                            answer = cmdlist.CMD_1C_01(pCmdString);
+                            break;
+
+                        default:
+                            answer[0] = 0xfe;
+                            answer[1] = 0xfe;
+                            answer[2] = pCmdString[3];
+                            answer[3] = pCmdString[2];
+                            answer[4] = 0xfa;           // error code
+                            answer[6] = 0xfd;
+                            break;
+                    }
+                    break;
+
+                default:
+                    answer[0] = 0xfe;
+                    answer[1] = 0xfe;
+                    answer[2] = pCmdString[3];
+                    answer[3] = pCmdString[2];
+                    answer[4] = 0xfa;           // error code
+                    answer[6] = 0xfd;
+                    break;
+            }
+
+            return answer;
         }
 
         public string Get(string pCmdString)
         {
             current_cat = pCmdString;
             string rtncmd = "";
+            bool goodcmd = false;
 
             // Abort if the overall string length is less than 3 (aa;)
             if (current_cat.Length < 3)
                 return Error1;
 
-            bool goodcmd = CheckFormat();
+            if (pCmdString.StartsWith("ZZAR"))
+            {
+
+            }
+
+            goodcmd = CheckFormat();
+
             if (goodcmd)
             {
                 switch (prefix)
@@ -162,6 +290,24 @@ namespace PowerSDR
                     case "DQ":
                         break;
                     case "EX":
+                        break;
+                    case "F1":
+                        rtncmd = cmdlist.F1(suffix);
+                        break;
+                    case "F2":
+                        rtncmd = cmdlist.F2(suffix);
+                        break;
+                    case "F3":
+                        rtncmd = cmdlist.F3(suffix);
+                        break;
+                    case "F4":
+                        rtncmd = cmdlist.F4(suffix);
+                        break;
+                    case "F5":
+                        rtncmd = cmdlist.F5(suffix);
+                        break;
+                    case "F6":
+                        rtncmd = cmdlist.F6(suffix);
                         break;
                     case "FA":
                         rtncmd = cmdlist.FA(suffix);
@@ -245,6 +391,7 @@ namespace PowerSDR
                     case "OS":
                         break;
                     case "PA":
+                        rtncmd = cmdlist.PA(suffix);
                         break;
                     case "PB":
                         break;
@@ -273,6 +420,7 @@ namespace PowerSDR
                     case "QR":
                         break;
                     case "RA":
+                        rtncmd = cmdlist.RA(suffix);
                         break;
                     case "RC":
                         rtncmd = cmdlist.RC();
@@ -281,6 +429,7 @@ namespace PowerSDR
                         rtncmd = cmdlist.RD(suffix);
                         break;
                     case "RG":
+                        rtncmd = cmdlist.RG(suffix);
                         break;
                     case "RL":
                         break;
@@ -364,6 +513,7 @@ namespace PowerSDR
                         rtncmd = ParseExtended();
                         break;
                 }
+
                 if (prefix != "ZZ")	// if this is a standard command
                 {
                     // and it's not an error
@@ -382,44 +532,50 @@ namespace PowerSDR
             else
                 rtncmd = Error1;	// this was a bad command
 
-            return rtncmd;	// Read successfully executed
+            return rtncmd;	        // Read successfully executed
         }
 
         private bool CheckFormat()
         {
-            bool goodprefix, goodsuffix;
-            // If there is no terminator, or the prefix or suffix
-            // is invalid, abort.
-
-            // If the command has a leading terminator(s) (like sent by WriteLog)
-            // dump it and check the rest of the command.
-            if (current_cat.StartsWith(";"))
-                current_cat = current_cat.TrimStart(term);
-
-            // If there is no terminator, or the prefix
-            // is invalid, abort.
-            if (current_cat.IndexOfAny(term) < 2)
-                return false;
-
-            // Now check to see if it's an extended command
-            if (current_cat.Substring(0, 2).ToUpper() == "ZZ")
-                IsExtended = true;
+            if (console.CATRigType == 1)        // ICOM IC-7000
+            {
+                return true;
+            }
             else
-                IsExtended = false;
+            {
+                bool goodprefix, goodsuffix;
+                // If there is no terminator, or the prefix or suffix
+                // is invalid, abort.
 
-            // Check the prefix
-            goodprefix = FindPrefix();
-            if (!goodprefix)
-                return false;
+                // If the command has a leading terminator(s) (like sent by WriteLog)
+                // dump it and check the rest of the command.
+                if (current_cat.StartsWith(";"))
+                    current_cat = current_cat.TrimStart(term);
 
-            // Check the suffix
-            goodsuffix = FindSuffix();
-            if (!goodsuffix)
-                return false;
+                // If there is no terminator, or the prefix
+                // is invalid, abort.
+                if (current_cat.IndexOfAny(term) < 2)
+                    return false;
 
-            return true;
+                // Now check to see if it's an extended command
+                if (current_cat.Substring(0, 2).ToUpper() == "ZZ")
+                    IsExtended = true;
+                else
+                    IsExtended = false;
+
+                // Check the prefix
+                goodprefix = FindPrefix();
+                if (!goodprefix)
+                    return false;
+
+                // Check the suffix
+                goodsuffix = FindSuffix();
+                if (!goodsuffix)
+                    return false;
+
+                return true;
+            }
         }
-
 
         private bool FindPrefix()
         {
@@ -439,6 +595,7 @@ namespace PowerSDR
                 XmlElement root = doc.DocumentElement;
                 string search = "descendant::catstruct[@code='" + pfx + "']";
                 struc = root.SelectSingleNode(search);
+
                 if (struc != null)
                 {
                     foreach (XmlNode x in struc)
@@ -634,6 +791,24 @@ namespace PowerSDR
                 case "ZZET":
                     rtncmd = cmdlist.ZZET(suffix);
                     break;
+                case "ZZF1":
+                    rtncmd = cmdlist.ZZF1(suffix);
+                    break;
+                case "ZZF2":
+                    rtncmd = cmdlist.ZZF2(suffix);
+                    break;
+                case "ZZF3":
+                    rtncmd = cmdlist.ZZF3(suffix);
+                    break;
+                case "ZZF4":
+                    rtncmd = cmdlist.ZZF4(suffix);
+                    break;
+                case "ZZF5":
+                    rtncmd = cmdlist.ZZF5(suffix);
+                    break;
+                case "ZZF6":
+                    rtncmd = cmdlist.ZZF6(suffix);
+                    break;
                 case "ZZFA":
                     rtncmd = cmdlist.ZZFA(suffix);
                     break;
@@ -740,7 +915,8 @@ namespace PowerSDR
                     rtncmd = cmdlist.ZZMR(suffix);
                     break;
                 case "ZZMS":
-                    rtncmd = cmdlist.ZZMS(suffix);
+                    //rtncmd = cmdlist.ZZMS(suffix);
+                    rtncmd = "?";
                     break;
                 case "ZZMT":
                     rtncmd = cmdlist.ZZMT(suffix);
@@ -765,6 +941,9 @@ namespace PowerSDR
                     break;
                 case "ZZNT":
                     rtncmd = cmdlist.ZZNT(suffix);
+                    break;
+                case "ZZPA":
+                    rtncmd = cmdlist.ZZPA(suffix);
                     break;
                 case "ZZPC":
                     rtncmd = cmdlist.ZZPC(suffix);

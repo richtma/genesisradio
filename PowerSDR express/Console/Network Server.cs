@@ -45,6 +45,8 @@ namespace PowerSDR
         public byte[] display_data;
         public bool data_ready = false;
         private byte[] compBuffer;
+        public bool debug = false;
+        delegate void DebugCallbackFunction(string name);
 
         #region Properties
 
@@ -125,12 +127,12 @@ namespace PowerSDR
                     {
                         if (console.SetupForm.ServerCompression)
                         {
-                            Audio.CATNetwork_mutex.WaitOne();
+                            //Audio.CATNetwork_mutex.WaitOne();
 
                             compBuffer = AcedDeflator.Instance.Compress(send_buffer, 0, 16386,
                                 AcedCompressionLevel.Fast, 2, 0);
 
-                            Audio.CATNetwork_mutex.ReleaseMutex();
+                            //Audio.CATNetwork_mutex.ReleaseMutex();
 
                             if (compBuffer != null)
                             {

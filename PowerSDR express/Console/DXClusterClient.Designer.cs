@@ -49,6 +49,7 @@ namespace PowerSDR
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DXClusterClient));
             this.btnConnect = new System.Windows.Forms.Button();
             this.btnBye = new System.Windows.Forms.Button();
             this.btnNoDX = new System.Windows.Forms.Button();
@@ -221,6 +222,7 @@ namespace PowerSDR
             this.Controls.Add(this.btnNoDX);
             this.Controls.Add(this.btnBye);
             this.Controls.Add(this.btnConnect);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MaximumSize = new System.Drawing.Size(1024, 768);
             this.MinimumSize = new System.Drawing.Size(550, 482);

@@ -94,6 +94,41 @@ namespace PowerSDR
             }
         }
 
+        private void chkEthernet_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (console.CAT_server_socket != null && console.CAT_client_socket != null)
+                {
+                    console.CAT_server_socket.debug = chkEthernet.Checked;
+                    console.CAT_client_socket.debug = chkEthernet.Checked;
+                }
+
+                if (console.ClientSocket != null && console.ServerSocket != null)
+                {
+                    console.ClientSocket.debug = chkEthernet.Checked;
+                    console.ServerSocket.debug = chkEthernet.Checked;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void chkIRRemote_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (console.ir_remote != null)
+                    console.ir_remote.debug = chkIRRemote.Checked;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
         #endregion
 
         private void saveFileDialog1_FileOk(object sender, CancelEventArgs e)

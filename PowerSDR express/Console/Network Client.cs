@@ -45,6 +45,8 @@ namespace PowerSDR
         public byte[] send_buffer = new byte[65536];
         private byte[] compBuffer;
         public bool data_ready = false;
+        public bool debug = false;
+        delegate void DebugCallbackFunction(string name);
 
         #region Properties
 
@@ -135,6 +137,10 @@ namespace PowerSDR
                             }
                             else
                                 buffer_ready = false;
+
+                            if (debug)
+                                console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                                    "Received spectrum/decompress: " + decompBuffer.Length.ToString());
                         }
                         else
                         {                                                       // full spectrum without decompression
@@ -158,6 +164,10 @@ namespace PowerSDR
                             }
                             else
                                 buffer_ready = false;
+                            if (debug)
+                                console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                                    "Received spectrum/no decompress! ");
+
                         }
 
                         if (buffer[0] == 0x60 && buffer[1] == 0x00)    // Display data
@@ -187,6 +197,10 @@ namespace PowerSDR
 
                                 buffer_ready = false;
                             }
+
+                            if (debug)
+                                console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                                    "Received display data: " + decompBuffer.Length.ToString());
                         }
 
                         if (buffer_ready)

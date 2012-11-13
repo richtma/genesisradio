@@ -505,7 +505,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btnNetwork.ZOrder" xml:space="preserve">
-    <value>28</value>
+    <value>30</value>
   </data>
   <data name="chkShowTXCWFreq.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -937,7 +937,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btnUSB.ZOrder" xml:space="preserve">
-    <value>14</value>
+    <value>16</value>
   </data>
   <data name="ptbRX0Gain.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -946,7 +946,7 @@
     <value>Off</value>
   </data>
   <data name="ptbRX0Gain.Location" type="System.Drawing.Point, System.Drawing">
-    <value>16, 20</value>
+    <value>11, 20</value>
   </data>
   <data name="ptbRX0Gain.Size" type="System.Drawing.Size, System.Drawing">
     <value>16, 48</value>
@@ -967,46 +967,13 @@
     <value>grpSubRX</value>
   </data>
   <data name="&gt;&gt;ptbRX0Gain.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="chkPanSwap.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
-    <value>Flat</value>
-  </data>
-  <data name="chkPanSwap.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Microsoft Sans Serif, 8.25pt</value>
-  </data>
-  <data name="chkPanSwap.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>Off</value>
-  </data>
-  <data name="chkPanSwap.Location" type="System.Drawing.Point, System.Drawing">
-    <value>168, 45</value>
-  </data>
-  <data name="chkPanSwap.Size" type="System.Drawing.Size, System.Drawing">
-    <value>55, 15</value>
-  </data>
-  <data name="chkPanSwap.TabIndex" type="System.Int32, mscorlib">
-    <value>73</value>
-  </data>
-  <data name="chkPanSwap.Text" xml:space="preserve">
-    <value>Swap</value>
-  </data>
-  <data name="chkPanSwap.ToolTip" xml:space="preserve">
-    <value>Swap the L to R sense of the Pan controls.</value>
-  </data>
-  <data name="&gt;&gt;chkPanSwap.Name" xml:space="preserve">
-    <value>chkPanSwap</value>
-  </data>
-  <data name="&gt;&gt;chkPanSwap.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBoxTS, Genesis, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
-  </data>
-  <data name="&gt;&gt;chkPanSwap.Parent" xml:space="preserve">
-    <value>grpSubRX</value>
-  </data>
-  <data name="&gt;&gt;chkPanSwap.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
   <data name="chkEnableSubRX.Appearance" type="System.Windows.Forms.Appearance, System.Windows.Forms">
     <value>Button</value>
+  </data>
+  <data name="chkEnableSubRX.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="chkEnableSubRX.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
@@ -1015,10 +982,10 @@
     <value>Off</value>
   </data>
   <data name="chkEnableSubRX.Location" type="System.Drawing.Point, System.Drawing">
-    <value>168, 20</value>
+    <value>170, 14</value>
   </data>
   <data name="chkEnableSubRX.Size" type="System.Drawing.Size, System.Drawing">
-    <value>56, 20</value>
+    <value>54, 23</value>
   </data>
   <data name="chkEnableSubRX.TabIndex" type="System.Int32, mscorlib">
     <value>61</value>
@@ -1051,7 +1018,7 @@
     <value>Off</value>
   </data>
   <data name="ptbPanSubRX.Location" type="System.Drawing.Point, System.Drawing">
-    <value>40, 44</value>
+    <value>35, 47</value>
   </data>
   <data name="ptbPanSubRX.Size" type="System.Drawing.Size, System.Drawing">
     <value>96, 20</value>
@@ -1081,7 +1048,7 @@
     <value>Off</value>
   </data>
   <data name="ptbPanMainRX.Location" type="System.Drawing.Point, System.Drawing">
-    <value>40, 20</value>
+    <value>35, 23</value>
   </data>
   <data name="ptbPanMainRX.Size" type="System.Drawing.Size, System.Drawing">
     <value>96, 20</value>
@@ -1111,7 +1078,7 @@
     <value>Off</value>
   </data>
   <data name="ptbRX1Gain.Location" type="System.Drawing.Point, System.Drawing">
-    <value>144, 20</value>
+    <value>139, 20</value>
   </data>
   <data name="ptbRX1Gain.Size" type="System.Drawing.Size, System.Drawing">
     <value>16, 48</value>
@@ -2217,6 +2184,42 @@
   <data name="chkMUT.Appearance" type="System.Windows.Forms.Appearance, System.Windows.Forms">
     <value>Button</value>
   </data>
+  <metadata name="contextMenuMUTE.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>385, 51</value>
+  </metadata>
+  <data name="leftToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>103, 22</value>
+  </data>
+  <data name="leftToolStripMenuItem.Text" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="rightToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>103, 22</value>
+  </data>
+  <data name="rightToolStripMenuItem.Text" xml:space="preserve">
+    <value>Right</value>
+  </data>
+  <data name="bothToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>103, 22</value>
+  </data>
+  <data name="bothToolStripMenuItem.Text" xml:space="preserve">
+    <value>Both</value>
+  </data>
+  <data name="noneToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>103, 22</value>
+  </data>
+  <data name="noneToolStripMenuItem.Text" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="contextMenuMUTE.Size" type="System.Drawing.Size, System.Drawing">
+    <value>104, 92</value>
+  </data>
+  <data name="&gt;&gt;contextMenuMUTE.Name" xml:space="preserve">
+    <value>contextMenuMUTE</value>
+  </data>
+  <data name="&gt;&gt;contextMenuMUTE.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ContextMenuStrip, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="chkMUT.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
   </data>
@@ -2686,7 +2689,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;chkPower.ZOrder" xml:space="preserve">
-    <value>23</value>
+    <value>25</value>
   </data>
   <data name="chkDSPNB2.Appearance" type="System.Windows.Forms.Appearance, System.Windows.Forms">
     <value>Button</value>
@@ -6153,6 +6156,45 @@
   <data name="&gt;&gt;ptbFMMicGain.ZOrder" xml:space="preserve">
     <value>8</value>
   </data>
+  <data name="chkVACMute.Appearance" type="System.Windows.Forms.Appearance, System.Windows.Forms">
+    <value>Button</value>
+  </data>
+  <data name="chkVACMute.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
+  </data>
+  <data name="chkVACMute.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>Off</value>
+  </data>
+  <data name="chkVACMute.Location" type="System.Drawing.Point, System.Drawing">
+    <value>163, 45</value>
+  </data>
+  <data name="chkVACMute.Size" type="System.Drawing.Size, System.Drawing">
+    <value>65, 23</value>
+  </data>
+  <data name="chkVACMute.TabIndex" type="System.Int32, mscorlib">
+    <value>75</value>
+  </data>
+  <data name="chkVACMute.Text" xml:space="preserve">
+    <value>Mute VAC</value>
+  </data>
+  <data name="chkVACMute.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleCenter</value>
+  </data>
+  <data name="chkVACMute.ToolTip" xml:space="preserve">
+    <value>Mute VAC Left/Right/Both/None</value>
+  </data>
+  <data name="&gt;&gt;chkVACMute.Name" xml:space="preserve">
+    <value>chkVACMute</value>
+  </data>
+  <data name="&gt;&gt;chkVACMute.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBoxTS, Genesis, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;chkVACMute.Parent" xml:space="preserve">
+    <value>grpSubRX</value>
+  </data>
+  <data name="&gt;&gt;chkVACMute.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
   <metadata name="timer_clock.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>627, 21</value>
   </metadata>
@@ -6271,7 +6313,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;menuStrip1.ZOrder" xml:space="preserve">
-    <value>13</value>
+    <value>15</value>
   </data>
   <data name="mnuSetup.ShowShortcut" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -6367,7 +6409,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpG500.ZOrder" xml:space="preserve">
-    <value>30</value>
+    <value>31</value>
   </data>
   <data name="btnG137_X1.Appearance" type="System.Windows.Forms.Appearance, System.Windows.Forms">
     <value>Button</value>
@@ -6427,7 +6469,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpG137.ZOrder" xml:space="preserve">
-    <value>31</value>
+    <value>32</value>
   </data>
   <data name="btnG40_X1.Appearance" type="System.Windows.Forms.Appearance, System.Windows.Forms">
     <value>Button</value>
@@ -6487,7 +6529,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpG40.ZOrder" xml:space="preserve">
-    <value>32</value>
+    <value>33</value>
   </data>
   <data name="grpModeSpecificPhone.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -7102,7 +7144,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpModeSpecificPhone.ZOrder" xml:space="preserve">
-    <value>44</value>
+    <value>45</value>
   </data>
   <data name="grpVFOA.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -7312,7 +7354,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpVFOA.ZOrder" xml:space="preserve">
-    <value>25</value>
+    <value>27</value>
   </data>
   <data name="grpVFOnew.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -7836,29 +7878,59 @@
   <data name="&gt;&gt;txtVFOAnew.ZOrder" xml:space="preserve">
     <value>16</value>
   </data>
-  <data name="sMeterDigital.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="sMeterDigital1.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 8.25pt</value>
+  </data>
+  <data name="sMeterDigital1.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 14</value>
   </data>
-  <data name="sMeterDigital.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+  <data name="sMeterDigital1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 4, 4, 4</value>
   </data>
-  <data name="sMeterDigital.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="sMeterDigital1.Size" type="System.Drawing.Size, System.Drawing">
     <value>240, 133</value>
   </data>
-  <data name="sMeterDigital.TabIndex" type="System.Int32, mscorlib">
+  <data name="sMeterDigital1.TabIndex" type="System.Int32, mscorlib">
     <value>34</value>
   </data>
-  <data name="&gt;&gt;sMeterDigital.Name" xml:space="preserve">
-    <value>sMeterDigital</value>
+  <data name="&gt;&gt;sMeterDigital1.Name" xml:space="preserve">
+    <value>sMeterDigital1</value>
   </data>
-  <data name="&gt;&gt;sMeterDigital.Type" xml:space="preserve">
+  <data name="&gt;&gt;sMeterDigital1.Type" xml:space="preserve">
     <value>PowerSDR.Invoke.SMeter1, Genesis, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
-  <data name="&gt;&gt;sMeterDigital.Parent" xml:space="preserve">
+  <data name="&gt;&gt;sMeterDigital1.Parent" xml:space="preserve">
     <value>grpVFOnew</value>
   </data>
-  <data name="&gt;&gt;sMeterDigital.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;sMeterDigital1.ZOrder" xml:space="preserve">
     <value>17</value>
+  </data>
+  <data name="sMeterDigital2.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 8.25pt</value>
+  </data>
+  <data name="sMeterDigital2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 14</value>
+  </data>
+  <data name="sMeterDigital2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 4, 4, 4</value>
+  </data>
+  <data name="sMeterDigital2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>240, 133</value>
+  </data>
+  <data name="sMeterDigital2.TabIndex" type="System.Int32, mscorlib">
+    <value>34</value>
+  </data>
+  <data name="&gt;&gt;sMeterDigital2.Name" xml:space="preserve">
+    <value>sMeterDigital2</value>
+  </data>
+  <data name="&gt;&gt;sMeterDigital2.Type" xml:space="preserve">
+    <value>PowerSDR.Invoke.SMeter2, Genesis, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;sMeterDigital2.Parent" xml:space="preserve">
+    <value>grpVFOnew</value>
+  </data>
+  <data name="&gt;&gt;sMeterDigital2.ZOrder" xml:space="preserve">
+    <value>18</value>
   </data>
   <data name="grpVFOnew.Location" type="System.Drawing.Point, System.Drawing">
     <value>114, 27</value>
@@ -7882,7 +7954,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpVFOnew.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>11</value>
   </data>
   <data name="lblNotchShift.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -8257,7 +8329,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpSoundControls.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>12</value>
   </data>
   <data name="grpModeSpecificCW.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -8629,7 +8701,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpModeSpecificCW.ZOrder" xml:space="preserve">
-    <value>39</value>
+    <value>40</value>
   </data>
   <data name="grpVFOB.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -8842,7 +8914,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpVFOB.ZOrder" xml:space="preserve">
-    <value>12</value>
+    <value>14</value>
   </data>
   <data name="grpLOSC.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -8992,7 +9064,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpLOSC.ZOrder" xml:space="preserve">
-    <value>24</value>
+    <value>26</value>
   </data>
   <data name="grpG160.Location" type="System.Drawing.Point, System.Drawing">
     <value>12, 411</value>
@@ -9016,7 +9088,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpG160.ZOrder" xml:space="preserve">
-    <value>33</value>
+    <value>34</value>
   </data>
   <data name="grpG3020.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -9187,7 +9259,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpG3020.ZOrder" xml:space="preserve">
-    <value>34</value>
+    <value>35</value>
   </data>
   <data name="btnG80_X4.Appearance" type="System.Windows.Forms.Appearance, System.Windows.Forms">
     <value>Button</value>
@@ -9355,7 +9427,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpG80.ZOrder" xml:space="preserve">
-    <value>35</value>
+    <value>36</value>
   </data>
   <data name="grpG59.Location" type="System.Drawing.Point, System.Drawing">
     <value>12, 411</value>
@@ -9382,7 +9454,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpG59.ZOrder" xml:space="preserve">
-    <value>29</value>
+    <value>6</value>
   </data>
   <data name="grpZoom.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -9733,16 +9805,16 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpZoom.ZOrder" xml:space="preserve">
-    <value>15</value>
+    <value>17</value>
   </data>
   <data name="grpSubRX.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
   </data>
   <data name="grpSubRX.Location" type="System.Drawing.Point, System.Drawing">
-    <value>318, 658</value>
+    <value>318, 654</value>
   </data>
   <data name="grpSubRX.Size" type="System.Drawing.Size, System.Drawing">
-    <value>232, 72</value>
+    <value>232, 75</value>
   </data>
   <data name="grpSubRX.TabIndex" type="System.Int32, mscorlib">
     <value>15</value>
@@ -9760,7 +9832,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpSubRX.ZOrder" xml:space="preserve">
-    <value>16</value>
+    <value>18</value>
   </data>
   <data name="grpBandHF.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -9787,7 +9859,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpBandHF.ZOrder" xml:space="preserve">
-    <value>38</value>
+    <value>39</value>
   </data>
   <data name="grpVFOBetween.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -9838,7 +9910,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpVFOBetween.ZOrder" xml:space="preserve">
-    <value>17</value>
+    <value>19</value>
   </data>
   <data name="grpDisplay2.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -9865,7 +9937,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpDisplay2.ZOrder" xml:space="preserve">
-    <value>18</value>
+    <value>20</value>
   </data>
   <data name="grpOptions.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -9889,7 +9961,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpOptions.ZOrder" xml:space="preserve">
-    <value>19</value>
+    <value>21</value>
   </data>
   <data name="btnChangeTuneStepLarger.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
@@ -10183,7 +10255,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpModeSpecificDigital.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>8</value>
   </data>
   <data name="lblTuneStep.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>Off</value>
@@ -10459,7 +10531,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpDisplay.ZOrder" xml:space="preserve">
-    <value>22</value>
+    <value>24</value>
   </data>
   <data name="grpMainRXFilter.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -11032,7 +11104,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpMainRXFilter.ZOrder" xml:space="preserve">
-    <value>36</value>
+    <value>37</value>
   </data>
   <data name="lblCPUMeter.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
@@ -11059,7 +11131,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;lblCPUMeter.ZOrder" xml:space="preserve">
-    <value>21</value>
+    <value>23</value>
   </data>
   <data name="grpDSPMainRX.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -11086,7 +11158,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpDSPMainRX.ZOrder" xml:space="preserve">
-    <value>26</value>
+    <value>28</value>
   </data>
   <data name="grpMultimeter.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -11215,7 +11287,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpMultimeter.ZOrder" xml:space="preserve">
-    <value>42</value>
+    <value>43</value>
   </data>
   <data name="grpVFO.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -11242,7 +11314,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpVFO.ZOrder" xml:space="preserve">
-    <value>20</value>
+    <value>22</value>
   </data>
   <data name="grpManualNotch.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -11389,7 +11461,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpManualNotch.ZOrder" xml:space="preserve">
-    <value>40</value>
+    <value>41</value>
   </data>
   <data name="picSmallAGauge.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -11416,7 +11488,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;picSmallAGauge.ZOrder" xml:space="preserve">
-    <value>41</value>
+    <value>42</value>
   </data>
   <data name="grpSubRXFilter.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -11989,7 +12061,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpSubRXFilter.ZOrder" xml:space="preserve">
-    <value>37</value>
+    <value>38</value>
   </data>
   <data name="grpDSPSubRX.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -12016,7 +12088,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpDSPSubRX.ZOrder" xml:space="preserve">
-    <value>27</value>
+    <value>29</value>
   </data>
   <data name="grpSoundControls1.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -12130,7 +12202,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpSoundControls1.ZOrder" xml:space="preserve">
-    <value>11</value>
+    <value>13</value>
   </data>
   <data name="grpSubRXMode.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -12157,7 +12229,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpSubRXMode.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>10</value>
   </data>
   <data name="grpMainRXMode.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -12184,7 +12256,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpMainRXMode.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>9</value>
   </data>
   <data name="grpG11.Location" type="System.Drawing.Point, System.Drawing">
     <value>12, 411</value>
@@ -12211,7 +12283,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpG11.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>5</value>
   </data>
   <data name="grpMoreBands.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -12706,7 +12778,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpMoreBands.ZOrder" xml:space="preserve">
-    <value>43</value>
+    <value>44</value>
   </data>
   <data name="grpModeSpecificFM.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
@@ -13060,7 +13132,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;grpModeSpecificFM.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>7</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
@@ -13143,7 +13215,7 @@
     <value>1024, 600</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>Genesis Radio v1.1 23072012</value>
+    <value>Genesis Radio v1.1 13112012</value>
   </data>
   <data name="&gt;&gt;mnuWave.Name" xml:space="preserve">
     <value>mnuWave</value>
@@ -13216,6 +13288,30 @@
   </data>
   <data name="&gt;&gt;toolTip1.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolTip, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;leftToolStripMenuItem.Name" xml:space="preserve">
+    <value>leftToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;leftToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;rightToolStripMenuItem.Name" xml:space="preserve">
+    <value>rightToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;rightToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;bothToolStripMenuItem.Name" xml:space="preserve">
+    <value>bothToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;bothToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;noneToolStripMenuItem.Name" xml:space="preserve">
+    <value>noneToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;noneToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;eraseAllMemoryToolStripMenuItem.Name" xml:space="preserve">
     <value>eraseAllMemoryToolStripMenuItem</value>

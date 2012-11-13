@@ -1049,8 +1049,19 @@ namespace PowerSDR
                     actual_fgrid == 21.0 || actual_fgrid == 21.45 ||
                     actual_fgrid == 28.0 || actual_fgrid == 29.7 ||
                     actual_fgrid == 50.0 || actual_fgrid == 54.0 ||
-                    actual_fgrid == 70.0 || actual_fgrid == 70.5 ||
-                    actual_fgrid == 144.0 || actual_fgrid == 148.0)
+                    actual_fgrid == 144.0 || actual_fgrid == 146.0 ||
+                    actual_fgrid == console.xBand[1].freq_max || actual_fgrid == console.xBand[1].freq_min ||
+                    actual_fgrid == console.xBand[2].freq_max || actual_fgrid == console.xBand[2].freq_min ||
+                    actual_fgrid == console.xBand[3].freq_max || actual_fgrid == console.xBand[3].freq_min ||
+                        actual_fgrid == console.xBand[4].freq_max || actual_fgrid == console.xBand[4].freq_min ||
+                        actual_fgrid == console.xBand[5].freq_max || actual_fgrid == console.xBand[5].freq_min ||
+                        actual_fgrid == console.xBand[6].freq_max || actual_fgrid == console.xBand[6].freq_min ||
+                        actual_fgrid == console.xBand[7].freq_max || actual_fgrid == console.xBand[7].freq_min ||
+                        actual_fgrid == console.xBand[8].freq_max || actual_fgrid == console.xBand[8].freq_min ||
+                        actual_fgrid == console.xBand[9].freq_max || actual_fgrid == console.xBand[9].freq_min ||
+                        actual_fgrid == console.xBand[10].freq_max || actual_fgrid == console.xBand[10].freq_min ||
+                        actual_fgrid == console.xBand[11].freq_max || actual_fgrid == console.xBand[11].freq_min ||
+                        actual_fgrid == console.xBand[12].freq_max || actual_fgrid == console.xBand[12].freq_min)
                 {
                     g.DrawLine(new Pen(band_edge_color), vgrid, 2 * panadapter_font.Size, vgrid, H);
 
@@ -1466,7 +1477,7 @@ namespace PowerSDR
                 int yRange = spectrum_grid_max - spectrum_grid_min;
                 int top = (int)((double)spectrum_grid_step * H / y_range);
 
-                if (Display_GDI.console.power)
+                if (Display_GDI.console.PowerOn)
                 {
                     max_y = Int32.MinValue;
 
@@ -1546,6 +1557,7 @@ namespace PowerSDR
                                     Win32.memcpy(wptr, rptr, BUFFER_SIZE * sizeof(float));
                             }
                         }
+
                         data_ready = false;
                     }
 
@@ -1771,7 +1783,7 @@ namespace PowerSDR
                 max_y = Int32.MinValue;
                 int R = 0, G = 0, B = 0;	                                	// variables to save Red, Green and Blue component values
 
-                if (Display_GDI.console.power)
+                if (Display_GDI.console.PowerOn)
                 {
                     int yRange = spectrum_grid_max - spectrum_grid_min;
 
