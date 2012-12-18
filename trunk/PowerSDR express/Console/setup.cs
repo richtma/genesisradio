@@ -28,7 +28,7 @@
 
 /*
  *  Changes for GenesisRadio
- *  Copyright (C)2008,2009,2010,2011,2012 YT7PWR Goran Radivojevic
+ *  Copyright (C)2008-2012 YT7PWR Goran Radivojevic
  *  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 */
 
@@ -54,7 +54,8 @@ namespace PowerSDR
 	public class Setup : System.Windows.Forms.Form
 	{
 		#region Variable Declaration
-		
+
+        private delegate void DebugCallbackFunction(string name);
 		private Console console;
 		private Progress progress;
 		private ArrayList KeyList;
@@ -1156,6 +1157,8 @@ namespace PowerSDR
         private RadioButtonTS radVACMuteNone;
         private LabelTS labelTS64;
         private ComboBoxTS comboBandPlan;
+        private CheckBoxTS chkLockTUN;
+        private CheckBoxTS chkCAT_HRDserver;
 		private System.ComponentModel.IContainer components;
 
 		#endregion
@@ -1788,6 +1791,9 @@ namespace PowerSDR
             this.radVACMuteRight = new System.Windows.Forms.RadioButtonTS();
             this.radVACMuteLeft = new System.Windows.Forms.RadioButtonTS();
             this.radVACMuteNone = new System.Windows.Forms.RadioButtonTS();
+            this.comboBandPlan = new System.Windows.Forms.ComboBoxTS();
+            this.chkLockTUN = new System.Windows.Forms.CheckBoxTS();
+            this.chkCAT_HRDserver = new System.Windows.Forms.CheckBoxTS();
             this.lblG59PTT = new System.Windows.Forms.LabelTS();
             this.lblG59PTT_ON = new System.Windows.Forms.LabelTS();
             this.lblG59PTT_OFF = new System.Windows.Forms.LabelTS();
@@ -2384,6 +2390,7 @@ namespace PowerSDR
             this.lblOptClickTuneDIGU = new System.Windows.Forms.LabelTS();
             this.udOptClickTuneOffsetDIGU = new System.Windows.Forms.NumericUpDownTS();
             this.grpGeneralOptions = new System.Windows.Forms.GroupBoxTS();
+            this.labelTS64 = new System.Windows.Forms.LabelTS();
             this.grpGeneralProcessPriority = new System.Windows.Forms.GroupBoxTS();
             this.tpGeneralCalibration = new System.Windows.Forms.TabPage();
             this.grpWBIR = new System.Windows.Forms.GroupBoxTS();
@@ -2533,8 +2540,6 @@ namespace PowerSDR
             this.groupBoxTS3 = new System.Windows.Forms.GroupBoxTS();
             this.labelTS10 = new System.Windows.Forms.LabelTS();
             this.groupBoxTS4 = new System.Windows.Forms.GroupBoxTS();
-            this.comboBandPlan = new System.Windows.Forms.ComboBoxTS();
-            this.labelTS64 = new System.Windows.Forms.LabelTS();
             ((System.ComponentModel.ISupportInitialize)(this.udG40Xtal1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.udG3020Xtal4)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.udG3020Xtal3)).BeginInit();
@@ -5675,7 +5680,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udTXAF.Location = new System.Drawing.Point(56, 24);
+            this.udTXAF.Location = new System.Drawing.Point(56, 19);
             this.udTXAF.Maximum = new decimal(new int[] {
             100,
             0,
@@ -5705,7 +5710,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udTXVOXHangTime.Location = new System.Drawing.Point(72, 72);
+            this.udTXVOXHangTime.Location = new System.Drawing.Point(72, 62);
             this.udTXVOXHangTime.Maximum = new decimal(new int[] {
             10000,
             0,
@@ -5732,7 +5737,7 @@ namespace PowerSDR
             // chkTXVOXEnabled
             // 
             this.chkTXVOXEnabled.Image = null;
-            this.chkTXVOXEnabled.Location = new System.Drawing.Point(16, 24);
+            this.chkTXVOXEnabled.Location = new System.Drawing.Point(16, 14);
             this.chkTXVOXEnabled.Name = "chkTXVOXEnabled";
             this.chkTXVOXEnabled.Size = new System.Drawing.Size(72, 16);
             this.chkTXVOXEnabled.TabIndex = 50;
@@ -5747,7 +5752,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udTXVOXThreshold.Location = new System.Drawing.Point(72, 48);
+            this.udTXVOXThreshold.Location = new System.Drawing.Point(72, 38);
             this.udTXVOXThreshold.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -5850,7 +5855,7 @@ namespace PowerSDR
             0,
             0,
             65536});
-            this.udTXTunePower.Location = new System.Drawing.Point(72, 24);
+            this.udTXTunePower.Location = new System.Drawing.Point(72, 18);
             this.udTXTunePower.Maximum = new decimal(new int[] {
             100,
             0,
@@ -8091,7 +8096,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udCATEthCollTime.Location = new System.Drawing.Point(135, 120);
+            this.udCATEthCollTime.Location = new System.Drawing.Point(135, 136);
             this.udCATEthCollTime.Maximum = new decimal(new int[] {
             5000,
             0,
@@ -8118,7 +8123,7 @@ namespace PowerSDR
             // 
             this.lblCATEthServerWatchdogTime.AutoSize = true;
             this.lblCATEthServerWatchdogTime.Image = null;
-            this.lblCATEthServerWatchdogTime.Location = new System.Drawing.Point(12, 91);
+            this.lblCATEthServerWatchdogTime.Location = new System.Drawing.Point(12, 113);
             this.lblCATEthServerWatchdogTime.Name = "lblCATEthServerWatchdogTime";
             this.lblCATEthServerWatchdogTime.Size = new System.Drawing.Size(84, 13);
             this.lblCATEthServerWatchdogTime.TabIndex = 122;
@@ -8132,7 +8137,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udCATEthServerWatchdogTime.Location = new System.Drawing.Point(135, 89);
+            this.udCATEthServerWatchdogTime.Location = new System.Drawing.Point(135, 111);
             this.udCATEthServerWatchdogTime.Maximum = new decimal(new int[] {
             50000,
             0,
@@ -8477,7 +8482,7 @@ namespace PowerSDR
             this.radGenModelGenesisG11.Size = new System.Drawing.Size(104, 17);
             this.radGenModelGenesisG11.TabIndex = 12;
             this.radGenModelGenesisG11.Text = "Genesis G11";
-            this.toolTip1.SetToolTip(this.radGenModelGenesisG11, "Single/Dual band transceiver for HF");
+            this.toolTip1.SetToolTip(this.radGenModelGenesisG11, "Single/Dual/Multi band transceiver for LF/HF/VHF");
             this.radGenModelGenesisG11.UseVisualStyleBackColor = true;
             this.radGenModelGenesisG11.CheckedChanged += new System.EventHandler(this.radGenModelGenesisG11_CheckedChanged);
             // 
@@ -9337,6 +9342,47 @@ namespace PowerSDR
             this.toolTip1.SetToolTip(this.radVACMuteNone, "No mute for VAC channels.");
             this.radVACMuteNone.UseVisualStyleBackColor = true;
             this.radVACMuteNone.CheckedChanged += new System.EventHandler(this.radVACMuteNone_CheckedChanged);
+            // 
+            // comboBandPlan
+            // 
+            this.comboBandPlan.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBandPlan.DropDownWidth = 112;
+            this.comboBandPlan.Items.AddRange(new object[] {
+            "IARU 1",
+            "IARU 2",
+            "IARU 3"});
+            this.comboBandPlan.Location = new System.Drawing.Point(19, 110);
+            this.comboBandPlan.Name = "comboBandPlan";
+            this.comboBandPlan.Size = new System.Drawing.Size(72, 21);
+            this.comboBandPlan.TabIndex = 1;
+            this.toolTip1.SetToolTip(this.comboBandPlan, "Sets the process priority of the PowerSDR software.");
+            this.comboBandPlan.SelectedIndexChanged += new System.EventHandler(this.comboBandPlan_SelectedIndexChanged);
+            // 
+            // chkLockTUN
+            // 
+            this.chkLockTUN.AutoSize = true;
+            this.chkLockTUN.Image = null;
+            this.chkLockTUN.Location = new System.Drawing.Point(30, 45);
+            this.chkLockTUN.Name = "chkLockTUN";
+            this.chkLockTUN.Size = new System.Drawing.Size(76, 17);
+            this.chkLockTUN.TabIndex = 6;
+            this.chkLockTUN.Text = "Lock TUN";
+            this.toolTip1.SetToolTip(this.chkLockTUN, "Prevent changes from PWR slider from main screen.");
+            this.chkLockTUN.UseVisualStyleBackColor = true;
+            this.chkLockTUN.CheckedChanged += new System.EventHandler(this.chkLockTUN_CheckedChanged);
+            // 
+            // chkCAT_HRDserver
+            // 
+            this.chkCAT_HRDserver.AutoSize = true;
+            this.chkCAT_HRDserver.Image = null;
+            this.chkCAT_HRDserver.Location = new System.Drawing.Point(60, 89);
+            this.chkCAT_HRDserver.Name = "chkCAT_HRDserver";
+            this.chkCAT_HRDserver.Size = new System.Drawing.Size(82, 17);
+            this.chkCAT_HRDserver.TabIndex = 123;
+            this.chkCAT_HRDserver.Text = "HRD server";
+            this.toolTip1.SetToolTip(this.chkCAT_HRDserver, "Direct connection to DM780,HRDlog...");
+            this.chkCAT_HRDserver.UseVisualStyleBackColor = true;
+            this.chkCAT_HRDserver.CheckedChanged += new System.EventHandler(this.chkCAT_HRDserver_CheckedChanged);
             // 
             // lblG59PTT
             // 
@@ -13157,9 +13203,9 @@ namespace PowerSDR
             // 
             this.grpTXMonitor.Controls.Add(this.lblTXAF);
             this.grpTXMonitor.Controls.Add(this.udTXAF);
-            this.grpTXMonitor.Location = new System.Drawing.Point(8, 171);
+            this.grpTXMonitor.Location = new System.Drawing.Point(8, 181);
             this.grpTXMonitor.Name = "grpTXMonitor";
-            this.grpTXMonitor.Size = new System.Drawing.Size(138, 56);
+            this.grpTXMonitor.Size = new System.Drawing.Size(138, 50);
             this.grpTXMonitor.TabIndex = 51;
             this.grpTXMonitor.TabStop = false;
             this.grpTXMonitor.Text = "Monitor";
@@ -13167,7 +13213,7 @@ namespace PowerSDR
             // lblTXAF
             // 
             this.lblTXAF.Image = null;
-            this.lblTXAF.Location = new System.Drawing.Point(8, 24);
+            this.lblTXAF.Location = new System.Drawing.Point(8, 19);
             this.lblTXAF.Name = "lblTXAF";
             this.lblTXAF.Size = new System.Drawing.Size(40, 16);
             this.lblTXAF.TabIndex = 5;
@@ -13180,9 +13226,9 @@ namespace PowerSDR
             this.grpTXVOX.Controls.Add(this.chkTXVOXEnabled);
             this.grpTXVOX.Controls.Add(this.lblTXVOXThreshold);
             this.grpTXVOX.Controls.Add(this.udTXVOXThreshold);
-            this.grpTXVOX.Location = new System.Drawing.Point(8, 229);
+            this.grpTXVOX.Location = new System.Drawing.Point(8, 231);
             this.grpTXVOX.Name = "grpTXVOX";
-            this.grpTXVOX.Size = new System.Drawing.Size(136, 96);
+            this.grpTXVOX.Size = new System.Drawing.Size(136, 86);
             this.grpTXVOX.TabIndex = 50;
             this.grpTXVOX.TabStop = false;
             this.grpTXVOX.Text = "VOX";
@@ -13190,7 +13236,7 @@ namespace PowerSDR
             // lblTXVOXHangTime
             // 
             this.lblTXVOXHangTime.Image = null;
-            this.lblTXVOXHangTime.Location = new System.Drawing.Point(8, 72);
+            this.lblTXVOXHangTime.Location = new System.Drawing.Point(8, 62);
             this.lblTXVOXHangTime.Name = "lblTXVOXHangTime";
             this.lblTXVOXHangTime.Size = new System.Drawing.Size(64, 16);
             this.lblTXVOXHangTime.TabIndex = 52;
@@ -13199,7 +13245,7 @@ namespace PowerSDR
             // lblTXVOXThreshold
             // 
             this.lblTXVOXThreshold.Image = null;
-            this.lblTXVOXThreshold.Location = new System.Drawing.Point(8, 48);
+            this.lblTXVOXThreshold.Location = new System.Drawing.Point(8, 39);
             this.lblTXVOXThreshold.Name = "lblTXVOXThreshold";
             this.lblTXVOXThreshold.Size = new System.Drawing.Size(64, 16);
             this.lblTXVOXThreshold.TabIndex = 5;
@@ -13241,11 +13287,12 @@ namespace PowerSDR
             // 
             // grpPATune
             // 
+            this.grpPATune.Controls.Add(this.chkLockTUN);
             this.grpPATune.Controls.Add(this.lblTransmitTunePower);
             this.grpPATune.Controls.Add(this.udTXTunePower);
-            this.grpPATune.Location = new System.Drawing.Point(8, 113);
+            this.grpPATune.Location = new System.Drawing.Point(8, 111);
             this.grpPATune.Name = "grpPATune";
-            this.grpPATune.Size = new System.Drawing.Size(136, 56);
+            this.grpPATune.Size = new System.Drawing.Size(136, 70);
             this.grpPATune.TabIndex = 22;
             this.grpPATune.TabStop = false;
             this.grpPATune.Text = "Tune";
@@ -13253,7 +13300,7 @@ namespace PowerSDR
             // lblTransmitTunePower
             // 
             this.lblTransmitTunePower.Image = null;
-            this.lblTransmitTunePower.Location = new System.Drawing.Point(8, 24);
+            this.lblTransmitTunePower.Location = new System.Drawing.Point(8, 18);
             this.lblTransmitTunePower.Name = "lblTransmitTunePower";
             this.lblTransmitTunePower.Size = new System.Drawing.Size(64, 16);
             this.lblTransmitTunePower.TabIndex = 5;
@@ -17151,6 +17198,15 @@ namespace PowerSDR
             this.grpGeneralOptions.TabStop = false;
             this.grpGeneralOptions.Text = "Options";
             // 
+            // labelTS64
+            // 
+            this.labelTS64.Image = null;
+            this.labelTS64.Location = new System.Drawing.Point(95, 113);
+            this.labelTS64.Name = "labelTS64";
+            this.labelTS64.Size = new System.Drawing.Size(55, 24);
+            this.labelTS64.TabIndex = 7;
+            this.labelTS64.Text = "Band plan";
+            // 
             // grpGeneralProcessPriority
             // 
             this.grpGeneralProcessPriority.Controls.Add(this.comboGeneralProcessPriority);
@@ -17917,6 +17973,7 @@ namespace PowerSDR
             // 
             // grpCATOverEthernet
             // 
+            this.grpCATOverEthernet.Controls.Add(this.chkCAT_HRDserver);
             this.grpCATOverEthernet.Controls.Add(this.lblCATEthServerWatchdogTime);
             this.grpCATOverEthernet.Controls.Add(this.udCATEthServerWatchdogTime);
             this.grpCATOverEthernet.Controls.Add(this.lblCATEthCollTime);
@@ -17943,7 +18000,7 @@ namespace PowerSDR
             // 
             this.lblCATEthCollTime.AutoSize = true;
             this.lblCATEthCollTime.Image = null;
-            this.lblCATEthCollTime.Location = new System.Drawing.Point(12, 122);
+            this.lblCATEthCollTime.Location = new System.Drawing.Point(12, 138);
             this.lblCATEthCollTime.Name = "lblCATEthCollTime";
             this.lblCATEthCollTime.Size = new System.Drawing.Size(99, 13);
             this.lblCATEthCollTime.TabIndex = 120;
@@ -17963,7 +18020,7 @@ namespace PowerSDR
             // 
             // txtCATServerIPAddress
             // 
-            this.txtCATServerIPAddress.Location = new System.Drawing.Point(64, 183);
+            this.txtCATServerIPAddress.Location = new System.Drawing.Point(64, 188);
             this.txtCATServerIPAddress.MaxLength = 24;
             this.txtCATServerIPAddress.Name = "txtCATServerIPAddress";
             this.txtCATServerIPAddress.Size = new System.Drawing.Size(129, 20);
@@ -17974,7 +18031,7 @@ namespace PowerSDR
             // lblCATServerAddress
             // 
             this.lblCATServerAddress.Image = null;
-            this.lblCATServerAddress.Location = new System.Drawing.Point(12, 177);
+            this.lblCATServerAddress.Location = new System.Drawing.Point(12, 182);
             this.lblCATServerAddress.Name = "lblCATServerAddress";
             this.lblCATServerAddress.Size = new System.Drawing.Size(60, 31);
             this.lblCATServerAddress.TabIndex = 116;
@@ -18004,7 +18061,7 @@ namespace PowerSDR
             // 
             // txtCATLocalIPAddress
             // 
-            this.txtCATLocalIPAddress.Location = new System.Drawing.Point(64, 151);
+            this.txtCATLocalIPAddress.Location = new System.Drawing.Point(64, 161);
             this.txtCATLocalIPAddress.MaxLength = 24;
             this.txtCATLocalIPAddress.Name = "txtCATLocalIPAddress";
             this.txtCATLocalIPAddress.Size = new System.Drawing.Size(129, 20);
@@ -18015,7 +18072,7 @@ namespace PowerSDR
             // lblCATIPAddress
             // 
             this.lblCATIPAddress.Image = null;
-            this.lblCATIPAddress.Location = new System.Drawing.Point(12, 147);
+            this.lblCATIPAddress.Location = new System.Drawing.Point(14, 154);
             this.lblCATIPAddress.Name = "lblCATIPAddress";
             this.lblCATIPAddress.Size = new System.Drawing.Size(60, 31);
             this.lblCATIPAddress.TabIndex = 111;
@@ -18942,30 +18999,6 @@ namespace PowerSDR
             this.groupBoxTS4.TabStop = false;
             this.groupBoxTS4.Text = "groupBoxTS4";
             // 
-            // comboBandPlan
-            // 
-            this.comboBandPlan.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBandPlan.DropDownWidth = 112;
-            this.comboBandPlan.Items.AddRange(new object[] {
-            "IARU 1",
-            "IARU 2",
-            "IARU 3"});
-            this.comboBandPlan.Location = new System.Drawing.Point(19, 110);
-            this.comboBandPlan.Name = "comboBandPlan";
-            this.comboBandPlan.Size = new System.Drawing.Size(72, 21);
-            this.comboBandPlan.TabIndex = 1;
-            this.toolTip1.SetToolTip(this.comboBandPlan, "Sets the process priority of the PowerSDR software.");
-            this.comboBandPlan.SelectedIndexChanged += new System.EventHandler(this.comboBandPlan_SelectedIndexChanged);
-            // 
-            // labelTS64
-            // 
-            this.labelTS64.Image = null;
-            this.labelTS64.Location = new System.Drawing.Point(95, 113);
-            this.labelTS64.Name = "labelTS64";
-            this.labelTS64.Size = new System.Drawing.Size(55, 24);
-            this.labelTS64.TabIndex = 7;
-            this.labelTS64.Text = "Band plan";
-            // 
             // Setup
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
@@ -19205,6 +19238,7 @@ namespace PowerSDR
             this.grpTXNoiseGate.ResumeLayout(false);
             this.grpTXProfile.ResumeLayout(false);
             this.grpPATune.ResumeLayout(false);
+            this.grpPATune.PerformLayout();
             this.grpTXCompression.ResumeLayout(false);
             this.grpTXCompression.PerformLayout();
             this.grpTXFilter.ResumeLayout(false);
@@ -25491,6 +25525,11 @@ namespace PowerSDR
 			console.TunePower = udTXTunePower.Value;
 		}
 
+        private void chkLockTUN_CheckedChanged(object sender, EventArgs e)
+        {
+            console.LockTUN = chkLockTUN.Checked;
+        }
+
 		private string current_profile = "";
 		private void comboTXProfileName_SelectedIndexChanged(object sender, System.EventArgs e)
 		{
@@ -25891,7 +25930,7 @@ namespace PowerSDR
                     run[10] = true;
                 else
                     run[10] = false;
-                if (chkPA10_2m.Checked && console.CurrentBand == Band.B2M && console.XTRVenabled)
+                if (chkPA10_2m.Checked && console.CurrentBand == Band.B2M)
                     run[11] = true;
                 else
                     run[11] = false;
@@ -29098,36 +29137,47 @@ namespace PowerSDR
         {
             try
             {
-            if (!console.booting && !chkCATServer.Checked)
-            {
-                if (chkCATClient.Checked)
+                if (!console.booting && !chkCATServer.Checked)
                 {
-                    if (!console.CAT_client_socket.Start(txtCATServerIPAddress.Text,
-                         (int)udCATServerPort.Value, txtCATLocalIPAddress.Text, txtCATpassword.Text))
+                    if (chkCATClient.Checked)
                     {
-                        console.EthCATIsActive = false;
-                        chkCATClient.Checked = false;
-                        Enable_CAT_over_ethernet_client = false;
+                        if (!console.CAT_client_socket.Start(txtCATServerIPAddress.Text,
+                             (int)udCATServerPort.Value, txtCATLocalIPAddress.Text, txtCATpassword.Text))
+                        {
+                            console.EthCATIsActive = false;
+                            chkCATClient.Checked = false;
+                            Enable_CAT_over_ethernet_client = false;
+                            console.VoIP_type = VoIPtype.None;
+                        }
+                        else
+                        {
+                            Enable_CAT_over_ethernet_client = true;
+                            console.EthCATIsActive = true;
+
+                            if (!chkCAT_HRDserver.Checked)
+                                console.VoIP_type = VoIPtype.Client;
+                        }
                     }
                     else
                     {
-                        Enable_CAT_over_ethernet_client = true;
-                        console.EthCATIsActive = true;
+                        console.CAT_client_socket.Stop();
+                        console.EthCATIsActive = false;
+                        Enable_CAT_over_ethernet_client = false;
+                        console.VoIP_type = VoIPtype.None;
                     }
                 }
-                else
-                {
-                    console.CAT_client_socket.Stop();
-                    console.EthCATIsActive = false;
-                    Enable_CAT_over_ethernet_client = false;
-                }
-            }
-            else if (!console.booting && chkCATClient.Checked)
-                chkCATClient.Checked = false;
+                else if (!console.booting && chkCATClient.Checked)
+                    chkCATClient.Checked = false;
             }
             catch (Exception ex)
             {
                 Debug.Write(ex.ToString());
+
+                if (console.CAT_client_socket.Debug_enable && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                        "Client failed!\n" + ex.ToString());
+
+                console.VoIP_type = VoIPtype.None;
             }
         }
 
@@ -29135,27 +29185,49 @@ namespace PowerSDR
         {
             try
             {
-            if (!console.booting && !chkCATClient.Checked)
-            {
-                Enable_CAT_over_ethernet_client = false;
-
-                if (chkCATServer.Checked)
+                if (!console.booting && !chkCATClient.Checked)
                 {
-                    if (!console.CAT_server_socket.Start(txtCATLocalIPAddress.Text,
-                         (int)udCATServerPort.Value, txtCATpassword.Text))
-                        chkCATServer.Checked = false;
-                }
-                else
-                    console.CAT_server_socket.Stop();
+                    Enable_CAT_over_ethernet_client = false;
 
-                Enable_CAT_over_ethernet_server = true;
-            }
-            else if (!console.booting && chkCATServer.Checked)
-                chkCATServer.Checked = false;
+                    if (chkCATServer.Checked)
+                    {
+                        if (!console.CAT_server_socket.Start(txtCATLocalIPAddress.Text,
+                             (int)udCATServerPort.Value, txtCATpassword.Text))
+                        {
+                            chkCATServer.Checked = false;
+                            console.VoIP_type = VoIPtype.None;
+                        }
+                        else
+                        {
+                            chkCAT_HRDserver.Enabled = false;
+
+                            if (!chkCAT_HRDserver.Checked)
+                                console.VoIP_type = VoIPtype.Server;
+                        }
+                    }
+                    else
+                    {
+                        console.CAT_server_socket.Stop();
+                        chkCAT_HRDserver.Enabled = true;
+                    }
+
+                    Enable_CAT_over_ethernet_server = true;
+                }
+                else if (!console.booting && chkCATServer.Checked)
+                {
+                    chkCATServer.Checked = false;
+                    chkCAT_HRDserver.Enabled = true;
+                    console.VoIP_type = VoIPtype.None;
+                }
             }
             catch (Exception ex)
             {
                 Debug.Write(ex.ToString());
+                console.VoIP_type = VoIPtype.None;
+
+                if (console.CAT_server_socket.Debug_enable && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                        "Server failed!\n" + ex.ToString());
             }
         }
 
@@ -29163,10 +29235,10 @@ namespace PowerSDR
         {
             try
             {
-            Enable_CAT_over_ethernet_client  = false;
+                Enable_CAT_over_ethernet_client = false;
 
-            if (chkCATClient.Checked)
-                chkCATClient_CheckedChanged(null, null);
+                if (chkCATClient.Checked)
+                    chkCATClient_CheckedChanged(null, null);
             }
             catch (Exception ex)
             {
@@ -29178,8 +29250,8 @@ namespace PowerSDR
         {
             try
             {
-            if (chkCATServer.Checked)
-                chkCATServer_CheckedChanged(null, null);
+                if (chkCATServer.Checked)
+                    chkCATServer_CheckedChanged(null, null);
             }
             catch (Exception ex)
             {
@@ -29314,7 +29386,19 @@ namespace PowerSDR
             {
                 Debug.Write(ex.ToString());
             }
+        }
 
+        private void chkCAT_HRDserver_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (console.CAT_server_socket != null)
+                    console.CAT_server_socket.HRDserver = chkCAT_HRDserver.Checked;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         #endregion

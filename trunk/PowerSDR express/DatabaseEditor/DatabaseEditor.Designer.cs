@@ -270,7 +270,7 @@
             this.MaximumSize = new System.Drawing.Size(550, 550);
             this.MinimumSize = new System.Drawing.Size(550, 550);
             this.Name = "DatabaseEditorClass";
-            this.Text = "Database Editor v1.1 by yt7pwr";
+            this.Text = "Database Editor v1.2.1 by yt7pwr";
             this.Load += new System.EventHandler(this.LoadForm);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).EndInit();
             this.ResumeLayout(false);

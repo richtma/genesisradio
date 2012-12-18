@@ -689,13 +689,14 @@ namespace PowerSDR
             // 
             this.tbTXEchoGain.AutoSize = false;
             this.tbTXEchoGain.Location = new System.Drawing.Point(9, 39);
-            this.tbTXEchoGain.Maximum = 100;
+            this.tbTXEchoGain.Maximum = 50;
             this.tbTXEchoGain.Name = "tbTXEchoGain";
             this.tbTXEchoGain.Orientation = System.Windows.Forms.Orientation.Vertical;
             this.tbTXEchoGain.Size = new System.Drawing.Size(18, 100);
             this.tbTXEchoGain.TabIndex = 136;
             this.tbTXEchoGain.TickFrequency = 5;
-            this.tbTXEchoGain.Value = 1;
+            this.toolTip1.SetToolTip(this.tbTXEchoGain, "Echo gain");
+            this.tbTXEchoGain.Value = 25;
             this.tbTXEchoGain.Scroll += new System.EventHandler(this.tbTXEchoGain_Scroll);
             // 
             // labelTS16
@@ -719,7 +720,8 @@ namespace PowerSDR
             this.tbTXEchoDelay.Orientation = System.Windows.Forms.Orientation.Vertical;
             this.tbTXEchoDelay.Size = new System.Drawing.Size(18, 100);
             this.tbTXEchoDelay.TabIndex = 133;
-            this.tbTXEchoDelay.TickFrequency = 25;
+            this.tbTXEchoDelay.TickFrequency = 50;
+            this.toolTip1.SetToolTip(this.tbTXEchoDelay, "Echo delay in mS");
             this.tbTXEchoDelay.Value = 150;
             this.tbTXEchoDelay.Scroll += new System.EventHandler(this.tbTXEchoDelay_Scroll);
             // 
@@ -1311,8 +1313,11 @@ namespace PowerSDR
 						{
 							decimal num = decimal.Parse(val);
 
-							if(num > c.Maximum) num = c.Maximum;		// check endpoints
-							else if(num < c.Minimum) num = c.Minimum;
+							if(num > c.Maximum)
+                                num = c.Maximum;		// check endpoints
+							else if(num < c.Minimum)
+                                num = c.Minimum;
+
 							c.Value = num;			// restore value
 							i = numericupdown_list.Count+1;
 						}
@@ -1356,11 +1361,20 @@ namespace PowerSDR
 					for(int i=0; i<trackbar_list.Count; i++)
 					{
 						TrackBarTS c = (TrackBarTS)trackbar_list[i];
+
 						if(c.Name.Equals(name))		// name found
 						{
-							c.Value = Int32.Parse(val);
+                            int num = Int32.Parse(val);
+
+                            if (num > c.Maximum)
+                                num = c.Maximum;		// check endpoints
+                            else if (num < c.Minimum)
+                                num = c.Minimum;
+
+							c.Value = num;
 							i = trackbar_list.Count+1;
 						}
+
 						if(i == trackbar_list.Count)
 							MessageBox.Show("Control not found: "+name);
 					}
@@ -1680,28 +1694,49 @@ namespace PowerSDR
 
         private void chkTXEchoEnable_CheckedChanged(object sender, EventArgs e)
         {
-            Audio.echo_enable = chkTXEchoEnable.Checked;
-
-            if (chkTXEchoEnable.Checked)
+            try
             {
-                tbRXEQ_Scroll(this, EventArgs.Empty);
-                tbTXEQ_Scroll(this, EventArgs.Empty);
-                tbTXEchoGain_Scroll(this, EventArgs.Empty);
-                tbTXEchoDelay_Scroll(this, EventArgs.Empty);
+                Audio.echo_enable = chkTXEchoEnable.Checked;
+
+                if (chkTXEchoEnable.Checked)
+                {
+                    tbRXEQ_Scroll(this, EventArgs.Empty);
+                    tbTXEQ_Scroll(this, EventArgs.Empty);
+                    tbTXEchoGain_Scroll(this, EventArgs.Empty);
+                    tbTXEchoDelay_Scroll(this, EventArgs.Empty);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
             }
         }
 
         private void tbTXEchoDelay_Scroll(object sender, EventArgs e)
         {
-            float delay = 0.0f;
+            try
+            {
+                float delay = 0.0f;
 
-            delay = (1.0f / Audio.SampleRate1) * Audio.BlockSize * 1000.0f;
-            Audio.EchoDelay = (tbTXEchoDelay.Value / (int)delay) * Audio.BlockSize;
+                delay = (1.0f / Audio.SampleRate1) * Audio.BlockSize * 1000.0f;
+                Audio.EchoDelay = Math.Max(0, (tbTXEchoDelay.Value / (int)delay) * Audio.BlockSize);
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void tbTXEchoGain_Scroll(object sender, EventArgs e)
         {
-            Audio.EchoGain = tbTXEchoGain.Value / 100.0f;
+            try
+            {
+                Audio.EchoGain = Math.Max(0, tbTXEchoGain.Value / 100.0f);
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         #endregion

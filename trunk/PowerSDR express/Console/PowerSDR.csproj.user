@@ -70,7 +70,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <StartWithIE>true</StartWithIE>
     <RemoteDebugEnabled>false</RemoteDebugEnabled>
-    <StartWorkingDirectory>e:\PowerSDR express\bin\Debug\</StartWorkingDirectory>
+    <StartWorkingDirectory>f:\PowerSDR express\bin\Debug\</StartWorkingDirectory>
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
     <EnableSQLServerDebugging>false</EnableSQLServerDebugging>
   </PropertyGroup>

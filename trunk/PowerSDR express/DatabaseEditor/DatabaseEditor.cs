@@ -18,6 +18,7 @@ namespace DatabaseEditor
         bool open_table = false;
         bool save_table = false;
         string app_name = "";
+        bool database_changed = false;
 
         #endregion
 
@@ -148,7 +149,35 @@ namespace DatabaseEditor
         {
             try
             {
-                this.Close();
+                if (database_changed)
+                {
+                    DialogResult = MessageBox.Show("Do you wish to save it?", "Database is changed!", MessageBoxButtons.YesNo);
+
+                    if (DialogResult == DialogResult.No)
+                        this.Close();
+                    else if (DialogResult == DialogResult.Yes)
+                    {
+                        string[] s = DB.FileName.Split('\\');
+                        string str = s[s.Length - 1];
+
+                        if (str == "band_database.xml")
+                            SaveState();
+
+                        DB.Update();
+                        this.Close();
+                    }
+                }
+                else
+                {
+                    string[] s = DB.FileName.Split('\\');
+                    string str = s[s.Length - 1];
+
+                    if (str == "band_database.xml")
+                        SaveState();
+
+                    DB.Update();
+                    this.Close();
+                }
             }
             catch (Exception ex)
             {
@@ -160,10 +189,43 @@ namespace DatabaseEditor
         {
             try
             {
+                DataColumn[] col = DB.ds.Tables[comboDatabaseTable.Text].PrimaryKey;
+                int index = dataGridView.SelectedRows[0].Index + 1;
                 DataRow dr = DB.ds.Tables[comboDatabaseTable.Text].NewRow();
-                DB.ds.Tables[comboDatabaseTable.Text].Rows.Add(dr);
-                DB.Update();
-                dataGridView.CurrentCell = dataGridView[0, 0];
+                DataRow r = DB.ds.Tables[comboDatabaseTable.Text].NewRow();
+                DataRow[] rows = DB.ds.Tables[comboDatabaseTable.Text].Select();
+
+                for (int i = 0; i < DB.ds.Tables[comboDatabaseTable.Text].Columns.Count; i++)
+                    r[i] = rows[index-1][i];
+
+                if (col.Length > 0)
+                {
+                    Type n = col[0].DataType;
+
+                    if (n == typeof(string))
+                        r[col[0].ColumnName] = "";
+                    else if (n == typeof(short))
+                        r[col[0].ColumnName] = 0;
+                    else if (n == typeof(int))
+                        r[col[0].ColumnName] = 0;
+                    else if (n == typeof(long))
+                        r[col[0].ColumnName] = 0;
+                    else if (n == typeof(double))
+                        r[col[0].ColumnName] = 0.0;
+                    else if (n == typeof(float))
+                        r[col[0].ColumnName] = 0.0f;
+                    else
+                        r[col[0].ColumnName] = 0;
+                }
+
+                DB.ds.Tables[comboDatabaseTable.Text].Rows.InsertAt(r, index);
+                DB.ds.Tables[comboDatabaseTable.Text].DefaultView.Sort = "";
+
+                if (!database_changed)
+                {
+                    this.Text += "*";
+                    database_changed = true;
+                }
             }
             catch (Exception ex)
             {
@@ -176,7 +238,12 @@ namespace DatabaseEditor
             try
             {
                 dataGridView.Rows.RemoveAt(dataGridView.SelectedRows[0].Index);
-                DB.Update();
+
+                if (!database_changed)
+                {
+                    this.Text += "*";
+                    database_changed = true;
+                }
             }
             catch (Exception ex)
             {
@@ -243,7 +310,16 @@ namespace DatabaseEditor
                 if (str == "band_database.xml")
                     SaveState();
 
+                foreach (string text in comboDatabaseTable.Items)
+                {
+                    DB.SortTable(text);
+                }
+
                 DB.Update();
+                this.Text = this.Text.Replace('*', ' ');
+                database_changed = false;
+                string q = DB.ds.Tables[comboDatabaseTable.Text].Columns[0].ToString();
+                DB.ds.Tables[comboDatabaseTable.Text].DefaultView.Sort = q;
             }
             catch (Exception ex)
             {
@@ -260,6 +336,18 @@ namespace DatabaseEditor
             try
             {
                 dataGridView.DataSource = DB.ds.Tables[comboDatabaseTable.Text];
+
+                if (DB.SortTable(comboDatabaseTable.Text))
+                {
+                    if (!database_changed)
+                    {
+                        this.Text += "*";
+                        database_changed = true;
+                    }
+                }
+
+                DB.ds.Tables[comboDatabaseTable.Text].DefaultView.Sort = 
+                    DB.ds.Tables[comboDatabaseTable.Text].Columns[0].ToString();
 
                 switch (dataGridView.ColumnCount)
                 {
@@ -296,6 +384,26 @@ namespace DatabaseEditor
         {
             try
             {
+                if (database_changed)
+                {
+                    DialogResult = MessageBox.Show("Do you wish to save it?", "Database is changed!", MessageBoxButtons.YesNo);
+
+                    if (DialogResult == DialogResult.No)
+                    {
+                        database_changed = false;
+                    }
+                    else if (DialogResult == DialogResult.Yes)
+                    {
+                        string[] s = DB.FileName.Split('\\');
+                        string str = s[s.Length - 1];
+
+                        if (str == "band_database.xml")
+                            SaveState();
+
+                        DB.Update();
+                    }
+                }
+
                 open_table = false;
                 openFileDialog.InitialDirectory = Application.StartupPath;
                 openFileDialog.ShowReadOnly = true;
@@ -368,7 +476,11 @@ namespace DatabaseEditor
                     if (comboDatabaseTable.Items.Count > 0)
                         comboDatabaseTable.SelectedIndex = 0;
 
-                    DB.Update();
+                    if (!database_changed)
+                    {
+                        this.Text += "*";
+                        database_changed = true;
+                    }
                 }
 
                 comboDatabaseTable_SelectedIndexChanged(this, EventArgs.Empty);  // refresh table view
@@ -412,6 +524,12 @@ namespace DatabaseEditor
                     string table = comboDatabaseTable.Text;
                     DB.ImportTable(file, table);
                     comboDatabaseTable_SelectedIndexChanged(this, EventArgs.Empty);  // refresh table view
+
+                    if (!database_changed)
+                    {
+                        this.Text += "*";
+                        database_changed = true;
+                    }
                 }
                 else
                 {
