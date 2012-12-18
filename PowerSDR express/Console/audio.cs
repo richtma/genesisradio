@@ -178,9 +178,7 @@ namespace PowerSDR
         public static bool debug = false;
         public static bool large_vac_buffer = false;
         private static RingBufferFloat echoRB;
-        private static RingBufferFloat echoRB_delay;
-        public static bool echo_enable = false;
-        private static uint echo_ptr = 0;
+        public static bool echo_enable = false;       
         private static float[] mix_buffer = new float[2048];
         private static float[] mix_buffer_delay = new float[2048];
         private static bool audio_stop = false;
@@ -189,6 +187,7 @@ namespace PowerSDR
         public static bool CTCSS = false;
         public static MuteChannels vac_mute_ch = MuteChannels.None;
         public static MuteChannels mute_ch = MuteChannels.None;
+        static bool echo_pause = false;
 
         private static float echo_gain = 0.0f;
         public static float EchoGain
@@ -207,14 +206,9 @@ namespace PowerSDR
 
                 if (echoRB != null)
                 {
-                    echoRB.Restart(131072);
-                    echoRB.Reset();
-                }
-
-                if (echoRB_delay != null)
-                {
-                    echoRB_delay.Restart(131072);
-                    echoRB_delay.Reset();
+                    echo_pause = true;
+                    echoRB.Resize(Math.Max(4096, value));
+                    echo_pause = false;
                 }
             }
         }
@@ -639,8 +633,9 @@ namespace PowerSDR
             {
                 if (echo_enable && value)
                 {
-                    echoRB.Restart(131072);
-                    echoRB.Reset();
+                    echo_pause = true;
+                    echoRB.Resize(Math.Max(4096, echo_delay));
+                    echo_pause = false;
                 }
 
                 mox = value; 
@@ -1053,12 +1048,14 @@ namespace PowerSDR
 
                             if (echo_enable && (dsp_mode != DSPMode.DIGL || dsp_mode != DSPMode.DIGU))
                             {
-                                echoRB.WritePtr(in_l, frameCount);
-                                echo_ptr = (uint)echoRB.ReadSpace();
-
-                                if (echo_ptr > echo_delay)
+                                if (!echo_pause)
                                 {
-                                    EchoMixer(in_l, in_r, frameCount);
+                                    echoRB.WritePtr(in_l, frameCount);
+
+                                    if (echoRB.ReadSpace() > echo_delay - 2)
+                                    {
+                                        EchoMixer(in_l, in_r, frameCount);
+                                    }
                                 }
                             }
                         }
@@ -1126,12 +1123,14 @@ namespace PowerSDR
 
                                 if (echo_enable && (dsp_mode != DSPMode.DIGL || dsp_mode != DSPMode.DIGU))
                                 {
-                                    echoRB.WritePtr(in_l, frameCount);
-                                    echo_ptr = (uint)echoRB.ReadSpace();
-
-                                    if (echo_ptr > echo_delay)
+                                    if (!echo_pause)
                                     {
-                                        EchoMixer(in_l, in_r, frameCount);
+                                        echoRB.WritePtr(in_l, frameCount);
+
+                                        if (echoRB.ReadSpace() > echo_delay - 2)
+                                        {
+                                            EchoMixer(in_l, in_r, frameCount);
+                                        }
                                     }
                                 }
                             }
@@ -1249,7 +1248,6 @@ namespace PowerSDR
                                 }
                             }
 
-                            //DttSP.CWtoneExchange(out_l, out_r, frameCount);
                             ClearBuffer(out_l, frameCount);
                             ClearBuffer(out_r, frameCount);
 
@@ -1258,7 +1256,6 @@ namespace PowerSDR
                         }
                         else
                             DttSP.CWtoneExchange(out_l, out_r, frameCount);
-                        //DttSP.CWMonitorExchange(out_l, out_r, frameCount);
 
                         break;
                     case AudioState.SINL_COSR:
@@ -1523,35 +1520,7 @@ namespace PowerSDR
                             ScaleBuffer(out_r, outr_ptr, frameCount, 0.0f);
                         }
 
-                        if (mox && vac_mon && mon && vac_resample)
-                        {
-                            if ((console.CurrentDSPMode == DSPMode.CWU ||
-                                console.CurrentDSPMode == DSPMode.CWL) && vac_mon && mon)
-                            {
-                                DttSP.CWMonitorExchange(out_l_ptr1, out_r_ptr1, frameCount);
-
-                                int outsamps;
-                                fixed (float* res_outl_ptr = &(res_outl[0]))
-                                fixed (float* res_outr_ptr = &(res_outr[0]))
-                                {
-                                    DttSP.DoResamplerF(out_l_ptr1, res_outl_ptr, frameCount, &outsamps, resampPtrOut_l);
-                                    DttSP.DoResamplerF(out_r_ptr1, res_outr_ptr, frameCount, &outsamps, resampPtrOut_r);
-
-                                    if ((rb_vacOUT_l.WriteSpace() >= outsamps) && (rb_vacOUT_r.WriteSpace() >= outsamps))
-                                    {
-                                        Win32.EnterCriticalSection(cs_vac);
-                                        rb_vacOUT_l.WritePtr(res_outl_ptr, outsamps);
-                                        rb_vacOUT_r.WritePtr(res_outr_ptr, outsamps);
-                                        Win32.LeaveCriticalSection(cs_vac);
-                                    }
-                                    else
-                                    {
-                                        VACDebug("rb_vacOUT overflow CB1");
-                                    }
-                                }
-                            }
-                        }
-                        else if (!mox)
+                        if (!mox)
                         {
                             if (sample_rateVAC == sample_rate1)
                             {
@@ -1715,121 +1684,126 @@ namespace PowerSDR
                 }
                 else
                 {
-                    //array_ptr = (int*)output;
-                    /*int* out_ptr = (int*)array_ptr[0];
-
-                    for (int i = 0; i < frameCount * 4; i++)
+                    if (console.CurrentModel == Model.GENESIS_G6)
                     {
-                        iq_data_l[i] = (byte)out_ptr[0];
-                        iq_data_l[i + 1] = (byte)(out_ptr[0] >> 8);
-                        iq_data_l[i + 2] = (byte)(out_ptr[0] >> 16);
-                        iq_data_l[i + 3] = (byte)(out_ptr[0] >> 24);
-                        out_ptr++;
-                        i += 3;
-                    }
+                        /*array_ptr = (int*)output;
+                        int* out_ptr = (int*)array_ptr[0];
 
-                    Win32.EnterCriticalSection(cs_vac);
-                    g6RB.Write(iq_data_l, frameCount * 4);
-                    Win32.LeaveCriticalSection(cs_vac);
-
-                    Win32.EnterCriticalSection(cs_vac);
-                    g6RB.Read(g6_buffer, frameCount * 4);
-                    Win32.LeaveCriticalSection(cs_vac);
-
-                    int* out_l_b = (int*)array_ptr[0];
-                    int* out_r_b = (int*)array_ptr[1];
-
-                    for (int i = 0; i < frameCount * 4; i++)
-                    {
-                        out_l_b[0] = g6_buffer[i];
-                        out_l_b[0] += g6_buffer[i + 1] << 8;
-                        out_l_b[0] += g6_buffer[i + 2] << 16;
-                        out_l_b[0] += g6_buffer[i + 3] << 24;
-                        out_r_b[0] = g6_buffer[i];
-                        out_r_b[0] += g6_buffer[i + 1] << 8;
-                        out_r_b[0] += g6_buffer[i + 2] << 16;
-                        out_r_b[0] += g6_buffer[i + 3] << 24;
-                        out_r_b++;
-                        out_l_b++;
-                        i += 3;
-                    }*/
-
-                    //array_ptr = (int*)output;
-                    /*byte *out_ptr = (byte*)array_ptr[0];
-
-                    for (int i = 0; i < frameCount * 2; i++)
-                    {
-                        iq_data_l[i] = out_ptr[0];
-                        out_ptr++;
-                    }
-
-                    console.g6.SendIQData(iq_data_l);
-
-                    for (int i = 0; i < frameCount * 2; i++)
-                    {
-                        iq_data_l[i] = out_ptr[0];
-                        out_ptr++;
-                    }
-
-                    console.g6.SendIQData(iq_data_l);
-
-                    /*if (g6RB.ReadSpace() >= frameCount * 4)
-                    {
-                        g6RB.Read(g6_buffer, 4096);
-
-                        array_ptr = (int*)output;
-                        byte *out_l_b = (byte*)array_ptr[0];
-                        byte *out_r_b = (byte*)array_ptr[1];
-
-                        for (int i = 0; i < frameCount * 2; i++)
+                        for (int i = 0; i < frameCount * 4; i++)
                         {
-                            out_l_b[0] = g6_buffer[i];
-                            out_r_b[0] = g6_buffer[i];
-                            out_r_b++;
-                            out_l_b++;
+                            iq_data_l[i] = (byte)out_ptr[0];
+                            iq_data_l[i + 1] = (byte)(out_ptr[0] >> 8);
+                            iq_data_l[i + 2] = (byte)(out_ptr[0] >> 16);
+                            iq_data_l[i + 3] = (byte)(out_ptr[0] >> 24);
+                            out_ptr++;
+                            i += 3;
                         }
 
-                        g6RB.Read(g6_buffer, 4096);
+                        Win32.EnterCriticalSection(cs_vac);
+                        g6RB.Write(iq_data_l, frameCount * 4);
+                        Win32.LeaveCriticalSection(cs_vac);
+
+                        Win32.EnterCriticalSection(cs_vac);
+                        g6RB.Read(g6_buffer, frameCount * 4);
+                        Win32.LeaveCriticalSection(cs_vac);
+
+                        int* out_l_b = (int*)array_ptr[0];
+                        int* out_r_b = (int*)array_ptr[1];
+
+                        for (int i = 0; i < frameCount * 4; i++)
+                        {
+                            out_l_b[0] = g6_buffer[i];
+                            out_l_b[0] += g6_buffer[i + 1] << 8;
+                            out_l_b[0] += g6_buffer[i + 2] << 16;
+                            out_l_b[0] += g6_buffer[i + 3] << 24;
+                            out_r_b[0] = g6_buffer[i];
+                            out_r_b[0] += g6_buffer[i + 1] << 8;
+                            out_r_b[0] += g6_buffer[i + 2] << 16;
+                            out_r_b[0] += g6_buffer[i + 3] << 24;
+                            out_r_b++;
+                            out_l_b++;
+                            i += 3;
+                        }*/
+
+                        array_ptr = (int*)output;
+                        byte* out_ptr = (byte*)array_ptr[0];
 
                         for (int i = 0; i < frameCount * 2; i++)
                         {
-                            out_l_b[0] = g6_buffer[i];
-                            out_r_b[0] = g6_buffer[i];
-                            out_r_b++;
-                            out_l_b++;
-                        }*/
-                    if (mox)
-                    {
-                        ScaleBuffer(out_l, out_l, frameCount, (float)vol_l);
-                        ScaleBuffer(out_r, out_r, frameCount, (float)vol_r);
+                            iq_data_l[i] = out_ptr[0];
+                            out_ptr++;
+                        }
+
+                        console.g6.SendIQData(iq_data_l);
+
+                        for (int i = 0; i < frameCount * 2; i++)
+                        {
+                            iq_data_l[i] = out_ptr[0];
+                            out_ptr++;
+                        }
+
+                        console.g6.SendIQData(iq_data_l);
+
+                        /*if (g6RB.ReadSpace() >= frameCount * 4)
+                        {
+                            g6RB.Read(g6_buffer, 4096);
+
+                            array_ptr = (int*)output;
+                            byte *out_l_b = (byte*)array_ptr[0];
+                            byte *out_r_b = (byte*)array_ptr[1];
+
+                            for (int i = 0; i < frameCount * 2; i++)
+                            {
+                                out_l_b[0] = g6_buffer[i];
+                                out_r_b[0] = g6_buffer[i];
+                                out_r_b++;
+                                out_l_b++;
+                            }
+
+                            g6RB.Read(g6_buffer, 4096);
+
+                            for (int i = 0; i < frameCount * 2; i++)
+                            {
+                                out_l_b[0] = g6_buffer[i];
+                                out_r_b[0] = g6_buffer[i];
+                                out_r_b++;
+                                out_l_b++;
+                            }*/
                     }
                     else
                     {
-                        switch (mute_ch)
+                        if (mox)
                         {
-                            case MuteChannels.Left:
-                                ScaleBuffer(out_r, out_r, frameCount, (float)vol_r);
-                                ScaleBuffer(out_r, out_l, frameCount, 1.0f);
-                                break;
+                            ScaleBuffer(out_l, out_l, frameCount, (float)vol_l);
+                            ScaleBuffer(out_r, out_r, frameCount, (float)vol_r);
+                        }
+                        else
+                        {
+                            switch (mute_ch)
+                            {
+                                case MuteChannels.Left:
+                                    ScaleBuffer(out_r, out_r, frameCount, (float)vol_r);
+                                    ScaleBuffer(out_r, out_l, frameCount, 1.0f);
+                                    break;
 
-                            case MuteChannels.Right:
-                                ScaleBuffer(out_l, out_l, frameCount, (float)vol_l);
-                                ScaleBuffer(out_l, out_r, frameCount, 1.0f);
-                                break;
+                                case MuteChannels.Right:
+                                    ScaleBuffer(out_l, out_l, frameCount, (float)vol_l);
+                                    ScaleBuffer(out_l, out_r, frameCount, 1.0f);
+                                    break;
 
 
-                            case MuteChannels.Both:
-                                ClearBuffer(out_l, frameCount);
-                                ClearBuffer(out_r, frameCount);
-                                break;
+                                case MuteChannels.Both:
+                                    ClearBuffer(out_l, frameCount);
+                                    ClearBuffer(out_r, frameCount);
+                                    break;
 
-                            case MuteChannels.None:
-                                ScaleBuffer(out_l, out_l, frameCount, (float)vol_l);
-                                ScaleBuffer(out_r, out_r, frameCount, (float)vol_r);
-                                break;
+                                case MuteChannels.None:
+                                    ScaleBuffer(out_l, out_l, frameCount, (float)vol_l);
+                                    ScaleBuffer(out_r, out_r, frameCount, (float)vol_r);
+                                    break;
+                            }
                         }
                     }
-                    //}
                 }
 
                 return callback_return;
@@ -2198,12 +2172,14 @@ namespace PowerSDR
 
                             if (echo_enable && (dsp_mode != DSPMode.DIGL || dsp_mode != DSPMode.DIGU))
                             {
-                                echoRB.WritePtr(in_l, frameCount);
-                                echo_ptr = (uint)echoRB.ReadSpace();
-
-                                if (echo_ptr > echo_delay)
+                                if (!echo_pause)
                                 {
-                                    EchoMixer(in_l, in_r, frameCount);
+                                    echoRB.WritePtr(in_l, frameCount);
+
+                                    if (echoRB.ReadSpace() >= echo_delay-2)
+                                    {
+                                        EchoMixer(in_l, in_r, frameCount);
+                                    }
                                 }
                             }
                         }
@@ -2261,12 +2237,14 @@ namespace PowerSDR
 
                                 if (echo_enable && (dsp_mode != DSPMode.DIGL || dsp_mode != DSPMode.DIGU))
                                 {
-                                    echoRB.WritePtr(in_l, frameCount);
-                                    echo_ptr = (uint)echoRB.ReadSpace();
-
-                                    if (echo_ptr > echo_delay)
+                                    if (!echo_pause)
                                     {
-                                        EchoMixer(in_l, in_r, frameCount);
+                                        echoRB.WritePtr(in_l, frameCount);
+
+                                        if (echoRB.ReadSpace() > echo_delay - 2)
+                                        {
+                                            EchoMixer(in_l, in_r, frameCount);
+                                        }
                                     }
                                 }
                             }
@@ -2378,8 +2356,7 @@ namespace PowerSDR
                             DttSP.CWtoneExchange(out_l1, out_r1, frameCount);
                             ClearBuffer(out_l1, frameCount);
                             ClearBuffer(out_r1, frameCount);
-
-                            //                            DttSP.ExchangeSamples(thread_no, in_l_ptr1, in_r_ptr1, out_l_ptr1, out_r_ptr1, frameCount);
+                            
                             if (switch_count == 0) next_audio_state1 = AudioState.CW;
                             switch_count--;
                         }
@@ -4471,12 +4448,14 @@ namespace PowerSDR
 
                                 if (echo_enable && (dsp_mode != DSPMode.DIGL || dsp_mode != DSPMode.DIGU))
                                 {
-                                    echoRB.WritePtr(in_l, frameCount);
-                                    echo_ptr = (uint)echoRB.ReadSpace();
-
-                                    if (echo_ptr > echo_delay)
+                                    if (!echo_pause)
                                     {
-                                        EchoMixer(in_l, in_r, frameCount);
+                                        echoRB.WritePtr(in_l, frameCount);
+
+                                        if (echoRB.ReadSpace() > echo_delay - 2)
+                                        {
+                                            EchoMixer(in_l, in_r, frameCount);
+                                        }
                                     }
                                 }
                             }
@@ -4535,12 +4514,14 @@ namespace PowerSDR
 
                                     if (echo_enable && (dsp_mode != DSPMode.DIGL || dsp_mode != DSPMode.DIGU))
                                     {
-                                        echoRB.WritePtr(in_l, frameCount);
-                                        echo_ptr = (uint)echoRB.ReadSpace();
-
-                                        if (echo_ptr > echo_delay)
+                                        if (!echo_pause)
                                         {
-                                            EchoMixer(in_l, in_r, frameCount);
+                                            echoRB.WritePtr(in_l, frameCount);
+
+                                            if (echoRB.ReadSpace() > echo_delay - 2)
+                                            {
+                                                EchoMixer(in_l, in_r, frameCount);
+                                            }
                                         }
                                     }
                                 }
@@ -5133,38 +5114,7 @@ namespace PowerSDR
                                 ScaleBuffer(out_r_ptr1, out_r_ptr1, frameCount, (float)vac_preamp);
                             }
 
-                            if (mox)
-                            {
-                                if (vac_resample)
-                                {
-                                    if ((console.CurrentDSPMode == DSPMode.CWU ||
-                                        console.CurrentDSPMode == DSPMode.CWL) && vac_mon && mon)
-                                    {
-                                        DttSP.CWMonitorExchange(out_l_ptr1, out_r_ptr1, frameCount);
-
-                                        int outsamps;
-                                        fixed (float* res_outl_ptr = &(res_outl[0]))
-                                        fixed (float* res_outr_ptr = &(res_outr[0]))
-                                        {
-                                            DttSP.DoResamplerF(out_l_ptr1, res_outl_ptr, frameCount, &outsamps, resampPtrOut_l);
-                                            DttSP.DoResamplerF(out_r_ptr1, res_outr_ptr, frameCount, &outsamps, resampPtrOut_r);
-
-                                            if ((rb_vacOUT_l.WriteSpace() >= outsamps) && (rb_vacOUT_r.WriteSpace() >= outsamps))
-                                            {
-                                                Win32.EnterCriticalSection(cs_vac);
-                                                rb_vacOUT_l.WritePtr(res_outl_ptr, outsamps);
-                                                rb_vacOUT_r.WritePtr(res_outr_ptr, outsamps);
-                                                Win32.LeaveCriticalSection(cs_vac);
-                                            }
-                                            else
-                                            {
-                                                VACDebug("rb_vacOUT overflow outCB1");
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            else if (!mox)
+                            if (!mox)
                             {
                                 if (sample_rateVAC == sample_rate1)
                                 {
@@ -5455,12 +5405,14 @@ namespace PowerSDR
 
                                 if (echo_enable && (dsp_mode != DSPMode.DIGL || dsp_mode != DSPMode.DIGU))
                                 {
-                                    echoRB.WritePtr(in_l, frameCount);
-                                    echo_ptr = (uint)echoRB.ReadSpace();
-
-                                    if (echo_ptr > echo_delay)
+                                    if (!echo_pause)
                                     {
-                                        EchoMixer(in_l, in_r, frameCount);
+                                        echoRB.WritePtr(in_l, frameCount);
+
+                                        if (echoRB.ReadSpace() > echo_delay - 2)
+                                        {
+                                            EchoMixer(in_l, in_r, frameCount);
+                                        }
                                     }
                                 }
                             }
@@ -5519,12 +5471,14 @@ namespace PowerSDR
 
                                     if (echo_enable && (dsp_mode != DSPMode.DIGL || dsp_mode != DSPMode.DIGU))
                                     {
-                                        echoRB.WritePtr(in_l, frameCount);
-                                        echo_ptr = (uint)echoRB.ReadSpace();
-
-                                        if (echo_ptr > echo_delay)
+                                        if (!echo_pause)
                                         {
-                                            EchoMixer(in_l, in_r, frameCount);
+                                            echoRB.WritePtr(in_l, frameCount);
+
+                                            if (echoRB.ReadSpace() > echo_delay - 2)
+                                            {
+                                                EchoMixer(in_l, in_r, frameCount);
+                                            }
                                         }
                                     }
                                 }
@@ -6768,10 +6722,11 @@ namespace PowerSDR
 
                     for (int i = 0; i < samples; i++)
                     {
-                        bufl[i] += (mix_buffer[i] * echo_gain) + (mix_buffer_delay[i] * (echo_gain / 1000.0f));
+                        bufl[i] += mix_buffer[i] * echo_gain;
                         bufr[i] = bufl[i];
-                        mix_buffer_delay[i] = bufl[i];
                     }
+
+                    echoRB.WritePtr(-samples, bufl, samples);
                 }
             }
             catch (Exception ex)
@@ -6951,12 +6906,6 @@ namespace PowerSDR
 
             echoRB.Restart(131072);
             echoRB.Reset();
-
-            if (echoRB_delay == null)
-                echoRB_delay = new RingBufferFloat(131072);
-
-            echoRB_delay.Restart(131072);
-            echoRB_delay.Reset();
 
             #region ethernet server
             if (enable_ethernet_server)         // act as network server

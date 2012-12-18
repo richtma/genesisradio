@@ -192,7 +192,10 @@ namespace PowerSDR
                 Debug.Write("Received: \n");
 
                 Socket sock = (Socket)result.AsyncState;
-                int num_read = sock.EndReceive(result);
+                int num_read = 0;
+
+                if (sock.Connected)
+                    num_read = sock.EndReceive(result);
 
                 if (num_read > 0)
                 {

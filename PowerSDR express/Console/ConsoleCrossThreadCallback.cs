@@ -663,13 +663,11 @@ namespace PowerSDR
                 {
                     chkSQLMainRX.Checked = true;
                     chkSQLMainRX.Checked = true;
-                    chkSQLSubRX.Checked = true;
                 }
                 else
                 {
                     chkSQLMainRX.Checked = false;
                     chkSQLMainRX.Checked = false;
-                    chkSQLSubRX.Checked = false;
                 }
             }
         }
@@ -867,10 +865,93 @@ namespace PowerSDR
             set { kw_auto_information = value; }
         }
 
+        private int cat_att_status = 0;       // yt7pwr
+        public int CATATTStatus
+        {
+            get
+            {
+                switch (current_model)
+                {
+                    case Model.GENESIS_G59USB:
+                    case Model.GENESIS_G59NET:
+                        if (btnATT.Checked)
+                            return 1;
+                        else
+                            return 0;
+                        break;
+
+                    case Model.GENESIS_G11:
+                        if (chkG11ATTbtn.Checked)
+                            return 1;
+                        else
+                            return 0;
+                        break;
+
+                    default:
+                        return 0;
+                }
+            }
+            set
+            {
+                if (value == 0)
+                {
+                    switch (current_model)
+                    {
+                        case Model.GENESIS_G59USB:
+                        case Model.GENESIS_G59NET:
+                            btnATT.Checked = false;
+                            break;
+
+                        case Model.GENESIS_G11:
+                            chkG11ATTbtn.Checked = false;
+                            break;
+                    }
+                }
+                else if (value == 1)
+                {
+                    switch (current_model)
+                    {
+                        case Model.GENESIS_G59USB:
+                        case Model.GENESIS_G59NET:
+                            btnATT.Checked = true;
+                            break;
+
+                        case Model.GENESIS_G11:
+                            chkG11ATTbtn.Checked = true;
+                            break;
+                    }
+                }
+
+                cat_att_status = value;
+            }
+        }
+
         private int cat_rf_preamp_status = 0;       // yt7pwr
         public int CATRFPreampStatus
         {
-            get { return cat_rf_preamp_status; }
+            get 
+            {
+                switch (current_model)
+                {
+                    case Model.GENESIS_G59USB:
+                    case Model.GENESIS_G59NET:
+                        if (btnHIGH_RF.Checked)
+                            return 1;
+                        else
+                            return 0;
+                        break;
+
+                    case Model.GENESIS_G11:
+                        if (chkG11RFbtn.Checked)
+                            return 1;
+                        else
+                            return 0;
+                        break;
+
+                    default:
+                        return 0;
+                }
+            }
             set
             {
                 if (value == 0)
@@ -909,18 +990,66 @@ namespace PowerSDR
         private int cat_af_preamp_status = 0;       // yt7pwr
         public int CATAFPreampStatus
         {
-            get { return cat_af_preamp_status; }
+            get 
+            {
+                switch (current_model)
+                {
+                    case Model.GENESIS_G59USB:
+                    case Model.GENESIS_G59NET:
+                        {
+                            if (btnHIGH_AF.Checked)
+                                return 1;
+                            else
+                                return 0;
+                        }
+                        break;
+
+                    case Model.GENESIS_G11:
+                        {
+                            if (chkG11AFbtn.Checked)
+                                return 1;
+                            else
+                                return 0;
+                        }
+                        break;
+
+                    default:
+                        return 0;
+                        break;
+                }
+            }
             set
             {
-                if (value == 0)
+                switch (current_model)
                 {
-                    btnHIGH_AF.Checked = false;
-                    cat_af_preamp_status = 0;
-                }
-                else if (value == 1)
-                {
-                    btnHIGH_AF.Checked = true;
-                    cat_af_preamp_status = 1;
+                    case Model.GENESIS_G59USB:
+                    case Model.GENESIS_G59NET:
+                        {
+                            if (value == 0)
+                            {
+                                btnHIGH_AF.Checked = false;
+                                cat_af_preamp_status = 0;
+                            }
+                            else if (value == 1)
+                            {
+                                btnHIGH_AF.Checked = true;
+                                cat_af_preamp_status = 1;
+                            }
+                        }
+                        break;
+
+                    case Model.GENESIS_G11:
+                        {
+                            if (value == 0)
+                            {
+                                chkG11AFbtn.Checked = false;
+                            }
+                            else if (value == 1)
+                            {
+                                chkG11AFbtn.Checked = true;
+                            }
+                        }
+                        break;
                 }
             }
         }
@@ -1166,6 +1295,9 @@ namespace PowerSDR
                 case "VFOA freq":
                     VFOAFreq = double.Parse(parm3) / 1e6;
                     break;
+                case "VFOB freq":
+                    VFOBFreq = double.Parse(parm3) / 1e6;
+                    break;
                 case "VFOB down":
                     VFOAFreq = vfoBFreq - Step2Freq(parm1);
                     break;
@@ -1194,7 +1326,8 @@ namespace PowerSDR
                     CATDisplayAvg = parm1;
                     break;
                 case "Display Mode":
-                    CurrentDisplayMode = (DisplayMode)parm1;
+                    //CurrentDisplayMode = (DisplayMode)parm1;
+                    comboDisplayMode.Text = "Panafall";
                     break;
                 case "Display Peak":
                     CATDispPeak = parm1.ToString();
@@ -1436,11 +1569,17 @@ namespace PowerSDR
                 case "Memory store":
                     btnMemoryQuickSave_Click(this, EventArgs.Empty);
                     break;
-                case "memory clear":
+                case "Memory clear":
                     btnEraseMemory_Click(this, EventArgs.Empty);
                     break;
                 case "Restore VFOA":
                     btnVFOA_Click(this, EventArgs.Empty);
+                    break;
+                case "USB":
+                    if (parm1 == 1)
+                        btnUSB.BackColor = Color.Green;
+                    else
+                        btnUSB.BackColor = Color.Red;
                     break;
                 case "CLOSE":
                     this.Close();

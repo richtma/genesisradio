@@ -13,7 +13,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <ProjectType>Local</ProjectType>
-    <ProductVersion>9.0.30729</ProductVersion>
+    <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{831AEB2F-CA78-4057-85D7-32B4816ED6AE}</ProjectGuid>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -486,14 +486,17 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>ClusterSetup1.Designer.cs</LastGenOutput>
       <DependentUpon>ClusterSetup.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="DebugForm.resx">
       <DependentUpon>DebugForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="images\genesisG11.jpg" />
     <EmbeddedResource Include="DXClusterClient.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>DXClusterClient1.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="images\genesisG59.jpg" />
     <EmbeddedResource Include="images\Si570.jpg" />
@@ -506,9 +509,11 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Invoke\SMeter2.resx">
       <DependentUpon>SMeter2.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Invoke\SMeter1.resx">
       <DependentUpon>SMeter1.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="VoiceMessages.resx">
       <DependentUpon>VoiceMessages.cs</DependentUpon>
@@ -516,6 +521,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="XTRV.resx">
       <DependentUpon>XTRV.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

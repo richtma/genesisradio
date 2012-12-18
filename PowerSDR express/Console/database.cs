@@ -60,12 +60,6 @@ namespace PowerSDR
 		private static void Create()        // changes yt7pwr
 		{
 			// Create the tables
-			AddIARU1BandTextTable();
-            AddIARU2BandTextTable();
-            AddIARU3BandTextTable();
-            AddG59BandFiltersTable();
-            AddG11BandFiltersTable();
-            AddBandLimitsTable();
 			AddBandStackTable();
 			AddMemoryTable();
             AddFMMemoryTable();
@@ -609,7 +603,7 @@ namespace PowerSDR
 								14.230001, 14.284999, "20M All modes",  		true,
 								14.285000, 14.285000, "20M SSB QRP",            true,
 								14.285001, 14.285999, "20M All modes",			true,
-                                14.286000, 14.286000, "20M Amm Calling",		true,
+                                14.286000, 14.286000, "20M AM Calling",	    	true,
                                 14.286001, 14.299999, "20M All modes",			true,
                                 14.300000, 14.300000, "20M Global emergency",	true,
                                 14.300001, 14.349999, "20M All modes",			true,
@@ -1377,7 +1371,9 @@ namespace PowerSDR
                                 0.1, 0.300000, Band.B2190M.ToString(),
                                 0.4, 0.600000, Band.B600M.ToString(),
                                 1.8, 2.0, Band.B160M.ToString(),
+                                2.5, 2.5, Band.WWV.ToString(),
                                 3.5, 4.0, Band.B80M.ToString(),
+                                5.0, 5.0, Band.WWV.ToString(),
                                 5.2872, 5.2872, Band.B60M.ToString(),
                                 5.3305, 5.3305, Band.B60M.ToString(),
                                 5.3465, 5.3465, Band.B60M.ToString(),
@@ -1385,18 +1381,16 @@ namespace PowerSDR
                                 5.3715, 5.3715, Band.B60M.ToString(),
                                 5.4035, 5.4035, Band.B60M.ToString(),
                                 7.0, 7.3, Band.B40M.ToString(),
+                                10.0, 10.0, Band.WWV.ToString(),
                                 10.1, 10.15, Band.B30M.ToString(),
                                 14.0, 14.35, Band.B20M.ToString(),
+                                15.0, 15.0, Band.WWV.ToString(),
                                 18.068, 18.168, Band.B17M.ToString(),
+                                20.0, 20.0, Band.WWV.ToString(),
                                 21.0, 21.45, Band.B15M.ToString(),
                                 24.89, 24.99, Band.B12M.ToString(),
                                 28.0, 29.7, Band.B10M.ToString(),
                                 50.0, 54.0, Band.B6M.ToString(),
-                                2.5, 2.5, Band.WWV.ToString(),
-                                5.0, 5.0, Band.WWV.ToString(),
-                                10.0, 10.0, Band.WWV.ToString(),
-                                15.0, 15.0, Band.WWV.ToString(),
-                                20.0, 20.0, Band.WWV.ToString(),
                                 144.0, 148.0, Band.B2M.ToString(),
                              };
 
@@ -2873,10 +2867,15 @@ namespace PowerSDR
 
                     return true;
                 }
-                else //if(rows.Length > 1)	// this should never happen
+                else if(rows.Length > 1)	// this should never happen
                 {
-                    MessageBox.Show("Error reading BandFilters table. Entries overlap!", "BandFilter Database Error",
+                    MessageBox.Show("Error reading BandFilters table. Entries overlap!", "BandFilters Database Error",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    outBandFilter = Band.GEN;
+                    return false;
+                }
+                else
+                {
                     outBandFilter = Band.GEN;
                     return false;
                 }
@@ -2974,7 +2973,7 @@ namespace PowerSDR
 
                     return true;
                 }
-                else if (rows.Length > 1)	// this should never happen
+                else if(rows.Length > 1)
                 {
                     MessageBox.Show("Error reading BandLimits table. Entries overlap!", "BandLimits Database Error",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);

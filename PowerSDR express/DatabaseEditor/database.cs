@@ -86,7 +86,6 @@ namespace DatabaseEditor
 
             ds.Tables.Add("IARU1BandText");
             DataTable t = ds.Tables["IARU1BandText"];
-
             t.Columns.Add("Low", typeof(double));
             t.Columns.Add("High", typeof(double));
             t.Columns.Add("Name", typeof(string));
@@ -496,7 +495,6 @@ namespace DatabaseEditor
 
             ds.Tables.Add("IARU2BandText");
             DataTable t = ds.Tables["IARU2BandText"];
-
             t.Columns.Add("Low", typeof(double));
             t.Columns.Add("High", typeof(double));
             t.Columns.Add("Name", typeof(string));
@@ -609,7 +607,7 @@ namespace DatabaseEditor
 								14.230001, 14.284999, "20M All modes",  		true,
 								14.285000, 14.285000, "20M SSB QRP",            true,
 								14.285001, 14.285999, "20M All modes",			true,
-                                14.286000, 14.286000, "20M Amm Calling",		true,
+                                14.286000, 14.286000, "20M AM Calling",	    	true,
                                 14.286001, 14.299999, "20M All modes",			true,
                                 14.300000, 14.300000, "20M Global emergency",	true,
                                 14.300001, 14.349999, "20M All modes",			true,
@@ -960,7 +958,6 @@ namespace DatabaseEditor
 
             ds.Tables.Add("IARU3BandText");
             DataTable t = ds.Tables["IARU3BandText"];
-
             t.Columns.Add("Low", typeof(double));
             t.Columns.Add("High", typeof(double));
             t.Columns.Add("Name", typeof(string));
@@ -1368,7 +1365,6 @@ namespace DatabaseEditor
         {
             ds.Tables.Add("BandLimits");
             DataTable t = ds.Tables["BandLimits"];
-
             t.Columns.Add("Low", typeof(double));
             t.Columns.Add("High", typeof(double));
             t.Columns.Add("Name", typeof(string));
@@ -1414,7 +1410,6 @@ namespace DatabaseEditor
         {
             ds.Tables.Add("G11BandFilters");
             DataTable t = ds.Tables["G11BandFilters"];
-
             t.Columns.Add("Low", typeof(double));
             t.Columns.Add("High", typeof(double));
             t.Columns.Add("Filter", typeof(string));
@@ -1448,7 +1443,6 @@ namespace DatabaseEditor
         {
             ds.Tables.Add("G59BandFilters");
             DataTable t = ds.Tables["G59BandFilters"];
-
             t.Columns.Add("Low", typeof(double));
             t.Columns.Add("High", typeof(double));
             t.Columns.Add("Filter", typeof(string));
@@ -1695,6 +1689,53 @@ namespace DatabaseEditor
             ds.Tables[name].Columns.Add("Key", typeof(string));
             ds.Tables[name].Columns.Add("Value", typeof(string));
             ds.Tables[name].PrimaryKey = new DataColumn[] { tbl.Columns["Key"] };
+        }
+
+        public static bool SortTable(string table_name)
+        {
+            try
+            {
+                if (ds.Tables.Contains(table_name))
+                {
+                    DataTable tbl;
+                    tbl = ds.Tables.Add("temp_table");
+                    tbl = ds.Tables[table_name].Copy();
+                    string sort = ds.Tables[table_name].Columns[0].ToString();
+                    DataRow[] rows = tbl.Select("0 <=" + sort);
+
+                    if (rows.Length > 0)
+                    {
+                        ds.Tables[table_name].Rows.Clear();
+
+                        foreach (DataRow row in rows)
+                        {
+                            DataRow r = ds.Tables[table_name].NewRow();
+
+                            for (int i = 0; i < tbl.Columns.Count; i++)
+                                r[i] = row[i];
+
+                            ds.Tables[table_name].Rows.Add(r);
+                        }
+
+                        ds.Tables.Remove("temp_table");
+                        ds.Tables[table_name].DefaultView.Sort = ds.Tables[table_name].Columns[0].ToString();
+                        return true;
+                    }
+                    else
+                    {
+                        ds.Tables.Remove("temp_table");
+                        return false;
+                    }
+                }
+                else
+                    return false;
+            }
+            catch (Exception ex)
+            {
+                ds.Tables.Remove("temp_table");
+                Debug.Write(ex.ToString());
+                return false;
+            }
         }
 
         public static void SaveVars(string tableName, ref ArrayList list)

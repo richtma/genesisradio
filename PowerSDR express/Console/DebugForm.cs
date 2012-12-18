@@ -100,8 +100,8 @@ namespace PowerSDR
             {
                 if (console.CAT_server_socket != null && console.CAT_client_socket != null)
                 {
-                    console.CAT_server_socket.debug = chkEthernet.Checked;
-                    console.CAT_client_socket.debug = chkEthernet.Checked;
+                    console.CAT_server_socket.Debug_enable = chkEthernet.Checked;
+                    console.CAT_client_socket.Debug_enable = chkEthernet.Checked;
                 }
 
                 if (console.ClientSocket != null && console.ServerSocket != null)

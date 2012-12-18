@@ -29,6 +29,12 @@
 // Translated to C# by Eric Wachsmann KE5DTO and Bob McGwier N4HY.
 //=================================================================
 
+/*
+ *  Changes for GenesisRadio
+ *  Copyright (C)2010-2012 YT7PWR Goran Radivojevic
+ *  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
+*/
+
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -247,7 +253,46 @@ namespace PowerSDR
                 Marshal.Copy(new IntPtr(&src[n1]), buf, wptr, n2);
                 wptr = (wptr + n2) & mask;
             }
+
             return to_write;
+        }
+
+        /// <summary>
+        /// Write in advance by ptr
+        /// </summary>
+        /// <param name="ptr">pointer</param>
+        /// <param name="src">source off data</param>
+        /// <param name="cnt">count</param>
+        /// <returns></returns>
+        public int WritePtr(int ptr, float* src, int cnt)   // yt7pwr
+        {
+            int tmp_ptr = wptr;
+
+            if (wptr < cnt)
+                wptr = size - (cnt - wptr);
+            else
+                wptr = (wptr + ptr) % mask;
+
+            wptr = Math.Max(0, wptr);
+            int count = WritePtr(src, cnt);
+            wptr = tmp_ptr;
+
+            return count;
+        }
+
+        /// <summary>
+        /// Resize ring buffer.
+        /// </summary>
+        /// <param name="size">New RB size.</param>
+        public void Resize(int new_size)                    // yt7pwr
+        {
+            size = Math.Max(4096, nblock2(new_size));
+            mask = size - 1;
+            rptr = 0;
+            wptr = 0;
+            Clear(size);
+            Reset();
+            Debug.Write("RB size: " + size + "\n");
         }
 
         /// <summary>
@@ -276,8 +321,8 @@ namespace PowerSDR
         /// <param name="nfloats">Number of elements to zero.</param>
         public void Restart(int nfloats)
         {
-            Reset();
             Clear(nfloats);
+            Reset();
         }
 
         public int Peek(float[] dest, int cnt)
