@@ -70,7 +70,6 @@ namespace PowerSDR
             this.Font = new_font;
             this.PerformAutoScale();
             this.PerformLayout();
-
 			RestoreSettings();
 		}
 
@@ -249,16 +248,6 @@ namespace PowerSDR
 					Color clr = ((ColorButton)c).Color;
 					a.Add(c.Name+"/"+clr.R+"."+clr.G+"."+clr.B+"."+clr.A);
 				}
-#if(DEBUG)
-				else if(c.GetType() == typeof(GroupBox) ||
-					c.GetType() == typeof(CheckBoxTS) ||
-					c.GetType() == typeof(ComboBox) ||
-					c.GetType() == typeof(NumericUpDown) ||
-					c.GetType() == typeof(RadioButton) ||
-					c.GetType() == typeof(TextBox) ||
-					c.GetType() == typeof(TrackBar))
-					Debug.WriteLine(c.Name+" needs to be converted to a Thread Safe control.");
-#endif
 			}
 
 			DB.SaveVars("WaveOptions", ref a);		// save the values to the DB

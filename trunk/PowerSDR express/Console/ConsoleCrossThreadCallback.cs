@@ -749,7 +749,12 @@ namespace PowerSDR
 
                 if (siolisten != null)  // if we've got a listener tell them about state change 
                 {
-                    if (cat_enabled)
+                    if (cat_enabled && value)
+                    {
+                        Siolisten.disableCAT();
+                        Siolisten.enableCAT();
+                    }
+                    else if (cat_enabled)
                     {
                         Siolisten.enableCAT();
                     }

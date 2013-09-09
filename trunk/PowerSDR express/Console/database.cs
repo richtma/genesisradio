@@ -28,7 +28,7 @@
 
 /*
  *  Changes for GenesisRadio
- *  Copyright (C)2008-2012 YT7PWR Goran Radivojevic
+ *  Copyright (C)2008-2013 YT7PWR Goran Radivojevic
  *  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 */
 
@@ -1472,6 +1472,47 @@ namespace PowerSDR
             }
         }
 
+        private static void AddG6BandFiltersTable()   // yt7pwr
+        {
+            ds_band.Tables.Add("G6BandFilters");
+            DataTable t = ds_band.Tables["G6BandFilters"];
+
+            t.Columns.Add("Low", typeof(double));
+            t.Columns.Add("High", typeof(double));
+            t.Columns.Add("Filter", typeof(string));
+
+            object[] data = {
+                                0.002, 0.179999, "C5",
+                                0.18, 0.349999, "C4",
+                                0.35, 0.579999, "C3",
+                                0.58, 0.999999, "C2",
+                                1.0, 1.1699999, "C1",
+                                1.7, 2.899999, "B9",
+                                2.9, 4.999999, "B10",
+                                5.0, 7.999999, "B8",
+                                8.0, 11.999999, "B6",
+                                12.0, 16.999999, "B7",
+                                17.0, 23.999999, "B5",
+                                24.0, 33.999999, "B3",
+                                34.0, 49.999999, "B1",
+                                50.0, 74.999999, "B4",
+                                75.0, 129.999999, "B2",
+                                130.0, 159.999999, "A1",
+                                160.0, 219.999999, "A4",
+                                220.0, 359.999999, "A3",
+                                360.0, 480.0, "A2"
+                             };
+
+            for (int i = 0; i < data.Length / 3; i++)
+            {
+                DataRow dr = t.NewRow();
+                dr["Low"] = (double)data[i * 3 + 0];
+                dr["High"] = (double)data[i * 3 + 1];
+                dr["Filter"] = (string)data[i * 3 + 2];
+                t.Rows.Add(dr);
+            }
+        }
+
         private static void AddBandStackTable()
         {
             ds.Tables.Add("BandStack");
@@ -2504,30 +2545,59 @@ namespace PowerSDR
 
 		}
 
-        public static void VerifyTables()
+        public static bool VerifyTables()
         {
             try
             {
+                bool result = true;
+
                 if (!ds_band.Tables.Contains("IARU1BandText"))
+                {
                     AddIARU1BandTextTable();
+                    result = false;
+                }
 
                 if (!ds_band.Tables.Contains("IARU2BandText"))
+                {
                     AddIARU2BandTextTable();
+                    result = false;
+                }
 
                 if (!ds_band.Tables.Contains("IARU3BandText"))
+                {
                     AddIARU3BandTextTable();
+                    result = false;
+                }
 
                 if (!ds_band.Tables.Contains("BandLimits"))
+                {
                     AddBandLimitsTable();
+                    result = false;
+                }
 
                 if (!ds_band.Tables.Contains("G59BandFilters"))
+                {
                     AddG59BandFiltersTable();
+                    result = false;
+                }
 
                 if (!ds_band.Tables.Contains("G11BandFilters"))
+                {
                     AddG11BandFiltersTable();
+                    result = false;
+                }
+
+                if (!ds_band.Tables.Contains("G6BandFilters"))
+                {
+                    AddG6BandFiltersTable();
+                    result = false;
+                }
 
                 if (!ds.Tables.Contains("BandStack"))
+                {
                     AddBandStackTable();
+                    result = false;
+                }
                 else
                 {
                     if (!CheckBandStackTable())
@@ -2573,10 +2643,13 @@ namespace PowerSDR
                         AddTXProfileDefTable();
                     }
                 }
+
+                return result;
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error in Database!" + ex.ToString());
+                return false;
             }
         }
 
@@ -2686,10 +2759,13 @@ namespace PowerSDR
                     AddBandLimitsTable();
                     AddG59BandFiltersTable();
                     AddG11BandFiltersTable();
+                    AddG6BandFiltersTable();
                     ds_band.WriteXml(app_data_path + "\\" + "band_database.xml", XmlWriteMode.WriteSchema);
                 }
 
-                VerifyTables();
+                if(!VerifyTables())
+                    ds_band.WriteXml(app_data_path + "\\" + "band_database.xml", XmlWriteMode.WriteSchema);
+
                 CheckBandTextValid();
             }
             catch (Exception ex)
@@ -2784,11 +2860,15 @@ namespace PowerSDR
                 {
                     case Model.GENESIS_G59USB:
                     case Model.GENESIS_G59NET:
-                        //rows = ds_band.Tables["G59BandFilters"].Select(f + ">=Low AND " + f + "<=High");
+                        rows = ds_band.Tables["G59BandFilters"].Select(f + ">=Low AND " + f + "<=High");
                         break;
 
                     case Model.GENESIS_G11:
                         rows = ds_band.Tables["G11BandFilters"].Select(f + ">=Low AND " + f + "<=High");
+                        break;
+
+                    case Model.GENESIS_G6:
+                        rows = ds_band.Tables["G6BandFilters"].Select(f + ">=Low AND " + f + "<=High");
                         break;
                 }
 
@@ -2799,70 +2879,165 @@ namespace PowerSDR
                 }
                 else if (rows.Length == 1)	// found band
                 {
-                    outBandFilter = Band.GEN;
-                    sBand = ((string)rows[0]["Filter"]);
-
-                    switch (sBand)
+                    switch (radio)
                     {
-                        case "B2190M":
-                            outBandFilter = Band.B2190M;
+                        case Model.GENESIS_G59NET:
+                        case Model.GENESIS_G59USB:
+                        case Model.GENESIS_G11:
+                            {
+                                outBandFilter = Band.GEN;
+                                sBand = ((string)rows[0]["Filter"]);
+
+                                switch (sBand)
+                                {
+                                    case "B2190M":
+                                        outBandFilter = Band.B2190M;
+                                        break;
+
+                                    case "B600M":
+                                        outBandFilter = Band.B600M;
+                                        break;
+
+                                    case "B160M":
+                                        outBandFilter = Band.B160M;
+                                        break;
+
+                                    case "B80M":
+                                        outBandFilter = Band.B80M;
+                                        break;
+
+                                    case "B60M":
+                                        outBandFilter = Band.B60M;
+                                        break;
+
+                                    case "B40M":
+                                        outBandFilter = Band.B40M;
+                                        break;
+
+                                    case "B30M":
+                                        outBandFilter = Band.B30M;
+                                        break;
+
+                                    case "B20M":
+                                        outBandFilter = Band.B20M;
+                                        break;
+
+                                    case "B17M":
+                                        outBandFilter = Band.B17M;
+                                        break;
+
+                                    case "B15M":
+                                        outBandFilter = Band.B15M;
+                                        break;
+
+                                    case "B12M":
+                                        outBandFilter = Band.B12M;
+                                        break;
+
+                                    case "B10M":
+                                        outBandFilter = Band.B10M;
+                                        break;
+
+                                    case "B6M":
+                                        outBandFilter = Band.B6M;
+                                        break;
+
+                                    case "B2M":
+                                        outBandFilter = Band.B2M;
+                                        break;
+
+                                    case "WWV":
+                                        outBandFilter = Band.WWV;
+                                        break;
+                                }
+                            }
                             break;
 
-                        case "B600M":
-                            outBandFilter = Band.B600M;
-                            break;
+                        case Model.GENESIS_G6:
+                            {
+                                outBandFilter = Band.B5;
+                                sBand = ((string)rows[0]["Filter"]);
 
-                        case "B160M":
-                            outBandFilter = Band.B160M;
-                            break;
+                                switch (sBand)
+                                {
+                                    case "A1":
+                                        outBandFilter = Band.A1;
+                                        break;
 
-                        case "B80M":
-                            outBandFilter = Band.B80M;
-                            break;
+                                    case "A2":
+                                        outBandFilter = Band.A2;
+                                        break;
 
-                        case "B60M":
-                            outBandFilter = Band.B60M;
-                            break;
+                                    case "A3":
+                                        outBandFilter = Band.A3;
+                                        break;
 
-                        case "B40M":
-                            outBandFilter = Band.B40M;
-                            break;
+                                    case "A4":
+                                        outBandFilter = Band.A4;
+                                        break;
 
-                        case "B30M":
-                            outBandFilter = Band.B30M;
-                            break;
+                                    case "B1":
+                                        outBandFilter = Band.B1;
+                                        break;
 
-                        case "B20M":
-                            outBandFilter = Band.B20M;
-                            break;
+                                    case "B2":
+                                        outBandFilter = Band.B2;
+                                        break;
 
-                        case "B17M":
-                            outBandFilter = Band.B17M;
-                            break;
+                                    case "B3":
+                                        outBandFilter = Band.B3;
+                                        break;
 
-                        case "B15M":
-                            outBandFilter = Band.B15M;
-                            break;
+                                    case "B4":
+                                        outBandFilter = Band.B4;
+                                        break;
 
-                        case "B12M":
-                            outBandFilter = Band.B12M;
-                            break;
+                                    case "B5":
+                                        outBandFilter = Band.B5;
+                                        break;
 
-                        case "B10M":
-                            outBandFilter = Band.B10M;
-                            break;
+                                    case "B6":
+                                        outBandFilter = Band.B6;
+                                        break;
 
-                        case "B6M":
-                            outBandFilter = Band.B6M;
-                            break;
+                                    case "B7":
+                                        outBandFilter = Band.B7;
+                                        break;
 
-                        case "B2M":
-                            outBandFilter = Band.B2M;
-                            break;
+                                    case "B8":
+                                        outBandFilter = Band.B8;
+                                        break;
 
-                        case "WWV":
-                            outBandFilter = Band.WWV;
-                            break;
+                                    case "B9":
+                                        outBandFilter = Band.B9;
+                                        break;
+
+                                    case "B10":
+                                        outBandFilter = Band.B10;
+                                        break;
+
+                                    case "C1":
+                                        outBandFilter = Band.C1;
+                                        break;
+
+                                    case "C2":
+                                        outBandFilter = Band.C2;
+                                        break;
+
+                                    case "C3":
+                                        outBandFilter = Band.C3;
+                                        break;
+
+                                    case "C4":
+                                        outBandFilter = Band.C4;
+                                        break;
+
+                                    case "C5":
+                                        outBandFilter = Band.C5;
+                                        break;
+                                }
+                                break;
+                            }
                     }
 
                     return true;

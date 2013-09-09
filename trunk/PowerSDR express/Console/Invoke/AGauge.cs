@@ -2,7 +2,7 @@
 // AGauge.cs
 //=================================================================
 //
-// Copyright (C)2011,2012 YT7PWR Goran Radivojevic
+// Copyright (C)2011-2013 YT7PWR Goran Radivojevic
 // contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 //
 // This program is free software; you can redistribute it and/or
@@ -29,6 +29,7 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using System.IO;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 
 #if DirectX
 using SlimDX;
@@ -62,7 +63,7 @@ namespace PowerSDR
         public Int32 m_NeedleRadius = 160;
         private Point m_Center = new Point(120, 180);
         private Boolean drawGaugeBackground = true;
-        private Bitmap gaugeBitmap;
+        public Bitmap gaugeBitmap;
 
         #endregion
 
@@ -182,6 +183,7 @@ namespace PowerSDR
             float size = (float)(8.25 / ratio);
             System.Drawing.Font new_font = new System.Drawing.Font(font_name, size);
             this.Font = new_font;
+            gaugeBitmap = new Bitmap(console.picAGauge.Width, console.picAGauge.Height, PixelFormat.Format24bppRgb);
             this.PerformLayout();
         }
 
@@ -389,10 +391,12 @@ namespace PowerSDR
                 if (display_engine == DisplayEngine.GDI_PLUS || !console.chkPower.Checked)
                 {
                     PointF[] points = new PointF[3];
-                    gaugeBitmap = new Bitmap(pe.ClipRectangle.Width, pe.ClipRectangle.Height, pe.Graphics);
+                    //gaugeBitmap = new Bitmap(pe.ClipRectangle.Width, pe.ClipRectangle.Height, pe.Graphics);
                     Graphics g = pe.Graphics;
                     g.SmoothingMode = SmoothingMode.AntiAlias;
                     g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                    g.DrawImage(gaugeBitmap, 0, 0, pe.ClipRectangle.Width, pe.ClipRectangle.Height);
 
                     Single brushAngle = (Int32)(m_BaseArcStart + (m_value - m_MinValue) * m_BaseArcSweep /
                         (m_MaxValue - m_MinValue)) % 360;

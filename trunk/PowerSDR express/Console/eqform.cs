@@ -1552,140 +1552,205 @@ namespace PowerSDR
 
 		private void tbRXEQ_Scroll(object sender, System.EventArgs e)
 		{
-			int[] rxeq = RXEQ;
-            DttSP.SetGrphRXEQ10(0, 0, rxeq);
-            DttSP.SetGrphRXEQ10(0, 1, rxeq);
-			picRXEQ.Invalidate();
+            try
+            {
+                int[] rxeq = RXEQ;
+                DttSP.SetGrphRXEQ10(0, 0, rxeq);
+                DttSP.SetGrphRXEQ10(0, 1, rxeq);
+                picRXEQ.Invalidate();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void tbTXEQ_Scroll(object sender, System.EventArgs e)
 		{
-			int[] txeq = TXEQ;
-			DttSP.SetGrphTXEQ10(0,txeq);
-			picTXEQ.Invalidate();
+            try
+            {
+                int[] txeq = TXEQ;
+                DttSP.SetGrphTXEQ10(0, txeq);
+                picTXEQ.Invalidate();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void picRXEQ_Paint(object sender, System.Windows.Forms.PaintEventArgs e)
 		{
-			int[] rxeq = RXEQ;
+            try
+            {
+                int[] rxeq = RXEQ;
 
-			if(!chkRXEQEnabled.Checked)
-			{
-				for(int i=0; i<rxeq.Length; i++)
-					rxeq[i] = 0;
-			}
+                if (!chkRXEQEnabled.Checked)
+                {
+                    for (int i = 0; i < rxeq.Length; i++)
+                        rxeq[i] = 0;
+                }
 
-			Point[] points = new Point[rxeq.Length-1];
-			for(int i=1; i<rxeq.Length; i++)
-			{
-				points[i-1].X = (int)((i-1)*picRXEQ.Width/(float)(rxeq.Length-2));
-				points[i-1].Y = picRXEQ.Height/2 - (int)(rxeq[i]*(picRXEQ.Height-6)/2/15.0f +
-					tbRXEQPreamp.Value * 3 / 15.0f);
-			}
+                Point[] points = new Point[rxeq.Length - 1];
+                for (int i = 1; i < rxeq.Length; i++)
+                {
+                    points[i - 1].X = (int)((i - 1) * picRXEQ.Width / (float)(rxeq.Length - 2));
+                    points[i - 1].Y = picRXEQ.Height / 2 - (int)(rxeq[i] * (picRXEQ.Height - 6) / 2 / 15.0f +
+                        tbRXEQPreamp.Value * 3 / 15.0f);
+                }
 
-			e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-			e.Graphics.FillRectangle(new SolidBrush(Color.Black), 0, 0, picRXEQ.Width, picRXEQ.Height);
-			e.Graphics.DrawLines(new Pen(Color.LightGreen), points);
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                e.Graphics.FillRectangle(new SolidBrush(Color.Black), 0, 0, picRXEQ.Width, picRXEQ.Height);
+                e.Graphics.DrawLines(new Pen(Color.LightGreen), points);
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void picTXEQ_Paint(object sender, System.Windows.Forms.PaintEventArgs e)
 		{
-			int[] txeq = TXEQ;
-			if(!chkTXEQEnabled.Checked)
-			{
-				for(int i=0; i<txeq.Length; i++)
-					txeq[i] = 0;
-			}
+            try
+            {
+                int[] txeq = TXEQ;
+                if (!chkTXEQEnabled.Checked)
+                {
+                    for (int i = 0; i < txeq.Length; i++)
+                        txeq[i] = 0;
+                }
 
-			Point[] points = new Point[txeq.Length-1];
-			for(int i=1; i<txeq.Length; i++)
-			{
-				points[i-1].X = (int)((i-1)*picTXEQ.Width/(float)(txeq.Length-2));
-				points[i-1].Y = picTXEQ.Height/2 - (int)(txeq[i]*(picTXEQ.Height-6)/2/15.0f +
-					tbTXEQPreamp.Value * 3 / 15.0f);
-			}
+                Point[] points = new Point[txeq.Length - 1];
+                for (int i = 1; i < txeq.Length; i++)
+                {
+                    points[i - 1].X = (int)((i - 1) * picTXEQ.Width / (float)(txeq.Length - 2));
+                    points[i - 1].Y = picTXEQ.Height / 2 - (int)(txeq[i] * (picTXEQ.Height - 6) / 2 / 15.0f +
+                        tbTXEQPreamp.Value * 3 / 15.0f);
+                }
 
-			e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-			e.Graphics.FillRectangle(new SolidBrush(Color.Black), 0, 0, picTXEQ.Width, picTXEQ.Height);
-			e.Graphics.DrawLines(new Pen(Color.LightGreen), points);
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                e.Graphics.FillRectangle(new SolidBrush(Color.Black), 0, 0, picTXEQ.Width, picTXEQ.Height);
+                e.Graphics.DrawLines(new Pen(Color.LightGreen), points);
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void chkRXEQEnabled_CheckedChanged(object sender, System.EventArgs e)
 		{
-            if (chkRXEQEnabled.Checked)
+            try
             {
-                DttSP.SetGrphRXEQcmd(0, 0, true);
-                DttSP.SetGrphRXEQcmd(0, 1, true);
-                tbRXEQ_Scroll(sender, e);
+                if (chkRXEQEnabled.Checked)
+                {
+                    DttSP.SetGrphRXEQcmd(0, 0, true);
+                    DttSP.SetGrphRXEQcmd(0, 1, true);
+                    tbRXEQ_Scroll(sender, e);
+                }
+                else
+                {
+                    DttSP.SetGrphRXEQcmd(0, 0, false);
+                    DttSP.SetGrphRXEQcmd(0, 1, false);
+                }
+
+                picRXEQ.Invalidate();
             }
-            else
+            catch (Exception ex)
             {
-                DttSP.SetGrphRXEQcmd(0, 0, false);
-                DttSP.SetGrphRXEQcmd(0, 1, false);
+                Debug.Write(ex.ToString());
             }
-			picRXEQ.Invalidate();
 		}
 
 		private void chkTXEQEnabled_CheckedChanged(object sender, System.EventArgs e)
 		{
-            if (chkTXEQEnabled.Checked)
+            try
             {
-                DttSP.SetGrphTXEQcmd(0, true);
-                tbTXEQ_Scroll(sender, e);
+                if (chkTXEQEnabled.Checked)
+                {
+                    DttSP.SetGrphTXEQcmd(0, true);
+                    tbTXEQ_Scroll(sender, e);
+                }
+                else
+                    DttSP.SetGrphTXEQcmd(0, false);
+
+                picTXEQ.Invalidate();
             }
-            else
-                DttSP.SetGrphTXEQcmd(0, false);
-			picTXEQ.Invalidate();
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void btnRXEQReset_Click(object sender, System.EventArgs e)
 		{
-			DialogResult dr = MessageBox.Show(
-				"Are you sure you want to reset the Receive Equalizer\n"+
-				"to flat (zero)?",
-				"Are you sure?",
-				MessageBoxButtons.YesNo,
-				MessageBoxIcon.Question);
-			
-			if(dr == DialogResult.No)
-				return;
+            try
+            {
+                DialogResult dr = MessageBox.Show(
+                    "Are you sure you want to reset the Receive Equalizer\n" +
+                    "to flat (zero)?",
+                    "Are you sure?",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
 
-			foreach(Control c in grpRXEQ.Controls)
-			{
-				if(c.GetType() == typeof(TrackBarTS))
-					((TrackBarTS)c).Value = 0;
-			}
+                if (dr == DialogResult.No)
+                    return;
 
-			tbRXEQ_Scroll(this, EventArgs.Empty);
+                foreach (Control c in grpRXEQ.Controls)
+                {
+                    if (c.GetType() == typeof(TrackBarTS))
+                        ((TrackBarTS)c).Value = 0;
+                }
+
+                tbRXEQ_Scroll(this, EventArgs.Empty);
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void btnTXEQReset_Click(object sender, System.EventArgs e)
 		{
-			DialogResult dr = MessageBox.Show(
-				"Are you sure you want to reset the Transmit Equalizer\n"+
-				"to flat (zero)?",
-				"Are you sure?",
-				MessageBoxButtons.YesNo,
-				MessageBoxIcon.Question);
-			
-			if(dr == DialogResult.No)
-				return;
+            try
+            {
+                DialogResult dr = MessageBox.Show(
+                    "Are you sure you want to reset the Transmit Equalizer\n" +
+                    "to flat (zero)?",
+                    "Are you sure?",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
 
-			foreach(Control c in grpTXEQ.Controls)
-			{
-				if(c.GetType() == typeof(TrackBarTS))
-					((TrackBarTS)c).Value = 0;
-			}
+                if (dr == DialogResult.No)
+                    return;
 
-			tbTXEQ_Scroll(this, EventArgs.Empty);
+                foreach (Control c in grpTXEQ.Controls)
+                {
+                    if (c.GetType() == typeof(TrackBarTS))
+                        ((TrackBarTS)c).Value = 0;
+                }
+
+                tbTXEQ_Scroll(this, EventArgs.Empty);
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void chkTXEQ160Notch_CheckedChanged(object sender, System.EventArgs e)
 		{
-            if (chkTXEQ160Notch.Checked)
-                DttSP.SetNotch160(0, true);
-            else
-                DttSP.SetNotch160(0, false);
+            try
+            {
+                if (chkTXEQ160Notch.Checked)
+                    DttSP.SetNotch160(0, true);
+                else
+                    DttSP.SetNotch160(0, false);
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		#endregion		

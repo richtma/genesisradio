@@ -455,7 +455,28 @@ namespace PowerSDR
 
                             if (console.CWMonitorEnabled)
                             {
-                                if (console.CurrentModel == Model.GENESIS_G59USB)
+                                if (console.CurrentModel == Model.GENESIS_G6)
+                                {
+                                    if (memorykey)
+                                    {
+                                        if (!CW_monitor_on && cw_monitor_enabled)
+                                        {
+                                            console.g6.WriteToDevice(24, 1); // CW monitor on
+                                            CW_monitor_off = false;
+                                            CW_monitor_on = true;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (!CW_monitor_off && cw_monitor_enabled)
+                                        {
+                                            console.g6.WriteToDevice(24, 0);  // CW monitor off
+                                            CW_monitor_on = false;
+                                            CW_monitor_off = true;
+                                        }
+                                    }
+                                }
+                                else if (console.CurrentModel == Model.GENESIS_G59USB)
                                 {
                                     if (memorykey)
                                     {

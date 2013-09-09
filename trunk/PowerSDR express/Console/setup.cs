@@ -28,11 +28,10 @@
 
 /*
  *  Changes for GenesisRadio
- *  Copyright (C)2008-2012 YT7PWR Goran Radivojevic
+ *  Copyright (C)2008-2013 YT7PWR Goran Radivojevic
  *  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 */
 
-#define G6
 //#define MULTICAST
 
 using System;
@@ -47,14 +46,48 @@ using SDRSerialSupportII;
 using Splash_Screen;
 using System.IO;
 using System.Drawing.Imaging;
-using System.IO.Ports; 
+using System.IO.Ports;
+using System.Globalization;
+using System.Runtime.InteropServices;
 
 namespace PowerSDR
 {
 	public class Setup : System.Windows.Forms.Form
-	{
-		#region Variable Declaration
+    {
+        #region structures
 
+        [StructLayout(LayoutKind.Sequential)]
+        public struct Settings
+        {
+            public int audio_card_index;
+            public int audio_driver1_index;
+            public int audio_driverVAC_index;
+            public int audio_input1_index;
+            public int audio_inputVAC_index;
+            public int audio_output1_index;
+            public int audio_outputVAC_index;
+            public int audio_mixer_index;
+            public int audio_receive_index;
+            public int audio_transmit_index;
+            public double audio_output_voltage;
+            public int audio_mic_gain;
+            public int audio_line_gain;
+            public int audio_buffer_size1;
+            public int audio_buffer_sizeVAC;
+            public int audio_samplerate1;
+            public int audio_samplerateVAC;
+            public int audio_latency1;
+            public int audio_latencyVAC;
+            public int audio_channel1_number;
+            public int audio_IQ_correction;
+            public bool enable_VAC_mic_speaker;
+        }
+
+        #endregion
+
+        #region Variable Declaration
+
+        Settings settings = new Settings();
         private delegate void DebugCallbackFunction(string name);
 		private Console console;
 		private Progress progress;
@@ -873,10 +906,6 @@ namespace PowerSDR
         public NumericUpDownTS udWBIRTime;
         public RadioButtonTS radGenModelGenesisG6;
         private GroupBoxTS grpG6;
-        private LabelTS lblHighFreq;
-        private NumericUpDownTS udHighFreq;
-        private LabelTS lblLowFreq;
-        private NumericUpDownTS udLowFreq;
         private CheckBoxTS chkPA10_20m;
         private CheckBoxTS chkPA10_30m;
         private CheckBoxTS chkPA10_40m;
@@ -1159,6 +1188,30 @@ namespace PowerSDR
         private ComboBoxTS comboBandPlan;
         private CheckBoxTS chkLockTUN;
         private CheckBoxTS chkCAT_HRDserver;
+        private LabelTS labelTS66;
+        private NumericUpDownTS udPAADC2190;
+        private LabelTS labelTS65;
+        private NumericUpDownTS udPAADC600;
+        public CheckBoxTS chkG6RX2input;
+        public LabelTS lblVACchNumber;
+        private NumericUpDownTS udVACchNumber;
+        public RadioButtonTS radGenModel_RTL_SDR;
+        private GroupBoxTS grpRTL_SDR;
+        private NumericUpDownTS udRTL_SDR_correction;
+        private LabelTS labelTS67;
+        private ComboBoxTS comboRTL_SDR_SampleRate;
+        private LabelTS labelTS68;
+        private LabelTS labelTS69;
+        private ComboBoxTS comboRTL_SDR_BufferSize;
+        private CheckBoxTS chkRTL_SDR_OffsetTuning;
+        private CheckBoxTS chkRTL_SDR_RTL_AGC;
+        private CheckBoxTS chkRTL_SDR_TunerAGC;
+        private LabelTS labelTS70;
+        private TrackBarTS tbRTL_SDR_AGC_Gain;
+        public TextBoxTS txtRTL_SDR_Device;
+        private LabelTS labelTS71;
+        public NumericUpDownTS udRTL_VACcorr;
+        private LabelTS labelTS72;
 		private System.ComponentModel.IContainer components;
 
 		#endregion
@@ -1186,60 +1239,42 @@ namespace PowerSDR
                 comboGeneralProcessPriority.Items.Remove("Idle");
                 comboGeneralProcessPriority.Items.Remove("Below Normal");
 #endif
-                initializing = true;
+                initializing = false;
+
+                settings.audio_latency1 = 50;
+                settings.audio_latencyVAC = 50;
+                settings.audio_line_gain = 20;
+                settings.audio_mic_gain = 50;
+                settings.audio_output_voltage = 1.0;
 
                 InitWindowTypes();
-                GetMixerDevices();
                 GetHosts();
-
-                if (comboAudioDriver1.Items.Count > 0)
-                    comboAudioDriver1.SelectedIndex = 0;
+                GetDevices1();
+                GetDevicesVAC();
+                GetMixerDevices();
 
                 InitDevices1();
 
                 KeyList = new ArrayList();
                 SetupKeyMap();
-
                 GetTxProfiles();
-
+                console.cat_push_data = chkCATPushData.Checked;
                 RefreshCOMPortLists();
-
                 RefreshSkinList();
-
                 InitSMeterModes();
 
                 comboGeneralProcessPriority.Text = "Normal";
                 comboOptFilterWidthMode.Text = "Linear";
-                comboAudioSampleRate1.Items.Add(12000);
                 comboAudioSampleRate1.Items.Add(24000);
                 comboAudioSampleRate1.Items.Add(44100);
                 comboAudioSampleRate1.Items.Add(48000);
                 comboAudioSampleRate1.Items.Add(96000);
                 comboAudioSampleRate1.Items.Add(192000);
                 comboAudioSoundCard.Text = "Unsupported Card";
-
-                if (comboAudioSampleRate1.Items.Count > 0)
-                    comboAudioSampleRate1.SelectedIndex = 0;
-                if (comboAudioSampleRate1.Items.Count > 0)
-                    comboAudioSampleRateVAC.SelectedIndex = 0;
-
                 comboAudioBuffer1.Text = "2048";
                 comboAudioBufferVAC.Text = "2048";
                 comboAudioChannels1.Text = "2";
-                if (comboAudioOutput1.Items.Count > 0)
-                    comboAudioOutput1.SelectedIndex = 0;
-                if (comboAudioOutputVAC.Items.Count > 0)
-                    comboAudioOutputVAC.SelectedIndex = 0;
-                if (comboAudioInput1.Items.Count > 0)
-                    comboAudioInput1.SelectedIndex = 0;
-                if (comboAudioInputVAC.Items.Count > 0)
-                    comboAudioInputVAC.SelectedIndex = 0;
-                if (comboAudioMixer1.Items.Count > 0)
-                    comboAudioMixer1.SelectedIndex = 0;
-                if (comboAudioReceive1.Items.Count > 0)
-                    comboAudioReceive1.SelectedIndex = 0;
-                if (comboAudioTransmit1.Items.Count > 0)
-                    comboAudioTransmit1.SelectedIndex = 0;
+
                 comboDisplayLabelAlign.Text = "Auto";
                 comboDisplayDriver.Text = "GDI+";
                 comboDSPBufSizeDigital.SelectedIndex = 1;
@@ -1253,17 +1288,46 @@ namespace PowerSDR
                 comboKeyerConnPTTLine.SelectedIndex = 0;
                 comboKeyerConnSecondary.SelectedIndex = 0;
                 comboKeyerConnDOTLine.SelectedIndex = 0;
+
                 if (comboKeyerConnPrimary.Items.Count > 0)
                     comboKeyerConnPrimary.SelectedIndex = 0;
+
                 comboMeterType.Text = "Edge";
+
                 if (comboCATPort.Items.Count > 0) comboCATPort.SelectedIndex = 0;
                 if (comboCATPTTPort.Items.Count > 0) comboCATPTTPort.SelectedIndex = 0;
+
                 comboCATbaud.Text = "1200";
                 comboCATparity.Text = "none";
                 comboCATdatabits.Text = "8";
                 comboCATstopbits.Text = "1";
                 comboCATRigType.Text = "TS-2000";
                 grpCATIcom.Visible = false;
+
+                /*EventArgs e = EventArgs.Empty;
+
+                comboAudioSoundCard_SelectedIndexChanged(this, e);
+                comboAudioDriver1_SelectedIndexChanged(this, e);
+                comboAudioSampleRate1_SelectedIndexChanged(this, e);
+                comboAudioInput1_SelectedIndexChanged(this, e);
+                comboAudioOutput1_SelectedIndexChanged(this, e);
+                comboAudioMixer1_SelectedIndexChanged(this, e);
+                comboAudioReceive1_SelectedIndexChanged(this, e);
+                comboAudioTransmit1_SelectedIndexChanged(this, e);
+                comboAudioBuffer1_SelectedIndexChanged(this, e);
+                chkAudioLatencyManual1_CheckedChanged(this, e);
+                udAudioLatency1_ValueChanged(this, e);
+                udAudioLineIn1_ValueChanged(this, e);
+                udAudioVoltage1_ValueChanged(this, e);
+                comboAudioDriverVAC_SelectedIndexChanged(this, e);
+                comboAudioSampleRate2_SelectedIndexChanged(this, e);
+                comboAudioInputVAC_SelectedIndexChanged(this, e);
+                comboAudioOutputVAC_SelectedIndexChanged(this, e);
+                comboAudioBuffer2_SelectedIndexChanged(this, e);
+                udAudioLatency2_ValueChanged(this, e);
+                chkAudioLatencyManual2_CheckedChanged(this, e);
+                udAudioLatency2_ValueChanged(this, e);
+                chkVACPrimaryAudioDevice_CheckedChanged(this, e);*/
 
 #if(MULTICAST)
                 grpNetServer.Enabled = true;
@@ -1277,12 +1341,6 @@ namespace PowerSDR
 
                 comboColorPalette.Text = "original";
                 comboAppSkin.Text = "ClasicXP";
-                InitGeneralTab();
-                InitAudioTab();
-                InitDSPTab();
-                InitDisplayTab();
-                InitKeyboardTab();
-                InitAppearanceTab();
 
                 GetOptions();
 
@@ -1305,68 +1363,20 @@ namespace PowerSDR
                     comboAudioMixer1.Items.Count > 0)
                     comboAudioMixer1.SelectedIndex = 0;
 
-                initializing = false;
-
                 if (comboTXProfileName.SelectedIndex < 0 &&
                     comboTXProfileName.Items.Count > 0)
                     comboTXProfileName.SelectedIndex = 0;
 
+                initializing = false;
 
                 comboKeyerConnSecondary_SelectedIndexChanged(this, EventArgs.Empty);
-
-                //ForceAllEvents();
-                EventArgs e = EventArgs.Empty;
-
-                chkAudioLatencyManual1_CheckedChanged(this, e);
-                udAudioLineIn1_ValueChanged(this, e);
-                comboAudioReceive1_SelectedIndexChanged(this, e);
-                comboAudioInput1_SelectedIndexChanged(this, e);
-                comboAudioOutput1_SelectedIndexChanged(this, e);
-                comboAudioMixer1_SelectedIndexChanged(this, e);
-                udLMSANF_ValueChanged(this, e);
-                udLMSNR_ValueChanged(this, e);
-                udDSPImagePhaseTX_ValueChanged(this, e);
-                udDSPImageGainTX_ValueChanged(this, e);
-                udDSPCWPitch_ValueChanged(this, e);
-                tbDSPAGCHangThreshold_Scroll(this, e);
-                udTXFilterHigh_ValueChanged(this, e);
-                udTXFilterLow_ValueChanged(this, e);
-                udDisplayScopeTime_ValueChanged(this, e);
-                comboNewVFOSMeterSignal_SelectedIndexChanged(this, e);
-                chkUSBSerialNo_CheckedChanged(this, e);
-                udUSBSerialNo_ValueChanged(this, e);
-                chkLargeRBBuffer_CheckedChanged(this, e);
-                chkSmoothLine_CheckedChanged(this, e);
-                udG11XTRVLosc_ValueChanged(this, e);
-                udG59XtrvIF_ValueChanged(this, e);
-                udSi570_address_ValueChanged(this, e);
-                udSi570_divisor_ValueChanged(this, e);
-                udFDCOmax_ValueChanged(this, e);
-                udFDCOmin_ValueChanged(this, e);
-                chkWBIRfixed_CheckedChanged(this, e);
-                udRXGain_ValueChanged(this, e);
-                udRXPhase_ValueChanged(this, e);
-
-                if (comboBandPlan.SelectedIndex == -1)
-                    comboBandPlan.SelectedIndex = 0;
-
-                ///// force keyer reload //////
-                udCWKeyerDeBounce_ValueChanged(this, e);
-                udCWKeyerFall_ValueChanged(this, e);
-                udCWKeyerRise_ValueChanged(this, e);
-                udCWKeyerWeight_ValueChanged(this, e);
-                chkCWKeyerIambic_CheckedChanged(this, e);
-                chkCWKeyerMode_CheckedChanged(this, e);
-                chkCWKeyerRevPdl_CheckedChanged(this, e);
-                chkHiPerfKeyer_CheckedChanged(this, e);
-                saved_udSi570 = udSi570_divisor.Value;
-                console.sMeterDigital2.Brightness = tbSmeterAlpha.Value;
 
                 if (console.CAT_server_socket != null)
                 {
                     console.CAT_server_socket.WatchdogInterval = (int)udCATEthServerWatchdogTime.Value;
                     console.CAT_server_socket.IPv6_enabled = chkCATEthIPv6.Checked;
                 }
+
                 if (console.CAT_client_socket != null)
                 {
                     console.CAT_client_socket.CollectionTime = (int)udCATEthCollTime.Value;
@@ -1411,10 +1421,6 @@ namespace PowerSDR
                     Audio.VAC_RXshift_enabled = false;
                     Audio.PrimaryDirectI_Q = false;
                 }
-
-#if(G6)
-                this.radGenModelGenesisG6.Visible = true;
-#endif
             }
             catch (Exception ex)
             {
@@ -1794,6 +1800,8 @@ namespace PowerSDR
             this.comboBandPlan = new System.Windows.Forms.ComboBoxTS();
             this.chkLockTUN = new System.Windows.Forms.CheckBoxTS();
             this.chkCAT_HRDserver = new System.Windows.Forms.CheckBoxTS();
+            this.udVACchNumber = new System.Windows.Forms.NumericUpDownTS();
+            this.udRTL_SDR_correction = new System.Windows.Forms.NumericUpDownTS();
             this.lblG59PTT = new System.Windows.Forms.LabelTS();
             this.lblG59PTT_ON = new System.Windows.Forms.LabelTS();
             this.lblG59PTT_OFF = new System.Windows.Forms.LabelTS();
@@ -2004,6 +2012,10 @@ namespace PowerSDR
             this.comboAppSkin = new System.Windows.Forms.ComboBoxTS();
             this.tpPowerAmplifier = new System.Windows.Forms.TabPage();
             this.grpPABandOffset = new System.Windows.Forms.GroupBoxTS();
+            this.labelTS66 = new System.Windows.Forms.LabelTS();
+            this.udPAADC2190 = new System.Windows.Forms.NumericUpDownTS();
+            this.labelTS65 = new System.Windows.Forms.LabelTS();
+            this.udPAADC600 = new System.Windows.Forms.NumericUpDownTS();
             this.lblPABandOffset2 = new System.Windows.Forms.LabelTS();
             this.udPAADC2 = new System.Windows.Forms.NumericUpDownTS();
             this.lblPABandOffset6 = new System.Windows.Forms.LabelTS();
@@ -2271,6 +2283,7 @@ namespace PowerSDR
             this.lblAudioVACGainTX = new System.Windows.Forms.LabelTS();
             this.lblAudioVACGainRX = new System.Windows.Forms.LabelTS();
             this.grpAudioDetailsVAC = new System.Windows.Forms.GroupBoxTS();
+            this.lblVACchNumber = new System.Windows.Forms.LabelTS();
             this.lblAudioOutputVAC = new System.Windows.Forms.LabelTS();
             this.lblAudioInputVAC = new System.Windows.Forms.LabelTS();
             this.lblAudioDriverVAC = new System.Windows.Forms.LabelTS();
@@ -2279,6 +2292,23 @@ namespace PowerSDR
             this.tpGeneral = new System.Windows.Forms.TabPage();
             this.tcGeneral = new System.Windows.Forms.TabControl();
             this.tpGeneralHardware = new System.Windows.Forms.TabPage();
+            this.grpRTL_SDR = new System.Windows.Forms.GroupBoxTS();
+            this.labelTS72 = new System.Windows.Forms.LabelTS();
+            this.udRTL_VACcorr = new System.Windows.Forms.NumericUpDownTS();
+            this.txtRTL_SDR_Device = new System.Windows.Forms.TextBoxTS();
+            this.labelTS71 = new System.Windows.Forms.LabelTS();
+            this.chkRTL_SDR_OffsetTuning = new System.Windows.Forms.CheckBoxTS();
+            this.chkRTL_SDR_RTL_AGC = new System.Windows.Forms.CheckBoxTS();
+            this.chkRTL_SDR_TunerAGC = new System.Windows.Forms.CheckBoxTS();
+            this.labelTS70 = new System.Windows.Forms.LabelTS();
+            this.tbRTL_SDR_AGC_Gain = new System.Windows.Forms.TrackBarTS();
+            this.labelTS69 = new System.Windows.Forms.LabelTS();
+            this.comboRTL_SDR_BufferSize = new System.Windows.Forms.ComboBoxTS();
+            this.labelTS68 = new System.Windows.Forms.LabelTS();
+            this.labelTS67 = new System.Windows.Forms.LabelTS();
+            this.comboRTL_SDR_SampleRate = new System.Windows.Forms.ComboBoxTS();
+            this.grpG6 = new System.Windows.Forms.GroupBoxTS();
+            this.chkG6RX2input = new System.Windows.Forms.CheckBoxTS();
             this.grpQRP2000 = new System.Windows.Forms.GroupBoxTS();
             this.groupBoxTS10 = new System.Windows.Forms.GroupBoxTS();
             this.labelTS57 = new System.Windows.Forms.LabelTS();
@@ -2344,6 +2374,7 @@ namespace PowerSDR
             this.grpG11XTRV = new System.Windows.Forms.GroupBoxTS();
             this.lblG11XTRVLosc = new System.Windows.Forms.LabelTS();
             this.grpGeneralModel = new System.Windows.Forms.GroupBoxTS();
+            this.radGenModel_RTL_SDR = new System.Windows.Forms.RadioButtonTS();
             this.radGenModelGenesisG6 = new System.Windows.Forms.RadioButtonTS();
             this.grpGeneralHardwareSetup = new System.Windows.Forms.GroupBoxTS();
             this.chkVFOnew = new System.Windows.Forms.CheckBoxTS();
@@ -2367,11 +2398,6 @@ namespace PowerSDR
             this.grpGenesis500 = new System.Windows.Forms.GroupBoxTS();
             this.grpGenesis40 = new System.Windows.Forms.GroupBoxTS();
             this.grpGenesis3020 = new System.Windows.Forms.GroupBoxTS();
-            this.grpG6 = new System.Windows.Forms.GroupBoxTS();
-            this.lblHighFreq = new System.Windows.Forms.LabelTS();
-            this.udHighFreq = new System.Windows.Forms.NumericUpDownTS();
-            this.lblLowFreq = new System.Windows.Forms.LabelTS();
-            this.udLowFreq = new System.Windows.Forms.NumericUpDownTS();
             this.tpGeneralOptions = new System.Windows.Forms.TabPage();
             this.grpIRRemote = new System.Windows.Forms.GroupBoxTS();
             this.chkWinLIRCenable = new System.Windows.Forms.CheckBoxTS();
@@ -2666,6 +2692,8 @@ namespace PowerSDR
             ((System.ComponentModel.ISupportInitialize)(this.tbVACPhase)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.udQRP2000_Si570Xtal)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.udCATCI_V)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.udVACchNumber)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.udRTL_SDR_correction)).BeginInit();
             this.tpTests.SuspendLayout();
             this.grpAudioTests.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.udWBIRindex)).BeginInit();
@@ -2716,6 +2744,8 @@ namespace PowerSDR
             this.grpSkin.SuspendLayout();
             this.tpPowerAmplifier.SuspendLayout();
             this.grpPABandOffset.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.udPAADC2190)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.udPAADC600)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.udPAADC2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.udPAADC6)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.udPAADC17)).BeginInit();
@@ -2829,6 +2859,10 @@ namespace PowerSDR
             this.tpGeneral.SuspendLayout();
             this.tcGeneral.SuspendLayout();
             this.tpGeneralHardware.SuspendLayout();
+            this.grpRTL_SDR.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.udRTL_VACcorr)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbRTL_SDR_AGC_Gain)).BeginInit();
+            this.grpG6.SuspendLayout();
             this.grpQRP2000.SuspendLayout();
             this.groupBoxTS10.SuspendLayout();
             this.groupBoxTS9.SuspendLayout();
@@ -2852,9 +2886,6 @@ namespace PowerSDR
             this.grpGenesis500.SuspendLayout();
             this.grpGenesis40.SuspendLayout();
             this.grpGenesis3020.SuspendLayout();
-            this.grpG6.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.udHighFreq)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.udLowFreq)).BeginInit();
             this.tpGeneralOptions.SuspendLayout();
             this.grpIRRemote.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.udWinLIRCport)).BeginInit();
@@ -2909,10 +2940,6 @@ namespace PowerSDR
             this.groupBoxTS2.SuspendLayout();
             this.groupBoxTS3.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // toolTip1
-            // 
-            this.toolTip1.Popup += new System.Windows.Forms.PopupEventHandler(this.toolTip1_Popup);
             // 
             // VID_TextBox
             // 
@@ -3383,7 +3410,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udFilterDefaultLowCut.Location = new System.Drawing.Point(128, 120);
+            this.udFilterDefaultLowCut.Location = new System.Drawing.Point(134, 120);
             this.udFilterDefaultLowCut.Maximum = new decimal(new int[] {
             500,
             0,
@@ -3413,9 +3440,9 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udOptMaxFilterShift.Location = new System.Drawing.Point(128, 72);
+            this.udOptMaxFilterShift.Location = new System.Drawing.Point(126, 72);
             this.udOptMaxFilterShift.Maximum = new decimal(new int[] {
-            20000,
+            48000,
             0,
             0,
             0});
@@ -3425,8 +3452,9 @@ namespace PowerSDR
             0,
             0});
             this.udOptMaxFilterShift.Name = "udOptMaxFilterShift";
-            this.udOptMaxFilterShift.Size = new System.Drawing.Size(48, 20);
+            this.udOptMaxFilterShift.Size = new System.Drawing.Size(56, 20);
             this.udOptMaxFilterShift.TabIndex = 13;
+            this.udOptMaxFilterShift.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.toolTip1.SetToolTip(this.udOptMaxFilterShift, "Sets the maximum amount for the Shift control.  Set lower for finer resolution co" +
                     "ntrol");
             this.udOptMaxFilterShift.Value = new decimal(new int[] {
@@ -3445,7 +3473,7 @@ namespace PowerSDR
             "Linear",
             "Log",
             "Log10"});
-            this.comboOptFilterWidthMode.Location = new System.Drawing.Point(120, 48);
+            this.comboOptFilterWidthMode.Location = new System.Drawing.Point(126, 48);
             this.comboOptFilterWidthMode.Name = "comboOptFilterWidthMode";
             this.comboOptFilterWidthMode.Size = new System.Drawing.Size(56, 21);
             this.comboOptFilterWidthMode.TabIndex = 12;
@@ -3459,9 +3487,9 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udOptMaxFilterWidth.Location = new System.Drawing.Point(128, 24);
+            this.udOptMaxFilterWidth.Location = new System.Drawing.Point(126, 24);
             this.udOptMaxFilterWidth.Maximum = new decimal(new int[] {
-            20000,
+            125000,
             0,
             0,
             0});
@@ -3471,8 +3499,9 @@ namespace PowerSDR
             0,
             0});
             this.udOptMaxFilterWidth.Name = "udOptMaxFilterWidth";
-            this.udOptMaxFilterWidth.Size = new System.Drawing.Size(48, 20);
+            this.udOptMaxFilterWidth.Size = new System.Drawing.Size(56, 20);
             this.udOptMaxFilterWidth.TabIndex = 0;
+            this.udOptMaxFilterWidth.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.toolTip1.SetToolTip(this.udOptMaxFilterWidth, "Wets the maximum filter bandwidth");
             this.udOptMaxFilterWidth.Value = new decimal(new int[] {
             9999,
@@ -4022,6 +4051,8 @@ namespace PowerSDR
             "Turtle Beach Santa Cruz (PCI)",
             "Realtek HD audio",
             "No Mixer Audio Card",
+            "Genesis G6",
+            "RTL SDR",
             "Unsupported Card"});
             this.comboAudioSoundCard.Location = new System.Drawing.Point(56, 32);
             this.comboAudioSoundCard.MaxDropDownItems = 10;
@@ -4141,12 +4172,7 @@ namespace PowerSDR
             this.comboAudioSampleRateVAC.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboAudioSampleRateVAC.DropDownWidth = 64;
             this.comboAudioSampleRateVAC.Items.AddRange(new object[] {
-            "6000",
-            "8000",
-            "11025",
-            "12000",
             "24000",
-            "22050",
             "44100",
             "48000",
             "96000",
@@ -4182,10 +4208,10 @@ namespace PowerSDR
             this.comboAudioOutputVAC.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboAudioOutputVAC.DropDownWidth = 160;
             this.comboAudioOutputVAC.ItemHeight = 13;
-            this.comboAudioOutputVAC.Location = new System.Drawing.Point(56, 88);
+            this.comboAudioOutputVAC.Location = new System.Drawing.Point(54, 88);
             this.comboAudioOutputVAC.MaxDropDownItems = 15;
             this.comboAudioOutputVAC.Name = "comboAudioOutputVAC";
-            this.comboAudioOutputVAC.Size = new System.Drawing.Size(160, 21);
+            this.comboAudioOutputVAC.Size = new System.Drawing.Size(144, 21);
             this.comboAudioOutputVAC.TabIndex = 34;
             this.toolTip1.SetToolTip(this.comboAudioOutputVAC, "Output Audio Device");
             this.comboAudioOutputVAC.SelectedIndexChanged += new System.EventHandler(this.comboAudioOutputVAC_SelectedIndexChanged);
@@ -4195,10 +4221,10 @@ namespace PowerSDR
             this.comboAudioInputVAC.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboAudioInputVAC.DropDownWidth = 160;
             this.comboAudioInputVAC.ItemHeight = 13;
-            this.comboAudioInputVAC.Location = new System.Drawing.Point(56, 56);
+            this.comboAudioInputVAC.Location = new System.Drawing.Point(54, 56);
             this.comboAudioInputVAC.MaxDropDownItems = 15;
             this.comboAudioInputVAC.Name = "comboAudioInputVAC";
-            this.comboAudioInputVAC.Size = new System.Drawing.Size(160, 21);
+            this.comboAudioInputVAC.Size = new System.Drawing.Size(144, 21);
             this.comboAudioInputVAC.TabIndex = 28;
             this.toolTip1.SetToolTip(this.comboAudioInputVAC, "Input Audio Device");
             this.comboAudioInputVAC.SelectedIndexChanged += new System.EventHandler(this.comboAudioInputVAC_SelectedIndexChanged);
@@ -4208,9 +4234,9 @@ namespace PowerSDR
             this.comboAudioDriverVAC.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboAudioDriverVAC.DropDownWidth = 160;
             this.comboAudioDriverVAC.ItemHeight = 13;
-            this.comboAudioDriverVAC.Location = new System.Drawing.Point(56, 24);
+            this.comboAudioDriverVAC.Location = new System.Drawing.Point(54, 24);
             this.comboAudioDriverVAC.Name = "comboAudioDriverVAC";
-            this.comboAudioDriverVAC.Size = new System.Drawing.Size(160, 21);
+            this.comboAudioDriverVAC.Size = new System.Drawing.Size(144, 21);
             this.comboAudioDriverVAC.TabIndex = 26;
             this.toolTip1.SetToolTip(this.comboAudioDriverVAC, "Sound Card Driver Selection");
             this.comboAudioDriverVAC.SelectedIndexChanged += new System.EventHandler(this.comboAudioDriverVAC_SelectedIndexChanged);
@@ -6054,7 +6080,7 @@ namespace PowerSDR
             0,
             0,
             65536});
-            this.udPACalPower.Location = new System.Drawing.Point(462, 231);
+            this.udPACalPower.Location = new System.Drawing.Point(464, 254);
             this.udPACalPower.Maximum = new decimal(new int[] {
             100,
             0,
@@ -7166,7 +7192,7 @@ namespace PowerSDR
             // radGenModelGenesisG160
             // 
             this.radGenModelGenesisG160.Image = null;
-            this.radGenModelGenesisG160.Location = new System.Drawing.Point(22, 124);
+            this.radGenModelGenesisG160.Location = new System.Drawing.Point(22, 110);
             this.radGenModelGenesisG160.Name = "radGenModelGenesisG160";
             this.radGenModelGenesisG160.Size = new System.Drawing.Size(104, 17);
             this.radGenModelGenesisG160.TabIndex = 6;
@@ -7178,7 +7204,7 @@ namespace PowerSDR
             // radGenModelGenesisG80
             // 
             this.radGenModelGenesisG80.Image = null;
-            this.radGenModelGenesisG80.Location = new System.Drawing.Point(22, 102);
+            this.radGenModelGenesisG80.Location = new System.Drawing.Point(22, 89);
             this.radGenModelGenesisG80.Name = "radGenModelGenesisG80";
             this.radGenModelGenesisG80.Size = new System.Drawing.Size(104, 17);
             this.radGenModelGenesisG80.TabIndex = 5;
@@ -7190,7 +7216,7 @@ namespace PowerSDR
             // radGenModelGenesisG40
             // 
             this.radGenModelGenesisG40.Image = null;
-            this.radGenModelGenesisG40.Location = new System.Drawing.Point(22, 80);
+            this.radGenModelGenesisG40.Location = new System.Drawing.Point(22, 68);
             this.radGenModelGenesisG40.Name = "radGenModelGenesisG40";
             this.radGenModelGenesisG40.Size = new System.Drawing.Size(104, 17);
             this.radGenModelGenesisG40.TabIndex = 4;
@@ -7202,7 +7228,7 @@ namespace PowerSDR
             // radGenModelGenesisG3020
             // 
             this.radGenModelGenesisG3020.Image = null;
-            this.radGenModelGenesisG3020.Location = new System.Drawing.Point(22, 52);
+            this.radGenModelGenesisG3020.Location = new System.Drawing.Point(22, 41);
             this.radGenModelGenesisG3020.Name = "radGenModelGenesisG3020";
             this.radGenModelGenesisG3020.Size = new System.Drawing.Size(104, 23);
             this.radGenModelGenesisG3020.TabIndex = 3;
@@ -7215,7 +7241,7 @@ namespace PowerSDR
             // 
             this.radGenModelGenesisG59.AutoSize = true;
             this.radGenModelGenesisG59.Image = null;
-            this.radGenModelGenesisG59.Location = new System.Drawing.Point(22, 30);
+            this.radGenModelGenesisG59.Location = new System.Drawing.Point(22, 20);
             this.radGenModelGenesisG59.Name = "radGenModelGenesisG59";
             this.radGenModelGenesisG59.Size = new System.Drawing.Size(78, 17);
             this.radGenModelGenesisG59.TabIndex = 2;
@@ -7227,7 +7253,7 @@ namespace PowerSDR
             // radGenModelGenesisNET
             // 
             this.radGenModelGenesisNET.Image = null;
-            this.radGenModelGenesisNET.Location = new System.Drawing.Point(22, 212);
+            this.radGenModelGenesisNET.Location = new System.Drawing.Point(22, 194);
             this.radGenModelGenesisNET.Name = "radGenModelGenesisNET";
             this.radGenModelGenesisNET.Size = new System.Drawing.Size(104, 17);
             this.radGenModelGenesisNET.TabIndex = 7;
@@ -7507,7 +7533,7 @@ namespace PowerSDR
             // radGenModelQRP2000
             // 
             this.radGenModelQRP2000.Image = null;
-            this.radGenModelQRP2000.Location = new System.Drawing.Point(22, 234);
+            this.radGenModelQRP2000.Location = new System.Drawing.Point(22, 215);
             this.radGenModelQRP2000.Name = "radGenModelQRP2000";
             this.radGenModelQRP2000.Size = new System.Drawing.Size(122, 17);
             this.radGenModelQRP2000.TabIndex = 8;
@@ -7759,7 +7785,7 @@ namespace PowerSDR
             // 
             // txtLoopDll
             // 
-            this.txtLoopDll.Location = new System.Drawing.Point(10, 18);
+            this.txtLoopDll.Location = new System.Drawing.Point(25, 18);
             this.txtLoopDll.MaxLength = 64;
             this.txtLoopDll.Name = "txtLoopDll";
             this.txtLoopDll.Size = new System.Drawing.Size(205, 20);
@@ -7821,7 +7847,7 @@ namespace PowerSDR
             // radGenModelGenesisG137
             // 
             this.radGenModelGenesisG137.Image = null;
-            this.radGenModelGenesisG137.Location = new System.Drawing.Point(22, 146);
+            this.radGenModelGenesisG137.Location = new System.Drawing.Point(22, 131);
             this.radGenModelGenesisG137.Name = "radGenModelGenesisG137";
             this.radGenModelGenesisG137.Size = new System.Drawing.Size(104, 17);
             this.radGenModelGenesisG137.TabIndex = 10;
@@ -7892,7 +7918,7 @@ namespace PowerSDR
             // radGenModelGenesisG500
             // 
             this.radGenModelGenesisG500.Image = null;
-            this.radGenModelGenesisG500.Location = new System.Drawing.Point(22, 168);
+            this.radGenModelGenesisG500.Location = new System.Drawing.Point(22, 152);
             this.radGenModelGenesisG500.Name = "radGenModelGenesisG500";
             this.radGenModelGenesisG500.Size = new System.Drawing.Size(104, 17);
             this.radGenModelGenesisG500.TabIndex = 11;
@@ -8477,7 +8503,7 @@ namespace PowerSDR
             // radGenModelGenesisG11
             // 
             this.radGenModelGenesisG11.Image = null;
-            this.radGenModelGenesisG11.Location = new System.Drawing.Point(22, 190);
+            this.radGenModelGenesisG11.Location = new System.Drawing.Point(22, 173);
             this.radGenModelGenesisG11.Name = "radGenModelGenesisG11";
             this.radGenModelGenesisG11.Size = new System.Drawing.Size(104, 17);
             this.radGenModelGenesisG11.TabIndex = 12;
@@ -9383,6 +9409,64 @@ namespace PowerSDR
             this.toolTip1.SetToolTip(this.chkCAT_HRDserver, "Direct connection to DM780,HRDlog...");
             this.chkCAT_HRDserver.UseVisualStyleBackColor = true;
             this.chkCAT_HRDserver.CheckedChanged += new System.EventHandler(this.chkCAT_HRDserver_CheckedChanged);
+            // 
+            // udVACchNumber
+            // 
+            this.udVACchNumber.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.udVACchNumber.Location = new System.Drawing.Point(210, 57);
+            this.udVACchNumber.Maximum = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            this.udVACchNumber.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.udVACchNumber.Name = "udVACchNumber";
+            this.udVACchNumber.Size = new System.Drawing.Size(40, 20);
+            this.udVACchNumber.TabIndex = 37;
+            this.udVACchNumber.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.udVACchNumber, "Audio channel number.");
+            this.udVACchNumber.Value = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            // 
+            // udRTL_SDR_correction
+            // 
+            this.udRTL_SDR_correction.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.udRTL_SDR_correction.Location = new System.Drawing.Point(130, 128);
+            this.udRTL_SDR_correction.Maximum = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            this.udRTL_SDR_correction.Minimum = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+            this.udRTL_SDR_correction.Name = "udRTL_SDR_correction";
+            this.udRTL_SDR_correction.Size = new System.Drawing.Size(49, 20);
+            this.udRTL_SDR_correction.TabIndex = 2;
+            this.toolTip1.SetToolTip(this.udRTL_SDR_correction, "Frequency drift in ppm");
+            this.udRTL_SDR_correction.Value = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+            this.udRTL_SDR_correction.ValueChanged += new System.EventHandler(this.udRTL_SDR_correction_ValueChanged);
             // 
             // lblG59PTT
             // 
@@ -11849,6 +11933,10 @@ namespace PowerSDR
             // 
             // grpPABandOffset
             // 
+            this.grpPABandOffset.Controls.Add(this.labelTS66);
+            this.grpPABandOffset.Controls.Add(this.udPAADC2190);
+            this.grpPABandOffset.Controls.Add(this.labelTS65);
+            this.grpPABandOffset.Controls.Add(this.udPAADC600);
             this.grpPABandOffset.Controls.Add(this.lblPABandOffset2);
             this.grpPABandOffset.Controls.Add(this.udPAADC2);
             this.grpPABandOffset.Controls.Add(this.lblPABandOffset6);
@@ -11875,15 +11963,87 @@ namespace PowerSDR
             this.grpPABandOffset.Controls.Add(this.udPAADC30);
             this.grpPABandOffset.Location = new System.Drawing.Point(344, 10);
             this.grpPABandOffset.Name = "grpPABandOffset";
-            this.grpPABandOffset.Size = new System.Drawing.Size(230, 185);
+            this.grpPABandOffset.Size = new System.Drawing.Size(230, 222);
             this.grpPABandOffset.TabIndex = 81;
             this.grpPABandOffset.TabStop = false;
             this.grpPABandOffset.Text = "ADC Offset (ADC bits)";
             // 
+            // labelTS66
+            // 
+            this.labelTS66.Image = null;
+            this.labelTS66.Location = new System.Drawing.Point(24, 37);
+            this.labelTS66.Name = "labelTS66";
+            this.labelTS66.Size = new System.Drawing.Size(40, 16);
+            this.labelTS66.TabIndex = 98;
+            this.labelTS66.Text = "2190m:";
+            // 
+            // udPAADC2190
+            // 
+            this.udPAADC2190.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.udPAADC2190.Location = new System.Drawing.Point(64, 37);
+            this.udPAADC2190.Maximum = new decimal(new int[] {
+            255,
+            0,
+            0,
+            0});
+            this.udPAADC2190.Minimum = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+            this.udPAADC2190.Name = "udPAADC2190";
+            this.udPAADC2190.Size = new System.Drawing.Size(48, 20);
+            this.udPAADC2190.TabIndex = 97;
+            this.udPAADC2190.Value = new decimal(new int[] {
+            60,
+            0,
+            0,
+            0});
+            // 
+            // labelTS65
+            // 
+            this.labelTS65.Image = null;
+            this.labelTS65.Location = new System.Drawing.Point(24, 63);
+            this.labelTS65.Name = "labelTS65";
+            this.labelTS65.Size = new System.Drawing.Size(40, 16);
+            this.labelTS65.TabIndex = 96;
+            this.labelTS65.Text = "600m:";
+            // 
+            // udPAADC600
+            // 
+            this.udPAADC600.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.udPAADC600.Location = new System.Drawing.Point(64, 63);
+            this.udPAADC600.Maximum = new decimal(new int[] {
+            255,
+            0,
+            0,
+            0});
+            this.udPAADC600.Minimum = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+            this.udPAADC600.Name = "udPAADC600";
+            this.udPAADC600.Size = new System.Drawing.Size(48, 20);
+            this.udPAADC600.TabIndex = 95;
+            this.udPAADC600.Value = new decimal(new int[] {
+            60,
+            0,
+            0,
+            0});
+            // 
             // lblPABandOffset2
             // 
             this.lblPABandOffset2.Image = null;
-            this.lblPABandOffset2.Location = new System.Drawing.Point(117, 144);
+            this.lblPABandOffset2.Location = new System.Drawing.Point(122, 185);
             this.lblPABandOffset2.Name = "lblPABandOffset2";
             this.lblPABandOffset2.Size = new System.Drawing.Size(40, 16);
             this.lblPABandOffset2.TabIndex = 94;
@@ -11896,7 +12056,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udPAADC2.Location = new System.Drawing.Point(157, 144);
+            this.udPAADC2.Location = new System.Drawing.Point(162, 185);
             this.udPAADC2.Maximum = new decimal(new int[] {
             255,
             0,
@@ -11919,7 +12079,7 @@ namespace PowerSDR
             // lblPABandOffset6
             // 
             this.lblPABandOffset6.Image = null;
-            this.lblPABandOffset6.Location = new System.Drawing.Point(117, 119);
+            this.lblPABandOffset6.Location = new System.Drawing.Point(122, 160);
             this.lblPABandOffset6.Name = "lblPABandOffset6";
             this.lblPABandOffset6.Size = new System.Drawing.Size(40, 16);
             this.lblPABandOffset6.TabIndex = 92;
@@ -11932,7 +12092,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udPAADC6.Location = new System.Drawing.Point(157, 119);
+            this.udPAADC6.Location = new System.Drawing.Point(162, 160);
             this.udPAADC6.Maximum = new decimal(new int[] {
             255,
             0,
@@ -11955,7 +12115,7 @@ namespace PowerSDR
             // lblPABandOffset10
             // 
             this.lblPABandOffset10.Image = null;
-            this.lblPABandOffset10.Location = new System.Drawing.Point(117, 96);
+            this.lblPABandOffset10.Location = new System.Drawing.Point(122, 137);
             this.lblPABandOffset10.Name = "lblPABandOffset10";
             this.lblPABandOffset10.Size = new System.Drawing.Size(40, 16);
             this.lblPABandOffset10.TabIndex = 90;
@@ -11964,7 +12124,7 @@ namespace PowerSDR
             // lblPABandOffset12
             // 
             this.lblPABandOffset12.Image = null;
-            this.lblPABandOffset12.Location = new System.Drawing.Point(117, 72);
+            this.lblPABandOffset12.Location = new System.Drawing.Point(122, 113);
             this.lblPABandOffset12.Name = "lblPABandOffset12";
             this.lblPABandOffset12.Size = new System.Drawing.Size(40, 16);
             this.lblPABandOffset12.TabIndex = 89;
@@ -11973,7 +12133,7 @@ namespace PowerSDR
             // lblPABandOffset15
             // 
             this.lblPABandOffset15.Image = null;
-            this.lblPABandOffset15.Location = new System.Drawing.Point(117, 48);
+            this.lblPABandOffset15.Location = new System.Drawing.Point(122, 89);
             this.lblPABandOffset15.Name = "lblPABandOffset15";
             this.lblPABandOffset15.Size = new System.Drawing.Size(40, 16);
             this.lblPABandOffset15.TabIndex = 88;
@@ -11982,7 +12142,7 @@ namespace PowerSDR
             // lblPABandOffset17
             // 
             this.lblPABandOffset17.Image = null;
-            this.lblPABandOffset17.Location = new System.Drawing.Point(117, 24);
+            this.lblPABandOffset17.Location = new System.Drawing.Point(122, 65);
             this.lblPABandOffset17.Name = "lblPABandOffset17";
             this.lblPABandOffset17.Size = new System.Drawing.Size(40, 16);
             this.lblPABandOffset17.TabIndex = 87;
@@ -11991,7 +12151,7 @@ namespace PowerSDR
             // lblPABandOffset20
             // 
             this.lblPABandOffset20.Image = null;
-            this.lblPABandOffset20.Location = new System.Drawing.Point(16, 142);
+            this.lblPABandOffset20.Location = new System.Drawing.Point(122, 39);
             this.lblPABandOffset20.Name = "lblPABandOffset20";
             this.lblPABandOffset20.Size = new System.Drawing.Size(40, 16);
             this.lblPABandOffset20.TabIndex = 86;
@@ -12000,7 +12160,7 @@ namespace PowerSDR
             // lblPABandOffset30
             // 
             this.lblPABandOffset30.Image = null;
-            this.lblPABandOffset30.Location = new System.Drawing.Point(16, 120);
+            this.lblPABandOffset30.Location = new System.Drawing.Point(24, 185);
             this.lblPABandOffset30.Name = "lblPABandOffset30";
             this.lblPABandOffset30.Size = new System.Drawing.Size(40, 16);
             this.lblPABandOffset30.TabIndex = 85;
@@ -12009,7 +12169,7 @@ namespace PowerSDR
             // lblPABandOffset40
             // 
             this.lblPABandOffset40.Image = null;
-            this.lblPABandOffset40.Location = new System.Drawing.Point(16, 96);
+            this.lblPABandOffset40.Location = new System.Drawing.Point(24, 161);
             this.lblPABandOffset40.Name = "lblPABandOffset40";
             this.lblPABandOffset40.Size = new System.Drawing.Size(40, 16);
             this.lblPABandOffset40.TabIndex = 84;
@@ -12018,7 +12178,7 @@ namespace PowerSDR
             // lblPABandOffset60
             // 
             this.lblPABandOffset60.Image = null;
-            this.lblPABandOffset60.Location = new System.Drawing.Point(16, 72);
+            this.lblPABandOffset60.Location = new System.Drawing.Point(24, 137);
             this.lblPABandOffset60.Name = "lblPABandOffset60";
             this.lblPABandOffset60.Size = new System.Drawing.Size(40, 16);
             this.lblPABandOffset60.TabIndex = 83;
@@ -12027,7 +12187,7 @@ namespace PowerSDR
             // lblPABandOffset80
             // 
             this.lblPABandOffset80.Image = null;
-            this.lblPABandOffset80.Location = new System.Drawing.Point(16, 48);
+            this.lblPABandOffset80.Location = new System.Drawing.Point(24, 113);
             this.lblPABandOffset80.Name = "lblPABandOffset80";
             this.lblPABandOffset80.Size = new System.Drawing.Size(40, 16);
             this.lblPABandOffset80.TabIndex = 82;
@@ -12036,7 +12196,7 @@ namespace PowerSDR
             // lblPABandOffset160
             // 
             this.lblPABandOffset160.Image = null;
-            this.lblPABandOffset160.Location = new System.Drawing.Point(16, 24);
+            this.lblPABandOffset160.Location = new System.Drawing.Point(24, 89);
             this.lblPABandOffset160.Name = "lblPABandOffset160";
             this.lblPABandOffset160.Size = new System.Drawing.Size(40, 16);
             this.lblPABandOffset160.TabIndex = 81;
@@ -12049,7 +12209,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udPAADC17.Location = new System.Drawing.Point(157, 24);
+            this.udPAADC17.Location = new System.Drawing.Point(162, 65);
             this.udPAADC17.Maximum = new decimal(new int[] {
             255,
             0,
@@ -12077,7 +12237,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udPAADC15.Location = new System.Drawing.Point(157, 48);
+            this.udPAADC15.Location = new System.Drawing.Point(162, 89);
             this.udPAADC15.Maximum = new decimal(new int[] {
             255,
             0,
@@ -12105,7 +12265,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udPAADC20.Location = new System.Drawing.Point(56, 142);
+            this.udPAADC20.Location = new System.Drawing.Point(162, 39);
             this.udPAADC20.Maximum = new decimal(new int[] {
             255,
             0,
@@ -12133,7 +12293,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udPAADC12.Location = new System.Drawing.Point(157, 72);
+            this.udPAADC12.Location = new System.Drawing.Point(162, 113);
             this.udPAADC12.Maximum = new decimal(new int[] {
             255,
             0,
@@ -12161,7 +12321,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udPAADC10.Location = new System.Drawing.Point(157, 96);
+            this.udPAADC10.Location = new System.Drawing.Point(162, 137);
             this.udPAADC10.Maximum = new decimal(new int[] {
             255,
             0,
@@ -12189,7 +12349,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udPAADC160.Location = new System.Drawing.Point(56, 24);
+            this.udPAADC160.Location = new System.Drawing.Point(64, 89);
             this.udPAADC160.Maximum = new decimal(new int[] {
             255,
             0,
@@ -12217,7 +12377,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udPAADC80.Location = new System.Drawing.Point(56, 48);
+            this.udPAADC80.Location = new System.Drawing.Point(64, 113);
             this.udPAADC80.Maximum = new decimal(new int[] {
             255,
             0,
@@ -12245,7 +12405,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udPAADC60.Location = new System.Drawing.Point(56, 72);
+            this.udPAADC60.Location = new System.Drawing.Point(64, 137);
             this.udPAADC60.Maximum = new decimal(new int[] {
             255,
             0,
@@ -12273,7 +12433,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udPAADC40.Location = new System.Drawing.Point(56, 96);
+            this.udPAADC40.Location = new System.Drawing.Point(64, 161);
             this.udPAADC40.Maximum = new decimal(new int[] {
             255,
             0,
@@ -12301,7 +12461,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udPAADC30.Location = new System.Drawing.Point(56, 120);
+            this.udPAADC30.Location = new System.Drawing.Point(64, 185);
             this.udPAADC30.Maximum = new decimal(new int[] {
             255,
             0,
@@ -13082,7 +13242,7 @@ namespace PowerSDR
             // lblPACalPower
             // 
             this.lblPACalPower.Image = null;
-            this.lblPACalPower.Location = new System.Drawing.Point(390, 231);
+            this.lblPACalPower.Location = new System.Drawing.Point(392, 254);
             this.lblPACalPower.Name = "lblPACalPower";
             this.lblPACalPower.Size = new System.Drawing.Size(64, 32);
             this.lblPACalPower.TabIndex = 23;
@@ -14715,7 +14875,7 @@ namespace PowerSDR
             0,
             0});
             this.udDecayTime.Minimum = new decimal(new int[] {
-            1,
+            0,
             0,
             0,
             0});
@@ -14752,7 +14912,7 @@ namespace PowerSDR
             0,
             0});
             this.udAtackTime.Minimum = new decimal(new int[] {
-            1,
+            0,
             0,
             0,
             0});
@@ -15432,7 +15592,7 @@ namespace PowerSDR
             this.grpVACDirectIQ.Controls.Add(this.tbVACPhase);
             this.grpVACDirectIQ.Controls.Add(this.chkVACCorrection);
             this.grpVACDirectIQ.Controls.Add(this.chkVACDirectI_Q);
-            this.grpVACDirectIQ.Location = new System.Drawing.Point(286, 184);
+            this.grpVACDirectIQ.Location = new System.Drawing.Point(296, 183);
             this.grpVACDirectIQ.Name = "grpVACDirectIQ";
             this.grpVACDirectIQ.Size = new System.Drawing.Size(270, 115);
             this.grpVACDirectIQ.TabIndex = 76;
@@ -15469,9 +15629,9 @@ namespace PowerSDR
             // grpLoopDll
             // 
             this.grpLoopDll.Controls.Add(this.txtLoopDll);
-            this.grpLoopDll.Location = new System.Drawing.Point(36, 230);
+            this.grpLoopDll.Location = new System.Drawing.Point(27, 229);
             this.grpLoopDll.Name = "grpLoopDll";
-            this.grpLoopDll.Size = new System.Drawing.Size(224, 48);
+            this.grpLoopDll.Size = new System.Drawing.Size(263, 48);
             this.grpLoopDll.TabIndex = 75;
             this.grpLoopDll.TabStop = false;
             this.grpLoopDll.Text = "Loop DLL";
@@ -15479,9 +15639,9 @@ namespace PowerSDR
             // grpAudioVACAutoEnable
             // 
             this.grpAudioVACAutoEnable.Controls.Add(this.chkAudioVACAutoEnable);
-            this.grpAudioVACAutoEnable.Location = new System.Drawing.Point(37, 159);
+            this.grpAudioVACAutoEnable.Location = new System.Drawing.Point(27, 159);
             this.grpAudioVACAutoEnable.Name = "grpAudioVACAutoEnable";
-            this.grpAudioVACAutoEnable.Size = new System.Drawing.Size(224, 64);
+            this.grpAudioVACAutoEnable.Size = new System.Drawing.Size(263, 64);
             this.grpAudioVACAutoEnable.TabIndex = 74;
             this.grpAudioVACAutoEnable.TabStop = false;
             this.grpAudioVACAutoEnable.Text = "Auto Enable";
@@ -15501,7 +15661,7 @@ namespace PowerSDR
             this.grpAudioVAC.Controls.Add(this.grpAudioVACGain);
             this.grpAudioVAC.Controls.Add(this.comboAudioSampleRateVAC);
             this.grpAudioVAC.Controls.Add(this.comboAudioBufferVAC);
-            this.grpAudioVAC.Location = new System.Drawing.Point(286, 3);
+            this.grpAudioVAC.Location = new System.Drawing.Point(296, 3);
             this.grpAudioVAC.Name = "grpAudioVAC";
             this.grpAudioVAC.Size = new System.Drawing.Size(270, 180);
             this.grpAudioVAC.TabIndex = 65;
@@ -15582,32 +15742,43 @@ namespace PowerSDR
             // 
             // grpAudioDetailsVAC
             // 
+            this.grpAudioDetailsVAC.Controls.Add(this.lblVACchNumber);
+            this.grpAudioDetailsVAC.Controls.Add(this.udVACchNumber);
             this.grpAudioDetailsVAC.Controls.Add(this.lblAudioOutputVAC);
             this.grpAudioDetailsVAC.Controls.Add(this.comboAudioOutputVAC);
             this.grpAudioDetailsVAC.Controls.Add(this.lblAudioInputVAC);
             this.grpAudioDetailsVAC.Controls.Add(this.lblAudioDriverVAC);
             this.grpAudioDetailsVAC.Controls.Add(this.comboAudioInputVAC);
             this.grpAudioDetailsVAC.Controls.Add(this.comboAudioDriverVAC);
-            this.grpAudioDetailsVAC.Location = new System.Drawing.Point(37, 35);
+            this.grpAudioDetailsVAC.Location = new System.Drawing.Point(27, 35);
             this.grpAudioDetailsVAC.Name = "grpAudioDetailsVAC";
-            this.grpAudioDetailsVAC.Size = new System.Drawing.Size(224, 120);
+            this.grpAudioDetailsVAC.Size = new System.Drawing.Size(263, 120);
             this.grpAudioDetailsVAC.TabIndex = 35;
             this.grpAudioDetailsVAC.TabStop = false;
             this.grpAudioDetailsVAC.Text = "Virtual Audio Cable Setup";
             // 
+            // lblVACchNumber
+            // 
+            this.lblVACchNumber.Image = null;
+            this.lblVACchNumber.Location = new System.Drawing.Point(204, 36);
+            this.lblVACchNumber.Name = "lblVACchNumber";
+            this.lblVACchNumber.Size = new System.Drawing.Size(54, 16);
+            this.lblVACchNumber.TabIndex = 38;
+            this.lblVACchNumber.Text = "Channels";
+            // 
             // lblAudioOutputVAC
             // 
             this.lblAudioOutputVAC.Image = null;
-            this.lblAudioOutputVAC.Location = new System.Drawing.Point(8, 88);
+            this.lblAudioOutputVAC.Location = new System.Drawing.Point(5, 90);
             this.lblAudioOutputVAC.Name = "lblAudioOutputVAC";
-            this.lblAudioOutputVAC.Size = new System.Drawing.Size(48, 16);
+            this.lblAudioOutputVAC.Size = new System.Drawing.Size(43, 16);
             this.lblAudioOutputVAC.TabIndex = 35;
             this.lblAudioOutputVAC.Text = "Output:";
             // 
             // lblAudioInputVAC
             // 
             this.lblAudioInputVAC.Image = null;
-            this.lblAudioInputVAC.Location = new System.Drawing.Point(8, 56);
+            this.lblAudioInputVAC.Location = new System.Drawing.Point(8, 58);
             this.lblAudioInputVAC.Name = "lblAudioInputVAC";
             this.lblAudioInputVAC.Size = new System.Drawing.Size(40, 16);
             this.lblAudioInputVAC.TabIndex = 33;
@@ -15616,7 +15787,7 @@ namespace PowerSDR
             // lblAudioDriverVAC
             // 
             this.lblAudioDriverVAC.Image = null;
-            this.lblAudioDriverVAC.Location = new System.Drawing.Point(8, 24);
+            this.lblAudioDriverVAC.Location = new System.Drawing.Point(8, 25);
             this.lblAudioDriverVAC.Name = "lblAudioDriverVAC";
             this.lblAudioDriverVAC.Size = new System.Drawing.Size(40, 16);
             this.lblAudioDriverVAC.TabIndex = 32;
@@ -15668,6 +15839,8 @@ namespace PowerSDR
             // 
             // tpGeneralHardware
             // 
+            this.tpGeneralHardware.Controls.Add(this.grpRTL_SDR);
+            this.tpGeneralHardware.Controls.Add(this.grpG6);
             this.tpGeneralHardware.Controls.Add(this.grpQRP2000);
             this.tpGeneralHardware.Controls.Add(this.grpG59);
             this.tpGeneralHardware.Controls.Add(this.grpG11);
@@ -15680,12 +15853,240 @@ namespace PowerSDR
             this.tpGeneralHardware.Controls.Add(this.grpGenesis500);
             this.tpGeneralHardware.Controls.Add(this.grpGenesis40);
             this.tpGeneralHardware.Controls.Add(this.grpGenesis3020);
-            this.tpGeneralHardware.Controls.Add(this.grpG6);
             this.tpGeneralHardware.Location = new System.Drawing.Point(4, 22);
             this.tpGeneralHardware.Name = "tpGeneralHardware";
             this.tpGeneralHardware.Size = new System.Drawing.Size(592, 318);
             this.tpGeneralHardware.TabIndex = 0;
             this.tpGeneralHardware.Text = "Hardware Config";
+            // 
+            // grpRTL_SDR
+            // 
+            this.grpRTL_SDR.Controls.Add(this.labelTS72);
+            this.grpRTL_SDR.Controls.Add(this.udRTL_VACcorr);
+            this.grpRTL_SDR.Controls.Add(this.txtRTL_SDR_Device);
+            this.grpRTL_SDR.Controls.Add(this.labelTS71);
+            this.grpRTL_SDR.Controls.Add(this.chkRTL_SDR_OffsetTuning);
+            this.grpRTL_SDR.Controls.Add(this.chkRTL_SDR_RTL_AGC);
+            this.grpRTL_SDR.Controls.Add(this.chkRTL_SDR_TunerAGC);
+            this.grpRTL_SDR.Controls.Add(this.labelTS70);
+            this.grpRTL_SDR.Controls.Add(this.tbRTL_SDR_AGC_Gain);
+            this.grpRTL_SDR.Controls.Add(this.labelTS69);
+            this.grpRTL_SDR.Controls.Add(this.comboRTL_SDR_BufferSize);
+            this.grpRTL_SDR.Controls.Add(this.labelTS68);
+            this.grpRTL_SDR.Controls.Add(this.udRTL_SDR_correction);
+            this.grpRTL_SDR.Controls.Add(this.labelTS67);
+            this.grpRTL_SDR.Controls.Add(this.comboRTL_SDR_SampleRate);
+            this.grpRTL_SDR.Location = new System.Drawing.Point(184, 8);
+            this.grpRTL_SDR.Name = "grpRTL_SDR";
+            this.grpRTL_SDR.Size = new System.Drawing.Size(198, 292);
+            this.grpRTL_SDR.TabIndex = 36;
+            this.grpRTL_SDR.TabStop = false;
+            this.grpRTL_SDR.Text = "RTL SDR";
+            // 
+            // labelTS72
+            // 
+            this.labelTS72.AutoSize = true;
+            this.labelTS72.Image = null;
+            this.labelTS72.Location = new System.Drawing.Point(12, 104);
+            this.labelTS72.Name = "labelTS72";
+            this.labelTS72.Size = new System.Drawing.Size(78, 13);
+            this.labelTS72.TabIndex = 15;
+            this.labelTS72.Text = "VAC correction";
+            // 
+            // udRTL_VACcorr
+            // 
+            this.udRTL_VACcorr.Enabled = false;
+            this.udRTL_VACcorr.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.udRTL_VACcorr.Location = new System.Drawing.Point(107, 102);
+            this.udRTL_VACcorr.Maximum = new decimal(new int[] {
+            5000,
+            0,
+            0,
+            0});
+            this.udRTL_VACcorr.Minimum = new decimal(new int[] {
+            5000,
+            0,
+            0,
+            -2147483648});
+            this.udRTL_VACcorr.Name = "udRTL_VACcorr";
+            this.udRTL_VACcorr.Size = new System.Drawing.Size(72, 20);
+            this.udRTL_VACcorr.TabIndex = 14;
+            this.udRTL_VACcorr.Value = new decimal(new int[] {
+            381,
+            0,
+            0,
+            0});
+            // 
+            // txtRTL_SDR_Device
+            // 
+            this.txtRTL_SDR_Device.Location = new System.Drawing.Point(79, 22);
+            this.txtRTL_SDR_Device.MaxLength = 32;
+            this.txtRTL_SDR_Device.Name = "txtRTL_SDR_Device";
+            this.txtRTL_SDR_Device.Size = new System.Drawing.Size(100, 20);
+            this.txtRTL_SDR_Device.TabIndex = 13;
+            // 
+            // labelTS71
+            // 
+            this.labelTS71.AutoSize = true;
+            this.labelTS71.Image = null;
+            this.labelTS71.Location = new System.Drawing.Point(12, 29);
+            this.labelTS71.Name = "labelTS71";
+            this.labelTS71.Size = new System.Drawing.Size(41, 13);
+            this.labelTS71.TabIndex = 12;
+            this.labelTS71.Text = "Device";
+            // 
+            // chkRTL_SDR_OffsetTuning
+            // 
+            this.chkRTL_SDR_OffsetTuning.AutoSize = true;
+            this.chkRTL_SDR_OffsetTuning.Image = null;
+            this.chkRTL_SDR_OffsetTuning.Location = new System.Drawing.Point(52, 263);
+            this.chkRTL_SDR_OffsetTuning.Name = "chkRTL_SDR_OffsetTuning";
+            this.chkRTL_SDR_OffsetTuning.Size = new System.Drawing.Size(90, 17);
+            this.chkRTL_SDR_OffsetTuning.TabIndex = 10;
+            this.chkRTL_SDR_OffsetTuning.Text = "Offset Tuning";
+            this.chkRTL_SDR_OffsetTuning.UseVisualStyleBackColor = true;
+            this.chkRTL_SDR_OffsetTuning.CheckedChanged += new System.EventHandler(this.chkRTL_SDR_OffsetTuning_CheckedChanged);
+            // 
+            // chkRTL_SDR_RTL_AGC
+            // 
+            this.chkRTL_SDR_RTL_AGC.AutoSize = true;
+            this.chkRTL_SDR_RTL_AGC.Image = null;
+            this.chkRTL_SDR_RTL_AGC.Location = new System.Drawing.Point(52, 232);
+            this.chkRTL_SDR_RTL_AGC.Name = "chkRTL_SDR_RTL_AGC";
+            this.chkRTL_SDR_RTL_AGC.Size = new System.Drawing.Size(72, 17);
+            this.chkRTL_SDR_RTL_AGC.TabIndex = 9;
+            this.chkRTL_SDR_RTL_AGC.Text = "RTL AGC";
+            this.chkRTL_SDR_RTL_AGC.UseVisualStyleBackColor = true;
+            this.chkRTL_SDR_RTL_AGC.CheckedChanged += new System.EventHandler(this.chkRTL_SDR_RTL_AGC_CheckedChanged);
+            // 
+            // chkRTL_SDR_TunerAGC
+            // 
+            this.chkRTL_SDR_TunerAGC.AutoSize = true;
+            this.chkRTL_SDR_TunerAGC.Image = null;
+            this.chkRTL_SDR_TunerAGC.Location = new System.Drawing.Point(52, 201);
+            this.chkRTL_SDR_TunerAGC.Name = "chkRTL_SDR_TunerAGC";
+            this.chkRTL_SDR_TunerAGC.Size = new System.Drawing.Size(79, 17);
+            this.chkRTL_SDR_TunerAGC.TabIndex = 8;
+            this.chkRTL_SDR_TunerAGC.Text = "Tuner AGC";
+            this.chkRTL_SDR_TunerAGC.UseVisualStyleBackColor = true;
+            this.chkRTL_SDR_TunerAGC.CheckedChanged += new System.EventHandler(this.chkRTL_SDR_TunerAGC_CheckedChanged);
+            // 
+            // labelTS70
+            // 
+            this.labelTS70.Image = null;
+            this.labelTS70.Location = new System.Drawing.Point(12, 157);
+            this.labelTS70.Name = "labelTS70";
+            this.labelTS70.Size = new System.Drawing.Size(63, 40);
+            this.labelTS70.TabIndex = 7;
+            this.labelTS70.Text = "Tuner AGC Gain";
+            // 
+            // tbRTL_SDR_AGC_Gain
+            // 
+            this.tbRTL_SDR_AGC_Gain.AutoSize = false;
+            this.tbRTL_SDR_AGC_Gain.LargeChange = 1;
+            this.tbRTL_SDR_AGC_Gain.Location = new System.Drawing.Point(85, 158);
+            this.tbRTL_SDR_AGC_Gain.Maximum = 28;
+            this.tbRTL_SDR_AGC_Gain.Name = "tbRTL_SDR_AGC_Gain";
+            this.tbRTL_SDR_AGC_Gain.Size = new System.Drawing.Size(94, 25);
+            this.tbRTL_SDR_AGC_Gain.TabIndex = 6;
+            this.tbRTL_SDR_AGC_Gain.TickStyle = System.Windows.Forms.TickStyle.None;
+            this.tbRTL_SDR_AGC_Gain.Scroll += new System.EventHandler(this.tbRTL_SDR_AGC_Gain_Scroll);
+            // 
+            // labelTS69
+            // 
+            this.labelTS69.AutoSize = true;
+            this.labelTS69.Image = null;
+            this.labelTS69.Location = new System.Drawing.Point(12, 77);
+            this.labelTS69.Name = "labelTS69";
+            this.labelTS69.Size = new System.Drawing.Size(58, 13);
+            this.labelTS69.TabIndex = 5;
+            this.labelTS69.Text = "Buffer Size";
+            // 
+            // comboRTL_SDR_BufferSize
+            // 
+            this.comboRTL_SDR_BufferSize.FormattingEnabled = true;
+            this.comboRTL_SDR_BufferSize.Items.AddRange(new object[] {
+            "1 KB",
+            "2 KB",
+            "4 KB",
+            "8 KB",
+            "16 KB",
+            "32 KB",
+            "64 KB",
+            "128 KB",
+            "256 KB",
+            "512 KB",
+            "1024 KB"});
+            this.comboRTL_SDR_BufferSize.Location = new System.Drawing.Point(80, 75);
+            this.comboRTL_SDR_BufferSize.Name = "comboRTL_SDR_BufferSize";
+            this.comboRTL_SDR_BufferSize.Size = new System.Drawing.Size(99, 21);
+            this.comboRTL_SDR_BufferSize.TabIndex = 4;
+            this.comboRTL_SDR_BufferSize.SelectedIndexChanged += new System.EventHandler(this.comboRTL_SDR_BufferSize_SelectedIndexChanged);
+            // 
+            // labelTS68
+            // 
+            this.labelTS68.AutoSize = true;
+            this.labelTS68.Image = null;
+            this.labelTS68.Location = new System.Drawing.Point(12, 130);
+            this.labelTS68.Name = "labelTS68";
+            this.labelTS68.Size = new System.Drawing.Size(86, 13);
+            this.labelTS68.TabIndex = 3;
+            this.labelTS68.Text = "Frequency offset";
+            // 
+            // labelTS67
+            // 
+            this.labelTS67.AutoSize = true;
+            this.labelTS67.Image = null;
+            this.labelTS67.Location = new System.Drawing.Point(12, 51);
+            this.labelTS67.Name = "labelTS67";
+            this.labelTS67.Size = new System.Drawing.Size(68, 13);
+            this.labelTS67.TabIndex = 1;
+            this.labelTS67.Text = "Sample Rate";
+            // 
+            // comboRTL_SDR_SampleRate
+            // 
+            this.comboRTL_SDR_SampleRate.FormattingEnabled = true;
+            this.comboRTL_SDR_SampleRate.Items.AddRange(new object[] {
+            "0.25 Msps",
+            "0.96 Msps",
+            "1.024 Msps",
+            "1.2 Msps",
+            "1.44 Msps",
+            "1.8 Msps",
+            "2.4 Msps",
+            "2.88 Msps",
+            "3.2 Msps"});
+            this.comboRTL_SDR_SampleRate.Location = new System.Drawing.Point(80, 48);
+            this.comboRTL_SDR_SampleRate.Name = "comboRTL_SDR_SampleRate";
+            this.comboRTL_SDR_SampleRate.Size = new System.Drawing.Size(99, 21);
+            this.comboRTL_SDR_SampleRate.TabIndex = 0;
+            this.comboRTL_SDR_SampleRate.SelectedIndexChanged += new System.EventHandler(this.comboRTL_SDR_SampleRate_SelectedIndexChanged);
+            // 
+            // grpG6
+            // 
+            this.grpG6.Controls.Add(this.chkG6RX2input);
+            this.grpG6.Location = new System.Drawing.Point(184, 8);
+            this.grpG6.Name = "grpG6";
+            this.grpG6.Size = new System.Drawing.Size(198, 292);
+            this.grpG6.TabIndex = 35;
+            this.grpG6.TabStop = false;
+            this.grpG6.Text = "G6";
+            // 
+            // chkG6RX2input
+            // 
+            this.chkG6RX2input.AutoSize = true;
+            this.chkG6RX2input.Image = null;
+            this.chkG6RX2input.Location = new System.Drawing.Point(36, 29);
+            this.chkG6RX2input.Name = "chkG6RX2input";
+            this.chkG6RX2input.Size = new System.Drawing.Size(73, 17);
+            this.chkG6RX2input.TabIndex = 0;
+            this.chkG6RX2input.Text = "RX2 input";
+            this.chkG6RX2input.UseVisualStyleBackColor = true;
+            this.chkG6RX2input.CheckedChanged += new System.EventHandler(this.chkG6RX2input_CheckedChanged);
             // 
             // grpQRP2000
             // 
@@ -16456,6 +16857,7 @@ namespace PowerSDR
             // 
             // grpGeneralModel
             // 
+            this.grpGeneralModel.Controls.Add(this.radGenModel_RTL_SDR);
             this.grpGeneralModel.Controls.Add(this.radGenModelGenesisG11);
             this.grpGeneralModel.Controls.Add(this.radGenModelGenesisG500);
             this.grpGeneralModel.Controls.Add(this.radGenModelGenesisG6);
@@ -16474,16 +16876,26 @@ namespace PowerSDR
             this.grpGeneralModel.TabStop = false;
             this.grpGeneralModel.Text = "Radio Model";
             // 
+            // radGenModel_RTL_SDR
+            // 
+            this.radGenModel_RTL_SDR.Image = null;
+            this.radGenModel_RTL_SDR.Location = new System.Drawing.Point(22, 260);
+            this.radGenModel_RTL_SDR.Name = "radGenModel_RTL_SDR";
+            this.radGenModel_RTL_SDR.Size = new System.Drawing.Size(120, 20);
+            this.radGenModel_RTL_SDR.TabIndex = 13;
+            this.radGenModel_RTL_SDR.Text = "RTL SDR";
+            this.radGenModel_RTL_SDR.UseVisualStyleBackColor = true;
+            this.radGenModel_RTL_SDR.CheckedChanged += new System.EventHandler(this.radGenModel_RTL_SDR_CheckedChanged);
+            // 
             // radGenModelGenesisG6
             // 
             this.radGenModelGenesisG6.Image = null;
-            this.radGenModelGenesisG6.Location = new System.Drawing.Point(22, 256);
+            this.radGenModelGenesisG6.Location = new System.Drawing.Point(22, 236);
             this.radGenModelGenesisG6.Name = "radGenModelGenesisG6";
             this.radGenModelGenesisG6.Size = new System.Drawing.Size(120, 20);
             this.radGenModelGenesisG6.TabIndex = 9;
             this.radGenModelGenesisG6.Text = "Genesis G6";
             this.radGenModelGenesisG6.UseVisualStyleBackColor = true;
-            this.radGenModelGenesisG6.Visible = false;
             this.radGenModelGenesisG6.CheckedChanged += new System.EventHandler(this.radGenModelGenesisG6_CheckedChanged);
             // 
             // grpGeneralHardwareSetup
@@ -16847,99 +17259,6 @@ namespace PowerSDR
             this.grpGenesis3020.TabStop = false;
             this.grpGenesis3020.Text = "Genesis G3020";
             this.grpGenesis3020.Visible = false;
-            // 
-            // grpG6
-            // 
-            this.grpG6.Controls.Add(this.lblHighFreq);
-            this.grpG6.Controls.Add(this.udHighFreq);
-            this.grpG6.Controls.Add(this.lblLowFreq);
-            this.grpG6.Controls.Add(this.udLowFreq);
-            this.grpG6.Location = new System.Drawing.Point(184, 8);
-            this.grpG6.Name = "grpG6";
-            this.grpG6.Size = new System.Drawing.Size(198, 292);
-            this.grpG6.TabIndex = 35;
-            this.grpG6.TabStop = false;
-            this.grpG6.Text = "G6";
-            // 
-            // lblHighFreq
-            // 
-            this.lblHighFreq.AutoSize = true;
-            this.lblHighFreq.Image = null;
-            this.lblHighFreq.Location = new System.Drawing.Point(18, 79);
-            this.lblHighFreq.Name = "lblHighFreq";
-            this.lblHighFreq.Size = new System.Drawing.Size(53, 13);
-            this.lblHighFreq.TabIndex = 5;
-            this.lblHighFreq.Text = "High freq.";
-            // 
-            // udHighFreq
-            // 
-            this.udHighFreq.DecimalPlaces = 1;
-            this.udHighFreq.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            65536});
-            this.udHighFreq.Location = new System.Drawing.Point(108, 75);
-            this.udHighFreq.Maximum = new decimal(new int[] {
-            60,
-            0,
-            0,
-            0});
-            this.udHighFreq.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.udHighFreq.Name = "udHighFreq";
-            this.udHighFreq.Size = new System.Drawing.Size(72, 20);
-            this.udHighFreq.TabIndex = 4;
-            this.udHighFreq.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.udHighFreq.Value = new decimal(new int[] {
-            40,
-            0,
-            0,
-            65536});
-            this.udHighFreq.ValueChanged += new System.EventHandler(this.udHighFreq_ValueChanged);
-            // 
-            // lblLowFreq
-            // 
-            this.lblLowFreq.AutoSize = true;
-            this.lblLowFreq.Image = null;
-            this.lblLowFreq.Location = new System.Drawing.Point(16, 34);
-            this.lblLowFreq.Name = "lblLowFreq";
-            this.lblLowFreq.Size = new System.Drawing.Size(48, 13);
-            this.lblLowFreq.TabIndex = 3;
-            this.lblLowFreq.Text = "LowFreq";
-            // 
-            // udLowFreq
-            // 
-            this.udLowFreq.DecimalPlaces = 1;
-            this.udLowFreq.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            65536});
-            this.udLowFreq.Location = new System.Drawing.Point(106, 30);
-            this.udLowFreq.Maximum = new decimal(new int[] {
-            60,
-            0,
-            0,
-            0});
-            this.udLowFreq.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.udLowFreq.Name = "udLowFreq";
-            this.udLowFreq.Size = new System.Drawing.Size(72, 20);
-            this.udLowFreq.TabIndex = 2;
-            this.udLowFreq.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.udLowFreq.Value = new decimal(new int[] {
-            35,
-            0,
-            0,
-            65536});
-            this.udLowFreq.ValueChanged += new System.EventHandler(this.udLowFreq_ValueChanged);
             // 
             // tpGeneralOptions
             // 
@@ -19143,6 +19462,8 @@ namespace PowerSDR
             ((System.ComponentModel.ISupportInitialize)(this.tbVACPhase)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.udQRP2000_Si570Xtal)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.udCATCI_V)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.udVACchNumber)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.udRTL_SDR_correction)).EndInit();
             this.tpTests.ResumeLayout(false);
             this.grpAudioTests.ResumeLayout(false);
             this.grpAudioTests.PerformLayout();
@@ -19199,6 +19520,8 @@ namespace PowerSDR
             this.grpSkin.ResumeLayout(false);
             this.tpPowerAmplifier.ResumeLayout(false);
             this.grpPABandOffset.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.udPAADC2190)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.udPAADC600)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.udPAADC2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.udPAADC6)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.udPAADC17)).EndInit();
@@ -19331,6 +19654,12 @@ namespace PowerSDR
             this.tpGeneral.ResumeLayout(false);
             this.tcGeneral.ResumeLayout(false);
             this.tpGeneralHardware.ResumeLayout(false);
+            this.grpRTL_SDR.ResumeLayout(false);
+            this.grpRTL_SDR.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.udRTL_VACcorr)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbRTL_SDR_AGC_Gain)).EndInit();
+            this.grpG6.ResumeLayout(false);
+            this.grpG6.PerformLayout();
             this.grpQRP2000.ResumeLayout(false);
             this.grpQRP2000.PerformLayout();
             this.groupBoxTS10.ResumeLayout(false);
@@ -19365,10 +19694,6 @@ namespace PowerSDR
             this.grpGenesis500.ResumeLayout(false);
             this.grpGenesis40.ResumeLayout(false);
             this.grpGenesis3020.ResumeLayout(false);
-            this.grpG6.ResumeLayout(false);
-            this.grpG6.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.udHighFreq)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.udLowFreq)).EndInit();
             this.tpGeneralOptions.ResumeLayout(false);
             this.grpIRRemote.ResumeLayout(false);
             this.grpIRRemote.PerformLayout();
@@ -19449,22 +19774,6 @@ namespace PowerSDR
 		#endregion
 
 		#region Init Routines
-		// ======================================================
-		// Init Routines
-		// ======================================================
-
-		private void InitGeneralTab()
-		{
-            try
-            {
-                chkGeneralRXOnly.Checked = console.RXOnly;
-                chkGeneralDisablePTT.Checked = console.DisablePTT;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error in InitGeneralTAb!\n" + ex.ToString());
-            }
-		}
 
 		private void InitAudioTab()
 		{
@@ -19484,7 +19793,7 @@ namespace PowerSDR
 
                     // set Output device
                     if (comboAudioDriver1.SelectedIndex < 2)
-                        comboAudioOutput1.SelectedIndex = console.AudioOutputIndex1 - comboAudioInput1.Items.Count;
+                        comboAudioOutput1.SelectedIndex = Math.Max(0,console.AudioOutputIndex1 - comboAudioInput1.Items.Count);
                     else
                         comboAudioOutput1.SelectedIndex = console.AudioOutputIndex1;
                 }
@@ -19660,9 +19969,6 @@ namespace PowerSDR
 		#endregion
 
 		#region Misc Routines
-		// ======================================================
-		// Misc Routines
-		// ======================================================
 
 		private void InitDelta44()
 		{
@@ -19773,7 +20079,7 @@ namespace PowerSDR
             return a;
         }
 
-		private void InitWindowTypes()
+		private void InitWindowTypes()                      // DSP window type
 		{
 			for(Window w = Window.FIRST+1; w<Window.LAST; w++)
 			{
@@ -19783,178 +20089,294 @@ namespace PowerSDR
 			}
 		}
 
-        private void GetHosts()
+        private void GetHosts()         // changes yt7pwr
         {
-            comboAudioDriver1.Items.Clear();
-            comboAudioDriverVAC.Items.Clear();
-            int host_index = 0;
-            foreach (string PAHostName in Audio.GetPAHosts())
+            try
             {
-                if (Audio.GetPAInputdevices(host_index).Count > 0 ||
-                    Audio.GetPAOutputdevices(host_index).Count > 0)
+                if (console.CurrentModel == Model.GENESIS_G6 && radGenModelGenesisG6.Checked)
                 {
-                    comboAudioDriver1.Items.Add(new PADeviceInfo(PAHostName, host_index));
-                    comboAudioDriverVAC.Items.Add(new PADeviceInfo(PAHostName, host_index));
+                    comboAudioDriver1.Items.Clear();
+                    comboAudioDriverVAC.Items.Clear();
+                    comboAudioDriver1.Items.Add("G6 USB");
+                    comboAudioDriver1.SelectedIndex = 0;
+                    int host_index = 0;
+
+                    foreach (string PAHostName in Audio.GetPAHosts())
+                    {
+                        if (Audio.GetPAInputdevices(host_index).Count > 0 ||
+                            Audio.GetPAOutputdevices(host_index).Count > 0)
+                        {
+                            comboAudioDriverVAC.Items.Add(new PADeviceInfo(PAHostName, host_index));
+                        }
+
+                        host_index++; //Increment host index
+                    }
+
+                    if (comboAudioDriverVAC.Items.Count > 0)
+                        comboAudioDriverVAC.SelectedIndex = 0;
                 }
-                host_index++; //Increment host index
+                else if (console.CurrentModel == Model.RTL_SDR && radGenModel_RTL_SDR.Checked)
+                {
+                    comboAudioDriver1.Items.Clear();
+                    comboAudioDriverVAC.Items.Clear();
+                    comboAudioDriver1.Items.Add("RTL SDR");
+                    comboAudioDriver1.SelectedIndex = 0;
+                    int host_index = 0;
+
+                    foreach (string PAHostName in Audio.GetPAHosts())
+                    {
+                        if (Audio.GetPAInputdevices(host_index).Count > 0 ||
+                            Audio.GetPAOutputdevices(host_index).Count > 0)
+                        {
+                            comboAudioDriverVAC.Items.Add(new PADeviceInfo(PAHostName, host_index));
+                        }
+
+                        host_index++; //Increment host index
+                    }
+                    if (comboAudioDriverVAC.Items.Count > 0)
+                        comboAudioDriverVAC.SelectedIndex = 0;
+
+                }
+                else
+                {
+                    comboAudioDriver1.Items.Clear();
+                    comboAudioDriverVAC.Items.Clear();
+                    int host_index = 0;
+
+                    foreach (string PAHostName in Audio.GetPAHosts())
+                    {
+                        if (Audio.GetPAInputdevices(host_index).Count > 0 ||
+                            Audio.GetPAOutputdevices(host_index).Count > 0)
+                        {
+                            comboAudioDriver1.Items.Add(new PADeviceInfo(PAHostName, host_index));
+                            comboAudioDriverVAC.Items.Add(new PADeviceInfo(PAHostName, host_index));
+                        }
+
+                        host_index++; //Increment host index
+                    }
+
+                    if (comboAudioDriver1.Items.Count > 0)
+                        comboAudioDriver1.SelectedIndex = 0;
+                    if(comboAudioDriverVAC.Items.Count > 0)
+                        comboAudioDriverVAC.SelectedIndex = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
             }
         }
 
-		private void GetDevices1()
+		private void GetDevices1()          // changes yt7pwr
 		{
-            switch (console.WinVer)
+            try
             {
-                case WindowsVersion.Windows2000:
-                case WindowsVersion.WindowsXP:
+                if (console.CurrentModel == Model.GENESIS_G6 && radGenModelGenesisG6.Checked)
+                {
+                    comboAudioInput1.Items.Clear();
+                    comboAudioOutput1.Items.Clear();
+                    comboAudioInput1.Items.Add("G6 input");
+                    comboAudioOutput1.Items.Add("G6 output");
+                    comboAudioTransmit1.Enabled = false;
+                    comboAudioReceive1.Enabled = false;
+                    comboAudioMixer1.Enabled = false;
+                    comboAudioReceive1.Items.Clear();
+                    comboAudioTransmit1.Items.Clear();
+                }
+                else if (console.CurrentModel == Model.RTL_SDR && radGenModel_RTL_SDR.Checked)
+                {
+                    comboAudioInput1.Items.Clear();
+                    comboAudioOutput1.Items.Clear();
+                    comboAudioInput1.Items.Add("RTL SDR");
+                    comboAudioOutput1.Items.Add("RTL SDR");
+                    comboAudioTransmit1.Enabled = false;
+                    comboAudioReceive1.Enabled = false;
+                    comboAudioMixer1.Enabled = false;
+                    comboAudioReceive1.Items.Clear();
+                    comboAudioTransmit1.Items.Clear();
+                }
+                else
+                {
+                    switch (console.WinVer)
                     {
-                        comboAudioInput1.Items.Clear();
-                        comboAudioOutput1.Items.Clear();
-                        int host = ((PADeviceInfo)comboAudioDriver1.SelectedItem).Index;
-                        ArrayList a = Audio.GetPAInputdevices(host);
-                        foreach (PADeviceInfo p in a)
-                            comboAudioInput1.Items.Add(p);
-
-                        a = Audio.GetPAOutputdevices(host);
-                        foreach (PADeviceInfo p in a)
-                            comboAudioOutput1.Items.Add(p);
-                    }
-                    break;
-
-                case WindowsVersion.WindowsVista:
-                case WindowsVersion.Windows7:
-                case WindowsVersion.Windows8:
-                    {
-                        comboAudioInput1.Items.Clear();
-                        comboAudioOutput1.Items.Clear();
-                        comboAudioMixer1.Items.Clear();
-                        if (comboAudioChannels1.Text == "4" || comboAudioChannels1.Text == "6")
-                        {
-                            comboAudioTransmit1.Enabled = true;
-                            comboAudioReceive1.Enabled = true;
-                        }
-                        else
-                        {
-                            comboAudioTransmit1.Enabled = false;
-                            comboAudioReceive1.Enabled = false;
-                        }
-                        comboAudioMixer1.Enabled = false;
-
-                        comboAudioReceive1.Items.Clear();
-                        comboAudioTransmit1.Items.Clear();
-                        int host = ((PADeviceInfo)comboAudioDriver1.SelectedItem).Index;
-                        ArrayList a = Audio.GetPAInputdevices(host);
-                        foreach (PADeviceInfo p in a)
-                        {
-                            comboAudioInput1.Items.Add(p);
-                            if (chkAudioExclusive.Checked && (comboAudioChannels1.Text == "4" ||
-                                comboAudioChannels1.Text == "6"))
-                                comboAudioReceive1.Items.Add(p);
-                        }
-
-                        a = Audio.GetPAOutputdevices(host);
-                        foreach (PADeviceInfo p in a)
-                        {
-                            comboAudioOutput1.Items.Add(p);
-                            if (chkAudioExclusive.Checked && (comboAudioChannels1.Text == "4" ||
-                                comboAudioChannels1.Text == "6"))
-                                comboAudioTransmit1.Items.Add(p);
-                        }
-
-                        if (!chkAudioExclusive.Checked)
-                        {
-                            comboAudioReceive1.Enabled = false;
-                            comboAudioTransmit1.Enabled = false;
-                            lblAudioReceive1.Text = "Receive:";
-                            lblAudioTransmit1.Text = "Transmit:";
-                            lblAudioOutput1.Text = "Output:";
-                        }
-                        else
-                        {
-                            if (comboAudioChannels1.Text == "4" ||
-                                comboAudioChannels1.Text == "6")
+                        case WindowsVersion.Windows2000:
+                        case WindowsVersion.WindowsXP:
                             {
-                                lblAudioReceive1.Text = "Mic:";
-                                lblAudioTransmit1.Text = "TX out:";
-                                lblAudioOutput1.Text = "RX_out:";
+                                comboAudioInput1.Items.Clear();
+                                comboAudioOutput1.Items.Clear();
+                                int host = ((PADeviceInfo)comboAudioDriver1.SelectedItem).Index;
+                                ArrayList a = Audio.GetPAInputdevices(host);
+                                foreach (PADeviceInfo p in a)
+                                    comboAudioInput1.Items.Add(p);
+
+                                a = Audio.GetPAOutputdevices(host);
+                                foreach (PADeviceInfo p in a)
+                                    comboAudioOutput1.Items.Add(p);
                             }
-                        }
+                            break;
+
+                        case WindowsVersion.WindowsVista:
+                        case WindowsVersion.Windows7:
+                        case WindowsVersion.Windows8:
+                            {
+                                comboAudioInput1.Items.Clear();
+                                comboAudioOutput1.Items.Clear();
+                                comboAudioMixer1.Items.Clear();
+
+                                if (comboAudioChannels1.Text == "4" || comboAudioChannels1.Text == "6")
+                                {
+                                    comboAudioTransmit1.Enabled = true;
+                                    comboAudioReceive1.Enabled = true;
+                                }
+                                else
+                                {
+                                    comboAudioTransmit1.Enabled = false;
+                                    comboAudioReceive1.Enabled = false;
+                                }
+
+                                comboAudioMixer1.Enabled = false;
+                                comboAudioReceive1.Items.Clear();
+                                comboAudioTransmit1.Items.Clear();
+                                int host = ((PADeviceInfo)comboAudioDriver1.SelectedItem).Index;
+                                ArrayList a = Audio.GetPAInputdevices(host);
+                                foreach (PADeviceInfo p in a)
+                                {
+                                    comboAudioInput1.Items.Add(p);
+                                    if (chkAudioExclusive.Checked && (comboAudioChannels1.Text == "4" ||
+                                        comboAudioChannels1.Text == "6"))
+                                        comboAudioReceive1.Items.Add(p);
+                                }
+
+                                a = Audio.GetPAOutputdevices(host);
+                                foreach (PADeviceInfo p in a)
+                                {
+                                    comboAudioOutput1.Items.Add(p);
+                                    if (chkAudioExclusive.Checked && (comboAudioChannels1.Text == "4" ||
+                                        comboAudioChannels1.Text == "6"))
+                                        comboAudioTransmit1.Items.Add(p);
+                                }
+
+                                if (!chkAudioExclusive.Checked)
+                                {
+                                    comboAudioReceive1.Enabled = false;
+                                    comboAudioTransmit1.Enabled = false;
+                                    lblAudioReceive1.Text = "Receive:";
+                                    lblAudioTransmit1.Text = "Transmit:";
+                                    lblAudioOutput1.Text = "Output:";
+                                }
+                                else
+                                {
+                                    if (comboAudioChannels1.Text == "4" ||
+                                        comboAudioChannels1.Text == "6")
+                                    {
+                                        lblAudioReceive1.Text = "Mic:";
+                                        lblAudioTransmit1.Text = "TX out:";
+                                        lblAudioOutput1.Text = "RX_out:";
+                                    }
+                                }
+                            }
+                            break;
                     }
-                    break;
+                }
+
+                if (comboAudioInput1.Items.Count > 0)
+                    comboAudioInput1.SelectedIndex = 0;
+                if (comboAudioOutput1.Items.Count > 0)
+                    comboAudioOutput1.SelectedIndex = 0;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
             }
 		}
 
 		private void GetDevicesVAC()
 		{
-            PADeviceInfo loop = new PADeviceInfo("loop.dll", 0);
-			comboAudioInputVAC.Items.Clear();
-			comboAudioOutputVAC.Items.Clear();
-			int host = ((PADeviceInfo)comboAudioDriverVAC.SelectedItem).Index;
-			ArrayList a = Audio.GetPAInputdevices(host);
-			foreach(PADeviceInfo p in a)
-				comboAudioInputVAC.Items.Add(p);
-            comboAudioInputVAC.Items.Add(loop);
+            try
+            {
+                PADeviceInfo loop = new PADeviceInfo("loop.dll", 0);
+                comboAudioInputVAC.Items.Clear();
+                comboAudioOutputVAC.Items.Clear();
+                int host = ((PADeviceInfo)comboAudioDriverVAC.SelectedItem).Index;
+                ArrayList a = Audio.GetPAInputdevices(host);
+                foreach (PADeviceInfo p in a)
+                    comboAudioInputVAC.Items.Add(p);
+                comboAudioInputVAC.Items.Add(loop);
 
-			a = Audio.GetPAOutputdevices(host);
-			foreach(PADeviceInfo p in a)
-				comboAudioOutputVAC.Items.Add(p);
-            comboAudioOutputVAC.Items.Add(loop);
+                a = Audio.GetPAOutputdevices(host);
+                foreach (PADeviceInfo p in a)
+                    comboAudioOutputVAC.Items.Add(p);
+                comboAudioOutputVAC.Items.Add(loop);
+
+                if (comboAudioInputVAC.Items.Count > 0)
+                    comboAudioInputVAC.SelectedIndex = 0;
+                if (comboAudioOutputVAC.Items.Count > 0)
+                    comboAudioOutputVAC.SelectedIndex = 0;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
         private void InitDevices1()     // yt7pwr
         {
             try
             {
-            switch (console.WinVer)
-            {
-                case WindowsVersion.Windows2000:
-                case WindowsVersion.WindowsXP:
-                    {
-                        comboAudioInput1.Items.Clear();
-                        comboAudioOutput1.Items.Clear();
-                        int host = ((PADeviceInfo)comboAudioDriver1.SelectedItem).Index;
-                        ArrayList a = Audio.GetPAInputdevices(host);
-                        foreach (PADeviceInfo p in a)
-                            comboAudioInput1.Items.Add(p);
-
-                        a = Audio.GetPAOutputdevices(host);
-                        foreach (PADeviceInfo p in a)
-                            comboAudioOutput1.Items.Add(p);
-                    }
-                    break;
-
-                case WindowsVersion.WindowsVista:
-                case WindowsVersion.Windows7:
-                case WindowsVersion.Windows8:
-                    {
-                        comboAudioInput1.Items.Clear();
-                        comboAudioOutput1.Items.Clear();
-                        comboAudioMixer1.Items.Clear();
-                        comboAudioTransmit1.Enabled = true;
-                        comboAudioReceive1.Enabled = true;
-                        comboAudioMixer1.Enabled = false;
-
-                        comboAudioReceive1.Items.Clear();
-                        comboAudioTransmit1.Items.Clear();
-
-                        int host = ((PADeviceInfo)comboAudioDriver1.SelectedItem).Index;
-                        ArrayList a = Audio.GetPAInputdevices(host);
-                        foreach (PADeviceInfo p in a)
+                switch (console.WinVer)
+                {
+                    case WindowsVersion.Windows2000:
+                    case WindowsVersion.WindowsXP:
                         {
-                            comboAudioInput1.Items.Add(p);
-                            comboAudioReceive1.Items.Add(p);
-                        }
+                            comboAudioInput1.Items.Clear();
+                            comboAudioOutput1.Items.Clear();
+                            int host = ((PADeviceInfo)comboAudioDriver1.SelectedItem).Index;
+                            ArrayList a = Audio.GetPAInputdevices(host);
+                            foreach (PADeviceInfo p in a)
+                                comboAudioInput1.Items.Add(p);
 
-                        a = Audio.GetPAOutputdevices(host);
-                        foreach (PADeviceInfo p in a)
-                        {
-                            comboAudioOutput1.Items.Add(p);
-                            comboAudioTransmit1.Items.Add(p);
+                            a = Audio.GetPAOutputdevices(host);
+                            foreach (PADeviceInfo p in a)
+                                comboAudioOutput1.Items.Add(p);
                         }
-                    }
-                    break;
+                        break;
+
+                    case WindowsVersion.WindowsVista:
+                    case WindowsVersion.Windows7:
+                    case WindowsVersion.Windows8:
+                        {
+                            comboAudioInput1.Items.Clear();
+                            comboAudioOutput1.Items.Clear();
+                            comboAudioMixer1.Items.Clear();
+                            comboAudioTransmit1.Enabled = true;
+                            comboAudioReceive1.Enabled = true;
+                            comboAudioMixer1.Enabled = false;
+
+                            comboAudioReceive1.Items.Clear();
+                            comboAudioTransmit1.Items.Clear();
+
+                            int host = ((PADeviceInfo)comboAudioDriver1.SelectedItem).Index;
+                            ArrayList a = Audio.GetPAInputdevices(host);
+                            foreach (PADeviceInfo p in a)
+                            {
+                                comboAudioInput1.Items.Add(p);
+                                comboAudioReceive1.Items.Add(p);
+                            }
+
+                            a = Audio.GetPAOutputdevices(host);
+                            foreach (PADeviceInfo p in a)
+                            {
+                                comboAudioOutput1.Items.Add(p);
+                                comboAudioTransmit1.Items.Add(p);
+                            }
+                        }
+                        break;
+                }
+
+                comboAudioInput1.Items.Add("G6 input");
+                comboAudioOutput1.Items.Add("G6 output");
             }
-            }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Debug.Write(ex.ToString());
             }
@@ -20829,139 +21251,309 @@ namespace PowerSDR
 			}
 		}
 
-		private void GetMixerDevices()
+		private void GetMixerDevices()              // changes yt7pwr
 		{
-			comboAudioMixer1.Items.Clear();
-			int num = Mixer.mixerGetNumDevs();            
-			for(int i=0; i<num; i++)
-			{
-				comboAudioMixer1.Items.Add(Mixer.GetDevName(i));
-			}
-            comboAudioMixer1.Items.Add("None");
+            try
+            {
+                if ((console.CurrentModel == Model.GENESIS_G6 && radGenModelGenesisG6.Checked) ||
+                    comboAudioDriver1.Text == "G6 USB" || 
+                    (console.CurrentModel == Model.RTL_SDR && radGenModel_RTL_SDR.Checked))
+                {
+                    comboAudioMixer1.Items.Clear();
+                    comboAudioMixer1.Items.Add("None");
+                }
+                else
+                {
+                    comboAudioMixer1.Items.Clear();
+                    int num = Mixer.mixerGetNumDevs();
+
+                    for (int i = 0; i < num; i++)
+                    {
+                        comboAudioMixer1.Items.Add(Mixer.GetDevName(i));
+                    }
+
+                    comboAudioMixer1.Items.Add("None");
+                }
+
+                if (comboAudioMixer1.Items.Count > 0)
+                    comboAudioMixer1.SelectedIndex = comboAudioMixer1.Items.Count - 1;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
-		private void GetMuxLineNames1()
+		private void GetMuxLineNames1()     // changes yt7pwr
 		{
-			if(comboAudioMixer1.SelectedIndex >= 0 &&
-				comboAudioMixer1.Items.Count > 0)
-			{
-				comboAudioReceive1.Items.Clear();
-				comboAudioTransmit1.Items.Clear();
+            try
+            {
+                if (comboAudioMixer1.SelectedIndex >= 0 &&
+                    comboAudioMixer1.Items.Count > 0)
+                {
+                    comboAudioReceive1.Items.Clear();
+                    comboAudioTransmit1.Items.Clear();
 
-				ArrayList a;
-				bool good = Mixer.GetMuxLineNames(comboAudioMixer1.SelectedIndex, out a);
-				if(good)
-				{					
-					foreach(string s in a)
-					{
-						comboAudioReceive1.Items.Add(s);
-						comboAudioTransmit1.Items.Add(s);
-					}
-				}
-			}
+                    ArrayList a;
+                    bool good = Mixer.GetMuxLineNames(comboAudioMixer1.SelectedIndex, out a);
+                    if (good)
+                    {
+                        foreach (string s in a)
+                        {
+                            comboAudioReceive1.Items.Add(s);
+                            comboAudioTransmit1.Items.Add(s);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
-		private void ForceAllEvents()
+		public void ForceAllEvents()
 		{
-			EventArgs e = EventArgs.Empty;
+            try
+            {
+                EventArgs e = EventArgs.Empty;
 
-			// General Tab
-			chkGeneralRXOnly_CheckedChanged(this, e);
-			chkGeneralDisablePTT_CheckedChanged(this, e);
-			comboGeneralProcessPriority_SelectedIndexChanged(this, e);
+                // General Tab
+                chkGeneralRXOnly_CheckedChanged(this, e);
+                chkGeneralDisablePTT_CheckedChanged(this, e);
+                comboGeneralProcessPriority_SelectedIndexChanged(this, e);
 
-			// Audio Tab
-			comboAudioSoundCard_SelectedIndexChanged(this, e);
-			comboAudioDriver1_SelectedIndexChanged(this, e);
-			comboAudioInput1_SelectedIndexChanged(this, e);
-			comboAudioOutput1_SelectedIndexChanged(this, e);
-			comboAudioMixer1_SelectedIndexChanged(this, e);
-			comboAudioReceive1_SelectedIndexChanged(this, e);
-			comboAudioTransmit1_SelectedIndexChanged(this, e);
-			comboAudioBuffer1_SelectedIndexChanged(this, e);
-			comboAudioBuffer2_SelectedIndexChanged(this, e);
-			comboAudioSampleRate1_SelectedIndexChanged(this, e);
-			comboAudioSampleRate2_SelectedIndexChanged(this, e);
-			udAudioLatency1_ValueChanged(this, e);
-			udAudioLatency2_ValueChanged(this, e);
-			udAudioLineIn1_ValueChanged(this, e);
-			udAudioVoltage1_ValueChanged(this, e);
-			chkAudioLatencyManual1_CheckedChanged(this, e);
+                // Audio Tab
+                /*if (comboAudioSoundCard.SelectedIndex == settings.audio_card_index)
+                    comboAudioSoundCard_SelectedIndexChanged(this, e);
+                else
+                    comboAudioSoundCard.SelectedIndex = settings.audio_card_index;
+                if (comboAudioDriver1.SelectedIndex == settings.audio_driver1_index)
+                    comboAudioDriver1_SelectedIndexChanged(this, e);
+                else
+                    comboAudioDriver1.SelectedIndex = settings.audio_driver1_index;
+                if (comboAudioSampleRate1.SelectedIndex == settings.audio_samplerate1)
+                    comboAudioSampleRate1_SelectedIndexChanged(this, e);
+                else
+                    comboAudioSampleRate1.SelectedIndex = settings.audio_samplerate1;
+                if (comboAudioInput1.SelectedIndex == settings.audio_input1_index)
+                    comboAudioInput1_SelectedIndexChanged(this, e);
+                else
+                    comboAudioInput1.SelectedIndex = settings.audio_input1_index;
+                if (comboAudioOutput1.SelectedIndex == settings.audio_output1_index)
+                    comboAudioOutput1_SelectedIndexChanged(this, e);
+                else
+                    comboAudioOutput1.SelectedIndex = settings.audio_output1_index;
+                if (comboAudioMixer1.SelectedIndex == settings.audio_mixer_index)
+                    comboAudioMixer1_SelectedIndexChanged(this, e);
+                else if(comboAudioMixer1.Items.Count >0)
+                    comboAudioMixer1.SelectedIndex = settings.audio_mixer_index;
+                if (comboAudioReceive1.SelectedIndex == settings.audio_receive_index)
+                    comboAudioReceive1_SelectedIndexChanged(this, e);
+                else if(comboAudioReceive1.Items.Count >0)
+                    comboAudioReceive1.SelectedIndex = settings.audio_receive_index;
+                if (comboAudioTransmit1.SelectedIndex == settings.audio_transmit_index)
+                    comboAudioTransmit1_SelectedIndexChanged(this, e);
+                else if(comboAudioTransmit1.Items.Count>0)
+                    comboAudioTransmit1.SelectedIndex = settings.audio_transmit_index;
+                if (comboAudioBuffer1.SelectedIndex == settings.audio_buffer_size1)
+                    comboAudioBuffer1_SelectedIndexChanged(this, e);
+                else
+                    comboAudioBuffer1.SelectedIndex = settings.audio_buffer_size1;
+                if (comboAudioChannels1.SelectedIndex == settings.audio_channel1_number)
+                    comboAudioChannels1_SelectedIndexChanged(this, e);
+                else
+                    comboAudioChannels1.SelectedIndex = settings.audio_channel1_number;
+                chkAudioLatencyManual1.Checked = true;
+                chkAudioLatencyManual1_CheckedChanged(this, e);
+                if (udAudioLatency1.Value == settings.audio_latency1)
+                    udAudioLatency1_ValueChanged(this, e);
+                else
+                    udAudioLatency1.Value = settings.audio_latency1;
+                if (udAudioLineIn1.Value == settings.audio_line_gain)
+                    udAudioLineIn1_ValueChanged(this, e);
+                else
+                    udAudioLineIn1.Value = settings.audio_line_gain;
+                if ((double)udAudioVoltage1.Value == settings.audio_output_voltage)
+                    udAudioVoltage1_ValueChanged(this, e);
+                else
+                    udAudioVoltage1.Value = settings.audio_line_gain;
 
-			// Display Tab
-			udDisplayGridMax_ValueChanged(this, e);
-			udDisplayGridMin_ValueChanged(this, e);
-			udDisplayGridStep_ValueChanged(this, e);
-			udDisplayFPS_ValueChanged(this, e);
-			udDisplayMeterDelay_ValueChanged(this, e);
-			udDisplayPeakText_ValueChanged(this, e);
-			udDisplayCPUMeter_ValueChanged(this, e);
-			udDisplayAVGTime_ValueChanged(this, e);
-			udDisplayWaterfallLowLevel_ValueChanged(this, e);
-			udDisplayWaterfallHighLevel_ValueChanged(this, e);
-			clrbtnWaterfallLow_Changed(this, e);
-			clrbtnWaterfallMid_Changed(this, e);
-			clrbtnWaterfallHigh_Changed(this, e);
-			udDisplayMultiPeakHoldTime_ValueChanged(this, e);
-			udDisplayMultiTextHoldTime_ValueChanged(this, e);
+                if(comboAudioDriverVAC.SelectedIndex == settings.audio_driverVAC_index)
+                    comboAudioDriverVAC_SelectedIndexChanged(this,e);
+                else
+                    comboAudioDriverVAC.SelectedIndex = settings.audio_driverVAC_index;
+                if(comboAudioSampleRateVAC.SelectedIndex == settings.audio_samplerateVAC)
+                    comboAudioSampleRate2_SelectedIndexChanged(this,e);
+                else
+                    comboAudioSampleRateVAC.SelectedIndex = settings.audio_samplerateVAC;
+                if(comboAudioInputVAC.SelectedIndex == settings.audio_inputVAC_index)
+                    comboAudioInputVAC_SelectedIndexChanged(this,e);
+                else
+                    comboAudioInputVAC.SelectedIndex = settings.audio_inputVAC_index;
+                if(comboAudioOutputVAC.SelectedIndex == settings.audio_outputVAC_index)
+                    comboAudioOutputVAC_SelectedIndexChanged(this,e);
+                else
+                    comboAudioOutputVAC.SelectedIndex = settings.audio_outputVAC_index;
+                if(comboAudioBufferVAC.SelectedIndex == settings.audio_buffer_sizeVAC)
+                    comboAudioBuffer2_SelectedIndexChanged(this,e);
+                else
+                    comboAudioBufferVAC.SelectedIndex = settings.audio_buffer_sizeVAC;
 
-			// DSP Tab
-			udLMSANF_ValueChanged(this, e);
-			udLMSNR_ValueChanged(this, e);
-			udDSPImagePhaseTX_ValueChanged(this, e);
-			udDSPImageGainTX_ValueChanged(this, e);
-			udDSPAGCFixedGaindB_ValueChanged(this, e);
-			udDSPAGCMaxGaindB_ValueChanged(this, e);
-			udDSPCWPitch_ValueChanged(this, e);
-			comboDSPWindow_SelectedIndexChanged(this, e);
-			udDSPNB_ValueChanged(this, e);
-			udDSPNB2_ValueChanged(this, e);
+                if(udAudioLatencyVAC.Value == settings.audio_latencyVAC)
+                    udAudioLatency2_ValueChanged(this,e);
+                else
+                    udAudioLatencyVAC.Value = settings.audio_latencyVAC;
+                chkAudioLatencyManualVAC.Checked = true;
+                chkAudioLatencyManual2_CheckedChanged(this, e);
+                if(chkVACPrimaryAudioDevice.Checked == settings.enable_VAC_mic_speaker)
+                    chkVACPrimaryAudioDevice_CheckedChanged(this,e);
+                else
+                    chkVACPrimaryAudioDevice.Checked = settings.enable_VAC_mic_speaker;
+                chkAudioEnableVAC_CheckedChanged(this, e);
+                if (comboKeyerConnPrimary.Text == settings.port_connection)
+                    comboKeyerConnPrimary_SelectedIndexChanged(this, e);
+                else
+                    comboKeyerConnPrimary.Text = settings.port_connection;*/
 
-			// Transmit Tab
-			udTXFFCompression_ValueChanged(this, e);
-			udTXFilterHigh_ValueChanged(this, e);
-			udTXFilterLow_ValueChanged(this, e);
-			udTransmitTunePower_ValueChanged(this, e);
-			udPAGain_ValueChanged(this, e);
+                // Display Tab
+                /*udDisplayGridMax_ValueChanged(this, e);
+                udDisplayGridMin_ValueChanged(this, e);
+                udDisplayGridStep_ValueChanged(this, e);
+                udDisplayFPS_ValueChanged(this, e);
+                udDisplayMeterDelay_ValueChanged(this, e);
+                udDisplayPeakText_ValueChanged(this, e);
+                udDisplayCPUMeter_ValueChanged(this, e);
+                udDisplayAVGTime_ValueChanged(this, e);
+                udDisplayWaterfallLowLevel_ValueChanged(this, e);
+                udDisplayWaterfallHighLevel_ValueChanged(this, e);
+                clrbtnWaterfallLow_Changed(this, e);
+                clrbtnWaterfallMid_Changed(this, e);
+                clrbtnWaterfallHigh_Changed(this, e);
+                udDisplayMultiPeakHoldTime_ValueChanged(this, e);
+                udDisplayMultiTextHoldTime_ValueChanged(this, e);
 
-			// Keyboard Tab
-			comboKBTuneUp1_SelectedIndexChanged(this, e);
-			comboKBTuneUp2_SelectedIndexChanged(this, e);
-			comboKBTuneUp3_SelectedIndexChanged(this, e);
-			comboKBTuneUp4_SelectedIndexChanged(this, e);
-			comboKBTuneUp5_SelectedIndexChanged(this, e);
-			comboKBTuneUp6_SelectedIndexChanged(this, e);
-			comboKBTuneDown1_SelectedIndexChanged(this, e);
-			comboKBTuneDown2_SelectedIndexChanged(this, e);
-			comboKBTuneDown3_SelectedIndexChanged(this, e);
-			comboKBTuneDown4_SelectedIndexChanged(this, e);
-			comboKBTuneDown5_SelectedIndexChanged(this, e);
-			comboKBTuneDown6_SelectedIndexChanged(this, e);
-			comboKBBandUp_SelectedIndexChanged(this, e);
-			comboKBBandDown_SelectedIndexChanged(this, e);
-			comboKBFilterUp_SelectedIndexChanged(this, e);
-			comboKBFilterDown_SelectedIndexChanged(this, e);
-			comboKBCWSpeedUp_SelectedIndexChanged(this, e);
-			comboKBCWSpeedDown_SelectedIndexChanged(this, e);
+                // DSP Tab
+                udLMSANF_ValueChanged(this, e);
+                udLMSNR_ValueChanged(this, e);
+                udDSPImagePhaseTX_ValueChanged(this, e);
+                udDSPImageGainTX_ValueChanged(this, e);
+                udDSPAGCFixedGaindB_ValueChanged(this, e);
+                udDSPAGCMaxGaindB_ValueChanged(this, e);
+                udDSPCWPitch_ValueChanged(this, e);
+                comboDSPWindow_SelectedIndexChanged(this, e);
+                udDSPNB_ValueChanged(this, e);
+                udDSPNB2_ValueChanged(this, e);
+
+                // Transmit Tab
+                udTXFFCompression_ValueChanged(this, e);
+                udTXFilterHigh_ValueChanged(this, e);
+                udTXFilterLow_ValueChanged(this, e);
+                udTransmitTunePower_ValueChanged(this, e);
+                udPAGain_ValueChanged(this, e);
+
+                // Keyboard Tab
+                comboKBTuneUp1_SelectedIndexChanged(this, e);
+                comboKBTuneUp2_SelectedIndexChanged(this, e);
+                comboKBTuneUp3_SelectedIndexChanged(this, e);
+                comboKBTuneUp4_SelectedIndexChanged(this, e);
+                comboKBTuneUp5_SelectedIndexChanged(this, e);
+                comboKBTuneUp6_SelectedIndexChanged(this, e);
+                comboKBTuneDown1_SelectedIndexChanged(this, e);
+                comboKBTuneDown2_SelectedIndexChanged(this, e);
+                comboKBTuneDown3_SelectedIndexChanged(this, e);
+                comboKBTuneDown4_SelectedIndexChanged(this, e);
+                comboKBTuneDown5_SelectedIndexChanged(this, e);
+                comboKBTuneDown6_SelectedIndexChanged(this, e);
+                comboKBBandUp_SelectedIndexChanged(this, e);
+                comboKBBandDown_SelectedIndexChanged(this, e);
+                comboKBFilterUp_SelectedIndexChanged(this, e);
+                comboKBFilterDown_SelectedIndexChanged(this, e);
+                comboKBCWSpeedUp_SelectedIndexChanged(this, e);
+                comboKBCWSpeedDown_SelectedIndexChanged(this, e);
             
-			// Appearance Tab
-			clrbtnBtnSel_Changed(this, e);
-			clrbtnVFODark_Changed(this, e);
-			clrbtnVFOLight_Changed(this, e);
-			clrbtnBandDark_Changed(this, e);
-			clrbtnBandLight_Changed(this, e);
-			clrbtnPeakText_Changed(this, e);
-			clrbtnBackground_Changed(this, e);
-			clrbtnGrid_Changed(this, e);
-			clrbtnMainRXZero_Changed(this, e);
-            clrbtnSubRXFilter_Changed(this, e);
-            clrbtnMainRXFilter_Changed(this, e);
-			clrbtnFilter_Changed(this, e);
-			clrbtnText_Changed(this, e);
-			clrbtnDataLine_Changed(this, e);
-			udDisplayLineWidth_ValueChanged(this, e);
-			clrbtnMeterLeft_Changed(this, e);
-			clrbtnMeterRight_Changed(this, e);
+                // Appearance Tab
+                clrbtnBtnSel_Changed(this, e);
+                clrbtnVFODark_Changed(this, e);
+                clrbtnVFOLight_Changed(this, e);
+                clrbtnBandDark_Changed(this, e);
+                clrbtnBandLight_Changed(this, e);
+                clrbtnPeakText_Changed(this, e);
+                clrbtnBackground_Changed(this, e);
+                clrbtnGrid_Changed(this, e);
+                clrbtnMainRXZero_Changed(this, e);
+                clrbtnSubRXFilter_Changed(this, e);
+                clrbtnMainRXFilter_Changed(this, e);
+                clrbtnFilter_Changed(this, e);
+                clrbtnText_Changed(this, e);
+                clrbtnDataLine_Changed(this, e);
+                udDisplayLineWidth_ValueChanged(this, e);
+                clrbtnMeterLeft_Changed(this, e);
+                clrbtnMeterRight_Changed(this, e);*/
+
+                // DSP
+                udLMSANF_ValueChanged(this, e);
+                udLMSNR_ValueChanged(this, e);
+                udDSPImagePhaseTX_ValueChanged(this, e);
+                udDSPImageGainTX_ValueChanged(this, e);
+                udDSPCWPitch_ValueChanged(this, e);
+                tbDSPAGCHangThreshold_Scroll(this, e);
+                udTXFilterHigh_ValueChanged(this, e);
+                udTXFilterLow_ValueChanged(this, e);
+
+                udDisplayScopeTime_ValueChanged(this, e);
+                comboNewVFOSMeterSignal_SelectedIndexChanged(this, e);
+                chkUSBSerialNo_CheckedChanged(this, e);
+                udUSBSerialNo_ValueChanged(this, e);
+                chkLargeRBBuffer_CheckedChanged(this, e);
+                chkSmoothLine_CheckedChanged(this, e);
+                udG11XTRVLosc_ValueChanged(this, e);
+                udG59XtrvIF_ValueChanged(this, e);
+
+                // Si570
+                udSi570_address_ValueChanged(this, e);
+                udSi570_divisor_ValueChanged(this, e);
+                udFDCOmax_ValueChanged(this, e);
+                udFDCOmin_ValueChanged(this, e);
+                chkWBIRfixed_CheckedChanged(this, e);
+                udRXGain_ValueChanged(this, e);
+                udRXPhase_ValueChanged(this, e);
+
+                if (comboBandPlan.SelectedIndex == -1)
+                    comboBandPlan.SelectedIndex = 0;
+
+                ///// force keyer reload //////
+                udCWKeyerDeBounce_ValueChanged(this, e);
+                udCWKeyerFall_ValueChanged(this, e);
+                udCWKeyerRise_ValueChanged(this, e);
+                udCWKeyerWeight_ValueChanged(this, e);
+                chkCWKeyerIambic_CheckedChanged(this, e);
+                chkCWKeyerMode_CheckedChanged(this, e);
+                chkCWKeyerRevPdl_CheckedChanged(this, e);
+                chkHiPerfKeyer_CheckedChanged(this, e);
+                saved_udSi570 = udSi570_divisor.Value;
+                console.sMeterDigital2.Brightness = tbSmeterAlpha.Value;
+
+                // RTL_SDR
+                comboRTL_SDR_SampleRate_SelectedIndexChanged(this, EventArgs.Empty);
+                comboRTL_SDR_BufferSize_SelectedIndexChanged(this, EventArgs.Empty);
+                chkRTL_SDR_TunerAGC_CheckedChanged(this, EventArgs.Empty);
+                chkRTL_SDR_OffsetTuning_CheckedChanged(this, EventArgs.Empty);
+                chkRTL_SDR_RTL_AGC_CheckedChanged(this, EventArgs.Empty);
+                comboRTL_SDR_BufferSize_SelectedIndexChanged(this, EventArgs.Empty);
+                comboRTL_SDR_SampleRate_SelectedIndexChanged(this, EventArgs.Empty);
+                tbRTL_SDR_AGC_Gain_Scroll(this, EventArgs.Empty);
+
+                //InitAudioTab();
+                InitDSPTab();
+                InitDisplayTab();
+                InitKeyboardTab();
+                InitAppearanceTab();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
         public string[] GetTXProfileStrings()
@@ -21062,6 +21654,11 @@ namespace PowerSDR
 		#endregion
 
 		#region Properties
+
+        public int VACchNumber
+        {
+            get { return (int)udVACchNumber.Value; }
+        }
 
         private MuteChannels mute_vac_channels = MuteChannels.None;
         public MuteChannels MuteVACChannels
@@ -21509,6 +22106,12 @@ namespace PowerSDR
 					case SoundCard.UNSUPPORTED_CARD:
 						comboAudioSoundCard.Text = "Unsupported Card";
 						break;
+                    case SoundCard.G6:
+                        comboAudioSoundCard.Text = "Genesis G6";
+                        break;
+                    case SoundCard.RTL_SDR:
+                        comboAudioSoundCard.Text = "RTL SDR";
+                        break;
 				}
 			}
 		}
@@ -21625,41 +22228,406 @@ namespace PowerSDR
 		{
 			set
 			{
-				switch(value)
-				{
-                    case Model.GENESIS_G59USB:
-                        force_model = true;
-                        radGenModelGenesisG59.Checked = true;
-                        VID_TextBox.Text = "fffe";
-                        VID = -2;
-                        PID_TextBox.Text = "1970";
-                        PID = 0x1970;
-                        break;
-                    case Model.GENESIS_G3020:
-                        force_model = true;
-                        radGenModelGenesisG3020.Checked = true;
-                        break;
-                    case Model.GENESIS_G137:
-                        force_model = true;
-                        radGenModelGenesisG137.Checked = true;
-                        break;
-                    case Model.GENESIS_G40:
-                        force_model = true;
-                        radGenModelGenesisG40.Checked = true;
-                        break;
-                    case Model.GENESIS_G80:
-                        force_model = true;
-                        radGenModelGenesisG80.Checked = true;
-                        break;
-                    case Model.GENESIS_G160:
-                        force_model = true;
-                        radGenModelGenesisG160.Checked = true;
-                        break;
-                    case Model.QRP2000:
-                        force_model = true;
-                        radGenModelQRP2000.Checked = true;
-                        break;
-				}
+                console.net_device.Disconnect();
+                    chkLineMic.Checked = false;
+                    grpRTL_SDR.Visible = false;
+                    chkLineMic.Enabled = true;
+                    chkContinuousTuning.Enabled = true;
+                    grpQRP2000.Visible = false;
+                    console.CurrentVisibleGroup = VisibleGroup.ZERO;
+                    chkGeneralUSBPresent.Enabled = false;
+                    grpG59.Visible = false;
+                    grpG11.Visible = false;
+                    console.btnNetwork.Visible = false;
+                    console.btnUSB.Visible = true;
+                    grpSi570.Enabled = false;
+                    grpG59Keyer.Enabled = false;
+                    grpGenesisUSB.Enabled = false;
+                    comboKeyerConnPrimary.Text = "USB";
+                    console.Keyer.PrimaryConnPort = "USB";
+                    grpGenesisConnection.Enabled = false;
+                    grpGenesis160.Visible = false;
+                    grpGenesis3020.Visible = false;
+                    grpGenesis40.Visible = false;
+                    grpGenesis80.Visible = false;
+                    grpNETBox.Visible = false;
+                    grpG6.Visible = false;
+                    grpGenesis137.Visible = false;
+                    grpGenesis500.Visible = false;
+                    console.grpG59.Visible = false;
+                    console.grpG11.Visible = false;
+                    console.grpG160.Visible = false;
+                    console.grpG80.Visible = false;
+                    console.grpG40.Visible = false;
+                    console.grpG3020.Visible = false;
+                    console.UsbSi570Enable = false;
+                    chkGeneralDisablePTT.Checked = false;
+                    chkGeneralUSBPresent.Checked = false;
+                    chkGeneralRXOnly.Enabled = true;
+                    chkGeneralRXOnly.Checked = false;
+                    chkGeneralDisablePTT.Checked = false;
+
+                    switch (value)
+                    {
+                        case Model.GENESIS_G11:
+                            console.CurrentModel = Model.GENESIS_G11;
+                            chkLineMic.Enabled = true;
+                            chkContinuousTuning.Enabled = true;
+                            console.CurrentVisibleGroup = VisibleGroup.G11;
+                            chkGeneralUSBPresent.Enabled = false;
+                            console.net_device.Disconnect();
+                            grpG11.Visible = true;
+                            console.grpG11.Visible = true;
+                            console.grpG11.BringToFront();
+                            console.btnUSB.Visible = true;
+                            grpSi570.Enabled = true;
+                            grpG59Keyer.Enabled = true;
+                            grpGenesisUSB.Enabled = true;
+                            comboKeyerConnPrimary.Text = "USB";
+                            console.Keyer.PrimaryConnPort = "USB";
+                            grpGenesisConnection.Enabled = false;
+
+                            if (!console.booting)
+                                chkGeneralUSBPresent.Checked = false;
+
+                            if (radGenModelGenesisG11.Focused || force_model)
+                            {
+                                chkGeneralRXOnly.Enabled = true;
+                                chkGeneralRXOnly.Checked = false;
+                                chkGeneralDisablePTT.Checked = false;
+                                force_model = false;
+                            }
+
+                            chkGeneralRXOnly.Enabled = true;
+                            VID_TextBox.Text = "fffe";
+                            PID_TextBox.Text = "1971";
+                            console.ReInit_USB();
+                            console.NetworkThreadRunning = false;
+                            break;
+                        case Model.GENESIS_G59USB:
+                            console.CurrentVisibleGroup = VisibleGroup.G59;
+                            grpG59.Visible = true;
+                            console.grpG59.Visible = true;
+                            console.btnUSB.Visible = true;
+                            grpSi570.Enabled = true;
+                            grpG59Keyer.Enabled = true;
+                            grpGenesisUSB.Enabled = true;
+                            comboKeyerConnPrimary.Text = "USB";
+                            console.Keyer.PrimaryConnPort = "USB";
+                            grpGenesisConnection.Enabled = false;
+                            console.CurrentModel = Model.GENESIS_G59USB;
+
+                            if (!console.booting)
+                            {
+                                chkGeneralUSBPresent.Checked = false;
+                            }
+
+                            chkGeneralDisablePTT.Checked = false;
+
+                            if (radGenModelGenesisG59.Focused || force_model)
+                            {
+                                chkGeneralRXOnly.Enabled = true;
+                                chkGeneralRXOnly.Checked = false;
+                                chkGeneralDisablePTT.Checked = false;
+                                force_model = false;
+                            }
+
+                            chkGeneralRXOnly.Enabled = true;
+                            VID_TextBox.Text = "fffe";
+                            PID_TextBox.Text = "1970";
+
+                            console.ReInit_USB();
+                            console.NetworkThreadRunning = false;
+
+
+                            force_model = true;
+                            VID_TextBox.Text = "fffe";
+                            VID = -2;
+                            PID_TextBox.Text = "1970";
+                            PID = 0x1970;
+                            break;
+                        case Model.GENESIS_G59NET:
+                            chkLineMic.Enabled = true;
+                            chkContinuousTuning.Enabled = true;
+                            grpNETBox.Visible = true;
+                            console.CurrentVisibleGroup = VisibleGroup.G59;
+                            chkGeneralUSBPresent.Enabled = false;
+                            console.btnNetwork.Visible = true;
+                            console.btnUSB.Visible = false;
+                            grpSi570.Enabled = true;
+                            grpG59Keyer.Enabled = true;
+                            grpGenesisUSB.Enabled = true;
+                            comboKeyerConnPrimary.Text = "NET";
+                            grpGenesisConnection.Enabled = false;
+                            console.UsbSi570Enable = false;
+
+                            if (!console.booting)
+                                chkGeneralUSBPresent.Checked = false;
+                            chkGeneralDisablePTT.Checked = false;
+
+                            if (radGenModelGenesisNET.Focused || force_model)
+                            {
+                                chkGeneralRXOnly.Enabled = true;
+                                chkGeneralRXOnly.Checked = false;
+                                chkGeneralDisablePTT.Checked = false;
+                                force_model = false;
+                            }
+
+                            chkGeneralRXOnly.Enabled = true;
+                            VID_TextBox.Enabled = false;
+                            PID_TextBox.Enabled = false;
+                            console.NetworkThreadRunning = true;
+                            break;
+                        case Model.GENESIS_G500:
+                            chkLineMic.Checked = false;
+                            chkLineMic.Enabled = false;
+                            chkContinuousTuning.Checked = false;
+                            chkContinuousTuning.Enabled = false;
+                            console.CurrentVisibleGroup = VisibleGroup.G500;
+                            chkGeneralUSBPresent.Enabled = true;
+                            console.net_device.Disconnect();
+                            console.btnNetwork.Visible = false;
+                            grpG59.Visible = false;
+                            grpSi570.Enabled = false;
+                            grpG59Keyer.Enabled = false;
+                            grpGenesisUSB.Enabled = false;
+                            grpGenesisConnection.Enabled = true;
+                            grpGenesis500.Visible = true;
+                            chkGeneralDisablePTT.Checked = false;
+                            console.UsbSi570Enable = false;
+
+                            if (!console.booting)
+                                chkGeneralUSBPresent.Checked = false;
+
+                            if (radGenModelGenesisG500.Focused || force_model)
+                            {
+                                chkGeneralRXOnly.Checked = false;
+                                chkGeneralDisablePTT.Checked = false;
+                                force_model = false;
+                            }
+
+                            if (!console.UsbSi570Enable)
+                                console.ReInit_USB();
+
+                            console.NetworkThreadRunning = false;
+                            break;
+                        case Model.GENESIS_G3020:
+                            console.CurrentVisibleGroup = VisibleGroup.G3020;
+                            chkGeneralUSBPresent.Enabled = true;
+                            grpGenesisConnection.Enabled = true;
+                            console.CurrentModel = Model.GENESIS_G3020;
+                            chkGeneralDisablePTT.Checked = false;
+                            console.UsbSi570Enable = false;
+                            grpGenesis3020.Visible = true;
+
+                            if (!console.booting)
+                            {
+
+                                chkGeneralUSBPresent.Checked = false;
+                            }
+
+                            if (radGenModelGenesisG3020.Focused || force_model)
+                            {
+                                chkGeneralRXOnly.Checked = false;
+                                chkGeneralDisablePTT.Checked = false;
+                                force_model = false;
+                            }
+
+                            chkGeneralRXOnly.Enabled = true;
+                            console.ReInit_USB();
+                            console.NetworkThreadRunning = false;
+                            force_model = true;
+                            break;
+                        case Model.GENESIS_G137:
+                            console.CurrentVisibleGroup = VisibleGroup.G137;
+                            chkGeneralUSBPresent.Enabled = true;
+                            grpGenesisConnection.Enabled = true;
+                            grpGenesis137.Visible = true;
+                            console.CurrentModel = Model.GENESIS_G137;
+                            chkGeneralDisablePTT.Checked = false;
+
+                            if (!console.booting)
+                            {
+                                chkGeneralUSBPresent.Checked = false;
+                            }
+
+                            if (radGenModelGenesisG137.Focused || force_model)
+                            {
+                                chkGeneralRXOnly.Checked = false;
+                                chkGeneralDisablePTT.Checked = false;
+                                force_model = false;
+                            }
+
+                            if (!console.UsbSi570Enable)
+                                console.ReInit_USB();
+
+                            console.NetworkThreadRunning = false;
+                            force_model = true;
+                            break;
+                        case Model.GENESIS_G40:
+                            console.CurrentVisibleGroup = VisibleGroup.G40;
+                            chkGeneralUSBPresent.Enabled = true;
+                            grpGenesisConnection.Enabled = true;
+                            grpGenesis40.Visible = true;
+                            console.CurrentModel = Model.GENESIS_G40;
+                            chkGeneralDisablePTT.Checked = false;
+                            console.UsbSi570Enable = false;
+                            console.grpG40.Visible = true;
+
+                            if (!console.booting)
+                            {
+                                chkGeneralUSBPresent.Checked = false;
+                            }
+
+                            if (radGenModelGenesisG40.Focused || force_model)
+                            {
+                                chkGeneralRXOnly.Checked = false;
+                                chkGeneralDisablePTT.Checked = false;
+                                force_model = false;
+                            }
+
+                            console.ReInit_USB();
+                            console.NetworkThreadRunning = false;
+                            force_model = true;
+                            break;
+                        case Model.GENESIS_G80:
+                            console.CurrentVisibleGroup = VisibleGroup.G80;
+                            chkGeneralUSBPresent.Enabled = true;
+                            grpGenesisConnection.Enabled = true;
+                            grpGenesis80.Visible = true;
+                            console.grpG80.Visible = true;
+                            console.CurrentModel = Model.GENESIS_G80;
+                            chkGeneralDisablePTT.Checked = false;
+                            console.UsbSi570Enable = false;
+
+                            if (!console.booting)
+                            {
+                                chkGeneralUSBPresent.Checked = false;
+                            }
+
+                            if (radGenModelGenesisG80.Focused || force_model)
+                            {
+                                chkGeneralRXOnly.Checked = false;
+                                chkGeneralDisablePTT.Checked = false;
+                                force_model = false;
+                            }
+
+                            console.ReInit_USB();
+                            console.NetworkThreadRunning = false;
+                            force_model = true;
+                            break;
+                        case Model.GENESIS_G160:
+                            console.CurrentVisibleGroup = VisibleGroup.G160;
+                            chkGeneralUSBPresent.Enabled = true;
+                            console.btnNetwork.Visible = false;
+                            grpGenesisConnection.Enabled = true;
+                            console.grpG160.Visible = true;
+                            console.CurrentModel = Model.GENESIS_G160;
+                            chkGeneralDisablePTT.Checked = false;
+                            console.UsbSi570Enable = false;
+
+                            if (!console.booting)
+                            {
+                                chkGeneralUSBPresent.Checked = false;
+                            }
+
+                            if (radGenModelGenesisG160.Focused || force_model)
+                            {
+                                chkGeneralRXOnly.Checked = false;
+                                chkGeneralDisablePTT.Checked = false;
+                                force_model = false;
+                            }
+
+                            if (!console.UsbSi570Enable)
+                                console.ReInit_USB();
+
+                            console.NetworkThreadRunning = false;
+                            force_model = true;
+                            break;
+                        case Model.QRP2000:
+                            chkContinuousTuning.Enabled = true;
+                            console.UsbSi570Enable = false;
+                            chkGeneralUSBPresent.Checked = false;
+                            chkGeneralUSBPresent.Enabled = false;
+                            console.Keyer.PrimaryConnPort = "QRP2000";
+                            grpQRP2000.Visible = true;
+                            console.CurrentModel = Model.QRP2000;
+                            chkGeneralDisablePTT.Checked = false;
+                            console.btnUSB.Visible = true;
+                            console.btnNetwork.Visible = false;
+
+                            if (!console.booting)
+                            {
+                                comboAudioOutput1.SelectedIndex = 0;
+                            }
+
+                            console.ReInit_USB();
+
+                            if (radGenModelQRP2000.Focused || force_model)
+                            {
+                                chkGeneralRXOnly.Checked = false;
+                                chkGeneralDisablePTT.Checked = false;
+                                force_model = false;
+                            }
+
+                            console.NetworkThreadRunning = false;
+                            force_model = true;
+                            break;
+                        case Model.GENESIS_G6:
+                            console.CurrentModel = Model.GENESIS_G6;
+                            comboAudioDriver1.Text = "G6 USB";
+                            comboAudioSoundCard.Text = "Genesis G6";
+                            comboAudioInput1.Text = "G6 input";
+                            comboAudioOutput1.Text = "G6 output";
+                            chkContinuousTuning.Checked = false;
+                            chkContinuousTuning.Enabled = true;
+                            console.UsbSi570Enable = false;
+                            chkGeneralUSBPresent.Checked = false;
+                            chkGeneralUSBPresent.Enabled = false;
+                            console.Keyer.PrimaryConnPort = "USB";
+                            grpSi570.Enabled = true;
+                            grpG59Keyer.Enabled = true;
+                            grpGenesisUSB.Enabled = true;
+                            grpGenesisConnection.Enabled = false;
+                            grpG6.Visible = true;
+                            console.grpG6.Visible = true;
+                            chkGeneralDisablePTT.Checked = false;
+                            console.btnUSB.Visible = true;
+                            console.btnNetwork.Visible = false;
+                            console.ReInit_USB();
+
+                            if (radGenModelGenesisG6.Focused || force_model)
+                            {
+                                chkGeneralRXOnly.Checked = false;
+                                chkGeneralDisablePTT.Checked = false;
+                                force_model = false;
+                            }
+                            force_model = true;
+                            break;
+                        case Model.RTL_SDR:
+                            console.CurrentModel = Model.RTL_SDR;
+                            comboAudioDriver1.Text = "RTL SDR";
+                            comboAudioSoundCard.Text = "RTL SDR";
+                            comboAudioInput1.Text = "RTL SDR";
+                            comboAudioOutput1.Text = "RTL SDR";
+                            chkContinuousTuning.Checked = false;
+                            chkContinuousTuning.Enabled = false;
+                            console.UsbSi570Enable = false;
+                            chkGeneralUSBPresent.Checked = false;
+                            chkGeneralUSBPresent.Enabled = false;
+                            console.Keyer.PrimaryConnPort = "USB";
+                            grpRTL_SDR.Visible = true;
+                            chkGeneralDisablePTT.Checked = true;
+                            console.btnUSB.Visible = true;
+                            console.ReInit_USB();
+                            chkGeneralRXOnly.Checked = true;
+                            chkGeneralDisablePTT.Checked = true;
+                            force_model = false;
+                            comboRTL_SDR_SampleRate_SelectedIndexChanged(this, EventArgs.Empty);
+                            comboRTL_SDR_BufferSize_SelectedIndexChanged(this, EventArgs.Empty);
+                            force_model = true;
+                            break;
+                    }
 			}
 		}
 
@@ -21816,6 +22784,18 @@ namespace PowerSDR
         {
             get { return (float)udPAGain600.Value; }
             set { udPAGain600.Value = (decimal)value; }
+        }
+
+        public float PAADC2190
+        {
+            get { return (float)udPAADC2190.Value; }
+            set { udPAADC2190.Value = (decimal)value; }
+        }
+
+        public float PAADC600
+        {
+            get { return (float)udPAADC600.Value; }
+            set { udPAADC600.Value = (decimal)value; }
         }
 
 		public float PAADC160
@@ -22113,27 +23093,43 @@ namespace PowerSDR
 		#endregion
 
 		#region General Tab Event Handlers
-		// ======================================================
-		// General Tab Event Handlers
-        // ======================================================
 
         #region Genesis radio config
+
+        private void radGenModel_RTL_SDR_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (radGenModel_RTL_SDR.Checked)
+                {
+                    CurrentModel = Model.RTL_SDR;
+                    console.Console_Resize(this, EventArgs.Empty);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
 
         private void chkUSBSerialNo_CheckedChanged(object sender, EventArgs e)
         {
             try
             {
-                if (chkUSBSerialNo.Checked)
+                if (!console.booting)
                 {
-                    udUSBSerialNo.Enabled = true;
-                    console.g59.USB_Serial_enabled = true;
-                    console.g11.USB_Serial_enabled = true;
-                }
-                else
-                {
-                    udUSBSerialNo.Enabled = false;
-                    console.g59.USB_Serial_enabled = false;
-                    console.g11.USB_Serial_enabled = false;
+                    if (chkUSBSerialNo.Checked)
+                    {
+                        udUSBSerialNo.Enabled = true;
+                        console.g59.USB_Serial_enabled = true;
+                        console.g11.USB_Serial_enabled = true;
+                    }
+                    else
+                    {
+                        udUSBSerialNo.Enabled = false;
+                        console.g59.USB_Serial_enabled = false;
+                        console.g11.USB_Serial_enabled = false;
+                    }
                 }
             }
             catch (Exception ex)
@@ -22146,10 +23142,13 @@ namespace PowerSDR
         {
             try
             {
-                string hexValue = ((int)udUSBSerialNo.Value).ToString();
-                int new_serial = int.Parse(hexValue, System.Globalization.NumberStyles.HexNumber);
-                console.g59.USB_Serial = (ushort)new_serial;
-                console.g11.USB_Serial = (ushort)new_serial;
+                if (!console.booting)
+                {
+                    string hexValue = ((int)udUSBSerialNo.Value).ToString();
+                    int new_serial = int.Parse(hexValue, System.Globalization.NumberStyles.HexNumber);
+                    console.g59.USB_Serial = (ushort)new_serial;
+                    console.g11.USB_Serial = (ushort)new_serial;
+                }
             }
             catch (Exception ex)
             {
@@ -22163,54 +23162,10 @@ namespace PowerSDR
             {
                 if (radGenModelGenesisNET.Checked)
                 {
-                    if (!console.booting)
-                        chkLineMic.Checked = false;
-                    grpG11.Visible = false;
-                    chkLineMic.Enabled = true;
-                    chkContinuousTuning.Enabled = true;
-                    grpQRP2000.Visible = false;
-                    grpNETBox.Visible = true;
-                    console.CurrentVisibleGroup = VisibleGroup.G59;
-                    chkGeneralUSBPresent.Enabled = false;
-                    grpG59.Visible = false;
-                    console.btnNetwork.Visible = true;
-                    console.btnUSB.Visible = false;
-                    grpSi570.Enabled = true;
-                    grpG59Keyer.Enabled = true;
-                    grpGenesisUSB.Enabled = true;
-                    comboKeyerConnPrimary.Text = "NET";
-                    grpGenesisConnection.Enabled = false;
-                    grpGenesis160.Visible = false;
-                    grpGenesis3020.Visible = false;
-                    grpGenesis40.Visible = false;
-                    grpGenesis80.Visible = false;
-                    grpG6.Visible = false;
-                    grpGenesis137.Visible = false;
-                    grpGenesis500.Visible = false;
-                    console.grpG59.Visible = true;
-                    console.grpG11.Visible = false;
-                    console.CurrentModel = Model.GENESIS_G59NET;
-                    console.grpG160.Visible = false;
-                    console.grpG80.Visible = false;
-                    console.grpG40.Visible = false;
-                    console.grpG3020.Visible = false;
-                    console.UsbSi570Enable = false;
-                    if (!console.booting)
-                        chkGeneralUSBPresent.Checked = false;
-                    chkGeneralDisablePTT.Checked = false;
-                    if (radGenModelGenesisNET.Focused || force_model)
-                    {
-                        chkGeneralRXOnly.Enabled = true;
-                        chkGeneralRXOnly.Checked = false;
-                        chkGeneralDisablePTT.Checked = false;
-                        force_model = false;
-                    }
-                    chkGeneralRXOnly.Enabled = true;
-                    VID_TextBox.Enabled = false;
-                    PID_TextBox.Enabled = false;
-                    console.NetworkThreadRunning = true;
-                    console.Console_Resize(this, EventArgs.Empty);
+                    CurrentModel = Model.GENESIS_G59NET;
                 }
+
+                console.Console_Resize(this, EventArgs.Empty);
             }
             catch (Exception ex)
             {
@@ -22224,60 +23179,10 @@ namespace PowerSDR
             {
                 if (radGenModelGenesisG11.Checked)
                 {
-                    if (!console.booting)
-                        chkLineMic.Checked = false;
-                    chkLineMic.Enabled = true;
-                    chkContinuousTuning.Enabled = true;
-                    grpQRP2000.Visible = false;
-                    console.CurrentVisibleGroup = VisibleGroup.G11;
-                    chkGeneralUSBPresent.Enabled = false;
-                    console.net_device.Disconnect();
-                    grpG59.Visible = false;
-                    grpG11.Visible = true;
-                    console.btnNetwork.Visible = false;
-                    console.btnUSB.Visible = true;
-                    grpSi570.Enabled = true;
-                    grpG59Keyer.Enabled = true;
-                    grpGenesisUSB.Enabled = true;
-                    comboKeyerConnPrimary.Text = "USB";
-                    console.Keyer.PrimaryConnPort = "USB";
-                    grpGenesisConnection.Enabled = false;
-                    grpGenesis160.Visible = false;
-                    grpGenesis3020.Visible = false;
-                    grpGenesis40.Visible = false;
-                    grpGenesis80.Visible = false;
-                    grpNETBox.Visible = false;
-                    grpG6.Visible = false;
-                    grpGenesis137.Visible = false;
-                    grpGenesis500.Visible = false;
-                    console.grpG59.Visible = false;
-                    console.grpG11.Visible = true;
-                    console.CurrentModel = Model.GENESIS_G11;
-                    console.grpG160.Visible = false;
-                    console.grpG80.Visible = false;
-                    console.grpG40.Visible = false;
-                    console.grpG3020.Visible = false;
-                    console.UsbSi570Enable = false;
-                    chkGeneralDisablePTT.Checked = false;
-
-                    if (!console.booting)
-                        chkGeneralUSBPresent.Checked = false;
-
-                    if (radGenModelGenesisG11.Focused || force_model)
-                    {
-                        chkGeneralRXOnly.Enabled = true;
-                        chkGeneralRXOnly.Checked = false;
-                        chkGeneralDisablePTT.Checked = false;
-                        force_model = false;
-                    }
-
-                    chkGeneralRXOnly.Enabled = true;
-                    VID_TextBox.Text = "fffe";
-                    PID_TextBox.Text = "1971";
-                    console.btnUSB_Click(sender, e);
-                    console.NetworkThreadRunning = false;
-                    console.Console_Resize(this, EventArgs.Empty);
+                    CurrentModel = Model.GENESIS_G11;
                 }
+
+                console.Console_Resize(this, EventArgs.Empty);
             }
             catch (Exception ex)
             {
@@ -22291,59 +23196,10 @@ namespace PowerSDR
             {
                 if (radGenModelGenesisG59.Checked)
                 {
-                    if (!console.booting)
-                        chkLineMic.Checked = false;
-                    grpG11.Visible = false;
-                    chkLineMic.Enabled = true;
-                    chkContinuousTuning.Enabled = true;
-                    grpQRP2000.Visible = false;
-                    console.CurrentVisibleGroup = VisibleGroup.G59;
-                    chkGeneralUSBPresent.Enabled = false;
-                    console.net_device.Disconnect();
-                    grpG59.Visible = true;
-                    console.btnNetwork.Visible = false;
-                    console.btnUSB.Visible = true;
-                    grpSi570.Enabled = true;
-                    grpG59Keyer.Enabled = true;
-                    grpGenesisUSB.Enabled = true;
-                    comboKeyerConnPrimary.Text = "USB";
-                    console.Keyer.PrimaryConnPort = "USB";
-                    grpGenesisConnection.Enabled = false;
-                    grpGenesis160.Visible = false;
-                    grpGenesis3020.Visible = false;
-                    grpGenesis40.Visible = false;
-                    grpGenesis80.Visible = false;
-                    grpNETBox.Visible = false;
-                    grpG6.Visible = false;
-                    grpGenesis137.Visible = false;
-                    grpGenesis500.Visible = false;
-                    console.grpG59.Visible = true;
-                    console.grpG11.Visible = false;
-                    console.CurrentModel = Model.GENESIS_G59USB;
-                    console.grpG160.Visible = false;
-                    console.grpG80.Visible = false;
-                    console.grpG40.Visible = false;
-                    console.grpG3020.Visible = false;
-                    console.UsbSi570Enable = false;
-                    if (!console.booting)
-                        chkGeneralUSBPresent.Checked = false;
-                    chkGeneralDisablePTT.Checked = false;
-                    if (radGenModelGenesisG59.Focused || force_model)
-                    {
-                        chkGeneralRXOnly.Enabled = true;
-                        chkGeneralRXOnly.Checked = false;
-                        chkGeneralDisablePTT.Checked = false;
-                        force_model = false;
-                    }
-                    chkGeneralRXOnly.Enabled = true;
-                    VID_TextBox.Text = "fffe";
-                    PID_TextBox.Text = "1970";
-
-                    console.btnUSB_Click(sender, e);
-                    console.NetworkThreadRunning = false;
-
-                    console.Console_Resize(this, EventArgs.Empty);
+                    CurrentModel = Model.GENESIS_G59USB;
                 }
+
+                console.Console_Resize(this, EventArgs.Empty);
             }
             catch (Exception ex)
             {
@@ -22357,53 +23213,10 @@ namespace PowerSDR
             {
                 if (radGenModelGenesisG3020.Checked)
                 {
-                    grpG11.Visible = false;
-                    chkLineMic.Checked = false;
-                    chkLineMic.Enabled = false;
-                    chkContinuousTuning.Checked = false;
-                    chkContinuousTuning.Enabled = false;
-                    grpQRP2000.Visible = false;
-                    console.CurrentVisibleGroup = VisibleGroup.G3020;
-                    chkGeneralUSBPresent.Enabled = true;
-                    console.net_device.Disconnect();
-                    console.btnNetwork.Visible = false;
-                    grpG59.Visible = false;
-                    grpSi570.Enabled = false;
-                    grpG59Keyer.Enabled = false;
-                    grpGenesisUSB.Enabled = false;
-                    grpGenesisConnection.Enabled = true;
-                    grpGenesis160.Visible = false;
-                    grpGenesis3020.Visible = true;
-                    grpGenesis40.Visible = false;
-                    grpGenesis80.Visible = false;
-                    grpNETBox.Visible = false;
-                    grpG6.Visible = false;
-                    grpGenesis137.Visible = false;
-                    grpGenesis500.Visible = false;
-                    console.grpG40.Visible = false;
-                    console.grpG3020.Visible = true;
-                    console.grpG160.Visible = false;
-                    console.grpG80.Visible = false;
-                    console.grpG59.Visible = false;
-                    console.grpG11.Visible = false;
-                    console.CurrentModel = Model.GENESIS_G3020;
-                    chkGeneralDisablePTT.Checked = false;
-                    console.UsbSi570Enable = false;
-                    if (!console.booting)
-                        chkGeneralUSBPresent.Checked = false;
-                    if (radGenModelGenesisG3020.Focused || force_model)
-                    {
-                        chkGeneralRXOnly.Checked = false;
-                        chkGeneralDisablePTT.Checked = false;
-                        force_model = false;
-                    }
-                    chkGeneralRXOnly.Enabled = true;
-
-                    console.btnUSB_Click(sender, e);
-                    console.NetworkThreadRunning = false;
-
-                    console.Console_Resize(this, EventArgs.Empty);
+                    CurrentModel = Model.GENESIS_G3020;
                 }
+
+                console.Console_Resize(this, EventArgs.Empty);
             }
             catch (Exception ex)
             {
@@ -22417,51 +23230,10 @@ namespace PowerSDR
             {
                 if (radGenModelGenesisG40.Checked)
                 {
-                    grpG11.Visible = false;
-                    chkLineMic.Checked = false;
-                    chkLineMic.Enabled = false;
-                    chkContinuousTuning.Checked = false;
-                    chkContinuousTuning.Enabled = false;
-                    grpQRP2000.Visible = false;
-                    console.CurrentVisibleGroup = VisibleGroup.G40;
-                    chkGeneralUSBPresent.Enabled = true;
-                    console.net_device.Disconnect();
-                    console.btnNetwork.Visible = false;
-                    grpG59.Visible = false;
-                    grpSi570.Enabled = false;
-                    grpG59Keyer.Enabled = false;
-                    grpGenesisUSB.Enabled = false;
-                    grpGenesisConnection.Enabled = true;
-                    grpGenesis160.Visible = false;
-                    grpGenesis3020.Visible = false;
-                    grpGenesis40.Visible = true;
-                    grpGenesis80.Visible = false;
-                    grpNETBox.Visible = false;
-                    grpG6.Visible = false;
-                    grpGenesis137.Visible = false;
-                    grpGenesis500.Visible = false;
-                    console.grpG40.Visible = true;
-                    console.grpG59.Visible = false;
-                    console.grpG3020.Visible = false;
-                    console.grpG160.Visible = false;
-                    console.grpG80.Visible = false;
-                    console.grpG11.Visible = false;
-                    console.CurrentModel = Model.GENESIS_G40;
-                    chkGeneralDisablePTT.Checked = false;
-                    console.UsbSi570Enable = false;
-                    if (!console.booting)
-                        chkGeneralUSBPresent.Checked = false;
-                    if (radGenModelGenesisG40.Focused || force_model)
-                    {
-                        chkGeneralRXOnly.Checked = false;
-                        chkGeneralDisablePTT.Checked = false;
-                        force_model = false;
-                    }
-
-                    console.btnUSB_Click(sender, e);
-                    console.NetworkThreadRunning = false;
-                    console.Console_Resize(this, EventArgs.Empty);
+                    CurrentModel = Model.GENESIS_G40;
                 }
+
+                console.Console_Resize(this, EventArgs.Empty);
             }
             catch (Exception ex)
             {
@@ -22475,52 +23247,10 @@ namespace PowerSDR
             {
                 if (radGenModelGenesisG80.Checked)
                 {
-                    grpG11.Visible = false;
-                    chkLineMic.Checked = false;
-                    chkLineMic.Enabled = false;
-                    chkContinuousTuning.Checked = false;
-                    chkContinuousTuning.Enabled = false;
-                    grpQRP2000.Visible = false;
-                    console.CurrentVisibleGroup = VisibleGroup.G80;
-                    chkGeneralUSBPresent.Enabled = true;
-                    console.net_device.Disconnect();
-                    console.btnNetwork.Visible = false;
-                    grpG59.Visible = false;
-                    grpSi570.Enabled = false;
-                    grpG59Keyer.Enabled = false;
-                    grpGenesisUSB.Enabled = false;
-                    grpGenesisConnection.Enabled = true;
-                    grpGenesis160.Visible = false;
-                    grpGenesis3020.Visible = false;
-                    grpGenesis40.Visible = false;
-                    grpGenesis80.Visible = true;
-                    grpNETBox.Visible = false;
-                    grpG6.Visible = false;
-                    grpGenesis137.Visible = false;
-                    grpGenesis500.Visible = false;
-                    console.grpG80.Visible = true;
-                    console.grpG59.Visible = false;
-                    console.grpG160.Visible = false;
-                    console.grpG40.Visible = false;
-                    console.grpG3020.Visible = false;
-                    console.grpG11.Visible = false;
-                    console.CurrentModel = Model.GENESIS_G80;
-                    chkGeneralDisablePTT.Checked = false;
-                    console.UsbSi570Enable = false;
-                    if (!console.booting)
-                        chkGeneralUSBPresent.Checked = false;
-                    if (radGenModelGenesisG80.Focused || force_model)
-                    {
-                        chkGeneralRXOnly.Checked = false;
-                        chkGeneralDisablePTT.Checked = false;
-                        force_model = false;
-                    }
-
-                    console.btnUSB_Click(sender, e);
-                    console.NetworkThreadRunning = false;
-
-                    console.Console_Resize(this, EventArgs.Empty);
+                    CurrentModel = Model.GENESIS_G80;
                 }
+
+                console.Console_Resize(this, EventArgs.Empty);
             }
             catch (Exception ex)
             {
@@ -22534,52 +23264,10 @@ namespace PowerSDR
             {
                 if (radGenModelGenesisG160.Checked)
                 {
-                    grpG11.Visible = false;
-                    chkLineMic.Checked = false;
-                    chkLineMic.Enabled = false;
-                    chkContinuousTuning.Checked = false;
-                    chkContinuousTuning.Enabled = false;
-                    grpQRP2000.Visible = false;
-                    console.CurrentVisibleGroup = VisibleGroup.G160;
-                    chkGeneralUSBPresent.Enabled = true;
-                    console.net_device.Disconnect();
-                    console.btnNetwork.Visible = false;
-                    grpG59.Visible = false;
-                    grpSi570.Enabled = false;
-                    grpG59Keyer.Enabled = false;
-                    grpGenesisUSB.Enabled = false;
-                    grpGenesisConnection.Enabled = true;
-                    grpGenesis160.Visible = true;
-                    grpGenesis3020.Visible = false;
-                    grpGenesis40.Visible = false;
-                    grpGenesis80.Visible = false;
-                    grpNETBox.Visible = false;
-                    grpG6.Visible = false;
-                    grpGenesis137.Visible = false;
-                    grpGenesis500.Visible = false;
-                    console.grpG160.Visible = true;
-                    console.grpG59.Visible = false;
-                    console.grpG80.Visible = false;
-                    console.grpG40.Visible = false;
-                    console.grpG3020.Visible = false;
-                    console.grpG11.Visible = false;
-                    console.CurrentModel = Model.GENESIS_G160;
-                    chkGeneralDisablePTT.Checked = false;
-                    console.UsbSi570Enable = false;
-                    if (!console.booting)
-                        chkGeneralUSBPresent.Checked = false;
-                    if (radGenModelGenesisG160.Focused || force_model)
-                    {
-                        chkGeneralRXOnly.Checked = false;
-                        chkGeneralDisablePTT.Checked = false;
-                        force_model = false;
-                    }
-                    if (!console.UsbSi570Enable)
-
-                    console.btnUSB_Click(sender, e);
-                    console.NetworkThreadRunning = false;
-                    console.Console_Resize(this, EventArgs.Empty);
+                    CurrentModel = Model.GENESIS_G160;
                 }
+
+                console.Console_Resize(this, EventArgs.Empty);
             }
             catch (Exception ex)
             {
@@ -22593,53 +23281,10 @@ namespace PowerSDR
             {
                 if (radGenModelGenesisG137.Checked)
                 {
-                    grpG11.Visible = false;
-                    chkLineMic.Checked = false;
-                    chkLineMic.Enabled = false;
-                    chkContinuousTuning.Checked = false;
-                    chkContinuousTuning.Enabled = false;
-                    grpQRP2000.Visible = false;
-                    console.CurrentVisibleGroup = VisibleGroup.G137;
-                    chkGeneralUSBPresent.Enabled = true;
-                    console.net_device.Disconnect();
-                    console.btnNetwork.Visible = false;
-                    grpG59.Visible = false;
-                    grpSi570.Enabled = false;
-                    grpG59Keyer.Enabled = false;
-                    grpGenesisUSB.Enabled = false;
-                    grpGenesisConnection.Enabled = true;
-                    grpGenesis137.Visible = true;
-                    grpGenesis160.Visible = false;
-                    grpGenesis3020.Visible = false;
-                    grpGenesis40.Visible = false;
-                    grpGenesis80.Visible = false;
-                    grpNETBox.Visible = false;
-                    grpG6.Visible = false;
-                    grpGenesis500.Visible = false;
-                    console.grpG160.Visible = true;
-                    console.grpG59.Visible = false;
-                    console.grpG80.Visible = false;
-                    console.grpG40.Visible = false;
-                    console.grpG3020.Visible = false;
-                    console.grpG11.Visible = false;
-                    console.CurrentModel = Model.GENESIS_G137;
-                    chkGeneralDisablePTT.Checked = false;
-                    console.UsbSi570Enable = false;
-                    if (!console.booting)
-                        chkGeneralUSBPresent.Checked = false;
-                    if (radGenModelGenesisG137.Focused || force_model)
-                    {
-                        chkGeneralRXOnly.Checked = false;
-                        chkGeneralDisablePTT.Checked = false;
-                        force_model = false;
-                    }
-
-                    if (!console.UsbSi570Enable)
-                        console.btnUSB_Click(sender, e);
-
-                    console.NetworkThreadRunning = false;
-                    console.Console_Resize(this, EventArgs.Empty);
+                    CurrentModel = Model.GENESIS_G137;
                 }
+
+                console.Console_Resize(this, EventArgs.Empty);
             }
             catch (Exception ex)
             {
@@ -22653,54 +23298,10 @@ namespace PowerSDR
             {
                 if (radGenModelGenesisG500.Checked)
                 {
-                    grpG11.Visible = false;
-                    chkLineMic.Checked = false;
-                    chkLineMic.Enabled = false;
-                    chkContinuousTuning.Checked = false;
-                    chkContinuousTuning.Enabled = false;
-                    grpQRP2000.Visible = false;
-                    console.CurrentVisibleGroup = VisibleGroup.G500;
-                    chkGeneralUSBPresent.Enabled = true;
-                    console.net_device.Disconnect();
-                    console.btnNetwork.Visible = false;
-                    grpG59.Visible = false;
-                    grpSi570.Enabled = false;
-                    grpG59Keyer.Enabled = false;
-                    grpGenesisUSB.Enabled = false;
-                    grpGenesisConnection.Enabled = true;
-                    grpGenesis500.Visible = true;
-                    grpGenesis160.Visible = false;
-                    grpGenesis3020.Visible = false;
-                    grpGenesis40.Visible = false;
-                    grpGenesis80.Visible = false;
-                    grpGenesis137.Visible = false;
-                    grpNETBox.Visible = false;
-                    grpG6.Visible = false;
-                    console.grpG160.Visible = true;
-                    console.grpG59.Visible = false;
-                    console.grpG80.Visible = false;
-                    console.grpG40.Visible = false;
-                    console.grpG3020.Visible = false;
-                    console.grpG11.Visible = false;
-                    console.CurrentModel = Model.GENESIS_G500;
-                    chkGeneralDisablePTT.Checked = false;
-                    console.UsbSi570Enable = false;
-                    if (!console.booting)
-                        chkGeneralUSBPresent.Checked = false;
-                    if (radGenModelGenesisG500.Focused || force_model)
-                    {
-                        chkGeneralRXOnly.Checked = false;
-                        chkGeneralDisablePTT.Checked = false;
-                        force_model = false;
-                    }
-
-                    if (!console.UsbSi570Enable)
-                        console.btnUSB_Click(sender, e);
-
-                    console.NetworkThreadRunning = false;
-
-                    console.Console_Resize(this, EventArgs.Empty);
+                    CurrentModel = Model.GENESIS_G500;
                 }
+
+                console.Console_Resize(this, EventArgs.Empty);
             }
             catch (Exception ex)
             {
@@ -22710,54 +23311,11 @@ namespace PowerSDR
 
         private void radGenModelGenesisG6_CheckedChanged(object sender, EventArgs e)
         {
-#if G6
             try
             {
                 if (radGenModelGenesisG6.Checked)
                 {
-                    chkContinuousTuning.Checked = false;
-                    chkContinuousTuning.Enabled = false;
-                    console.UsbSi570Enable = false;
-                    chkGeneralUSBPresent.Checked = false;
-                    chkGeneralUSBPresent.Enabled = false;
-                    console.Keyer.PrimaryConnPort = "USB";
-                    grpQRP2000.Visible = false;
-                    console.CurrentVisibleGroup = VisibleGroup.Multimeter;
-                    grpG59.Visible = false;
-                    grpSi570.Enabled = false;
-                    grpG59Keyer.Enabled = false;
-                    grpGenesisUSB.Enabled = false;
-                    grpGenesisConnection.Enabled = false;
-                    grpGenesis160.Visible = false;
-                    grpGenesis3020.Visible = false;
-                    grpGenesis40.Visible = false;
-                    grpGenesis80.Visible = false;
-                    grpG11.Visible = false;
-                    grpNETBox.Visible = false;
-                    grpG6.Visible = true;
-                    grpGenesis137.Visible = false;
-                    grpGenesis500.Visible = false;
-                    console.grpG160.Visible = false;
-                    console.grpG59.Visible = false;
-                    console.grpG80.Visible = false;
-                    console.grpG40.Visible = false;
-                    console.grpG3020.Visible = false;
-                    console.CurrentModel = Model.GENESIS_G6;
-                    chkGeneralDisablePTT.Checked = false;
-                    console.btnUSB.Visible = true;
-                    console.btnNetwork.Visible = false;
-
-                    console.ReInit_USB();
-
-                    console.CurrentDisplayMode = DisplayMode.PANADAPTER;
-
-                    if (radGenModelGenesisG6.Focused || force_model)
-                    {
-                        chkGeneralRXOnly.Checked = false;
-                        chkGeneralDisablePTT.Checked = false;
-                        force_model = false;
-                    }
-
+                    CurrentModel = Model.GENESIS_G6;
                     console.Console_Resize(this, EventArgs.Empty);
                 }
             }
@@ -22765,7 +23323,6 @@ namespace PowerSDR
             {
                 Debug.Write(ex.ToString());
             }
-#endif
         }
 
         private void chkGeneralRXOnly_CheckedChanged(object sender, System.EventArgs e)
@@ -22971,35 +23528,47 @@ namespace PowerSDR
 		#endregion
 
 		#region Audio Tab Event Handlers
-		// ======================================================
-		// Audio Tab Event Handlers
-		// ======================================================
 
 		private void comboAudioDriver1_SelectedIndexChanged(object sender, System.EventArgs e)
 		{
             try
             {
-                bool power = console.PowerOn;
-
-                if (power)
+                if (!initializing)
                 {
-                    console.chkPower.Checked = false;
-                    Thread.Sleep(100);
+                    if (console.CurrentModel == Model.GENESIS_G6 && radGenModelGenesisG6.Checked)
+                    {
+                        comboAudioDriver1.Text = "G6 USB";
+                        return;
+                    }
+                    else if (console.CurrentModel == Model.RTL_SDR && radGenModel_RTL_SDR.Checked)
+                    {
+                        comboAudioDriver1.Text = "RTL SDR";
+                        return;
+                    }
+
+                    bool power = console.PowerOn;
+
+                    if (power)
+                    {
+                        console.chkPower.Checked = false;
+                        Thread.Sleep(100);
+                    }
+
+                    console.AudioDriverIndex1 = ((PADeviceInfo)comboAudioDriver1.SelectedItem).Index;
+                    Audio.Host1 = ((PADeviceInfo)comboAudioDriver1.SelectedItem).Index;
+                    GetDevices1();
+
+                    if (power)
+                        console.chkPower.Checked = true;
                 }
-
-                console.AudioDriverIndex1 = ((PADeviceInfo)comboAudioDriver1.SelectedItem).Index;
-                Audio.Host1 = ((PADeviceInfo)comboAudioDriver1.SelectedItem).Index;
-                GetDevices1();
-
-                if (comboAudioInput1.Items.Count != 0)
-                    comboAudioInput1.SelectedIndex = 0;
-                if (comboAudioOutput1.Items.Count != 0)
-                    comboAudioOutput1.SelectedIndex = 0;
-                if (power) console.chkPower.Checked = true;
+                else
+                {
+                    settings.audio_driver1_index = comboAudioDriver1.SelectedIndex;
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error in AudioDriver1!Check your ASIO driver!\n" + ex.ToString());
+                Debug.Write("Error in AudioDriver1!Check your audio drivers!\n" + ex.ToString());
             }
 		}
 
@@ -23007,35 +23576,68 @@ namespace PowerSDR
 		{
             try
             {
-                bool power = console.PowerOn;
-                if (power)
-                {
-                    console.chkPower.Checked = false;
-                    Thread.Sleep(100);
-                }
+                int index;
 
-                int index = ((PADeviceInfo)comboAudioInput1.SelectedItem).Index;
-                console.AudioInputIndex1 = index;
-                Audio.Input1 = index;
-
-                switch (console.WinVer)
+                if (!initializing)
                 {
-                    case WindowsVersion.Windows2000:
-                    case WindowsVersion.WindowsXP:
-                        {
-                            if (comboAudioInput1.SelectedIndex == 0 &&
-                                comboAudioDriver1.SelectedIndex < 2)
+                    if (console.CurrentModel == Model.FIRST)
+                        return;
+                    else if (console.CurrentModel == Model.GENESIS_G6 && radGenModelGenesisG6.Checked)
+                    {
+                        comboAudioInput1.Text = "G6 input";
+                        return;
+                    }
+                    else if (console.CurrentModel == Model.RTL_SDR && radGenModel_RTL_SDR.Checked)
+                    {
+                        comboAudioInput1.Text = "RTL SDR";
+                        return;
+                    }
+
+                    bool power = console.PowerOn;
+
+                    if (power)
+                    {
+                        console.chkPower.Checked = false;
+                        Thread.Sleep(100);
+                    }
+
+                    try
+                    {
+                        index = ((PADeviceInfo)comboAudioInput1.SelectedItem).Index;
+                    }
+                    catch (Exception ex)
+                    {
+                        index = 0;
+                    }
+
+                    console.AudioInputIndex1 = index;
+                    Audio.Input1 = index;
+
+                    switch (console.WinVer)
+                    {
+                        case WindowsVersion.Windows2000:
+                        case WindowsVersion.WindowsXP:
                             {
-                                comboAudioMixer1.SelectedIndex = 0;
+                                if (comboAudioInput1.SelectedIndex == 0 &&
+                                    comboAudioDriver1.SelectedIndex < 2)
+                                {
+                                    comboAudioMixer1.SelectedIndex = 0;
+                                }
                             }
-                        }
-                        break;
+                            break;
+                    }
+
+                    if (power)
+                        console.chkPower.Checked = true;
                 }
-                if (power) console.chkPower.Checked = true;
+                else
+                {
+                    settings.audio_input1_index = comboAudioInput1.SelectedIndex;
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error in AudioInput selection!\n" + ex.ToString());
+                Debug.Write("Error in AudioInput selection!\n" + ex.ToString());
             }
 		}
 
@@ -23043,22 +23645,53 @@ namespace PowerSDR
 		{
             try
             {
-                bool power = console.PowerOn;
-                if (power)
+                int index;
+
+                if (!initializing)
                 {
-                    console.chkPower.Checked = false;
-                    Thread.Sleep(100);
+                    if (console.CurrentModel == Model.FIRST)
+                        return;
+                    else if (console.CurrentModel == Model.GENESIS_G6 && radGenModelGenesisG6.Checked)
+                    {
+                        comboAudioOutput1.Text = "G6 output";
+                        return;
+                    }
+                    else if (console.CurrentModel == Model.RTL_SDR && radGenModel_RTL_SDR.Checked)
+                    {
+                        comboAudioOutput1.Text = "RTL SDR";
+                        return;
+                    }
+
+                    bool power = console.PowerOn;
+
+                    if (power)
+                    {
+                        console.chkPower.Checked = false;
+                        Thread.Sleep(100);
+                    }
+
+                    try
+                    {
+                        index = ((PADeviceInfo)comboAudioOutput1.SelectedItem).Index;
+                    }
+                    catch (Exception ex)
+                    {
+                        index = 0;
+                    }
+
+                    console.AudioOutputIndex1 = index;
+                    Audio.Output1 = index;
+
+                    if (power) console.chkPower.Checked = true;
                 }
-
-                int index = ((PADeviceInfo)comboAudioOutput1.SelectedItem).Index;
-                console.AudioOutputIndex1 = index;
-                Audio.Output1 = index;
-
-                if (power) console.chkPower.Checked = true;
+                else
+                {
+                    settings.audio_output1_index = comboAudioOutput1.SelectedIndex;
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error in AudioOutput selection!\n" + ex.ToString());
+                Debug.Write("Error in AudioOutput selection!\n" + ex.ToString());
             }
 		}
 
@@ -23066,62 +23699,89 @@ namespace PowerSDR
 		{
             try
             {
-                switch (console.WinVer)
+                if (!initializing)
                 {
-                    case WindowsVersion.WindowsXP:
-                    case WindowsVersion.Windows2000:
-                        {
-                            if (current_sound_card == SoundCard.UNSUPPORTED_CARD)
+                    if (console.CurrentModel == Model.GENESIS_G6 && radGenModelGenesisG6.Checked)
+                    {
+                        comboAudioMixer1.Text = "None";
+                        comboAudioMixer1.Enabled = false;
+                        return;
+                    }
+
+                    switch (console.WinVer)
+                    {
+                        case WindowsVersion.WindowsXP:
+                        case WindowsVersion.Windows2000:
                             {
-                                UpdateMixerControls1();
-                                console.MixerID1 = comboAudioMixer1.SelectedIndex;
+                                if (current_sound_card == SoundCard.UNSUPPORTED_CARD)
+                                {
+                                    UpdateMixerControls1();
+                                    console.MixerID1 = comboAudioMixer1.SelectedIndex;
+                                }
                             }
-                        }
-                        break;
+                            break;
 
-                    case WindowsVersion.Windows7:
-                    case WindowsVersion.Windows8:
-                    case WindowsVersion.WindowsVista:
-                        {
+                        case WindowsVersion.Windows7:
+                        case WindowsVersion.Windows8:
+                        case WindowsVersion.WindowsVista:
+                            {
 
-                        }
-                        break;
+                            }
+                            break;
+                    }
+                }
+                else
+                {
+                    settings.audio_mixer_index = comboAudioMixer1.SelectedIndex;
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error in AudioMixer selection!\n" + ex.ToString());
+                Debug.Write("Error in AudioMixer selection!\n" + ex.ToString());
             }
-
-		}	
+		}
 
 		private void comboAudioReceive1_SelectedIndexChanged(object sender, System.EventArgs e)
 		{
             try
             {
-                switch (console.WinVer)
+                if (!initializing)
                 {
-                    case WindowsVersion.WindowsXP:
-                    case WindowsVersion.Windows2000:
-                        {
-                            console.MixerRXMuxID1 = comboAudioReceive1.SelectedIndex;
-                            if (!initializing && console.PowerOn && current_sound_card != SoundCard.REALTEK_HD_AUDIO
-                                && current_sound_card != SoundCard.NO_MIXER_AUDIO_CARD)
-                                Mixer.SetMux(comboAudioMixer1.SelectedIndex, comboAudioReceive1.SelectedIndex);
-                        }
-                        break;
+                    if (console.CurrentModel == Model.GENESIS_G6 && radGenModelGenesisG6.Checked)
+                    {
+                        comboAudioReceive1.Text = "";
+                        comboAudioReceive1.Enabled = false;
+                        return;
+                    }
 
-                    case WindowsVersion.Windows7:
-                    case WindowsVersion.Windows8:
-                    case WindowsVersion.WindowsVista:
-                        {
-                            if (comboAudioChannels1.Text == "4")
+                    switch (console.WinVer)
+                    {
+                        case WindowsVersion.WindowsXP:
+                        case WindowsVersion.Windows2000:
                             {
-                                int index = ((PADeviceInfo)comboAudioReceive1.SelectedItem).Index;
-                                Audio.Input3 = index;
+                                console.MixerRXMuxID1 = comboAudioReceive1.SelectedIndex;
+                                if (!initializing && console.PowerOn && current_sound_card != SoundCard.REALTEK_HD_AUDIO
+                                    && current_sound_card != SoundCard.NO_MIXER_AUDIO_CARD)
+                                    Mixer.SetMux(comboAudioMixer1.SelectedIndex, comboAudioReceive1.SelectedIndex);
                             }
-                        }
-                        break;
+                            break;
+
+                        case WindowsVersion.Windows7:
+                        case WindowsVersion.Windows8:
+                        case WindowsVersion.WindowsVista:
+                            {
+                                if (comboAudioChannels1.Text == "4")
+                                {
+                                    int index = ((PADeviceInfo)comboAudioReceive1.SelectedItem).Index;
+                                    Audio.Input3 = index;
+                                }
+                            }
+                            break;
+                    }
+                }
+                else
+                {
+                    settings.audio_receive_index = comboAudioReceive1.SelectedIndex;
                 }
             }
             catch (Exception ex)
@@ -23134,23 +23794,37 @@ namespace PowerSDR
 		{
             try
             {
-                switch (console.WinVer)
+                if (!initializing)
                 {
-                    case WindowsVersion.WindowsXP:
-                    case WindowsVersion.Windows2000:
-                        {
-                            console.MixerTXMuxID1 = comboAudioTransmit1.SelectedIndex;
-                        }
-                        break;
+                    if (console.CurrentModel == Model.GENESIS_G6 && radGenModelGenesisG6.Checked)
+                    {
+                        comboAudioTransmit1.Text = "";
+                        comboAudioTransmit1.Enabled = false;
+                        return;
+                    }
 
-                    case WindowsVersion.Windows7:
-                    case WindowsVersion.Windows8:
-                    case WindowsVersion.WindowsVista:
-                        {
-                            int index = ((PADeviceInfo)comboAudioTransmit1.SelectedItem).Index;
-                            Audio.Output3 = index;
-                        }
-                        break;
+                    switch (console.WinVer)
+                    {
+                        case WindowsVersion.WindowsXP:
+                        case WindowsVersion.Windows2000:
+                            {
+                                console.MixerTXMuxID1 = comboAudioTransmit1.SelectedIndex;
+                            }
+                            break;
+
+                        case WindowsVersion.Windows7:
+                        case WindowsVersion.Windows8:
+                        case WindowsVersion.WindowsVista:
+                            {
+                                int index = ((PADeviceInfo)comboAudioTransmit1.SelectedItem).Index;
+                                Audio.Output3 = index;
+                            }
+                            break;
+                    }
+                }
+                else
+                {
+                    settings.audio_transmit_index = comboAudioTransmit1.SelectedIndex;
                 }
             }
             catch (Exception ex)
@@ -23161,375 +23835,533 @@ namespace PowerSDR
 
 		private void chkAudioEnableVAC_CheckedChanged(object sender, System.EventArgs e)
 		{
-			bool val = chkAudioEnableVAC.Checked;
-
-			if(val)
-			{
-				if(comboAudioDriverVAC.SelectedIndex < 0 && 
-					comboAudioDriverVAC.Items.Count > 0)
-					comboAudioDriverVAC.SelectedIndex = 0;
-			}
-
-			bool power = console.PowerOn;
-
-			if(power)
-			{
-				console.chkPower.Checked = false;
-				Thread.Sleep(500);
-			}
-				
-			console.VACEnabled = val;
-
-            if (chkAudioEnableVAC.Checked &&
-                comboAudioInputVAC.Text.Contains("loop.dll") &&
-                comboAudioOutputVAC.Text.Contains("loop.dll"))
+            try
             {
-                if (console.loopDLL != null)
-                    console.loopDLL = null;
-
-                if (File.Exists(txtLoopDll.Text + "\\loop.dll"))
+                if (!initializing)
                 {
-                    console.loopDLL = new LoopDLL(console);
-                    Audio.loopDLL_enabled = true;
+                    bool val = chkAudioEnableVAC.Checked;
+
+                    if (val)
+                    {
+                        if (comboAudioDriverVAC.SelectedIndex < 0 &&
+                            comboAudioDriverVAC.Items.Count > 0)
+                            comboAudioDriverVAC.SelectedIndex = 0;
+                    }
+
+                    bool power = console.PowerOn;
+
+                    if (power)
+                    {
+                        console.chkPower.Checked = false;
+                        Thread.Sleep(500);
+                    }
+
+                    console.VACEnabled = val;
+
+                    if (chkAudioEnableVAC.Checked &&
+                        comboAudioInputVAC.Text.Contains("loop.dll") &&
+                        comboAudioOutputVAC.Text.Contains("loop.dll"))
+                    {
+                        if (console.loopDLL != null)
+                            console.loopDLL = null;
+
+                        if (File.Exists(txtLoopDll.Text + "\\loop.dll"))
+                        {
+                            console.loopDLL = new LoopDLL(console);
+                            Audio.loopDLL_enabled = true;
+                        }
+                        else
+                            MessageBox.Show("Loop.dll not found!\nCheck your settings!");
+                    }
+                    else
+                        Audio.loopDLL_enabled = false;
+
+                    if (power) console.chkPower.Checked = true;
                 }
                 else
-                    MessageBox.Show("Loop.dll not found!\nCheck your settings!");
+                {
+                    settings.enable_VAC_mic_speaker = chkAudioEnableVAC.Checked;
+                }
             }
-            else
-                Audio.loopDLL_enabled = false;
-
-			if(power)console.chkPower.Checked = true;
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void comboAudioChannels1_SelectedIndexChanged(object sender, System.EventArgs e)
 		{
-            if (comboAudioChannels1.SelectedIndex < 0) return;
-            console.NumChannels = Int32.Parse(comboAudioChannels1.Text);
-            Audio.NumChannels = Int32.Parse(comboAudioChannels1.Text);
-
-            if (!console.booting)
+            try
             {
-                bool power = console.PowerOn;
-                if (chkAudioEnableVAC.Checked && power)
+                if (!initializing)
                 {
-                    console.chkPower.Checked = false;
-                    Thread.Sleep(100);
-                }
+                    if (comboAudioChannels1.SelectedIndex < 0) return;
+                    console.NumChannels = Int32.Parse(comboAudioChannels1.Text);
+                    Audio.NumChannels = Int32.Parse(comboAudioChannels1.Text);
 
-                switch (console.WinVer)
-                {
-                    case WindowsVersion.WindowsXP:
-                    case WindowsVersion.Windows2000:
+                    if (!console.booting)
+                    {
+                        bool power = console.PowerOn;
+                        if (chkAudioEnableVAC.Checked && power)
                         {
-                            if (chkAudioEnableVAC.Checked && power)
-                                console.chkPower.Checked = true;
+                            console.chkPower.Checked = false;
+                            Thread.Sleep(100);
                         }
-                        break;
-                    case WindowsVersion.Windows7:
-                    case WindowsVersion.Windows8:
-                    case WindowsVersion.WindowsVista:
-                        {
-                            if (current_sound_card == SoundCard.UNSUPPORTED_CARD)
-                            {
-                                GetDevices1();  // refresh
-                                if (comboAudioInput1.Items.Count != 0 )
-                                    comboAudioInput1.SelectedIndex = 0;
-                                if (comboAudioOutput1.Items.Count != 0)
-                                    comboAudioOutput1.SelectedIndex = 0;
-                                if (comboAudioReceive1.Items.Count != 0)
-                                    comboAudioReceive1.SelectedIndex = 0;
-                                if (comboAudioTransmit1.Items.Count != 0)
-                                    comboAudioTransmit1.SelectedIndex = 0;
 
-                                if (comboAudioChannels1.Text == "4" ||
-                                    comboAudioChannels1.Text == "6")
+                        switch (console.WinVer)
+                        {
+                            case WindowsVersion.WindowsXP:
+                            case WindowsVersion.Windows2000:
                                 {
-                                    if (!chkAudioExclusive.Checked)
+                                    if (chkAudioEnableVAC.Checked && power)
+                                        console.chkPower.Checked = true;
+                                }
+                                break;
+                            case WindowsVersion.Windows7:
+                            case WindowsVersion.Windows8:
+                            case WindowsVersion.WindowsVista:
+                                {
+                                    if (current_sound_card == SoundCard.UNSUPPORTED_CARD)
                                     {
-                                        comboAudioReceive1.Enabled = false;
-                                        comboAudioTransmit1.Enabled = false;
-                                        lblAudioReceive1.Text = "Receive:";
-                                        lblAudioTransmit1.Text = "Transmit:";
-                                        lblAudioOutput1.Text = "Output:";
-                                    }
-                                    else
-                                    {
-                                        comboAudioReceive1.Enabled = true;
-                                        comboAudioTransmit1.Enabled = true;
-                                        lblAudioReceive1.Text = "Mic:";
-                                        lblAudioTransmit1.Text = "TX out:";
-                                        lblAudioOutput1.Text = "RX_out:";
+                                        GetDevices1();  // refresh
+
+                                        if (comboAudioInput1.Items.Count != 0)
+                                            comboAudioInput1.SelectedIndex = 0;
+                                        if (comboAudioOutput1.Items.Count != 0)
+                                            comboAudioOutput1.SelectedIndex = 0;
+                                        if (comboAudioReceive1.Items.Count != 0)
+                                            comboAudioReceive1.SelectedIndex = 0;
+                                        if (comboAudioTransmit1.Items.Count != 0)
+                                            comboAudioTransmit1.SelectedIndex = 0;
+
+                                        if (comboAudioChannels1.Text == "4" ||
+                                            comboAudioChannels1.Text == "6")
+                                        {
+                                            if (!chkAudioExclusive.Checked)
+                                            {
+                                                comboAudioReceive1.Enabled = false;
+                                                comboAudioTransmit1.Enabled = false;
+                                                lblAudioReceive1.Text = "Receive:";
+                                                lblAudioTransmit1.Text = "Transmit:";
+                                                lblAudioOutput1.Text = "Output:";
+                                            }
+                                            else
+                                            {
+                                                comboAudioReceive1.Enabled = true;
+                                                comboAudioTransmit1.Enabled = true;
+                                                lblAudioReceive1.Text = "Mic:";
+                                                lblAudioTransmit1.Text = "TX out:";
+                                                lblAudioOutput1.Text = "RX_out:";
+                                            }
+                                        }
+                                        else
+                                        {
+                                            comboAudioReceive1.Enabled = false;
+                                            comboAudioTransmit1.Enabled = false;
+                                            lblAudioReceive1.Text = "Receive:";
+                                            lblAudioTransmit1.Text = "Transmit:";
+                                            lblAudioOutput1.Text = "Output:";
+                                        }
                                     }
                                 }
-                                else
-                                {
-                                    comboAudioReceive1.Enabled = false;
-                                    comboAudioTransmit1.Enabled = false;
-                                    lblAudioReceive1.Text = "Receive:";
-                                    lblAudioTransmit1.Text = "Transmit:";
-                                    lblAudioOutput1.Text = "Output:";
-                                }
-                            }
+                                break;
                         }
-                        break;
+                    }
                 }
+                else
+                {
+                    settings.audio_channel1_number = comboAudioChannels1.SelectedIndex;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
             }
 		}
 
 		private void comboAudioDriverVAC_SelectedIndexChanged(object sender, System.EventArgs e)
 		{
-			bool power = console.PowerOn;
-			if(chkAudioEnableVAC.Checked && power) 
-			{
-				console.chkPower.Checked = false;
-				Thread.Sleep(100);
-			}
-			console.AudioDriverIndex2 = ((PADeviceInfo)comboAudioDriverVAC.SelectedItem).Index;
-			Audio.Host2 = ((PADeviceInfo)comboAudioDriverVAC.SelectedItem).Index;
-			GetDevicesVAC();
-			if(comboAudioInputVAC.Items.Count != 0)
-				comboAudioInputVAC.SelectedIndex = 0;
-			if(comboAudioOutputVAC.Items.Count != 0)
-				comboAudioOutputVAC.SelectedIndex = 0;
-			if(chkAudioEnableVAC.Checked && power) 
-				console.chkPower.Checked = true;
+            try
+            {
+                if (!initializing)
+                {
+                    bool power = console.PowerOn;
+                    if (chkAudioEnableVAC.Checked && power)
+                    {
+                        console.chkPower.Checked = false;
+                        Thread.Sleep(100);
+                    }
+                    console.AudioDriverIndex2 = ((PADeviceInfo)comboAudioDriverVAC.SelectedItem).Index;
+                    Audio.Host2 = ((PADeviceInfo)comboAudioDriverVAC.SelectedItem).Index;
+                    GetDevicesVAC();
+                    if (comboAudioInputVAC.Items.Count != 0)
+                        comboAudioInputVAC.SelectedIndex = 0;
+                    if (comboAudioOutputVAC.Items.Count != 0)
+                        comboAudioOutputVAC.SelectedIndex = 0;
+                    if (chkAudioEnableVAC.Checked && power)
+                        console.chkPower.Checked = true;
+                }
+                else
+                {
+                    settings.audio_driverVAC_index = comboAudioDriverVAC.SelectedIndex;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void comboAudioInputVAC_SelectedIndexChanged(object sender, System.EventArgs e)
 		{
-			bool power = console.PowerOn;
-			if(chkAudioEnableVAC.Checked && power) 
-			{
-				console.chkPower.Checked = false;
-				Thread.Sleep(100);
-			}
-
-			int index = ((PADeviceInfo)comboAudioInputVAC.SelectedItem).Index;
-			console.AudioInputIndex2 = index;
-			Audio.Input2 = index;
-            if (comboAudioInputVAC.Text == "loop.dll" && comboAudioOutputVAC.Text == "loop.dll" &&
-                chkAudioEnableVAC.Checked && txtLoopDll.Text != "")
+            try
             {
-                if (console.loopDLL != null)
-                    console.loopDLL = null;
-
-                if (File.Exists(txtLoopDll.Text + "\\loop.dll"))
+                if (!initializing)
                 {
-                    console.loopDLL = new LoopDLL(console);
-                    Audio.loopDLL_enabled = true;
+                    bool power = console.PowerOn;
+                    if (chkAudioEnableVAC.Checked && power)
+                    {
+                        console.chkPower.Checked = false;
+                        Thread.Sleep(100);
+                    }
+
+                    int index = ((PADeviceInfo)comboAudioInputVAC.SelectedItem).Index;
+                    console.AudioInputIndex2 = index;
+                    Audio.Input2 = index;
+                    if (comboAudioInputVAC.Text == "loop.dll" && comboAudioOutputVAC.Text == "loop.dll" &&
+                        chkAudioEnableVAC.Checked && txtLoopDll.Text != "")
+                    {
+                        if (console.loopDLL != null)
+                            console.loopDLL = null;
+
+                        if (File.Exists(txtLoopDll.Text + "\\loop.dll"))
+                        {
+                            console.loopDLL = new LoopDLL(console);
+                            Audio.loopDLL_enabled = true;
+                        }
+                        else
+                        {
+                            Audio.loopDLL_enabled = false;
+                            MessageBox.Show("Loop.dll not found!\nCheck your settings!");
+                        }
+                    }
+
+                    if (chkAudioEnableVAC.Checked && power)
+                        console.chkPower.Checked = true;
                 }
                 else
                 {
-                    Audio.loopDLL_enabled = false;
-                    MessageBox.Show("Loop.dll not found!\nCheck your settings!");
-                }
+                    settings.audio_inputVAC_index = comboAudioInputVAC.SelectedIndex;
+                }     
             }
-
-			if(chkAudioEnableVAC.Checked && power) 
-				console.chkPower.Checked = true;
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void comboAudioOutputVAC_SelectedIndexChanged(object sender, System.EventArgs e)
 		{
-			bool power = console.PowerOn;
-			if(chkAudioEnableVAC.Checked && power) 
-			{
-				console.chkPower.Checked = false;
-				Thread.Sleep(100);
-			}
-
-			int index = ((PADeviceInfo)comboAudioOutputVAC.SelectedItem).Index;
-			console.AudioOutputIndexVAC = index;
-			Audio.Output2 = index;
-            if (comboAudioOutputVAC.Text == "loop.dll" && comboAudioInputVAC.Text == "loop.dll" &&
-                chkAudioEnableVAC.Checked && txtLoopDll.Text != "")
+            try
             {
-                if (console.loopDLL != null)
-                    console.loopDLL = null;
-
-                if (File.Exists(txtLoopDll.Text + "\\loop.dll"))
+                if (!initializing)
                 {
-                    console.loopDLL = new LoopDLL(console);
-                    Audio.loopDLL_enabled = true;
+                    bool power = console.PowerOn;
+                    if (chkAudioEnableVAC.Checked && power)
+                    {
+                        console.chkPower.Checked = false;
+                        Thread.Sleep(100);
+                    }
+
+                    int index = ((PADeviceInfo)comboAudioOutputVAC.SelectedItem).Index;
+                    console.AudioOutputIndexVAC = index;
+                    Audio.Output2 = index;
+                    if (comboAudioOutputVAC.Text == "loop.dll" && comboAudioInputVAC.Text == "loop.dll" &&
+                        chkAudioEnableVAC.Checked && txtLoopDll.Text != "")
+                    {
+                        if (console.loopDLL != null)
+                            console.loopDLL = null;
+
+                        if (File.Exists(txtLoopDll.Text + "\\loop.dll"))
+                        {
+                            console.loopDLL = new LoopDLL(console);
+                            Audio.loopDLL_enabled = true;
+                        }
+                        else
+                        {
+                            Audio.loopDLL_enabled = false;
+                            MessageBox.Show("Loop.dll not found!\nCheck your settings!");
+                        }
+
+                    }
+
+                    if (chkAudioEnableVAC.Checked && power)
+                        console.chkPower.Checked = true;
                 }
                 else
                 {
-                    Audio.loopDLL_enabled = false;
-                    MessageBox.Show("Loop.dll not found!\nCheck your settings!");
+                    settings.audio_outputVAC_index = comboAudioOutputVAC.SelectedIndex;
                 }
-
             }
-
-			if(chkAudioEnableVAC.Checked && power) 
-				console.chkPower.Checked = true;
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void comboAudioSampleRate1_SelectedIndexChanged(object sender, System.EventArgs e)
 		{
-			int old_rate = console.SampleRate1;
-			int new_rate = Int32.Parse(comboAudioSampleRate1.Text);
-			bool power = console.PowerOn;
-			if(power && new_rate != old_rate)
-			{
-				console.chkPower.Checked = false;
-				Thread.Sleep(100);
-			}
-			DttSP.SampleRate = new_rate;
-			console.SampleRate1 = new_rate;			
-			DttSP.SetKeyerSampleRate(new_rate);
-			DttSP.SetKeyerFreq((float)console.CWPitch);
-            DttSP.SetMode(0, 0, console.CurrentDSPMode);
-            DttSP.SetMode(0, 1, console.CurrentDSPModeSubRX);
-            DttSP.SetFilter(console.FilterLowValue, console.FilterHighValue);
+            try
+            {
+                if (!initializing)
+                {
+                    int old_rate = console.SampleRate1;
+                    int new_rate = Int32.Parse(comboAudioSampleRate1.Text);
+                    bool power = console.PowerOn;
 
-			if(power && new_rate != old_rate)
-				console.chkPower.Checked = true;			
+                    if (power && new_rate != old_rate)
+                    {
+                        console.chkPower.Checked = false;
+                        Thread.Sleep(100);
+                    }
+
+                    DttSP.SampleRate = new_rate;
+                    console.SampleRate1 = new_rate;
+                    chkWBIRfixed_CheckedChanged(this, EventArgs.Empty);    // force reload WBIR state
+                    DttSP.SetKeyerSampleRate(new_rate);
+                    DttSP.SetKeyerFreq((float)console.CWPitch);
+                    DttSP.SetMode(0, 0, console.CurrentDSPMode);
+                    DttSP.SetMode(0, 1, console.CurrentDSPModeSubRX);
+                    DttSP.SetFilter(console.FilterLowValue, console.FilterHighValue);
+
+                    if (power && new_rate != old_rate)
+                        console.chkPower.Checked = true;
+                }
+                else
+                {
+                    settings.audio_samplerate1 = comboAudioSampleRate1.SelectedIndex;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
-
+      
 		private void comboAudioSampleRate2_SelectedIndexChanged(object sender, System.EventArgs e)
 		{
-			int old_rate = console.SampleRate2;
-			int new_rate = Int32.Parse(comboAudioSampleRateVAC.Text);
-			bool poweron = console.PowerOn;
-			if(console.SetupForm != null && new_rate != old_rate && poweron)
-				console.chkPower.Checked = false;
-			Thread.Sleep(100);
-			console.SampleRate2 = new_rate;
-			console.VACSampleRate = comboAudioSampleRateVAC.Text;
+            try
+            {
+                if (!initializing)
+                {
+                    int old_rate = console.SampleRate2;
+                    int new_rate = Int32.Parse(comboAudioSampleRateVAC.Text);
+                    bool poweron = console.PowerOn;
+                    if (console.SetupForm != null && new_rate != old_rate && poweron)
+                        console.chkPower.Checked = false;
+                    Thread.Sleep(100);
+                    console.SampleRate2 = new_rate;
+                    console.VACSampleRate = comboAudioSampleRateVAC.Text;
 
-			if(console.SetupForm != null && new_rate != old_rate && poweron)
-				console.chkPower.Checked = true;	
+                    if (console.SetupForm != null && new_rate != old_rate && poweron)
+                        console.chkPower.Checked = true;
+                }
+                else
+                {
+                    settings.audio_samplerateVAC = comboAudioSampleRateVAC.SelectedIndex;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
-	
+
 		private void comboAudioBuffer1_SelectedIndexChanged(object sender, System.EventArgs e)
 		{
-			bool power = console.PowerOn;
-			if(power)
-			{
-				console.chkPower.Checked = false;
-				Thread.Sleep(100);
-			}
+            try
+            {
+                if (!initializing)
+                {
+                    bool power = console.PowerOn;
+                    if (power)
+                    {
+                        console.chkPower.Checked = false;
+                        Thread.Sleep(100);
+                    }
 
-			console.BlockSize1 = Int32.Parse(comboAudioBuffer1.Text);
-			DttSP.SetAudioSize(console.BlockSize1);
-			DttSP.SetKeyerResetSize(console.BlockSize1*3/2);
-			
-			if(power) console.chkPower.Checked = true;
+                    console.BlockSize1 = Int32.Parse(comboAudioBuffer1.Text);
+                    DttSP.SetAudioSize(console.BlockSize1);
+                    DttSP.SetKeyerResetSize(console.BlockSize1 * 3 / 2);
+
+                    if (power) console.chkPower.Checked = true;
+                }
+                else
+                {
+                    settings.audio_buffer_size1 = comboAudioBuffer1.SelectedIndex;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void comboAudioBuffer2_SelectedIndexChanged(object sender, System.EventArgs e)
 		{
-			bool power = console.PowerOn;
-			if(power && chkAudioEnableVAC.Checked)
-			{
-				console.chkPower.Checked = false;
-				Thread.Sleep(100);
-			}
+            try
+            {
+                if (!initializing)
+                {
+                    bool power = console.PowerOn;
+                    if (power && chkAudioEnableVAC.Checked)
+                    {
+                        console.chkPower.Checked = false;
+                        Thread.Sleep(100);
+                    }
 
-			console.BlockSize2 = Int32.Parse(comboAudioBufferVAC.Text);
-			
-			if(power && chkAudioEnableVAC.Checked)
-				console.chkPower.Checked = true;
+                    console.BlockSize2 = Int32.Parse(comboAudioBufferVAC.Text);
+
+                    if (power && chkAudioEnableVAC.Checked)
+                        console.chkPower.Checked = true;
+                }
+                else
+                {
+                    settings.audio_buffer_sizeVAC = comboAudioBufferVAC.SelectedIndex;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void udAudioLatency1_ValueChanged(object sender, System.EventArgs e)
 		{
-			bool power = console.PowerOn;
-			if(power)
-			{
-				console.chkPower.Checked = false;
-				Thread.Sleep(100);
-			}
+            try
+            {
+                if (!initializing)
+                {
+                    bool power = console.PowerOn;
+                    if (power)
+                    {
+                        console.chkPower.Checked = false;
+                        Thread.Sleep(100);
+                    }
 
-			console.AudioLatency1 = (int)udAudioLatency1.Value;
-			Audio.Latency1 = (int)udAudioLatency1.Value;
-			
-			if(power) console.chkPower.Checked = true;
+                    console.AudioLatency1 = (int)udAudioLatency1.Value;
+                    Audio.Latency1 = (int)udAudioLatency1.Value;
+
+                    if (power) console.chkPower.Checked = true;
+                }
+                else
+                {
+                    settings.audio_latency1 = (int)udAudioLatency1.Value;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void udAudioLatency2_ValueChanged(object sender, System.EventArgs e)
 		{
-			bool power = console.PowerOn;
+            try
+            {
+                if (!initializing)
+                {
+                    bool power = console.PowerOn;
 
-			if(power && chkAudioEnableVAC.Checked)
-			{
-				console.chkPower.Checked = false;
-				Thread.Sleep(100);
-			}
+                    if (power && chkAudioEnableVAC.Checked)
+                    {
+                        console.chkPower.Checked = false;
+                        Thread.Sleep(100);
+                    }
 
-			console.AudioLatency2 = (int)udAudioLatencyVAC.Value;
-			Audio.Latency2 = (int)udAudioLatencyVAC.Value;
+                    console.AudioLatency2 = (int)udAudioLatencyVAC.Value;
+                    Audio.Latency2 = (int)udAudioLatencyVAC.Value;
 
-			if(power && chkAudioEnableVAC.Checked)
-				console.chkPower.Checked = true;
+                    if (power && chkAudioEnableVAC.Checked)
+                        console.chkPower.Checked = true;
+                }
+                else
+                {
+                    settings.audio_latencyVAC = (int)udAudioLatencyVAC.Value;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void udAudioVoltage1_ValueChanged(object sender, System.EventArgs e)
 		{
-			if(udAudioVoltage1.Focused &&
-				comboAudioSoundCard.SelectedIndex > 0 &&
-				current_sound_card != SoundCard.UNSUPPORTED_CARD)
-			{
-				DialogResult dr = MessageBox.Show("Are you sure you want to change the Max RMS Voltage for this \n"+
-					"supported sound card?  The largest measured difference in supported cards \n"+
-					"was 40mV.  Note that we will only allow a 100mV difference from our measured default.",
-					"Change Voltage?",
-					MessageBoxButtons.YesNo,
-					MessageBoxIcon.Warning);
-				if(dr == DialogResult.No)
-				{
-					udAudioVoltage1.Value = (decimal)console.AudioVolts1;
-					return;
-				}
-			}
-			/*double def_volt = 0.0;
-			switch(current_sound_card)
-			{
-				case SoundCard.SANTA_CRUZ:
-					def_volt = 1.27;
-					break;
-				case SoundCard.AUDIGY:
-				case SoundCard.AUDIGY_2:
-				case SoundCard.AUDIGY_2_ZS:
-					def_volt = 2.23;
-					break;
-				case SoundCard.EXTIGY:
-					def_volt = 1.96;
-					break;
-				case SoundCard.MP3_PLUS:
-					def_volt = 0.98;
-					break;
-				case SoundCard.DELTA_44:
-					def_volt = 0.98;
-					break;
-				case SoundCard.FIREBOX:
-					def_volt = 6.39;
-					break;
-			}
+            try
+            {
+                if (!initializing)
+                {
+                    /*if (udAudioVoltage1.Focused &&
+                        comboAudioSoundCard.SelectedIndex > 0 &&
+                        current_sound_card != SoundCard.UNSUPPORTED_CARD)
+                    {
+                        DialogResult dr = MessageBox.Show("Are you sure you want to change the Max RMS Voltage for this \n" +
+                            "supported sound card?  The largest measured difference in supported cards \n" +
+                            "was 40mV.  Note that we will only allow a 100mV difference from our measured default.",
+                            "Change Voltage?",
+                            MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Warning);
+                        if (dr == DialogResult.No)
+                        {
+                            udAudioVoltage1.Value = (decimal)console.AudioVolts1;
+                            return;
+                        }
+                    }
+                    /*double def_volt = 0.0;
+                    switch(current_sound_card)
+                    {
+                        case SoundCard.SANTA_CRUZ:
+                            def_volt = 1.27;
+                            break;
+                        case SoundCard.AUDIGY:
+                        case SoundCard.AUDIGY_2:
+                        case SoundCard.AUDIGY_2_ZS:
+                            def_volt = 2.23;
+                            break;
+                        case SoundCard.EXTIGY:
+                            def_volt = 1.96;
+                            break;
+                        case SoundCard.MP3_PLUS:
+                            def_volt = 0.98;
+                            break;
+                        case SoundCard.DELTA_44:
+                            def_volt = 0.98;
+                            break;
+                        case SoundCard.FIREBOX:
+                            def_volt = 6.39;
+                            break;
+                    }
 
-			if(current_sound_card != SoundCard.UNSUPPORTED_CARD)
-			{
-				if(Math.Abs(def_volt - (double)udAudioVoltage1.Value) > 0.1)
-				{
-					udAudioVoltage1.Value = (decimal)def_volt;
-					return;
-				}
-			}*/
-			console.AudioVolts1 = (double)udAudioVoltage1.Value;
-		}
-
-		private void chkAudio2Stereo_CheckedChanged(object sender, System.EventArgs e)
-		{
-			bool power = console.PowerOn;
-
-			if(power && chkAudioEnableVAC.Checked)
-			{
-				console.chkPower.Checked = false;
-				Thread.Sleep(100);
-			}
-
-			if(power && chkAudioEnableVAC.Checked)
-				console.chkPower.Checked = true;
+                    if(current_sound_card != SoundCard.UNSUPPORTED_CARD)
+                    {
+                        if(Math.Abs(def_volt - (double)udAudioVoltage1.Value) > 0.1)
+                        {
+                            udAudioVoltage1.Value = (decimal)def_volt;
+                            return;
+                        }
+                    }*/
+                    console.AudioVolts1 = (double)udAudioVoltage1.Value;
+                }
+                else
+                {
+                    settings.audio_output_voltage = (double)udAudioVoltage1.Value;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void udAudioVACGainRX_ValueChanged(object sender, System.EventArgs e)
@@ -23551,52 +24383,86 @@ namespace PowerSDR
 
 		private void udAudioLineIn1_ValueChanged(object sender, System.EventArgs e)
 		{
-            if (current_sound_card != SoundCard.REALTEK_HD_AUDIO)
-                Mixer.SetLineInRecordVolume(comboAudioMixer1.SelectedIndex, (int)udAudioLineIn1.Value);
-            else if(current_sound_card == SoundCard.REALTEK_HD_AUDIO)
-                Mixer.SetLineInRecordVolume_RealtekHDaudio(console.MixerID1, (int)udAudioLineIn1.Value);
-            else
-                Mixer.SetLineInRecordVolume_NoMixerAudio(console.MixerID1, (int)udAudioLineIn1.Value);
+            try
+            {
+                if (!initializing)
+                {
+                    if (current_sound_card != SoundCard.REALTEK_HD_AUDIO)
+                        Mixer.SetLineInRecordVolume(comboAudioMixer1.SelectedIndex, (int)udAudioLineIn1.Value);
+                    else if (current_sound_card == SoundCard.REALTEK_HD_AUDIO)
+                        Mixer.SetLineInRecordVolume_RealtekHDaudio(console.MixerID1, (int)udAudioLineIn1.Value);
+                    else
+                        Mixer.SetLineInRecordVolume_NoMixerAudio(console.MixerID1, (int)udAudioLineIn1.Value);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void udAudioMicGain1_ValueChanged(object sender, System.EventArgs e)
 		{
-			Mixer.SetMicRecordVolume(comboAudioMixer1.SelectedIndex, (int)udAudioMicGain1.Value);
+            try
+            {
+                Mixer.SetMicRecordVolume(comboAudioMixer1.SelectedIndex, (int)udAudioMicGain1.Value);
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void chkAudioLatencyManual1_CheckedChanged(object sender, System.EventArgs e)
 		{
-			bool power = console.PowerOn;
-			if(power)
-			{
-				console.chkPower.Checked = false;
-				Thread.Sleep(100);
-			}
+            try
+            {
+                if (!initializing)
+                {
+                    bool power = console.PowerOn;
+                    if (power)
+                    {
+                        console.chkPower.Checked = false;
+                        Thread.Sleep(100);
+                    }
 
-			udAudioLatency1.Enabled = chkAudioLatencyManual1.Checked;
+                    udAudioLatency1.Enabled = chkAudioLatencyManual1.Checked;
 
-/*			if(!chkAudioLatencyManual1.Checked)
-				console.AudioLatency1 = 0;*/
-
-			if(power) console.chkPower.Checked = true;
+                    if (power) console.chkPower.Checked = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void chkAudioLatencyManual2_CheckedChanged(object sender, System.EventArgs e)
 		{
-			bool power = console.PowerOn;
-			if(power && chkAudioEnableVAC.Checked)
-			{
-				console.chkPower.Checked = false;
-				Thread.Sleep(100);
-			}
+            try
+            {
+                if (!initializing)
+                {
+                    bool power = console.PowerOn;
+                    if (power && chkAudioEnableVAC.Checked)
+                    {
+                        console.chkPower.Checked = false;
+                        Thread.Sleep(100);
+                    }
 
-			udAudioLatencyVAC.Enabled = chkAudioLatencyManualVAC.Checked;
+                    udAudioLatencyVAC.Enabled = chkAudioLatencyManualVAC.Checked;
 
-			if(!chkAudioLatencyManualVAC.Checked)
-				console.AudioLatency2 = 0;
+                    if (!chkAudioLatencyManualVAC.Checked)
+                        console.AudioLatency2 = 0;
 
-			if(power && chkAudioEnableVAC.Checked)
-				console.chkPower.Checked = true;
+                    if (power && chkAudioEnableVAC.Checked)
+                        console.chkPower.Checked = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void chkAudioMicBoost_CheckedChanged(object sender, System.EventArgs e)
@@ -23641,1063 +24507,1197 @@ namespace PowerSDR
 
 		private void comboAudioSoundCard_SelectedIndexChanged(object sender, System.EventArgs e)
 		{
-			bool on = console.PowerOn;
-			if(on)
-			{
-				console.chkPower.Checked = false;
-				Thread.Sleep(50);
-			}
-
-			SoundCard card = SoundCard.FIRST;
-			switch(comboAudioSoundCard.Text)
-			{
-				case "M-Audio Delta 44 (PCI)":
-					card = SoundCard.DELTA_44;
-					break;
-				case "PreSonus FireBox (FireWire)":
-					card = SoundCard.FIREBOX;
-					break;
-				case "Edirol FA-66 (FireWire)":
-					card = SoundCard.EDIROL_FA_66;
-					break;
-				case "SB Audigy (PCI)":
-					card = SoundCard.AUDIGY;
-					break;
-				case "SB Audigy 2 (PCI)":
-					card = SoundCard.AUDIGY_2;
-					break;
-				case "SB Audigy 2 ZS (PCI)":
-					card = SoundCard.AUDIGY_2_ZS;
-					break;
-				case "Sound Blaster Extigy (USB)":
-					card = SoundCard.EXTIGY;
-					break;
-				case "Sound Blaster MP3+ (USB)":
-					card = SoundCard.MP3_PLUS;
-					break;
-				case "Turtle Beach Santa Cruz (PCI)":
-					card = SoundCard.SANTA_CRUZ;
-					break;
-                case "Realtek HD audio":
-                    card = SoundCard.REALTEK_HD_AUDIO;
-                    break;
-                case "No Mixer Audio Card":
-                    card = SoundCard.NO_MIXER_AUDIO_CARD;
-                    break;
-				case "Unsupported Card":
-					card = SoundCard.UNSUPPORTED_CARD;
-					break;
-			}
-
-			if(card == SoundCard.FIRST) return;
-			
-			console.CurrentSoundCard = card;
-			current_sound_card = card;
-
-            comboAudioOutput1.Enabled = true;
-            comboAudioInput1.Enabled = true;
-            comboAudioMixer1.Enabled = true;
-            comboAudioTransmit1.Items.Clear();
-            comboAudioReceive1.Items.Clear();
-            comboAudioReceive1.Enabled = false;
-            comboAudioTransmit1.Enabled = false;
-
-			switch(card)
-			{
-                case SoundCard.NO_MIXER_AUDIO_CARD:
+            try
+            {
+                if (!initializing)
+                {
+                    if (console.CurrentModel == Model.GENESIS_G6 && radGenModelGenesisG6.Checked)
                     {
-                        bool success = false;
-                        bool condition1 = false;
-                        bool condition2 = false;
-                        int i;
+                        comboAudioSoundCard.Text = "Genesis G6";
+                    }
+                    else if (console.CurrentModel == Model.RTL_SDR && radGenModel_RTL_SDR.Checked)
+                    {
+                        comboAudioSoundCard.Text = "RTL SDR";
+                    }
 
-                        chkLineMic.Enabled = false;
-                        chkLineMic.Checked = false;
+                    bool on = console.PowerOn;
+                    if (on)
+                    {
+                        console.chkPower.Checked = false;
+                        Thread.Sleep(50);
+                    }
 
-                        for (i = 0; i < comboAudioMixer1.Items.Count; i++)
+                    SoundCard card = SoundCard.FIRST;
+
+                    switch (comboAudioSoundCard.Text)
+                    {
+                        case "M-Audio Delta 44 (PCI)":
+                            card = SoundCard.DELTA_44;
+                            break;
+                        case "PreSonus FireBox (FireWire)":
+                            card = SoundCard.FIREBOX;
+                            break;
+                        case "Edirol FA-66 (FireWire)":
+                            card = SoundCard.EDIROL_FA_66;
+                            break;
+                        case "SB Audigy (PCI)":
+                            card = SoundCard.AUDIGY;
+                            break;
+                        case "SB Audigy 2 (PCI)":
+                            card = SoundCard.AUDIGY_2;
+                            break;
+                        case "SB Audigy 2 ZS (PCI)":
+                            card = SoundCard.AUDIGY_2_ZS;
+                            break;
+                        case "Sound Blaster Extigy (USB)":
+                            card = SoundCard.EXTIGY;
+                            break;
+                        case "Sound Blaster MP3+ (USB)":
+                            card = SoundCard.MP3_PLUS;
+                            break;
+                        case "Turtle Beach Santa Cruz (PCI)":
+                            card = SoundCard.SANTA_CRUZ;
+                            break;
+                        case "Realtek HD audio":
+                            card = SoundCard.REALTEK_HD_AUDIO;
+                            break;
+                        case "No Mixer Audio Card":
+                            card = SoundCard.NO_MIXER_AUDIO_CARD;
+                            break;
+                        case "Unsupported Card":
+                            card = SoundCard.UNSUPPORTED_CARD;
+                            break;
+                        case "Genesis G6":
+                            card = SoundCard.G6;
+                            break;
+                        case "RTL SDR":
+                            card = SoundCard.RTL_SDR;
+                            break;
+                    }
+
+                    if (card == SoundCard.FIRST) return;
+
+                    console.CurrentSoundCard = card;
+
+                    if (card == SoundCard.G6)
+                    {
+                        string sr = comboAudioSampleRate1.Text;
+                        comboAudioSampleRate1.Enabled = true;
+                        current_sound_card = card;
+                        comboAudioDriver1.Items.Clear();
+                        comboAudioDriver1.Items.Add("USB");
+                        comboAudioDriver1.SelectedIndex = 0;
+                        comboAudioDriver1.Enabled = false;
+                        comboAudioOutput1.Items.Clear();
+                        comboAudioOutput1.Items.Add("G6 output");
+                        comboAudioOutput1.SelectedIndex = 0;
+                        comboAudioOutput1.Enabled = false;
+                        comboAudioInput1.Items.Clear();
+                        comboAudioInput1.Items.Add("G6 input");
+                        comboAudioInput1.SelectedIndex = 0;
+                        comboAudioInput1.Enabled = false;
+                        comboAudioMixer1.Enabled = false;
+                        comboAudioTransmit1.Items.Clear();
+                        comboAudioReceive1.Items.Clear();
+                        comboAudioReceive1.Enabled = false;
+                        comboAudioTransmit1.Enabled = false;
+                        comboAudioSampleRate1.Items.Clear();
+                        comboAudioSampleRate1.Items.Add(48000);
+                        comboAudioSampleRate1.Items.Add(96000);
+                        comboAudioSampleRate1.Items.Add(192000);
+                        comboAudioSampleRate1.Text = sr;
+                        if (comboAudioSampleRate1.SelectedIndex < 0)
+                            comboAudioSampleRate1.SelectedIndex = 0;
+                        udAudioVoltage1.Enabled = true;
+                        udAudioMicGain1.Enabled = true;
+                        udAudioLineIn1.Enabled = true;
+                        grpAudioChannels.Enabled = true;
+                        grpAudioLatency1.Enabled = false;
+                    }
+                    else if (card == SoundCard.RTL_SDR)
+                    {
+                        string sr = comboAudioSampleRate1.Text;
+                        comboAudioSampleRate1.Enabled = false;
+                        current_sound_card = card;
+                        comboAudioDriver1.Items.Clear();
+                        comboAudioDriver1.Items.Add("USB");
+                        comboAudioDriver1.SelectedIndex = 0;
+                        comboAudioDriver1.Enabled = false;
+                        comboAudioOutput1.Items.Clear();
+                        comboAudioOutput1.Items.Add("RTL SDR");
+                        comboAudioOutput1.SelectedIndex = 0;
+                        comboAudioOutput1.Enabled = false;
+                        comboAudioInput1.Items.Clear();
+                        comboAudioInput1.Items.Add("RTL SDR");
+                        comboAudioInput1.SelectedIndex = 0;
+                        comboAudioInput1.Enabled = false;
+                        comboAudioMixer1.Enabled = false;
+                        comboAudioTransmit1.Items.Clear();
+                        comboAudioReceive1.Items.Clear();
+                        comboAudioReceive1.Enabled = false;
+                        comboAudioTransmit1.Enabled = false;
+                        comboAudioSampleRate1.Items.Clear();
+                        comboAudioSampleRate1.Items.Add(250000);
+                        comboAudioSampleRate1.Items.Add(960000);
+                        comboAudioSampleRate1.Items.Add(1024000);
+                        comboAudioSampleRate1.Items.Add(1200000);
+                        comboAudioSampleRate1.Items.Add(1440000);
+                        comboAudioSampleRate1.Items.Add(1800000);
+                        comboAudioSampleRate1.Items.Add(2400000);
+                        comboAudioSampleRate1.Items.Add(2880000);
+                        comboAudioSampleRate1.Items.Add(3200000);
+                        comboAudioSampleRate1.Text = sr;
+                        if (comboAudioSampleRate1.SelectedIndex < 0)
+                            comboAudioSampleRate1.SelectedIndex = 0;
+                        udAudioVoltage1.Enabled = false;
+                        udAudioMicGain1.Enabled = false;
+                        udAudioLineIn1.Enabled = false;
+                        grpAudioChannels.Enabled = false;
+                        grpAudioLatency1.Enabled = false;
+                    }
+                    else
+                    {
+                        comboAudioSampleRate1.Enabled = true;
+                        udAudioVoltage1.Enabled = true;
+                        udAudioMicGain1.Enabled = true;
+                        udAudioLineIn1.Enabled = true;
+                        grpAudioChannels.Enabled = true;
+                        grpAudioLatency1.Enabled = true;
+
+                        if (!console.booting)
                         {
-                            comboAudioMixer1.SelectedIndex = i;
-                            if (comboAudioMixer1.Text.Contains("nput"))
-                            {
-                                console.MixerID1 = comboAudioMixer1.SelectedIndex;
-                                condition1 = true;
-                            }
-                            else if (comboAudioMixer1.Text.Contains("utput"))
-                            {
-                                console.MixerID2 = comboAudioMixer1.SelectedIndex;
-                                condition2 = true;
-                            }
-                        }
-                        if (condition1 && condition2)
-                        {
-                            if (Mixer.InitNoMixerAudioPlay(console.MixerID2) &&
-                                Mixer.InitNoMixerAudioRecord(console.MixerID1, (int)udAudioLineIn1.Value))
-                            {
-                                if (!comboAudioSampleRate1.Items.Contains(96000))
-                                    comboAudioSampleRate1.Items.Add(96000);
-                                if (comboAudioSoundCard.Focused || comboAudioSampleRate1.SelectedIndex < 0)
-                                    comboAudioSampleRate1.Text = "48000";
+                            string sr = comboAudioSampleRate1.Text;
+                            current_sound_card = card;
+                            GetHosts();
+                            GetDevices1();
+                            GetMixerDevices();
+                            comboAudioOutput1.Enabled = true;
+                            comboAudioInput1.Enabled = true;
+                            comboAudioMixer1.Enabled = true;
 
-                                console.PowerEnabled = true;
-                                comboAudioChannels1.Text = "2";
-                                comboAudioChannels1.Enabled = true;
+                            if(comboAudioInput1.Items.Count>0)
+                                comboAudioInput1.SelectedIndex = 0;
+                            if (comboAudioOutput1.Items.Count > 0)
+                                comboAudioOutput1.SelectedIndex = 0;
 
-                                comboAudioInput1.Enabled = false;
-                                comboAudioOutput1.Enabled = false;
-                                comboAudioMixer1.Enabled = false;
-                                comboAudioReceive1.Enabled = false;
-                                comboAudioTransmit1.Enabled = false;
-                                comboAudioInput1.Text = "Primary input";
-                                comboAudioOutput1.Text = "Audio output";
-                                comboAudioMixer1.Text = "None";
-                                comboAudioReceive1.Items.Clear();
-                                comboAudioTransmit1.Items.Clear();
-                                comboAudioReceive1.Items.Add("Line-In");
-                                comboAudioTransmit1.Items.Add("Microphone");
-                                comboAudioReceive1.SelectedIndex = 0;
-                                comboAudioTransmit1.SelectedIndex = 0;
-                                success = true;
-                            }
-                            else
-                            {
-                                MessageBox.Show("The " + comboAudioSoundCard.Text + " mixer initialization " +
-                                    "failed.  Please install the latest drivers" +
-                                    " and try again.  For more support, email support@genesisradio.com.",
-                                    comboAudioSoundCard.Text + " Mixer Initialization Failed",
-                                    MessageBoxButtons.OK,
-                                    MessageBoxIcon.Exclamation);
-                                console.PowerEnabled = false;
-                            }
-                        }
-                        if (!success)
-                        {
-                            MessageBox.Show(comboAudioSoundCard.Text + " not found.\n " +
-                                "Please verify that this specific sound card is installed " +
-                                "and functioning and try again.  \nIf your sound card is not " +
-                                "a " + comboAudioSoundCard.Text + " and your card is not in the " +
-                                "list, use the Unsupported Card selection.  \nFor more support, " +
-                                "email support@GenesisRadio.com.au",
-                                comboAudioSoundCard.Text + " Not Found",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Exclamation);
-                            console.PowerEnabled = false;
-                            comboAudioMixer1.Enabled = false;
-                            comboAudioInput1.Enabled = false;
-                            comboAudioOutput1.Enabled = false;
+                            comboAudioReceive1.Enabled = true;
+                            comboAudioTransmit1.Enabled = true;
+                            comboAudioSampleRate1.Items.Clear();
+                            comboAudioSampleRate1.Items.Add(24000);
+                            comboAudioSampleRate1.Items.Add(44100);
+                            comboAudioSampleRate1.Items.Add(48000);
+                            comboAudioSampleRate1.Items.Add(96000);
+                            comboAudioSampleRate1.Items.Add(192000);
+                            comboAudioSampleRate1.Text = sr;
+                            if (comboAudioSampleRate1.SelectedIndex < 0)
+                                comboAudioSampleRate1.SelectedIndex = 0;
                         }
                     }
-                    break;
-                case SoundCard.REALTEK_HD_AUDIO:
+
+                    switch (card)
                     {
-                        bool success = false;
-                        bool condition1 = false;
-                        bool condition2 = false;
-                        bool condition3 = false;
-                        int i;
+                        case SoundCard.NO_MIXER_AUDIO_CARD:
+                            {
+                                bool success = false;
+                                bool condition1 = false;
+                                bool condition2 = false;
+                                int i;
 
-                        switch (console.WinVer)
-                        {
-                            case WindowsVersion.WindowsVista:
-                            case WindowsVersion.Windows7:
-                            case WindowsVersion.Windows8:
-                                comboAudioDriver1.Text = "MME";
+                                chkLineMic.Enabled = false;
+                                chkLineMic.Checked = false;
 
-                                for (i = 0; i < comboAudioInput1.Items.Count; i++)
+                                for (i = 0; i < comboAudioMixer1.Items.Count; i++)
                                 {
-                                    comboAudioInput1.SelectedIndex = i;
-                                    if (comboAudioInput1.Text.Contains("High") && comboAudioInput1.Text.Contains("Definition") &&
-                                        comboAudioInput1.Text.Contains("Audio") && comboAudioInput1.Text.Contains("Line In"))
+                                    comboAudioMixer1.SelectedIndex = i;
+                                    if (comboAudioMixer1.Text.Contains("nput"))
                                     {
-                                        Audio.Input1 = comboAudioInput1.SelectedIndex;
+                                        console.MixerID1 = comboAudioMixer1.SelectedIndex;
                                         condition1 = true;
-                                        i = comboAudioInput1.Items.Count;
                                     }
-                                }
-
-                                for (i = 0; i < comboAudioOutput1.Items.Count; i++)
-                                {
-                                    comboAudioOutput1.SelectedIndex = i;
-                                    if (comboAudioOutput1.Text.Contains("High Definition Audio") &&
-                                        comboAudioOutput1.Text.Contains("Speakers"))
+                                    else if (comboAudioMixer1.Text.Contains("utput"))
                                     {
-                                        Audio.Output1 = comboAudioOutput1.SelectedIndex + comboAudioInput1.Items.Count;
+                                        console.MixerID2 = comboAudioMixer1.SelectedIndex;
                                         condition2 = true;
-                                        i = comboAudioOutput1.Items.Count;
                                     }
                                 }
-
-                                /*for (i = 0; i < comboAudioTransmit1.Items.Count; i++)
-                                {
-                                    comboAudioTransmit1.SelectedIndex = i;
-                                    if (comboAudioTransmit1.Text.Contains("High Definition Audio Device") &&
-                                    comboAudioTransmit1.Text.Contains("Microphone"))
-                                    {
-                                        Audio.Input2 = comboAudioTransmit1.SelectedIndex;
-                                        condition3 = true;
-                                        i = comboAudioTransmit1.Items.Count;
-                                    }
-                                }*/
-
                                 if (condition1 && condition2)
                                 {
-                                    success = true;
-                                    comboAudioMixer1.Text = "None";
-                                    comboAudioMixer1.Enabled = false;
-                                    comboAudioInput1.Enabled = false;
-                                    comboAudioOutput1.Enabled = false;
-                                    comboAudioDriver1.Enabled = false;
-                                    comboAudioReceive1.Enabled = false;
-                                    comboAudioTransmit1.Enabled = false;
-                                    comboAudioChannels1.Text = "2";
-                                    comboAudioSampleRate1.Text = "48000";
-                                }
+                                    if (Mixer.InitNoMixerAudioPlay(console.MixerID2) &&
+                                        Mixer.InitNoMixerAudioRecord(console.MixerID1, (int)udAudioLineIn1.Value))
+                                    {
+                                        if (!comboAudioSampleRate1.Items.Contains(96000))
+                                            comboAudioSampleRate1.Items.Add(96000);
+                                        if (comboAudioSoundCard.Focused || comboAudioSampleRate1.SelectedIndex < 0)
+                                            comboAudioSampleRate1.Text = "48000";
 
+                                        console.PowerEnabled = true;
+                                        comboAudioChannels1.Text = "2";
+                                        comboAudioChannels1.Enabled = true;
+
+                                        comboAudioInput1.Enabled = false;
+                                        comboAudioOutput1.Enabled = false;
+                                        comboAudioMixer1.Enabled = false;
+                                        comboAudioReceive1.Enabled = false;
+                                        comboAudioTransmit1.Enabled = false;
+                                        comboAudioInput1.Text = "Primary input";
+                                        comboAudioOutput1.Text = "Audio output";
+                                        comboAudioMixer1.Text = "None";
+                                        comboAudioReceive1.Items.Clear();
+                                        comboAudioTransmit1.Items.Clear();
+                                        comboAudioReceive1.Items.Add("Line-In");
+                                        comboAudioTransmit1.Items.Add("Microphone");
+                                        comboAudioReceive1.SelectedIndex = 0;
+                                        comboAudioTransmit1.SelectedIndex = 0;
+                                        success = true;
+                                    }
+                                    else
+                                    {
+                                        MessageBox.Show("The " + comboAudioSoundCard.Text + " mixer initialization " +
+                                            "failed.  Please install the latest drivers" +
+                                            " and try again.  For more support, email support@genesisradio.com.",
+                                            comboAudioSoundCard.Text + " Mixer Initialization Failed",
+                                            MessageBoxButtons.OK,
+                                            MessageBoxIcon.Exclamation);
+                                        console.PowerEnabled = false;
+                                    }
+                                }
                                 if (!success)
                                 {
-                                    MessageBox.Show("High Definition Audio not found.\n " +
-                                    "Please verify that this specific sound card is installed " +
-                                    "and functioning and try again.  \nIf your sound card is not " +
-                                    "a High Definition Audio and your card is not in the " +
-                                    "list, use the Unsupported Card selection.  \nFor more support, " +
-                                    "email support@GenesisRadio.com.au or join Genesis Yahoo group " +
-                                    "(http://groups.yahoo.com/group/GenesisRadio)",
-                                    comboAudioSoundCard.Text + " Not Found",
-                                    MessageBoxButtons.OK,
-                                    MessageBoxIcon.Exclamation);
+                                    MessageBox.Show(comboAudioSoundCard.Text + " not found.\n " +
+                                        "Please verify that this specific sound card is installed " +
+                                        "and functioning and try again.  \nIf your sound card is not " +
+                                        "a " + comboAudioSoundCard.Text + " and your card is not in the " +
+                                        "list, use the Unsupported Card selection.  \nFor more support, " +
+                                        "email support@GenesisRadio.com.au",
+                                        comboAudioSoundCard.Text + " Not Found",
+                                        MessageBoxButtons.OK,
+                                        MessageBoxIcon.Exclamation);
                                     console.PowerEnabled = false;
                                     comboAudioMixer1.Enabled = false;
                                     comboAudioInput1.Enabled = false;
                                     comboAudioOutput1.Enabled = false;
                                 }
-                                break;
-                            case WindowsVersion.WindowsXP:
-                            case WindowsVersion.Windows2000:
+                            }
+                            break;
+                        case SoundCard.REALTEK_HD_AUDIO:
+                            {
+                                bool success = false;
+                                bool condition1 = false;
+                                bool condition2 = false;
+                                bool condition3 = false;
+                                int i;
+
+                                switch (console.WinVer)
                                 {
-                                    for (i = 0; i < comboAudioMixer1.Items.Count; i++)
-                                    {
-                                        comboAudioMixer1.SelectedIndex = i;
-                                        if (comboAudioMixer1.Text == "Realtek HD Audio Input")
-                                        {
-                                            console.MixerID1 = comboAudioMixer1.SelectedIndex;
-                                            condition1 = true;
-                                        }
-                                        else if (comboAudioMixer1.Text == "Realtek HD Audio output")
-                                        {
-                                            console.MixerID2 = comboAudioMixer1.SelectedIndex;
-                                            condition2 = true;
-                                        }
-                                    }
-                                    if (condition1 && condition2)
-                                    {
-                                        if (Mixer.InitRealtekHDaudioPlay(console.MixerID2) &&
-                                            Mixer.InitRealtekHDaudioRecord(console.MixerID1, (int)udAudioLineIn1.Value))
-                                        {
-                                            if (!comboAudioSampleRate1.Items.Contains(96000))
-                                                comboAudioSampleRate1.Items.Add(96000);
-                                            if (comboAudioSoundCard.Focused || comboAudioSampleRate1.SelectedIndex < 0)
-                                                comboAudioSampleRate1.Text = "48000";
+                                    case WindowsVersion.WindowsVista:
+                                    case WindowsVersion.Windows7:
+                                    case WindowsVersion.Windows8:
+                                        comboAudioDriver1.Text = "MME";
 
-                                            console.PowerEnabled = true;
-                                            comboAudioChannels1.Text = "2";
-                                            comboAudioChannels1.Enabled = true;
+                                        for (i = 0; i < comboAudioInput1.Items.Count; i++)
+                                        {
+                                            comboAudioInput1.SelectedIndex = i;
+                                            if (comboAudioInput1.Text.Contains("High") && comboAudioInput1.Text.Contains("Definition") &&
+                                                comboAudioInput1.Text.Contains("Audio") && comboAudioInput1.Text.Contains("Line In"))
+                                            {
+                                                Audio.Input1 = comboAudioInput1.SelectedIndex;
+                                                condition1 = true;
+                                                i = comboAudioInput1.Items.Count;
+                                            }
+                                        }
 
+                                        for (i = 0; i < comboAudioOutput1.Items.Count; i++)
+                                        {
+                                            comboAudioOutput1.SelectedIndex = i;
+                                            if (comboAudioOutput1.Text.Contains("High Definition Audio") &&
+                                                comboAudioOutput1.Text.Contains("Speakers"))
+                                            {
+                                                Audio.Output1 = comboAudioOutput1.SelectedIndex + comboAudioInput1.Items.Count;
+                                                condition2 = true;
+                                                i = comboAudioOutput1.Items.Count;
+                                            }
+                                        }
+
+                                        /*for (i = 0; i < comboAudioTransmit1.Items.Count; i++)
+                                        {
+                                            comboAudioTransmit1.SelectedIndex = i;
+                                            if (comboAudioTransmit1.Text.Contains("High Definition Audio Device") &&
+                                            comboAudioTransmit1.Text.Contains("Microphone"))
+                                            {
+                                                Audio.Input2 = comboAudioTransmit1.SelectedIndex;
+                                                condition3 = true;
+                                                i = comboAudioTransmit1.Items.Count;
+                                            }
+                                        }*/
+
+                                        if (condition1 && condition2)
+                                        {
+                                            success = true;
+                                            comboAudioMixer1.Text = "None";
+                                            comboAudioMixer1.Enabled = false;
                                             comboAudioInput1.Enabled = false;
                                             comboAudioOutput1.Enabled = false;
-                                            comboAudioMixer1.Enabled = false;
+                                            comboAudioDriver1.Enabled = false;
                                             comboAudioReceive1.Enabled = false;
                                             comboAudioTransmit1.Enabled = false;
-                                            if (comboAudioDriver1.Text == "MME" || comboAudioDriver1.Text.Contains("WDM") ||
-                                                comboAudioDriver1.Text.Contains("Windows"))
-                                            {
-                                            }
-                                            else
-                                                comboAudioDriver1.Text = "MME";
-                                            comboAudioDriver1.Enabled = false;
-                                            comboAudioInput1.Text = "Realtek HDA Audio Input";
-                                            comboAudioOutput1.Text = "Realtek HD Audio output";
-                                            comboAudioMixer1.Text = "None";
-                                            comboAudioReceive1.Items.Clear();
-                                            comboAudioTransmit1.Items.Clear();
-                                            comboAudioReceive1.Items.Add("Line-In");
-                                            comboAudioTransmit1.Items.Add("Microphone");
-                                            comboAudioReceive1.SelectedIndex = 0;
-                                            comboAudioTransmit1.SelectedIndex = 0;
-                                            success = true;
+                                            comboAudioChannels1.Text = "2";
+                                            comboAudioSampleRate1.Text = "48000";
                                         }
-                                        else
+
+                                        if (!success)
                                         {
-                                            MessageBox.Show("The " + comboAudioSoundCard.Text + " mixer initialization " +
-                                                "failed.  Please install the latest drivers from www.realtek.com " +
-                                                " and try again.  For more support, email support@genesisradio.com." +
-                                                "or join Genesis Yahoo group (http://groups.yahoo.com/group/GenesisRadio)",
-                                                comboAudioSoundCard.Text + " Mixer Initialization Failed",
-                                                MessageBoxButtons.OK,
-                                                MessageBoxIcon.Exclamation);
-                                            console.PowerEnabled = false;
-                                        }
-                                    }
-                                    if (!success)
-                                    {
-                                        MessageBox.Show(comboAudioSoundCard.Text + " not found.\n " +
+                                            MessageBox.Show("High Definition Audio not found.\n " +
                                             "Please verify that this specific sound card is installed " +
                                             "and functioning and try again.  \nIf your sound card is not " +
-                                            "a " + comboAudioSoundCard.Text + " and your card is not in the " +
+                                            "a High Definition Audio and your card is not in the " +
                                             "list, use the Unsupported Card selection.  \nFor more support, " +
                                             "email support@GenesisRadio.com.au or join Genesis Yahoo group " +
                                             "(http://groups.yahoo.com/group/GenesisRadio)",
                                             comboAudioSoundCard.Text + " Not Found",
                                             MessageBoxButtons.OK,
                                             MessageBoxIcon.Exclamation);
-                                        console.PowerEnabled = false;
-                                        comboAudioMixer1.Enabled = false;
-                                        comboAudioInput1.Enabled = false;
-                                        comboAudioOutput1.Enabled = false;
+                                            console.PowerEnabled = false;
+                                            comboAudioMixer1.Enabled = false;
+                                            comboAudioInput1.Enabled = false;
+                                            comboAudioOutput1.Enabled = false;
+                                        }
+                                        break;
+                                    case WindowsVersion.WindowsXP:
+                                    case WindowsVersion.Windows2000:
+                                        {
+                                            for (i = 0; i < comboAudioMixer1.Items.Count; i++)
+                                            {
+                                                comboAudioMixer1.SelectedIndex = i;
+                                                if (comboAudioMixer1.Text == "Realtek HD Audio Input")
+                                                {
+                                                    console.MixerID1 = comboAudioMixer1.SelectedIndex;
+                                                    condition1 = true;
+                                                }
+                                                else if (comboAudioMixer1.Text == "Realtek HD Audio output")
+                                                {
+                                                    console.MixerID2 = comboAudioMixer1.SelectedIndex;
+                                                    condition2 = true;
+                                                }
+                                            }
+                                            if (condition1 && condition2)
+                                            {
+                                                if (Mixer.InitRealtekHDaudioPlay(console.MixerID2) &&
+                                                    Mixer.InitRealtekHDaudioRecord(console.MixerID1, (int)udAudioLineIn1.Value))
+                                                {
+                                                    if (!comboAudioSampleRate1.Items.Contains(96000))
+                                                        comboAudioSampleRate1.Items.Add(96000);
+                                                    if (comboAudioSoundCard.Focused || comboAudioSampleRate1.SelectedIndex < 0)
+                                                        comboAudioSampleRate1.Text = "48000";
+
+                                                    console.PowerEnabled = true;
+                                                    comboAudioChannels1.Text = "2";
+                                                    comboAudioChannels1.Enabled = true;
+
+                                                    comboAudioInput1.Enabled = false;
+                                                    comboAudioOutput1.Enabled = false;
+                                                    comboAudioMixer1.Enabled = false;
+                                                    comboAudioReceive1.Enabled = false;
+                                                    comboAudioTransmit1.Enabled = false;
+                                                    if (comboAudioDriver1.Text == "MME" || comboAudioDriver1.Text.Contains("WDM") ||
+                                                        comboAudioDriver1.Text.Contains("Windows"))
+                                                    {
+                                                    }
+                                                    else
+                                                        comboAudioDriver1.Text = "MME";
+                                                    comboAudioDriver1.Enabled = false;
+                                                    comboAudioInput1.Text = "Realtek HDA Audio Input";
+                                                    comboAudioOutput1.Text = "Realtek HD Audio output";
+                                                    comboAudioMixer1.Text = "None";
+                                                    comboAudioReceive1.Items.Clear();
+                                                    comboAudioTransmit1.Items.Clear();
+                                                    comboAudioReceive1.Items.Add("Line-In");
+                                                    comboAudioTransmit1.Items.Add("Microphone");
+                                                    comboAudioReceive1.SelectedIndex = 0;
+                                                    comboAudioTransmit1.SelectedIndex = 0;
+                                                    success = true;
+                                                }
+                                                else
+                                                {
+                                                    MessageBox.Show("The " + comboAudioSoundCard.Text + " mixer initialization " +
+                                                        "failed.  Please install the latest drivers from www.realtek.com " +
+                                                        " and try again.  For more support, email support@genesisradio.com." +
+                                                        "or join Genesis Yahoo group (http://groups.yahoo.com/group/GenesisRadio)",
+                                                        comboAudioSoundCard.Text + " Mixer Initialization Failed",
+                                                        MessageBoxButtons.OK,
+                                                        MessageBoxIcon.Exclamation);
+                                                    console.PowerEnabled = false;
+                                                }
+                                            }
+                                            if (!success)
+                                            {
+                                                MessageBox.Show(comboAudioSoundCard.Text + " not found.\n " +
+                                                    "Please verify that this specific sound card is installed " +
+                                                    "and functioning and try again.  \nIf your sound card is not " +
+                                                    "a " + comboAudioSoundCard.Text + " and your card is not in the " +
+                                                    "list, use the Unsupported Card selection.  \nFor more support, " +
+                                                    "email support@GenesisRadio.com.au or join Genesis Yahoo group " +
+                                                    "(http://groups.yahoo.com/group/GenesisRadio)",
+                                                    comboAudioSoundCard.Text + " Not Found",
+                                                    MessageBoxButtons.OK,
+                                                    MessageBoxIcon.Exclamation);
+                                                console.PowerEnabled = false;
+                                                comboAudioMixer1.Enabled = false;
+                                                comboAudioInput1.Enabled = false;
+                                                comboAudioOutput1.Enabled = false;
+                                            }
+                                        } break;
+                                }
+                            }
+                            break;
+                        case SoundCard.SANTA_CRUZ:
+                            udAudioVoltage1.Value = 1.274M;
+                            if (comboAudioSampleRate1.Items.Contains(96000))
+                                comboAudioSampleRate1.Items.Remove(96000);
+                            if (comboAudioSampleRate1.Items.Contains(192000))
+                                comboAudioSampleRate1.Items.Remove(192000);
+                            comboAudioSampleRate1.Text = "48000";
+
+                            foreach (PADeviceInfo p in comboAudioDriver1.Items)
+                            {
+                                if (p.Name == "ASIO")
+                                {
+                                    comboAudioDriver1.SelectedItem = p;
+                                    break;
+                                }
+                            }
+
+                            foreach (PADeviceInfo dev in comboAudioInput1.Items)
+                            {
+                                if (dev.Name == "Wuschel's ASIO4ALL")
+                                {
+                                    comboAudioInput1.Text = "Wuschel's ASIO4ALL";
+                                    comboAudioOutput1.Text = "Wuschel's ASIO4ALL";
+                                }
+                            }
+
+                            if (comboAudioInput1.Text != "Wuschel's ASIO4ALL")
+                            {
+                                foreach (PADeviceInfo dev in comboAudioInput1.Items)
+                                {
+                                    if (dev.Name == "ASIO4ALL v2")
+                                    {
+                                        comboAudioInput1.Text = "ASIO4ALL v2";
+                                        comboAudioOutput1.Text = "ASIO4ALL v2";
                                     }
-                                } break;
-                        }
-                    }
-                    break;
-				case SoundCard.SANTA_CRUZ:
-					udAudioVoltage1.Value = 1.274M;					
-					if(comboAudioSampleRate1.Items.Contains(96000))
-						comboAudioSampleRate1.Items.Remove(96000);
-					if(comboAudioSampleRate1.Items.Contains(192000))
-						comboAudioSampleRate1.Items.Remove(192000);
-					comboAudioSampleRate1.Text = "48000";
+                                }
+                            }
 
-					foreach(PADeviceInfo p in comboAudioDriver1.Items)
-					{
-						if(p.Name == "ASIO")
-						{
-							comboAudioDriver1.SelectedItem = p;
-							break;
-						}
-					}
+                            comboAudioMixer1.Text = "Santa Cruz(tm)";
+                            comboAudioReceive1.Text = "Line In";
 
-					foreach(PADeviceInfo dev in comboAudioInput1.Items)
-					{
-						if(dev.Name == "Wuschel's ASIO4ALL")
-						{
-							comboAudioInput1.Text = "Wuschel's ASIO4ALL";
-							comboAudioOutput1.Text = "Wuschel's ASIO4ALL";
-						}
-					}
+                            for (int i = 0; i < comboAudioTransmit1.Items.Count; i++)
+                            {
+                                if (((string)comboAudioTransmit1.Items[i]).StartsWith("Mi"))
+                                {
+                                    comboAudioTransmit1.SelectedIndex = i;
+                                    break;
+                                }
+                            }
 
-					if(comboAudioInput1.Text != "Wuschel's ASIO4ALL")
-					{
-						foreach(PADeviceInfo dev in comboAudioInput1.Items)
-						{
-							if(dev.Name == "ASIO4ALL v2")
-							{
-								comboAudioInput1.Text = "ASIO4ALL v2";
-								comboAudioOutput1.Text = "ASIO4ALL v2";
-							}
-						}
-					}
+                            if (comboAudioMixer1.SelectedIndex < 0 ||
+                                comboAudioMixer1.Text != "Santa Cruz(tm)")
+                            {
+                                MessageBox.Show(comboAudioSoundCard.Text + " not found.\n " +
+                                    "Please verify that this specific sound card is installed " +
+                                    "and functioning and try again.  \nIf your sound card is not " +
+                                    "a " + comboAudioSoundCard.Text + " and your card is not in the " +
+                                    "list, use the Unsupported Card selection.  \nFor more support, " +
+                                    "email support@flex-radio.com.",
+                                    comboAudioSoundCard.Text + " Not Found",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation);
+                                console.PowerEnabled = false;
+                            }
+                            else if (!Mixer.InitSantaCruz(console.MixerID1))
+                            {
+                                MessageBox.Show("The " + comboAudioSoundCard.Text + " mixer initialization " +
+                                    "failed.  Please install the latest drivers from www.turtlebeach.com " +
+                                    " and try again.  For more support, email support@flex-radio.com.",
+                                    comboAudioSoundCard.Text + " Mixer Initialization Failed",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation);
+                                console.PowerEnabled = false;
+                            }
+                            else if (comboAudioInput1.Text != "ASIO4ALL v2" &&
+                                comboAudioInput1.Text != "Wuschel's ASIO4ALL")
+                            {
+                                MessageBox.Show("ASIO4ALL driver not found.  Please visit " +
+                                    "www.asio4all.com, download and install the driver, " +
+                                    "and try again.  Alternatively, you can use the Unsupported " +
+                                    "Card selection and setup the sound interface manually.  For " +
+                                    "more support, email support@flex-radio.com.",
+                                    "ASIO4ALL Not Found",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation);
+                                console.PowerEnabled = false;
+                            }
+                            else
+                            {
+                                udAudioLineIn1.Value = 20;
+                                console.PowerEnabled = true;
+                                comboAudioChannels1.Text = "2";
+                                comboAudioChannels1.Enabled = false;
+                            }
+                            break;
+                        case SoundCard.AUDIGY:
+                        case SoundCard.AUDIGY_2:
+                            udAudioVoltage1.Value = 2.23M;
+                            if (comboAudioSampleRate1.Items.Contains(96000))
+                                comboAudioSampleRate1.Items.Remove(96000);
+                            if (comboAudioSampleRate1.Items.Contains(192000))
+                                comboAudioSampleRate1.Items.Remove(192000);
+                            comboAudioSampleRate1.Text = "48000";
+                            foreach (PADeviceInfo p in comboAudioDriver1.Items)
+                            {
+                                if (p.Name == "ASIO")
+                                {
+                                    comboAudioDriver1.SelectedItem = p;
+                                    break;
+                                }
+                            }
 
-					comboAudioMixer1.Text = "Santa Cruz(tm)";
-					comboAudioReceive1.Text = "Line In";
-					
-					for(int i=0; i<comboAudioTransmit1.Items.Count; i++)
-					{
-						if(((string)comboAudioTransmit1.Items[i]).StartsWith("Mi"))
-						{
-							comboAudioTransmit1.SelectedIndex = i;
-							break;
-						}
-					}
+                            foreach (PADeviceInfo dev in comboAudioInput1.Items)
+                            {
+                                if (dev.Name == "Wuschel's ASIO4ALL")
+                                {
+                                    comboAudioInput1.Text = "Wuschel's ASIO4ALL";
+                                    comboAudioOutput1.Text = "Wuschel's ASIO4ALL";
+                                }
+                            }
+                            if (comboAudioInput1.Text != "Wuschel's ASIO4ALL")
+                            {
+                                foreach (PADeviceInfo dev in comboAudioInput1.Items)
+                                {
+                                    if (dev.Name == "ASIO4ALL v2")
+                                    {
+                                        comboAudioInput1.Text = "ASIO4ALL v2";
+                                        comboAudioOutput1.Text = "ASIO4ALL v2";
+                                    }
+                                }
+                            }
 
-					if(comboAudioMixer1.SelectedIndex < 0 || 
-						comboAudioMixer1.Text != "Santa Cruz(tm)")
-					{
-						MessageBox.Show(comboAudioSoundCard.Text+" not found.\n "+
-							"Please verify that this specific sound card is installed " +
-							"and functioning and try again.  \nIf your sound card is not " +
-							"a "+comboAudioSoundCard.Text+" and your card is not in the "+
-							"list, use the Unsupported Card selection.  \nFor more support, "+
-							"email support@flex-radio.com.",
-							comboAudioSoundCard.Text+" Not Found",
-							MessageBoxButtons.OK,
-							MessageBoxIcon.Exclamation);
-						console.PowerEnabled = false;
-					}
-					else if(!Mixer.InitSantaCruz(console.MixerID1))
-					{
-						MessageBox.Show("The "+comboAudioSoundCard.Text+" mixer initialization "+
-							"failed.  Please install the latest drivers from www.turtlebeach.com " +
-							" and try again.  For more support, email support@flex-radio.com.",
-							comboAudioSoundCard.Text+" Mixer Initialization Failed",
-							MessageBoxButtons.OK,
-							MessageBoxIcon.Exclamation);
-						console.PowerEnabled = false;
-					}
-					else if(comboAudioInput1.Text != "ASIO4ALL v2" &&
-						comboAudioInput1.Text != "Wuschel's ASIO4ALL")
-					{
-						MessageBox.Show("ASIO4ALL driver not found.  Please visit " +
-							"www.asio4all.com, download and install the driver, "+
-							"and try again.  Alternatively, you can use the Unsupported "+
-							"Card selection and setup the sound interface manually.  For "+
-							"more support, email support@flex-radio.com.",
-							"ASIO4ALL Not Found",
-							MessageBoxButtons.OK,
-							MessageBoxIcon.Exclamation);
-						console.PowerEnabled = false;
-					}
-					else 
-					{
-						udAudioLineIn1.Value = 20;
-						console.PowerEnabled = true;
-						comboAudioChannels1.Text = "2";
-						comboAudioChannels1.Enabled = false;
-					}
-					break;
-				case SoundCard.AUDIGY:
-				case SoundCard.AUDIGY_2:					
-					udAudioVoltage1.Value = 2.23M;
-					if(comboAudioSampleRate1.Items.Contains(96000))
-						comboAudioSampleRate1.Items.Remove(96000);
-					if(comboAudioSampleRate1.Items.Contains(192000))
-						comboAudioSampleRate1.Items.Remove(192000);
-					comboAudioSampleRate1.Text = "48000";
-					foreach(PADeviceInfo p in comboAudioDriver1.Items)
-					{
-						if(p.Name == "ASIO")
-						{
-							comboAudioDriver1.SelectedItem = p;
-							break;
-						}
-					}
-					
-					foreach(PADeviceInfo dev in comboAudioInput1.Items)
-					{
-						if(dev.Name == "Wuschel's ASIO4ALL")
-						{
-							comboAudioInput1.Text = "Wuschel's ASIO4ALL";
-							comboAudioOutput1.Text = "Wuschel's ASIO4ALL";
-						}
-					}
-					if(comboAudioInput1.Text != "Wuschel's ASIO4ALL")
-					{
-						foreach(PADeviceInfo dev in comboAudioInput1.Items)
-						{
-							if(dev.Name == "ASIO4ALL v2")
-							{
-								comboAudioInput1.Text = "ASIO4ALL v2";
-								comboAudioOutput1.Text = "ASIO4ALL v2";
-							}
-						}
-					}
+                            for (int i = 0; i < comboAudioMixer1.Items.Count; i++)
+                            {
+                                if (((string)comboAudioMixer1.Items[i]).StartsWith("SB Audigy"))
+                                {
+                                    comboAudioMixer1.SelectedIndex = i;
+                                    break;
+                                }
+                            }
 
-					for(int i=0; i<comboAudioMixer1.Items.Count; i++)
-					{
-						if(((string)comboAudioMixer1.Items[i]).StartsWith("SB Audigy"))
-						{
-							comboAudioMixer1.SelectedIndex = i;
-							break;
-						}
-					}
+                            for (int i = 0; i < comboAudioReceive1.Items.Count; i++)
+                            {
+                                if (((string)comboAudioReceive1.Items[i]).StartsWith("Analog"))
+                                {
+                                    comboAudioReceive1.SelectedIndex = i;
+                                    break;
+                                }
+                            }
 
-					for(int i=0; i<comboAudioReceive1.Items.Count; i++)
-					{
-						if(((string)comboAudioReceive1.Items[i]).StartsWith("Analog"))
-						{
-							comboAudioReceive1.SelectedIndex = i;
-							break;
-						}
-					}
+                            if (comboAudioReceive1.SelectedIndex < 0 ||
+                                !comboAudioReceive1.Text.StartsWith("Analog"))
+                            {
+                                for (int i = 0; i < comboAudioReceive1.Items.Count; i++)
+                                {
+                                    if (((string)comboAudioReceive1.Items[i]).StartsWith("Mix ana"))
+                                    {
+                                        comboAudioReceive1.SelectedIndex = i;
+                                        break;
+                                    }
+                                }
+                            }
 
-					if(comboAudioReceive1.SelectedIndex < 0 ||
-						!comboAudioReceive1.Text.StartsWith("Analog"))
-					{
-						for(int i=0; i<comboAudioReceive1.Items.Count; i++)
-						{
-							if(((string)comboAudioReceive1.Items[i]).StartsWith("Mix ana"))
-							{
-								comboAudioReceive1.SelectedIndex = i;
-								break;
-							}
-						}
-					}
+                            for (int i = 0; i < comboAudioTransmit1.Items.Count; i++)
+                            {
+                                if (((string)comboAudioTransmit1.Items[i]).StartsWith("Mi"))
+                                {
+                                    comboAudioTransmit1.SelectedIndex = i;
+                                    break;
+                                }
+                            }
 
-					for(int i=0; i<comboAudioTransmit1.Items.Count; i++)
-					{
-						if(((string)comboAudioTransmit1.Items[i]).StartsWith("Mi"))
-						{
-							comboAudioTransmit1.SelectedIndex = i;
-							break;
-						}
-					}
+                            if (comboAudioMixer1.SelectedIndex < 0 ||
+                                !comboAudioMixer1.Text.StartsWith("SB Audigy"))
+                            {
+                                MessageBox.Show(comboAudioSoundCard.Text + " not found.\n " +
+                                    "Please verify that this specific sound card is installed " +
+                                    "and functioning and try again.  \nIf your sound card is not " +
+                                    "a " + comboAudioSoundCard.Text + " and your card is not in the " +
+                                    "list, use the Unsupported Card selection.  \nFor more support, " +
+                                    "email support@flex-radio.com.",
+                                    comboAudioSoundCard.Text + " Not Found",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation);
+                                console.PowerEnabled = false;
+                            }
+                            else if (!Mixer.InitAudigy2(console.MixerID1))
+                            {
+                                MessageBox.Show("The " + comboAudioSoundCard.Text + " mixer initialization " +
+                                    "failed.  Please install the latest drivers from www.creativelabs.com " +
+                                    " and try again.  For more support, email support@flex-radio.com.",
+                                    comboAudioSoundCard.Text + " Mixer Initialization Failed",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation);
+                                console.PowerEnabled = false;
+                            }
+                            else if (comboAudioInput1.Text != "ASIO4ALL v2" &&
+                                comboAudioInput1.Text != "Wuschel's ASIO4ALL")
+                            {
+                                MessageBox.Show("ASIO4ALL driver not found.  Please visit " +
+                                    "www.asio4all.com, download and install the driver, " +
+                                    "and try again.  Alternatively, you can use the Unsupported " +
+                                    "Card selection and setup the sound interface manually.  For " +
+                                    "more support, email support@flex-radio.com.",
+                                    "ASIO4ALL Not Found",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation);
+                                console.PowerEnabled = false;
+                            }
+                            else
+                            {
+                                udAudioLineIn1.Value = 1;
+                                console.PowerEnabled = true;
+                                comboAudioChannels1.Text = "2";
+                                comboAudioChannels1.Enabled = false;
+                            }
+                            break;
+                        case SoundCard.AUDIGY_2_ZS:
+                            udAudioVoltage1.Value = 2.23M;
+                            chkLineMic.Enabled = false;
+                            chkLineMic.Checked = false;
+                            if (!comboAudioSampleRate1.Items.Contains(96000))
+                                comboAudioSampleRate1.Items.Add(96000);
+                            if (comboAudioSampleRate1.Items.Contains(192000))
+                                comboAudioSampleRate1.Items.Remove(192000);
+                            comboAudioSampleRate1.Text = "96000";
+                            foreach (PADeviceInfo p in comboAudioDriver1.Items)
+                            {
+                                if (p.Name == "ASIO")
+                                {
+                                    comboAudioDriver1.SelectedItem = p;
+                                    break;
+                                }
+                            }
 
-					if(comboAudioMixer1.SelectedIndex < 0 ||
-						!comboAudioMixer1.Text.StartsWith("SB Audigy"))
-					{
-						MessageBox.Show(comboAudioSoundCard.Text+" not found.\n "+
-							"Please verify that this specific sound card is installed " +
-							"and functioning and try again.  \nIf your sound card is not " +
-							"a "+comboAudioSoundCard.Text+" and your card is not in the "+
-							"list, use the Unsupported Card selection.  \nFor more support, "+
-							"email support@flex-radio.com.",
-							comboAudioSoundCard.Text+" Not Found",
-							MessageBoxButtons.OK,
-							MessageBoxIcon.Exclamation);
-						console.PowerEnabled = false;
-					}
-					else if(!Mixer.InitAudigy2(console.MixerID1))
-					{
-						MessageBox.Show("The "+comboAudioSoundCard.Text+" mixer initialization "+
-							"failed.  Please install the latest drivers from www.creativelabs.com " +
-							" and try again.  For more support, email support@flex-radio.com.",
-							comboAudioSoundCard.Text+" Mixer Initialization Failed",
-							MessageBoxButtons.OK,
-							MessageBoxIcon.Exclamation);
-						console.PowerEnabled = false;
-					}
-					else if(comboAudioInput1.Text != "ASIO4ALL v2" &&
-						comboAudioInput1.Text != "Wuschel's ASIO4ALL")
-					{
-						MessageBox.Show("ASIO4ALL driver not found.  Please visit " +
-							"www.asio4all.com, download and install the driver, "+
-							"and try again.  Alternatively, you can use the Unsupported "+
-							"Card selection and setup the sound interface manually.  For "+
-							"more support, email support@flex-radio.com.",
-							"ASIO4ALL Not Found",
-							MessageBoxButtons.OK,
-							MessageBoxIcon.Exclamation);
-						console.PowerEnabled = false;
-					}
-					else 
-					{
-						udAudioLineIn1.Value = 1;
-						console.PowerEnabled = true;
-						comboAudioChannels1.Text = "2";
-						comboAudioChannels1.Enabled = false;
-					}
-					break;
-				case SoundCard.AUDIGY_2_ZS:				
-					udAudioVoltage1.Value = 2.23M;
-                    chkLineMic.Enabled = false;
-                    chkLineMic.Checked = false;
-					if(!comboAudioSampleRate1.Items.Contains(96000))
-						comboAudioSampleRate1.Items.Add(96000);
-					if(comboAudioSampleRate1.Items.Contains(192000))
-						comboAudioSampleRate1.Items.Remove(192000);
-					comboAudioSampleRate1.Text = "96000";
-					foreach(PADeviceInfo p in comboAudioDriver1.Items)
-					{
-						if(p.Name == "ASIO")
-						{
-							comboAudioDriver1.SelectedItem = p;
-							break;
-						}
-					}
-					
-					foreach(PADeviceInfo dev in comboAudioInput1.Items)
-					{
-						if(dev.Name == "Wuschel's ASIO4ALL")
-						{
-							comboAudioInput1.Text = "Wuschel's ASIO4ALL";
-							comboAudioOutput1.Text = "Wuschel's ASIO4ALL";
-						}
-					}
+                            foreach (PADeviceInfo dev in comboAudioInput1.Items)
+                            {
+                                if (dev.Name == "Wuschel's ASIO4ALL")
+                                {
+                                    comboAudioInput1.Text = "Wuschel's ASIO4ALL";
+                                    comboAudioOutput1.Text = "Wuschel's ASIO4ALL";
+                                }
+                            }
 
-					if(comboAudioInput1.Text != "Wuschel's ASIO4ALL")
-					{
-						foreach(PADeviceInfo dev in comboAudioInput1.Items)
-						{
-							if(dev.Name == "ASIO4ALL v2")
-							{
-								comboAudioInput1.Text = "ASIO4ALL v2";
-								comboAudioOutput1.Text = "ASIO4ALL v2";
-							}
-						}
-					}
+                            if (comboAudioInput1.Text != "Wuschel's ASIO4ALL")
+                            {
+                                foreach (PADeviceInfo dev in comboAudioInput1.Items)
+                                {
+                                    if (dev.Name == "ASIO4ALL v2")
+                                    {
+                                        comboAudioInput1.Text = "ASIO4ALL v2";
+                                        comboAudioOutput1.Text = "ASIO4ALL v2";
+                                    }
+                                }
+                            }
 
-                    switch (console.WinVer)
-                    {
-                        case WindowsVersion.Windows2000:
-                        case WindowsVersion.WindowsXP:
+                            switch (console.WinVer)
+                            {
+                                case WindowsVersion.Windows2000:
+                                case WindowsVersion.WindowsXP:
+                                    {
+                                        for (int i = 0; i < comboAudioMixer1.Items.Count; i++)
+                                        {
+                                            if (((string)comboAudioMixer1.Items[i]).StartsWith("SB Audigy 2 ZS"))
+                                            {
+                                                comboAudioMixer1.SelectedIndex = i;
+                                                break;
+                                            }
+                                        }
+
+                                        GetMuxLineNames1();
+                                        for (int i = 0; i < comboAudioReceive1.Items.Count; i++)
+                                        {
+                                            if (((string)comboAudioReceive1.Items[i]).StartsWith("Analog") ||
+                                                ((string)comboAudioReceive1.Items[i]).Contains("Line"))
+                                            {
+                                                comboAudioReceive1.SelectedIndex = i;
+                                                i = comboAudioReceive1.Items.Count;
+                                            }
+                                        }
+
+                                        for (int i = 0; i < comboAudioTransmit1.Items.Count; i++)
+                                        {
+                                            if (((string)comboAudioTransmit1.Items[i]).StartsWith("Mic") ||
+                                                ((string)comboAudioTransmit1.Items[i]).Contains("Mic"))
+                                            {
+                                                comboAudioTransmit1.SelectedIndex = i;
+                                                i = comboAudioTransmit1.Items.Count;
+                                            }
+                                        }
+                                    }
+                                    break;
+                            }
+
+                            if (comboAudioMixer1.SelectedIndex < 0 ||
+                                !comboAudioMixer1.Text.StartsWith("SB Audigy"))
+                            {
+                                MessageBox.Show(comboAudioSoundCard.Text + " not found.\n " +
+                                    "Please verify that this specific sound card is installed " +
+                                    "and functioning and try again.  \nIf your sound card is not " +
+                                    "a " + comboAudioSoundCard.Text + " and your card is not in the " +
+                                    "list, use the Unsupported Card selection.  \nFor more support, " +
+                                    "email support@flex-radio.com.",
+                                    comboAudioSoundCard.Text + " Not Found",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation);
+                                console.PowerEnabled = false;
+                            }
+                            else if (!Mixer.InitAudigy2ZS(console.MixerID1))
+                            {
+                                MessageBox.Show("The " + comboAudioSoundCard.Text + " mixer initialization " +
+                                    "failed.  Please install the latest drivers from www.creativelabs.com " +
+                                    " and try again.  For more support, email support@flex-radio.com.",
+                                    comboAudioSoundCard.Text + " Mixer Initialization Failed",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation);
+                                console.PowerEnabled = false;
+                            }
+                            else if (comboAudioInput1.Text != "ASIO4ALL v2" &&
+                                comboAudioInput1.Text != "Wuschel's ASIO4ALL")
+                            {
+                                MessageBox.Show("ASIO4ALL driver not found.  Please visit " +
+                                    "www.asio4all.com, download and install the driver, " +
+                                    "and try again.  Alternatively, you can use the Unsupported " +
+                                    "Card selection and setup the sound interface manually.  For " +
+                                    "more support, email support@flex-radio.com.",
+                                    "ASIO4ALL Not Found",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation);
+                                console.PowerEnabled = false;
+                            }
+                            else
+                            {
+                                udAudioLineIn1.Value = 1;
+                                console.PowerEnabled = true;
+                                comboAudioChannels1.Text = "2";
+                                comboAudioChannels1.Enabled = false;
+                            }
+                            break;
+                        case SoundCard.EXTIGY:
+                            udAudioVoltage1.Value = 1.96M;
+                            if (!comboAudioSampleRate1.Items.Contains(96000))
+                                comboAudioSampleRate1.Items.Add(96000);
+                            if (comboAudioSampleRate1.Items.Contains(192000))
+                                comboAudioSampleRate1.Items.Remove(192000);
+                            comboAudioSampleRate1.Text = "48000";
+                            foreach (PADeviceInfo p in comboAudioDriver1.Items)
+                            {
+                                if (p.Name == "ASIO")
+                                {
+                                    comboAudioDriver1.SelectedItem = p;
+                                    break;
+                                }
+                            }
+
+                            foreach (PADeviceInfo dev in comboAudioInput1.Items)
+                            {
+                                if (dev.Name == "Wuschel's ASIO4ALL")
+                                {
+                                    comboAudioInput1.Text = "Wuschel's ASIO4ALL";
+                                    comboAudioOutput1.Text = "Wuschel's ASIO4ALL";
+                                }
+                            }
+                            if (comboAudioInput1.Text != "Wuschel's ASIO4ALL")
+                            {
+                                foreach (PADeviceInfo dev in comboAudioInput1.Items)
+                                {
+                                    if (dev.Name == "ASIO4ALL v2")
+                                    {
+                                        comboAudioInput1.Text = "ASIO4ALL v2";
+                                        comboAudioOutput1.Text = "ASIO4ALL v2";
+                                    }
+                                }
+                            }
+
+                            for (int i = 0; i < comboAudioMixer1.Items.Count; i++)
+                            {
+                                if (((string)comboAudioMixer1.Items[i]).StartsWith("Creative SB Extigy"))
+                                {
+                                    comboAudioMixer1.SelectedIndex = i;
+                                    break;
+                                }
+                            }
+
+                            comboAudioReceive1.Text = "Line In";
+
+                            if (!console.LineMicShared)
+                                comboAudioTransmit1.Text = "Microphone";
+                            else
+                                comboAudioTransmit1.Text = "Line In";
+
+                            if (comboAudioMixer1.SelectedIndex < 0 ||
+                                comboAudioMixer1.Text != "Creative SB Extigy")
+                            {
+                                MessageBox.Show(comboAudioSoundCard.Text + " not found.\n " +
+                                    "Please verify that this specific sound card is installed " +
+                                    "and functioning and try again.  \nIf your sound card is not " +
+                                    "a " + comboAudioSoundCard.Text + " and your card is not in the " +
+                                    "list, use the Unsupported Card selection.  \nFor more support, " +
+                                    "email support@flex-radio.com.",
+                                    comboAudioSoundCard.Text + " Not Found",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation);
+                                console.PowerEnabled = false;
+                            }
+                            else if (!Mixer.InitExtigy(console.MixerID1))
+                            {
+                                MessageBox.Show("The " + comboAudioSoundCard.Text + " mixer initialization " +
+                                    "failed.  Please install the latest drivers from www.creativelabs.com " +
+                                    " and try again.  For more support, email support@flex-radio.com.",
+                                    comboAudioSoundCard.Text + " Mixer Initialization Failed",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation);
+                                console.PowerEnabled = false;
+                            }
+                            else if (comboAudioInput1.Text != "ASIO4ALL v2" &&
+                                comboAudioInput1.Text != "Wuschel's ASIO4ALL")
+                            {
+                                MessageBox.Show("ASIO4ALL driver not found.  Please visit " +
+                                    "www.asio4all.com, download and install the driver, " +
+                                    "and try again.  Alternatively, you can use the Unsupported " +
+                                    "Card selection and setup the sound interface manually.  For " +
+                                    "more support, email support@flex-radio.com.",
+                                    "ASIO4ALL Not Found",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation);
+                                console.PowerEnabled = false;
+                            }
+                            else
+                            {
+                                udAudioLineIn1.Value = 20;
+                                console.PowerEnabled = true;
+                                comboAudioChannels1.Text = "2";
+                                comboAudioChannels1.Enabled = false;
+                            }
+                            break;
+                        case SoundCard.MP3_PLUS:
+                            udAudioVoltage1.Value = 0.982M;
+                            if (comboAudioSampleRate1.Items.Contains(96000))
+                                comboAudioSampleRate1.Items.Remove(96000);
+                            if (comboAudioSampleRate1.Items.Contains(192000))
+                                comboAudioSampleRate1.Items.Remove(192000);
+                            comboAudioSampleRate1.Text = "48000";
+                            foreach (PADeviceInfo p in comboAudioDriver1.Items)
+                            {
+                                if (p.Name == "ASIO")
+                                {
+                                    comboAudioDriver1.SelectedItem = p;
+                                    break;
+                                }
+                            }
+
+                            for (int i = 0; i < comboAudioMixer1.Items.Count; i++)
+                            {
+                                if (((string)comboAudioMixer1.Items[i]).StartsWith("Sound Blaster"))
+                                {
+                                    comboAudioMixer1.SelectedIndex = i;
+                                    break;
+                                }
+                            }
+
+                            if (comboAudioMixer1.SelectedIndex < 0 ||
+                                (string)comboAudioMixer1.SelectedItem != "Sound Blaster")
                             {
                                 for (int i = 0; i < comboAudioMixer1.Items.Count; i++)
                                 {
-                                    if (((string)comboAudioMixer1.Items[i]).StartsWith("SB Audigy 2 ZS"))
+                                    if (((string)comboAudioMixer1.Items[i]).StartsWith("USB Audio"))
                                     {
                                         comboAudioMixer1.SelectedIndex = i;
                                         break;
                                     }
                                 }
+                            }
 
-                                GetMuxLineNames1();
-                                for (int i = 0; i < comboAudioReceive1.Items.Count; i++)
+                            foreach (PADeviceInfo dev in comboAudioInput1.Items)
+                            {
+                                if (dev.Name == "Wuschel's ASIO4ALL")
                                 {
-                                    if (((string)comboAudioReceive1.Items[i]).StartsWith("Analog") ||
-                                        ((string)comboAudioReceive1.Items[i]).Contains("Line"))
-                                    {
-                                        comboAudioReceive1.SelectedIndex = i;
-                                        i = comboAudioReceive1.Items.Count;
-                                    }
+                                    comboAudioInput1.Text = "Wuschel's ASIO4ALL";
+                                    comboAudioOutput1.Text = "Wuschel's ASIO4ALL";
                                 }
-
-                                for (int i = 0; i < comboAudioTransmit1.Items.Count; i++)
+                            }
+                            if (comboAudioInput1.Text != "Wuschel's ASIO4ALL")
+                            {
+                                foreach (PADeviceInfo dev in comboAudioInput1.Items)
                                 {
-                                    if (((string)comboAudioTransmit1.Items[i]).StartsWith("Mic") ||
-                                        ((string)comboAudioTransmit1.Items[i]).Contains("Mic"))
+                                    if (dev.Name == "ASIO4ALL v2")
                                     {
-                                        comboAudioTransmit1.SelectedIndex = i;
-                                        i = comboAudioTransmit1.Items.Count;
+                                        comboAudioInput1.Text = "ASIO4ALL v2";
+                                        comboAudioOutput1.Text = "ASIO4ALL v2";
                                     }
                                 }
                             }
+
+                            comboAudioReceive1.Text = "Line In";
+
+                            for (int i = 0; i < comboAudioTransmit1.Items.Count; i++)
+                            {
+                                if (((string)comboAudioTransmit1.Items[i]).StartsWith("Mi"))
+                                {
+                                    comboAudioTransmit1.SelectedIndex = i;
+                                    break;
+                                }
+                            }
+
+                            if (comboAudioMixer1.SelectedIndex < 0 ||
+                                (comboAudioMixer1.Text != "Sound Blaster" &&
+                                comboAudioMixer1.Text != "USB Audio"))
+                            {
+                                MessageBox.Show(comboAudioSoundCard.Text + " not found.\n " +
+                                    "Please verify that this specific sound card is installed " +
+                                    "and functioning and try again.  \nIf your sound card is not " +
+                                    "a " + comboAudioSoundCard.Text + " and your card is not in the " +
+                                    "list, use the Unsupported Card selection.  \nFor more support, " +
+                                    "email support@flex-radio.com.",
+                                    comboAudioSoundCard.Text + " Not Found",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation);
+                                console.PowerEnabled = false;
+                            }
+                            else if (!Mixer.InitMP3Plus(console.MixerID1))
+                            {
+                                MessageBox.Show("The " + comboAudioSoundCard.Text + " mixer initialization " +
+                                    "failed.  Please install the latest drivers from www.creativelabs.com " +
+                                    " and try again.  For more support, email support@flex-radio.com.",
+                                    comboAudioSoundCard.Text + " Mixer Initialization Failed",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation);
+                                console.PowerEnabled = false;
+                            }
+                            else if (comboAudioInput1.Text != "ASIO4ALL v2" &&
+                                comboAudioInput1.Text != "Wuschel's ASIO4ALL")
+                            {
+                                MessageBox.Show("ASIO4ALL driver not found.  Please visit " +
+                                    "www.asio4all.com, download and install the driver, " +
+                                    "and try again.  Alternatively, you can use the Unsupported " +
+                                    "Card selection and setup the sound interface manually.  For " +
+                                    "more support, email support@flex-radio.com.",
+                                    "ASIO4ALL Not Found",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation);
+                                console.PowerEnabled = false;
+                            }
+                            else
+                            {
+                                udAudioLineIn1.Value = 6;
+                                console.PowerEnabled = true;
+                                comboAudioChannels1.Text = "2";
+                                comboAudioChannels1.Enabled = false;
+                            }
+                            break;
+                        case SoundCard.DELTA_44:
+                            udAudioVoltage1.Value = 0.98M;
+                            if (!comboAudioSampleRate1.Items.Contains(96000))
+                                comboAudioSampleRate1.Items.Add(96000);
+                            if (comboAudioSampleRate1.Items.Contains(192000))
+                                comboAudioSampleRate1.Items.Remove(192000);
+                            if (comboAudioSoundCard.Focused || comboAudioSampleRate1.SelectedIndex < 0)
+                                comboAudioSampleRate1.Text = "96000";
+                            foreach (PADeviceInfo p in comboAudioDriver1.Items)
+                            {
+                                if (p.Name == "ASIO")
+                                {
+                                    comboAudioDriver1.SelectedItem = p;
+                                    break;
+                                }
+                            }
+
+                            foreach (PADeviceInfo dev in comboAudioInput1.Items)
+                            {
+                                if (dev.Name == "M-Audio Delta ASIO")
+                                {
+                                    comboAudioInput1.Text = "M-Audio Delta ASIO";
+                                    comboAudioOutput1.Text = "M-Audio Delta ASIO";
+                                }
+                            }
+
+                            comboAudioMixer1.Text = "None";
+
+                            if (comboAudioInput1.Text != "M-Audio Delta ASIO")
+                            {
+                                MessageBox.Show("M-Audio Delta ASIO driver not found.  Please visit " +
+                                    "www.m-audio.com, download and install the latest driver, " +
+                                    "and try again.  For more support, email support@flex-radio.com.",
+                                    "Delta 44 Driver Not Found",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation);
+                                console.PowerEnabled = false;
+                            }
+                            else
+                            {
+                                InitDelta44();
+                                chkAudioEnableVAC.Enabled = true;
+                                console.PowerEnabled = true;
+                                comboAudioChannels1.Text = "4";
+                                comboAudioChannels1.Enabled = false;
+                            }
+                            break;
+                        case SoundCard.FIREBOX:
+                            udAudioVoltage1.Value = 6.39M;
+                            if (!comboAudioSampleRate1.Items.Contains(96000))
+                                comboAudioSampleRate1.Items.Add(96000);
+                            if (comboAudioSampleRate1.Items.Contains(192000))
+                                comboAudioSampleRate1.Items.Remove(192000);
+                            if (comboAudioSoundCard.Focused || comboAudioSampleRate1.SelectedIndex < 0)
+                                comboAudioSampleRate1.Text = "48000";
+                            foreach (PADeviceInfo p in comboAudioDriver1.Items)
+                            {
+                                if (p.Name == "ASIO")
+                                {
+                                    comboAudioDriver1.SelectedItem = p;
+                                    break;
+                                }
+                            }
+
+                            foreach (PADeviceInfo dev in comboAudioInput1.Items)
+                            {
+                                if (dev.Name == "PreSonus ASIO Driver (FireBox)")
+                                {
+                                    comboAudioInput1.Text = "PreSonus ASIO Driver (FireBox)";
+                                    comboAudioOutput1.Text = "PreSonus ASIO Driver (FireBox)";
+                                }
+                            }
+
+                            comboAudioMixer1.Text = "None";
+
+                            if (comboAudioInput1.Text != "PreSonus ASIO Driver (FireBox)")
+                            {
+                                MessageBox.Show("PreSonus FireBox ASIO driver not found.  Please visit " +
+                                    "www.presonus.com, download and install the latest driver, " +
+                                    "and try again.  For more support, email support@flex-radio.com.",
+                                    "PreSonus FireBox Driver Not Found",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation);
+                                console.PowerEnabled = false;
+                            }
+                            else
+                            {
+                                chkAudioEnableVAC.Enabled = true;
+                                console.PowerEnabled = true;
+                                comboAudioChannels1.Text = "4";
+                                comboAudioChannels1.Enabled = false;
+                                Thread t = new Thread(new ThreadStart(FireBoxMixerFix));
+                                t.Name = "FireBoxMixerFix";
+                                t.Priority = ThreadPriority.Normal;
+                                t.IsBackground = true;
+                                t.Start();
+                            }
+                            break;
+                        case SoundCard.EDIROL_FA_66:
+                            udAudioVoltage1.Value = 2.327M;
+                            if (!comboAudioSampleRate1.Items.Contains(96000))
+                                comboAudioSampleRate1.Items.Add(96000);
+                            if (!comboAudioSampleRate1.Items.Contains(192000))
+                                comboAudioSampleRate1.Items.Add(192000);
+                            if (comboAudioSoundCard.Focused || comboAudioSampleRate1.SelectedIndex < 0)
+                                comboAudioSampleRate1.Text = "192000";
+                            foreach (PADeviceInfo p in comboAudioDriver1.Items)
+                            {
+                                if (p.Name == "ASIO")
+                                {
+                                    comboAudioDriver1.SelectedItem = p;
+                                    break;
+                                }
+                            }
+
+                            foreach (PADeviceInfo dev in comboAudioInput1.Items)
+                            {
+                                if (dev.Name == "EDIROL FA-66")
+                                {
+                                    comboAudioInput1.Text = "EDIROL FA-66";
+                                    comboAudioOutput1.Text = "EDIROL FA-66";
+                                }
+                            }
+
+                            comboAudioMixer1.Text = "None";
+
+                            if (comboAudioInput1.Text != "EDIROL FA-66")
+                            {
+                                MessageBox.Show("Edirol FA-66 ASIO driver not found.  Please visit " +
+                                    "www.rolandus.com, download and install the latest driver, " +
+                                    "and try again.  \nFor more support, " +
+                                    "email support@GenesisRadio.com.au or join Genesis Yahoo group " +
+                                    "(http://groups.yahoo.com/group/GenesisRadio)",
+                                    "Edirol FA-66 Driver Not Found",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Exclamation);
+
+                                console.PowerEnabled = false;
+                            }
+                            else
+                            {
+                                chkAudioEnableVAC.Enabled = true;
+                                console.PowerEnabled = true;
+                                comboAudioChannels1.Text = "4";
+                                comboAudioChannels1.Enabled = false;
+                            }
+                            break;
+                        case SoundCard.UNSUPPORTED_CARD:
+                            comboAudioDriver1.Enabled = true;
+                            comboAudioReceive1.Enabled = true;
+                            comboAudioTransmit1.Enabled = true;
+                            chkLineMic.Enabled = true;
+                            chkLineMic.Checked = false;
+
+                            if (!comboAudioSampleRate1.Items.Contains(96000))
+                                comboAudioSampleRate1.Items.Add(96000);
+
+                            if (!comboAudioSampleRate1.Items.Contains(192000))
+                                comboAudioSampleRate1.Items.Add(192000);
+
+                            if (comboAudioSoundCard.Focused || comboAudioSampleRate1.SelectedIndex < 0)
+                                comboAudioSampleRate1.Text = "96000";
+
+                            console.PowerEnabled = true;
+                            comboAudioChannels1.Text = "2";
+                            comboAudioChannels1.Enabled = true;
                             break;
                     }
 
-					if(comboAudioMixer1.SelectedIndex < 0 || 
-						!comboAudioMixer1.Text.StartsWith("SB Audigy"))
-					{
-						MessageBox.Show(comboAudioSoundCard.Text+" not found.\n "+
-							"Please verify that this specific sound card is installed " +
-							"and functioning and try again.  \nIf your sound card is not " +
-							"a "+comboAudioSoundCard.Text+" and your card is not in the "+
-							"list, use the Unsupported Card selection.  \nFor more support, "+
-							"email support@flex-radio.com.",
-							comboAudioSoundCard.Text+" Not Found",
-							MessageBoxButtons.OK,
-							MessageBoxIcon.Exclamation);
-						console.PowerEnabled = false;
-					}
-					else if(!Mixer.InitAudigy2ZS(console.MixerID1))
-					{
-						MessageBox.Show("The "+comboAudioSoundCard.Text+" mixer initialization "+
-							"failed.  Please install the latest drivers from www.creativelabs.com " +
-							" and try again.  For more support, email support@flex-radio.com.",
-							comboAudioSoundCard.Text+" Mixer Initialization Failed",
-							MessageBoxButtons.OK,
-							MessageBoxIcon.Exclamation);
-						console.PowerEnabled = false;
-					}
-					else if(comboAudioInput1.Text != "ASIO4ALL v2" &&
-						comboAudioInput1.Text != "Wuschel's ASIO4ALL")
-					{
-						MessageBox.Show("ASIO4ALL driver not found.  Please visit " +
-							"www.asio4all.com, download and install the driver, "+
-							"and try again.  Alternatively, you can use the Unsupported "+
-							"Card selection and setup the sound interface manually.  For "+
-							"more support, email support@flex-radio.com.",
-							"ASIO4ALL Not Found",
-							MessageBoxButtons.OK,
-							MessageBoxIcon.Exclamation);
-						console.PowerEnabled = false;
-					}
-					else 
-					{
-						udAudioLineIn1.Value = 1;
-						console.PowerEnabled = true;
-						comboAudioChannels1.Text = "2";
-						comboAudioChannels1.Enabled = false;
-					}
-					break;
-				case SoundCard.EXTIGY:
-					udAudioVoltage1.Value = 1.96M;
-					if(!comboAudioSampleRate1.Items.Contains(96000))
-						comboAudioSampleRate1.Items.Add(96000);
-					if(comboAudioSampleRate1.Items.Contains(192000))
-						comboAudioSampleRate1.Items.Remove(192000);
-					comboAudioSampleRate1.Text = "48000";
-					foreach(PADeviceInfo p in comboAudioDriver1.Items)
-					{
-						if(p.Name == "ASIO")
-						{
-							comboAudioDriver1.SelectedItem = p;
-							break;
-						}
-					}
-					
-					foreach(PADeviceInfo dev in comboAudioInput1.Items)
-					{
-						if(dev.Name == "Wuschel's ASIO4ALL")
-						{
-							comboAudioInput1.Text = "Wuschel's ASIO4ALL";
-							comboAudioOutput1.Text = "Wuschel's ASIO4ALL";
-						}
-					}
-					if(comboAudioInput1.Text != "Wuschel's ASIO4ALL")
-					{
-						foreach(PADeviceInfo dev in comboAudioInput1.Items)
-						{
-							if(dev.Name == "ASIO4ALL v2")
-							{
-								comboAudioInput1.Text = "ASIO4ALL v2";
-								comboAudioOutput1.Text = "ASIO4ALL v2";
-							}
-						}
-					}
+                    console.PWR = console.PWR;
+                    console.AF = console.AF;
 
-					for(int i=0; i<comboAudioMixer1.Items.Count; i++)
-					{
-						if(((string)comboAudioMixer1.Items[i]).StartsWith("Creative SB Extigy"))
-						{
-							comboAudioMixer1.SelectedIndex = i;
-							break;
-						}
-					}
+                    if (on)
+                        console.chkPower.Checked = true;
 
-					comboAudioReceive1.Text = "Line In";
-
-                    if (!console.LineMicShared)
-                        comboAudioTransmit1.Text = "Microphone";
+                    if (current_sound_card != SoundCard.UNSUPPORTED_CARD &&
+                        (current_sound_card != SoundCard.G6 || current_sound_card != SoundCard.RTL_SDR))
+                    {
+                        chkAudioExclusive.Checked = false;
+                        chkAudioExclusive.Enabled = false;
+                    }
                     else
-                        comboAudioTransmit1.Text = "Line In";
-
-					if(comboAudioMixer1.SelectedIndex < 0 ||
-						comboAudioMixer1.Text != "Creative SB Extigy")
-					{
-						MessageBox.Show(comboAudioSoundCard.Text+" not found.\n "+
-							"Please verify that this specific sound card is installed " +
-							"and functioning and try again.  \nIf your sound card is not " +
-							"a "+comboAudioSoundCard.Text+" and your card is not in the "+
-							"list, use the Unsupported Card selection.  \nFor more support, "+
-							"email support@flex-radio.com.",
-							comboAudioSoundCard.Text+" Not Found",
-							MessageBoxButtons.OK,
-							MessageBoxIcon.Exclamation);
-						console.PowerEnabled = false;
-					}
-					else if(!Mixer.InitExtigy(console.MixerID1))
-					{
-						MessageBox.Show("The "+comboAudioSoundCard.Text+" mixer initialization "+
-							"failed.  Please install the latest drivers from www.creativelabs.com " +
-							" and try again.  For more support, email support@flex-radio.com.",
-							comboAudioSoundCard.Text+" Mixer Initialization Failed",
-							MessageBoxButtons.OK,
-							MessageBoxIcon.Exclamation);
-						console.PowerEnabled = false;
-					}
-					else if(comboAudioInput1.Text != "ASIO4ALL v2" &&
-						comboAudioInput1.Text != "Wuschel's ASIO4ALL")
-					{
-						MessageBox.Show("ASIO4ALL driver not found.  Please visit " +
-							"www.asio4all.com, download and install the driver, "+
-							"and try again.  Alternatively, you can use the Unsupported "+
-							"Card selection and setup the sound interface manually.  For "+
-							"more support, email support@flex-radio.com.",
-							"ASIO4ALL Not Found",
-							MessageBoxButtons.OK,
-							MessageBoxIcon.Exclamation);
-						console.PowerEnabled = false;
-					}
-					else
-					{
-						udAudioLineIn1.Value = 20;
-						console.PowerEnabled = true;
-						comboAudioChannels1.Text = "2";
-						comboAudioChannels1.Enabled = false;
-					}
-					break;
-				case SoundCard.MP3_PLUS:
-					udAudioVoltage1.Value = 0.982M;
-					if(comboAudioSampleRate1.Items.Contains(96000))
-						comboAudioSampleRate1.Items.Remove(96000);
-					if(comboAudioSampleRate1.Items.Contains(192000))
-						comboAudioSampleRate1.Items.Remove(192000);
-					comboAudioSampleRate1.Text = "48000";
-					foreach(PADeviceInfo p in comboAudioDriver1.Items)
-					{
-						if(p.Name == "ASIO")
-						{
-							comboAudioDriver1.SelectedItem = p;
-							break;
-						}
-					}
-
-					for(int i=0; i<comboAudioMixer1.Items.Count; i++)
-					{
-						if(((string)comboAudioMixer1.Items[i]).StartsWith("Sound Blaster"))
-						{
-							comboAudioMixer1.SelectedIndex = i;
-							break;
-						}
-					}
-
-					if(comboAudioMixer1.SelectedIndex < 0 ||
-						(string)comboAudioMixer1.SelectedItem != "Sound Blaster")
-					{
-						for(int i=0; i<comboAudioMixer1.Items.Count; i++)
-						{
-							if(((string)comboAudioMixer1.Items[i]).StartsWith("USB Audio"))
-							{
-								comboAudioMixer1.SelectedIndex = i;
-								break;
-							}
-						}
-					}
-
-					foreach(PADeviceInfo dev in comboAudioInput1.Items)
-					{
-						if(dev.Name == "Wuschel's ASIO4ALL")
-						{
-							comboAudioInput1.Text = "Wuschel's ASIO4ALL";
-							comboAudioOutput1.Text = "Wuschel's ASIO4ALL";
-						}
-					}
-					if(comboAudioInput1.Text != "Wuschel's ASIO4ALL")
-					{
-						foreach(PADeviceInfo dev in comboAudioInput1.Items)
-						{
-							if(dev.Name == "ASIO4ALL v2")
-							{
-								comboAudioInput1.Text = "ASIO4ALL v2";
-								comboAudioOutput1.Text = "ASIO4ALL v2";
-							}
-						}
-					}
-
-					comboAudioReceive1.Text = "Line In";
-					
-					for(int i=0; i<comboAudioTransmit1.Items.Count; i++)
-					{
-						if(((string)comboAudioTransmit1.Items[i]).StartsWith("Mi"))
-						{
-							comboAudioTransmit1.SelectedIndex = i;
-							break;
-						}
-					}
-
-					if(comboAudioMixer1.SelectedIndex < 0 ||
-						(comboAudioMixer1.Text != "Sound Blaster" &&
-						comboAudioMixer1.Text != "USB Audio"))
-					{
-						MessageBox.Show(comboAudioSoundCard.Text+" not found.\n "+
-							"Please verify that this specific sound card is installed " +
-							"and functioning and try again.  \nIf your sound card is not " +
-							"a "+comboAudioSoundCard.Text+" and your card is not in the "+
-							"list, use the Unsupported Card selection.  \nFor more support, "+
-							"email support@flex-radio.com.",
-							comboAudioSoundCard.Text+" Not Found",
-							MessageBoxButtons.OK,
-							MessageBoxIcon.Exclamation);
-						console.PowerEnabled = false;
-					}
-					else if(!Mixer.InitMP3Plus(console.MixerID1))
-					{
-						MessageBox.Show("The "+comboAudioSoundCard.Text+" mixer initialization "+
-							"failed.  Please install the latest drivers from www.creativelabs.com " +
-							" and try again.  For more support, email support@flex-radio.com.",
-							comboAudioSoundCard.Text+" Mixer Initialization Failed",
-							MessageBoxButtons.OK,
-							MessageBoxIcon.Exclamation);
-						console.PowerEnabled = false;
-					}
-					else if(comboAudioInput1.Text != "ASIO4ALL v2" &&
-						comboAudioInput1.Text != "Wuschel's ASIO4ALL")
-					{
-						MessageBox.Show("ASIO4ALL driver not found.  Please visit " +
-							"www.asio4all.com, download and install the driver, "+
-							"and try again.  Alternatively, you can use the Unsupported "+
-							"Card selection and setup the sound interface manually.  For "+
-							"more support, email support@flex-radio.com.",
-							"ASIO4ALL Not Found",
-							MessageBoxButtons.OK,
-							MessageBoxIcon.Exclamation);
-						console.PowerEnabled = false;
-					}
-					else 
-					{
-						udAudioLineIn1.Value = 6;
-						console.PowerEnabled = true;
-						comboAudioChannels1.Text = "2";
-						comboAudioChannels1.Enabled = false;
-					}
-					break;
-				case SoundCard.DELTA_44:
-					udAudioVoltage1.Value = 0.98M;
-					if(!comboAudioSampleRate1.Items.Contains(96000))
-						comboAudioSampleRate1.Items.Add(96000);
-					if(comboAudioSampleRate1.Items.Contains(192000))
-						comboAudioSampleRate1.Items.Remove(192000);
-					if(comboAudioSoundCard.Focused || comboAudioSampleRate1.SelectedIndex < 0)
-						comboAudioSampleRate1.Text = "96000";
-					foreach(PADeviceInfo p in comboAudioDriver1.Items)
-					{
-						if(p.Name == "ASIO")
-						{
-							comboAudioDriver1.SelectedItem = p;
-							break;
-						}
-					}
-
-					foreach(PADeviceInfo dev in comboAudioInput1.Items)
-					{
-						if(dev.Name == "M-Audio Delta ASIO")
-						{
-							comboAudioInput1.Text = "M-Audio Delta ASIO";
-							comboAudioOutput1.Text = "M-Audio Delta ASIO";
-						}
-					}
-					
-					comboAudioMixer1.Text = "None";
-
-					if(comboAudioInput1.Text != "M-Audio Delta ASIO")
-					{
-						MessageBox.Show("M-Audio Delta ASIO driver not found.  Please visit " +
-							"www.m-audio.com, download and install the latest driver, "+
-							"and try again.  For more support, email support@flex-radio.com.",
-							"Delta 44 Driver Not Found",
-							MessageBoxButtons.OK,
-							MessageBoxIcon.Exclamation);
-						console.PowerEnabled = false;
-					}
-					else 
-					{
-						InitDelta44();
-						chkAudioEnableVAC.Enabled = true;
-						console.PowerEnabled = true;
-						comboAudioChannels1.Text = "4";
-						comboAudioChannels1.Enabled = false;
-					}
-					break;
-				case SoundCard.FIREBOX:
-					udAudioVoltage1.Value = 6.39M;
-					if(!comboAudioSampleRate1.Items.Contains(96000))
-						comboAudioSampleRate1.Items.Add(96000);
-					if(comboAudioSampleRate1.Items.Contains(192000))
-						comboAudioSampleRate1.Items.Remove(192000);
-					if(comboAudioSoundCard.Focused || comboAudioSampleRate1.SelectedIndex < 0)
-						comboAudioSampleRate1.Text = "48000";
-					foreach(PADeviceInfo p in comboAudioDriver1.Items)
-					{
-						if(p.Name == "ASIO")
-						{
-							comboAudioDriver1.SelectedItem = p;
-							break;
-						}
-					}
-
-					foreach(PADeviceInfo dev in comboAudioInput1.Items)
-					{
-						if(dev.Name == "PreSonus ASIO Driver (FireBox)")
-						{
-							comboAudioInput1.Text = "PreSonus ASIO Driver (FireBox)";
-							comboAudioOutput1.Text = "PreSonus ASIO Driver (FireBox)";
-						}
-					}
-					
-					comboAudioMixer1.Text = "None";
-
-					if(comboAudioInput1.Text != "PreSonus ASIO Driver (FireBox)")
-					{
-						MessageBox.Show("PreSonus FireBox ASIO driver not found.  Please visit " +
-							"www.presonus.com, download and install the latest driver, "+
-							"and try again.  For more support, email support@flex-radio.com.",
-							"PreSonus FireBox Driver Not Found",
-							MessageBoxButtons.OK,
-							MessageBoxIcon.Exclamation);
-						console.PowerEnabled = false;
-					}
-					else 
-					{
-						chkAudioEnableVAC.Enabled = true;
-						console.PowerEnabled = true;
-						comboAudioChannels1.Text = "4";
-						comboAudioChannels1.Enabled = false;
-						Thread t = new Thread(new ThreadStart(FireBoxMixerFix));
-						t.Name = "FireBoxMixerFix";
-						t.Priority = ThreadPriority.Normal;
-						t.IsBackground = true;
-						t.Start();
-					}
-					break;
-				case SoundCard.EDIROL_FA_66:
-					udAudioVoltage1.Value = 2.327M;
-					if(!comboAudioSampleRate1.Items.Contains(96000))
-						comboAudioSampleRate1.Items.Add(96000);
-					if(!comboAudioSampleRate1.Items.Contains(192000))
-						comboAudioSampleRate1.Items.Add(192000);
-					if(comboAudioSoundCard.Focused || comboAudioSampleRate1.SelectedIndex < 0)
-						comboAudioSampleRate1.Text = "192000";
-					foreach(PADeviceInfo p in comboAudioDriver1.Items)
-					{
-						if(p.Name == "ASIO")
-						{
-							comboAudioDriver1.SelectedItem = p;
-							break;
-						}
-					}
-
-					foreach(PADeviceInfo dev in comboAudioInput1.Items)
-					{
-						if(dev.Name == "EDIROL FA-66")
-						{
-							comboAudioInput1.Text = "EDIROL FA-66";
-							comboAudioOutput1.Text = "EDIROL FA-66";
-						}
-					}
-					
-					comboAudioMixer1.Text = "None";
-
-					if(comboAudioInput1.Text != "EDIROL FA-66")
-					{
-						MessageBox.Show("Edirol FA-66 ASIO driver not found.  Please visit " +
-							"www.rolandus.com, download and install the latest driver, "+
-                            "and try again.  \nFor more support, " +
-                            "email support@GenesisRadio.com.au or join Genesis Yahoo group " +
-                            "(http://groups.yahoo.com/group/GenesisRadio)",
-							"Edirol FA-66 Driver Not Found",
-							MessageBoxButtons.OK,
-							MessageBoxIcon.Exclamation);
-
-						console.PowerEnabled = false;
-					}
-					else 
-					{
-						chkAudioEnableVAC.Enabled = true;
-						console.PowerEnabled = true;
-						comboAudioChannels1.Text = "4";
-						comboAudioChannels1.Enabled = false;
-					}
-					break;
-				case SoundCard.UNSUPPORTED_CARD:
-                    comboAudioDriver1.Enabled = true;
-                    comboAudioReceive1.Enabled = true;
-                    comboAudioTransmit1.Enabled = true;
-                    chkLineMic.Enabled = true;
-                    chkLineMic.Checked = false;
-
-					if(!comboAudioSampleRate1.Items.Contains(96000))
-					  	comboAudioSampleRate1.Items.Add(96000);
-
-					if(!comboAudioSampleRate1.Items.Contains(192000))
-						comboAudioSampleRate1.Items.Add(192000);
-
-					if(comboAudioSoundCard.Focused || comboAudioSampleRate1.SelectedIndex < 0)
-						comboAudioSampleRate1.Text = "96000";
-
-					console.PowerEnabled = true;
-					comboAudioChannels1.Text = "2";
-					comboAudioChannels1.Enabled = true;
-					break;				
-			}
-
-			console.PWR = console.PWR;
-			console.AF = console.AF;
-
-			if(on)
-                console.chkPower.Checked = true;
-
-            if (current_sound_card != SoundCard.UNSUPPORTED_CARD)
-            {
-                chkAudioExclusive.Checked = false;
-                chkAudioExclusive.Enabled = false;
+                        chkAudioExclusive.Enabled = true;
+                }
+                else
+                {
+                    settings.audio_card_index = comboAudioSoundCard.SelectedIndex;
+                }
             }
-            else
-                chkAudioExclusive.Enabled = true;
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		#endregion
 
 		#region Display Tab Event Handlers
-		// ======================================================
-		// Display Tab Event Handlers
-		// ======================================================
 
 		private void udDisplayGridMax_LostFocus(object sender, System.EventArgs e)
 		{
@@ -24721,7 +25721,7 @@ namespace PowerSDR
 
 		private void udDisplayGridMax_ValueChanged(object sender, System.EventArgs e)
 		{
-			if(udDisplayGridMax.Value <= udDisplayGridMin.Value)
+			if(udDisplayGridMax.Value <= udDisplayGridMin.Value + 10)
 				udDisplayGridMax.Value = udDisplayGridMin.Value + 10;
 
             SpectrumHighLevel = (float)udDisplayGridMax.Value;
@@ -24729,7 +25729,7 @@ namespace PowerSDR
 
 		private void udDisplayGridMin_ValueChanged(object sender, System.EventArgs e)
 		{
-			if(udDisplayGridMin.Value >= udDisplayGridMax.Value)
+			if(udDisplayGridMin.Value >= udDisplayGridMax.Value - 10)
 				udDisplayGridMin.Value = udDisplayGridMax.Value - 10;
 
             SpectrumLowLevel = (float)udDisplayGridMin.Value;
@@ -24871,8 +25871,11 @@ namespace PowerSDR
 
 		private void udDisplayScopeTime_ValueChanged(object sender, System.EventArgs e)
 		{
-            int samples = (int)((double)udDisplayScopeTime.Value * console.SampleRate1 / 10000.0);
-            Audio.ScopeSamplesPerPixel = samples;
+            if (!initializing)
+            {
+                int samples = (int)((double)udDisplayScopeTime.Value * console.SampleRate1 / 10000.0);
+                Audio.ScopeSamplesPerPixel = samples;
+            }
 		}
 
 		private void udDisplayMeterAvg_ValueChanged(object sender, System.EventArgs e)
@@ -24928,15 +25931,13 @@ namespace PowerSDR
 		#endregion
 
 		#region DSP Tab Event Handlers
-		// ======================================================
-		// DSP Tab Event Handlers
-		// ======================================================
 
-		private void udLMSNR_ValueChanged(object sender, System.EventArgs e)
-		{
-            DttSP.SetNRvals(0, 0, (int)udLMSNRtaps.Value, (int)udLMSNRdelay.Value,
-                0.00001 * (double)udLMSNRgain.Value, 0.0000001 * (double)udLMSNRleak.Value);
-		}
+        private void udLMSNR_ValueChanged(object sender, System.EventArgs e)
+        {
+            if (!initializing)
+                DttSP.SetNRvals(0, 0, (int)udLMSNRtaps.Value, (int)udLMSNRdelay.Value,
+                    0.00001 * (double)udLMSNRgain.Value, 0.0000001 * (double)udLMSNRleak.Value);
+        }
 
 		private void udDSPNB_ValueChanged(object sender, System.EventArgs e)
 		{
@@ -24978,6 +25979,7 @@ namespace PowerSDR
                         }
 
                         DttSP.ResizeSDR(0, size);
+                        DttSP.SetSampleRate(Audio.SampleRate1);
                         DttSP.SetMode(0, 0, console.CurrentDSPMode);
                         Filter filter = console.CurrentFilter;
                         console.CurrentFilter = filter;
@@ -25079,10 +26081,13 @@ namespace PowerSDR
 
 		private void udDSPImagePhaseTX_ValueChanged(object sender, System.EventArgs e)
 		{
-            DttSP.SetTXIQPhase(thread_no, (double)udDSPImagePhaseTX.Value);
+            if (!initializing)
+            {
+                DttSP.SetTXIQPhase(thread_no, (double)udDSPImagePhaseTX.Value);
 
-			if(tbDSPImagePhaseTX.Value != (int)udDSPImagePhaseTX.Value)
-				tbDSPImagePhaseTX.Value = (int)udDSPImagePhaseTX.Value;		
+                if (tbDSPImagePhaseTX.Value != (int)udDSPImagePhaseTX.Value)
+                    tbDSPImagePhaseTX.Value = (int)udDSPImagePhaseTX.Value;
+            }
 		}
 
 		private void tbDSPImagePhaseTX_Scroll(object sender, System.EventArgs e)
@@ -25092,10 +26097,13 @@ namespace PowerSDR
 
 		private void udDSPImageGainTX_ValueChanged(object sender, System.EventArgs e)
 		{
-            DttSP.SetTXIQGain(thread_no, (double)udDSPImageGainTX.Value);
+            if (!initializing)
+            {
+                DttSP.SetTXIQGain(thread_no, (double)udDSPImageGainTX.Value);
 
-			if(tbDSPImageGainTX.Value != (int)udDSPImageGainTX.Value)
-				tbDSPImageGainTX.Value = (int)udDSPImageGainTX.Value;
+                if (tbDSPImageGainTX.Value != (int)udDSPImageGainTX.Value)
+                    tbDSPImageGainTX.Value = (int)udDSPImageGainTX.Value;
+            }
 		}
 
 		private void tbDSPImageGainTX_Scroll(object sender, System.EventArgs e)
@@ -25105,10 +26113,13 @@ namespace PowerSDR
 		
 		private void udLMSANF_ValueChanged(object sender, System.EventArgs e)
 		{
-            DttSP.SetANFvals(0, 0, (int)udLMSANFtaps.Value, (int)udLMSANFdelay.Value,
-                0.00001 * (double)udLMSANFgain.Value, 0.0000001 * (double)udLMSANFleak.Value);
-            DttSP.SetANFvals(0, 1, (int)udLMSANFtaps.Value, (int)udLMSANFdelay.Value,
-                0.00001 * (double)udLMSANFgain.Value, 0.0000001 * (double)udLMSANFleak.Value);
+            if (!initializing)
+            {
+                DttSP.SetANFvals(0, 0, (int)udLMSANFtaps.Value, (int)udLMSANFdelay.Value,
+                    0.00001 * (double)udLMSANFgain.Value, 0.0000001 * (double)udLMSANFleak.Value);
+                DttSP.SetANFvals(0, 1, (int)udLMSANFtaps.Value, (int)udLMSANFdelay.Value,
+                    0.00001 * (double)udLMSANFgain.Value, 0.0000001 * (double)udLMSANFleak.Value);
+            }
 		}
 
 		private void chkTXImagCal_CheckedChanged(object sender, System.EventArgs e)
@@ -25168,50 +26179,63 @@ namespace PowerSDR
 
         private void udDSPCWPitch_ValueChanged(object sender, System.EventArgs e)
 		{
-			console.CWPitch = (int)udDSPCWPitch.Value;
+            if(!console.booting)
+			    console.CWPitch = (int)udDSPCWPitch.Value;
 		}
 
         private void chkCWKeyerIambic_CheckedChanged(object sender, System.EventArgs e)
         {
-            console.CWIambic = chkCWKeyerIambic.Checked;
+            if (!initializing)
+                console.CWIambic = chkCWKeyerIambic.Checked;
         }
 
 		private void udCWKeyerWeight_ValueChanged(object sender, System.EventArgs e)
 		{
-			DttSP.SetKeyerWeight((int)udCWKeyerWeight.Value);
+            if (!initializing)
+			    DttSP.SetKeyerWeight((int)udCWKeyerWeight.Value);
 		}
 
 		private void udCWKeyerRise_ValueChanged(object sender, System.EventArgs e)
 		{
-			DttSP.SetKeyerRise((float)udCWKeyerRise.Value);
+            if (!initializing)
+			    DttSP.SetKeyerRise((float)udCWKeyerRise.Value);
 		}
 
         private void udCWKeyerFall_ValueChanged(object sender, EventArgs e)
         {
-            DttSP.SetKeyerFall((float)udCWKeyerFall.Value);
+            if (!initializing)
+                DttSP.SetKeyerFall((float)udCWKeyerFall.Value);
         }
 
 		private void udCWKeyerSemiBreakInDelay_ValueChanged(object sender, System.EventArgs e)
 		{
-			console.BreakInDelay = (double)udCWKeyerSemiBreakInDelay.Value;
+            if (!initializing)
+			    console.BreakInDelay = (double)udCWKeyerSemiBreakInDelay.Value;
 		}
 
 		private void chkDSPKeyerSemiBreakInEnabled_CheckedChanged(object sender, System.EventArgs e)
 		{
-			console.CWSemiBreakInEnabled = chkDSPKeyerSemiBreakInEnabled.Checked;
-			console.BreakInEnabled = chkDSPKeyerSemiBreakInEnabled.Checked;
-			udCWKeyerSemiBreakInDelay.Enabled = chkDSPKeyerSemiBreakInEnabled.Checked;
+            if (!initializing)
+            {
+                console.CWSemiBreakInEnabled = chkDSPKeyerSemiBreakInEnabled.Checked;
+                console.BreakInEnabled = chkDSPKeyerSemiBreakInEnabled.Checked;
+                udCWKeyerSemiBreakInDelay.Enabled = chkDSPKeyerSemiBreakInEnabled.Checked;
+            }
 		}
 
 		private void udCWKeyerDeBounce_ValueChanged(object sender, System.EventArgs e)
 		{
-			DttSP.SetKeyerDeBounce((int)udCWKeyerDeBounce.Value);
+            if (!initializing)
+			    DttSP.SetKeyerDeBounce((int)udCWKeyerDeBounce.Value);
 		}
 
 		private void chkCWKeyerRevPdl_CheckedChanged(object sender, System.EventArgs e)
 		{
-			if (chkCWKeyerRevPdl.Checked) DttSP.SetKeyerRevPdl(true);
-			else DttSP.SetKeyerRevPdl(false);
+            if (!initializing)
+            {
+                if (chkCWKeyerRevPdl.Checked) DttSP.SetKeyerRevPdl(true);
+                else DttSP.SetKeyerRevPdl(false);
+            }
 		}
 
 		private void chkHiPerfKeyer_CheckedChanged(object sender, System.EventArgs e)
@@ -25371,11 +26395,14 @@ namespace PowerSDR
 		}
         private void tbDSPAGCHangThreshold_Scroll(object sender, System.EventArgs e)        // changes yt7pwr
 		{
-            if (console.CurrentClickTuneMode == ClickTuneMode.Off ||
-                console.CurrentClickTuneMode == ClickTuneMode.VFOA)
-                DttSP.SetRXAGCHangThreshold(0, 0, (int)tbDSPAGCHangThreshold.Value);
-                else if(console.CurrentClickTuneMode == ClickTuneMode.VFOB)
-                DttSP.SetRXAGCHangThreshold(0, 1, (int)tbDSPAGCHangThreshold.Value);
+            if (!initializing)
+            {
+                if (console.CurrentClickTuneMode == ClickTuneMode.Off ||
+                    console.CurrentClickTuneMode == ClickTuneMode.VFOA)
+                    DttSP.SetRXAGCHangThreshold(0, 0, (int)tbDSPAGCHangThreshold.Value);
+                else if (console.CurrentClickTuneMode == ClickTuneMode.VFOB)
+                    DttSP.SetRXAGCHangThreshold(0, 1, (int)tbDSPAGCHangThreshold.Value);
+            }
 		}
 
 		#endregion
@@ -25462,20 +26489,23 @@ namespace PowerSDR
 
 		private void udTXFilterHigh_ValueChanged(object sender, System.EventArgs e)
 		{
-			if(udTXFilterHigh.Value < udTXFilterLow.Value + 100)
-			{
-				udTXFilterHigh.Value = udTXFilterLow.Value + 100;
-				return;
-			}
+            if (!initializing)
+            {
+                if (udTXFilterHigh.Value < udTXFilterLow.Value + 100)
+                {
+                    udTXFilterHigh.Value = udTXFilterLow.Value + 100;
+                    return;
+                }
 
-			if(udTXFilterHigh.Focused &&
-				(udTXFilterHigh.Value - udTXFilterLow.Value) > 3000 &&
-				(console.TXFilterHigh - console.TXFilterLow) <= 3000)
-			{
-				(new Thread(new ThreadStart(TXBW))).Start();
-			}
+                if (udTXFilterHigh.Focused &&
+                    (udTXFilterHigh.Value - udTXFilterLow.Value) > 3000 &&
+                    (console.TXFilterHigh - console.TXFilterLow) <= 3000)
+                {
+                    (new Thread(new ThreadStart(TXBW))).Start();
+                }
 
-			console.TXFilterHigh = (int)udTXFilterHigh.Value;
+                console.TXFilterHigh = (int)udTXFilterHigh.Value;
+            }
 			
 		}
 
@@ -25491,20 +26521,23 @@ namespace PowerSDR
 
 		private void udTXFilterLow_ValueChanged(object sender, System.EventArgs e)
 		{
-			if(udTXFilterLow.Value > udTXFilterHigh.Value - 100)
-			{
-				udTXFilterLow.Value = udTXFilterHigh.Value - 100;
-				return;
-			}
+            if (!initializing)
+            {
+                if (udTXFilterLow.Value > udTXFilterHigh.Value - 100)
+                {
+                    udTXFilterLow.Value = udTXFilterHigh.Value - 100;
+                    return;
+                }
 
-			if(udTXFilterLow.Focused &&
-				(udTXFilterHigh.Value - udTXFilterLow.Value) > 3000 &&
-				(console.TXFilterHigh - console.TXFilterLow) <= 3000)
-			{
-				(new Thread(new ThreadStart(TXBW))).Start();
-			}
+                if (udTXFilterLow.Focused &&
+                    (udTXFilterHigh.Value - udTXFilterLow.Value) > 3000 &&
+                    (console.TXFilterHigh - console.TXFilterLow) <= 3000)
+                {
+                    (new Thread(new ThreadStart(TXBW))).Start();
+                }
 
-			console.TXFilterLow = (int)udTXFilterLow.Value;
+                console.TXFilterLow = (int)udTXFilterLow.Value;
+            }
 		}
 
 		private void tbTXFFCompression_Scroll(object sender, System.EventArgs e)
@@ -27422,14 +28455,12 @@ namespace PowerSDR
 
 		private void chkCWKeyerMode_CheckedChanged(object sender, System.EventArgs e)
 		{
-			if (chkCWKeyerMode.Checked) console.Keyer.KeyerMode = 1;
-			else console.Keyer.KeyerMode = 0;
+            if (!initializing)
+            {
+                if (chkCWKeyerMode.Checked) console.Keyer.KeyerMode = 1;
+                else console.Keyer.KeyerMode = 0;
+            }
 		}
-
-        private void toolTip1_Popup(object sender, PopupEventArgs e)
-        {
-
-        }
 
   		#region CAT Setup event handlers 
 
@@ -27479,7 +28510,6 @@ namespace PowerSDR
 
 			// wjt fixme -- need to hand baudrate, parity, data, stop -- see initCATandPTTprops 
 		}
-
 
 		private void chkCATEnable_CheckedChanged(object sender, System.EventArgs e) 
 		{
@@ -27829,8 +28859,15 @@ namespace PowerSDR
 
         private void chkVACPrimaryAudioDevice_CheckedChanged(object sender, System.EventArgs e)
         {
-            Audio.VACPrimaryAudiodevice = chkVACPrimaryAudioDevice.Checked;
-            chkAudioEnableVAC.Checked = chkVACPrimaryAudioDevice.Checked;
+            if (!initializing)
+            {
+                Audio.VACPrimaryAudiodevice = chkVACPrimaryAudioDevice.Checked;
+                chkAudioEnableVAC.Checked = chkVACPrimaryAudioDevice.Checked;
+            }
+            else
+            {
+                settings.enable_VAC_mic_speaker = chkVACPrimaryAudioDevice.Checked;
+            }
         }
 
         private void chkCWMonitorVAC_CheckedChanged(object sender, EventArgs e) // yt7pwr
@@ -27952,10 +28989,11 @@ namespace PowerSDR
             try
             {
                 if (!console.booting && console.CurrentModel != Model.GENESIS_G59USB &&
-                    console.CurrentModel != Model.GENESIS_G59NET)
+                    console.CurrentModel != Model.GENESIS_G59NET && console.CurrentModel != Model.GENESIS_G6)
                 {
                     if (chkGeneralUSBPresent.Checked && console.CurrentModel != Model.GENESIS_G59USB &&
-                    console.CurrentModel != Model.GENESIS_G59NET && console.CurrentModel != Model.QRP2000)
+                    console.CurrentModel != Model.GENESIS_G59NET && console.CurrentModel != Model.QRP2000 &&
+                        console.CurrentModel != Model.GENESIS_G6)
                     {
                         chkContinuousTuning.Enabled = true;
                         console.UsbSi570Enable = true;
@@ -28144,21 +29182,25 @@ namespace PowerSDR
         decimal saved_udSi570 = 4;
         private void udSi570_divisor_ValueChanged(object sender, EventArgs e)
         {
-            if (udSi570_divisor.Value == 10 && saved_udSi570 == 11)
-                udSi570_divisor.Value = 9;
-            else if (udSi570_divisor.Value == 10 && saved_udSi570 == 9)
-                udSi570_divisor.Value = 11;
-            else if (udSi570_divisor.Value == 8 && saved_udSi570 == 9)
-                udSi570_divisor.Value = 7;
-            else if (udSi570_divisor.Value == 8 && saved_udSi570 == 7)
-                udSi570_divisor.Value = 9;
-            console.si570_div = (int)udSi570_divisor.Value;
-            saved_udSi570 = udSi570_divisor.Value;
+            if (!initializing)
+            {
+                if (udSi570_divisor.Value == 10 && saved_udSi570 == 11)
+                    udSi570_divisor.Value = 9;
+                else if (udSi570_divisor.Value == 10 && saved_udSi570 == 9)
+                    udSi570_divisor.Value = 11;
+                else if (udSi570_divisor.Value == 8 && saved_udSi570 == 9)
+                    udSi570_divisor.Value = 7;
+                else if (udSi570_divisor.Value == 8 && saved_udSi570 == 7)
+                    udSi570_divisor.Value = 9;
+                console.si570_div = (int)udSi570_divisor.Value;
+                saved_udSi570 = udSi570_divisor.Value;
+            }
         }
 
         private void udSi570_address_ValueChanged(object sender, EventArgs e)
         {
-            console.si570_i2c_address = (int)udSi570_address.Value;
+            if (!initializing)
+                console.si570_i2c_address = (int)udSi570_address.Value;
         }
 
         private void btnSi570Test_Click(object sender, EventArgs e)
@@ -28173,23 +29215,27 @@ namespace PowerSDR
                 console.g59.SmoothTuning = true;
                 console.net_device.SmoothTuning = true;
                 console.g11.SmoothTuning = true;
+                console.g6.SmoothTuning = true;
             }
             else
             {
                 console.g59.SmoothTuning = false;
                 console.net_device.SmoothTuning = false;
                 console.g11.SmoothTuning = false;
+                console.g6.SmoothTuning = false;
             }
         }
 
         private void udFDCOmin_ValueChanged(object sender, EventArgs e)
         {
-            console.Si570_FDCOmin = (double)(udFDCOmin.Value) * 1e6;
+            if(!console.booting)
+                console.Si570_FDCOmin = (double)(udFDCOmin.Value) * 1e6;
         }
 
         private void udFDCOmax_ValueChanged(object sender, EventArgs e)
         {
-            console.Si570_FDCOmax = (double)(udFDCOmax.Value) * 1e6;
+            if (!initializing)
+                console.Si570_FDCOmax = (double)(udFDCOmax.Value) * 1e6;
         }
 
         private void chkDTR_CWMonitor_CheckedChanged(object sender, EventArgs e)
@@ -28377,7 +29423,7 @@ namespace PowerSDR
                             if (!console.booting)
                                 console.skin.Restore(comboAppSkin.Text, path, console);
 
-                            clrbtnSkinButtonColor.Color = Color.Black;
+                            //clrbtnSkinButtonColor.Color = Color.Black;
                         }
                         else if (comboAppSkin.Text == "ClasicXP OliveGreen")
                         {
@@ -28385,7 +29431,7 @@ namespace PowerSDR
                             console.menuStrip1.BackColor = Color.FromArgb(255, 236, 233, 216);
                             clrbtnConsoleColor.Color = Color.FromArgb(255, 236, 233, 216);
                             clrbtnDisplayFontBackground.Color = Color.Black;
-                            clrbtnSkinButtonColor.Color = Color.Black;
+                            //clrbtnSkinButtonColor.Color = Color.Black;
 
                             if (!console.booting)
                                 console.skin.Restore(comboAppSkin.Text, path, console);
@@ -28396,7 +29442,7 @@ namespace PowerSDR
                             console.menuStrip1.BackColor = Color.FromArgb(255, 224, 223, 227);
                             clrbtnConsoleColor.Color = Color.FromArgb(255, 224, 223, 227);
                             clrbtnDisplayFontBackground.Color = Color.Black;
-                            clrbtnSkinButtonColor.Color = Color.Black;
+                            //clrbtnSkinButtonColor.Color = Color.Black;
 
                             if (!console.booting)
                                 console.skin.Restore(comboAppSkin.Text, path, console);
@@ -28407,7 +29453,7 @@ namespace PowerSDR
                             console.menuStrip1.BackColor = Color.FromArgb(255, 212, 208, 200);
                             clrbtnConsoleColor.Color = Color.FromArgb(255, 212, 208, 200);
                             clrbtnDisplayFontBackground.Color = Color.Black;
-                            clrbtnSkinButtonColor.Color = Color.Black;
+                            //clrbtnSkinButtonColor.Color = Color.Black;
 
                             if (!console.booting)
                                 console.skin.Restore(comboAppSkin.Text, path, console);
@@ -28417,8 +29463,8 @@ namespace PowerSDR
                     }
                     else
                     {
-                        clrbtnSkinButtonColor.Color = Color.White;
-                        clrbtnConsoleColor.Color = Color.Black;
+                        //clrbtnSkinButtonColor.Color = Color.White;
+                        //clrbtnConsoleColor.Color = Color.Black;
                         console.SkinsEnabled = true;
 
                         if (!console.booting)
@@ -28471,10 +29517,13 @@ namespace PowerSDR
 
         private void chkSmoothLine_CheckedChanged(object sender, EventArgs e)
         {
-            Display_GDI.smooth_line = chkSmoothLine.Checked;
+            if (!console.booting)
+            {
+                Display_GDI.smooth_line = chkSmoothLine.Checked;
 #if(DirectX)
-            Display_DirectX.SmoothLine = chkSmoothLine.Checked;
+                Display_DirectX.SmoothLine = chkSmoothLine.Checked;
 #endif
+            }
         }
 
         private void InitSMeterModes()
@@ -28708,7 +29757,8 @@ namespace PowerSDR
 
         private void udG59XtrvIF_ValueChanged(object sender, EventArgs e)
         {
-            console.G59_2M_XTRV_LOSC_Freq = (double)udG59XtrvIF.Value;
+            if(!console.booting)
+                console.G59_2M_XTRV_LOSC_Freq = (double)udG59XtrvIF.Value;
         }
 
         private void chkXTRV_separate_RX_TX_CheckedChanged(object sender, EventArgs e)
@@ -29464,50 +30514,10 @@ namespace PowerSDR
         {
             if (radGenModelQRP2000.Checked)
             {
-                chkContinuousTuning.Enabled = true;
-                console.UsbSi570Enable = false;
-                chkGeneralUSBPresent.Checked = false;
-                chkGeneralUSBPresent.Enabled = false;
-                console.Keyer.PrimaryConnPort = "QRP2000";
-                grpQRP2000.Visible = true;
-                console.CurrentVisibleGroup = VisibleGroup.Multimeter;
-                console.net_device.Disconnect();
-                console.btnNetwork.Visible = false;
-                grpG59.Visible = false;
-                grpG11.Visible = false;
-                grpSi570.Enabled = false;
-                grpG59Keyer.Enabled = false;
-                grpGenesisUSB.Enabled = false;
-                grpGenesisConnection.Enabled = false;
-                grpGenesis160.Visible = false;
-                grpGenesis3020.Visible = false;
-                grpGenesis40.Visible = false;
-                grpGenesis80.Visible = false;
-                grpNETBox.Visible = false;
-                grpG6.Visible = false;
-                grpGenesis137.Visible = false;
-                console.grpG160.Visible = false;
-                console.grpG11.Visible = false;
-                console.grpG80.Visible = false;
-                console.grpG40.Visible = false;
-                console.grpG3020.Visible = false;
-                console.CurrentModel = Model.QRP2000;
-                chkGeneralDisablePTT.Checked = false;
-                console.btnUSB.Visible = true;
-                console.btnNetwork.Visible = false;
-                console.ReInit_USB();
-
-                if (radGenModelQRP2000.Focused || force_model)
-                {
-                    chkGeneralRXOnly.Checked = false;
-                    chkGeneralDisablePTT.Checked = false;
-                    force_model = false;
-                }
-
-                console.NetworkThreadRunning = false;
-
-                console.Console_Resize(null, null);
+                CurrentModel = Model.QRP2000;
             }
+
+            console.Console_Resize(null, null);
         }
 
         private void chkQRP2000XTRV_CheckedChanged(object sender, EventArgs e)
@@ -29783,7 +30793,8 @@ namespace PowerSDR
 
         private void chkLargeRBBuffer_CheckedChanged(object sender, EventArgs e)
         {
-            Audio.large_vac_buffer = chkLargeRBBuffer.Checked;
+            if(!console.booting)
+                Audio.large_vac_buffer = chkLargeRBBuffer.Checked;
         }
 
         #endregion
@@ -29808,10 +30819,13 @@ namespace PowerSDR
 
         private void chkWBIRfixed_CheckedChanged(object sender, EventArgs e)
         {
-            if (chkWBIRfixed.Checked)
-                DttSP.SetIQFixed(0, 0, 1, (float)udRXGain.Value, (float)udRXPhase.Value);
-            else
-                DttSP.SetIQFixed(0, 0 , 0, (float)udRXGain.Value, (float)udRXPhase.Value);
+            if (!initializing)
+            {
+                if (chkWBIRfixed.Checked)
+                    DttSP.SetIQFixed(0, 0, 1, (float)udRXGain.Value, (float)udRXPhase.Value);
+                else
+                    DttSP.SetIQFixed(0, 0, 0, (float)udRXGain.Value, (float)udRXPhase.Value);
+            }
         }
 
         private void udWBIRTime_ValueChanged(object sender, EventArgs e)
@@ -29826,7 +30840,7 @@ namespace PowerSDR
 
         private void udRXPhase_ValueChanged(object sender, EventArgs e)
         {
-            if (!console.booting)
+            if (!initializing)
             {
                 if (chkWBIRfixed.Checked)
                 {
@@ -29845,7 +30859,7 @@ namespace PowerSDR
 
         private void udRXGain_ValueChanged(object sender, EventArgs e)
         {
-            if (!console.booting)
+            if (!initializing)
             {
                 if (chkWBIRfixed.Checked)
                 {
@@ -29927,7 +30941,8 @@ namespace PowerSDR
 
         private void udG11XTRVLosc_ValueChanged(object sender, EventArgs e)
         {
-            console.G11_XTRV_LOSC_Freq = (double)udG11XTRVLosc.Value;
+            if(!console.booting)
+                console.G11_XTRV_LOSC_Freq = (double)udG11XTRVLosc.Value;
         }
 
         private void chkG11RXIndependent_CheckedChanged(object sender, EventArgs e)
@@ -29939,14 +30954,28 @@ namespace PowerSDR
 
         private void udAtackTime_ValueChanged(object sender, EventArgs e)
         {
-            console.multimeter_avg_mult_new = (float)udAtackTime.Value / 1000;
-            udDecayTime.Value = 1000 - udAtackTime.Value;
+            try
+            {
+                console.multimeter_avg_mult_new = (float)udAtackTime.Value / 1000;
+                udDecayTime.Value = 1000 - udAtackTime.Value;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void udDecayTime_ValueChanged(object sender, EventArgs e)
         {
-            console.multimeter_avg_mult_old = (float)udDecayTime.Value / 1000;
-            udAtackTime.Value = 1000 - udDecayTime.Value;
+            try
+            {
+                console.multimeter_avg_mult_old = (float)udDecayTime.Value / 1000;
+                udAtackTime.Value = 1000 - udDecayTime.Value;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         #region Primary sound card Direct I/Q
@@ -30663,20 +31692,23 @@ namespace PowerSDR
 
         private void comboNewVFOSMeterSignal_SelectedIndexChanged(object sender, EventArgs e)
         {
-            switch (comboSMeterRXMode.Text)
+            if (!initializing)
             {
-                case "Signal":
-                    console.newVFOSmeterDigitalSignal = MeterRXMode.SIGNAL_STRENGTH;
-                    break;
-                case "Sig Avg":
-                    console.newVFOSmeterDigitalSignal = MeterRXMode.SIGNAL_AVERAGE;
-                    break;
-                case "ADC L":
-                    console.newVFOSmeterDigitalSignal = MeterRXMode.ADC_L;
-                    break;
-                case "ADC R":
-                    console.newVFOSmeterDigitalSignal = MeterRXMode.ADC_R;
-                    break;
+                switch (comboSMeterRXMode.Text)
+                {
+                    case "Signal":
+                        console.newVFOSmeterDigitalSignal = MeterRXMode.SIGNAL_STRENGTH;
+                        break;
+                    case "Sig Avg":
+                        console.newVFOSmeterDigitalSignal = MeterRXMode.SIGNAL_AVERAGE;
+                        break;
+                    case "ADC L":
+                        console.newVFOSmeterDigitalSignal = MeterRXMode.ADC_L;
+                        break;
+                    case "ADC R":
+                        console.newVFOSmeterDigitalSignal = MeterRXMode.ADC_R;
+                        break;
+                }
             }
         }
 
@@ -30699,14 +31731,9 @@ namespace PowerSDR
 
         #region G6       // yt7pwr
 
-        private void udLowFreq_ValueChanged(object sender, EventArgs e)
+        private void chkG6RX2input_CheckedChanged(object sender, EventArgs e)
         {
-            LowFreq = (double)udLowFreq.Value;
-        }
-
-        private void udHighFreq_ValueChanged(object sender, EventArgs e)
-        {
-            HighFreq = (double)udHighFreq.Value;
+            console.G6SecRXAnt = chkG6RX2input.Checked;
         }
 
         #endregion
@@ -30769,6 +31796,229 @@ namespace PowerSDR
         {
             if (radVACMuteNone.Checked)
                 MuteVACChannels = MuteChannels.None;
+        }
+
+        #endregion
+
+        #region RTL SDR
+
+        private void chkRTL_SDR_TunerAGC_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (!initializing)
+                {
+                    if (console.RTL_SDR != null && console.RTL_SDR.connected)
+                    {
+                        if (chkRTL_SDR_TunerAGC.Checked)
+                            console.RTL_SDR.SetAGC_mode(0);
+                        else
+                        {
+                            console.RTL_SDR.SetAGC_mode(1);
+                            console.RTL_SDR.SetAGCgain(tbRTL_SDR_AGC_Gain.Value);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void chkRTL_SDR_RTL_AGC_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (!initializing)
+                {
+                    if (console.RTL_SDR != null && console.RTL_SDR.connected)
+                    {
+                        if (chkRTL_SDR_RTL_AGC.Checked)
+                        {
+                            console.RTL_SDR.SetAGC_mode(2);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void chkRTL_SDR_OffsetTuning_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (!initializing)
+                {
+                    if (console.RTL_SDR != null && console.RTL_SDR.connected)
+                    {
+                        if (chkRTL_SDR_OffsetTuning.Checked)
+                            console.RTL_SDR.SetFrquencyOffset((int)udRTL_SDR_correction.Value);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void tbRTL_SDR_AGC_Gain_Scroll(object sender, EventArgs e)
+        {
+            try
+            {
+                if (!initializing)
+                {
+                    if (console.RTL_SDR != null && console.RTL_SDR.connected)
+                    {
+                        if (!chkRTL_SDR_TunerAGC.Checked)
+                            console.RTL_SDR.SetAGCgain(tbRTL_SDR_AGC_Gain.Value);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void udRTL_SDR_correction_ValueChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (console.RTL_SDR != null && console.RTL_SDR.connected)
+                {
+                    if(chkRTL_SDR_OffsetTuning.Checked)
+                        console.RTL_SDR.SetFrquencyOffset((int)udRTL_SDR_correction.Value);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void comboRTL_SDR_BufferSize_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!initializing)
+            {
+                int BufferSize = 6;       // 64KB
+
+                if (console.RTL_SDR != null && console.RTL_SDR.connected)
+                {
+                    switch (comboRTL_SDR_BufferSize.Text)
+                    {
+                        case "1 KB":
+                            BufferSize = 1024;
+                            break;
+
+                        case "2 KB":
+                            BufferSize = 2048;
+                            break;
+
+                        case "4 KB":
+                            BufferSize = 4096;
+                            break;
+
+                        case "8 KB":
+                            BufferSize = 8192;
+                            break;
+
+                        case "16 KB":
+                            BufferSize = 16384;
+                            break;
+
+                        case "32 KB":
+                            BufferSize = 32768;
+                            break;
+
+                        case "64 KB":
+                            BufferSize = 65536;
+                            break;
+
+                        case "128 KB":
+                            BufferSize = 131072;
+                            break;
+
+                        case "256 KB":
+                            BufferSize = 262144;
+                            break;
+
+                        case "512 KB":
+                            BufferSize = 524288;
+                            break;
+                        case "1024 KB":
+                            BufferSize = 1048576;
+                            break;
+                    }
+
+                    console.RTL_SDR.Set_Buffer_Size(BufferSize);
+                }
+            }
+        }
+
+        private void comboRTL_SDR_SampleRate_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!initializing)
+            {
+                int idx = 0;        // 0.25 Msps
+
+                if (console.RTL_SDR != null && console.RTL_SDR.connected)
+                {
+                    switch (comboRTL_SDR_SampleRate.Text)
+                    {
+                        case "0.25 Msps":
+                            comboAudioSampleRate1.Text = "250000";
+                            idx = 0;        // SampleRate = 250000.0;
+                            break;
+
+                        case "0.96 Msps":
+                            comboAudioSampleRate1.Text = "960000";
+                            idx = 1;        // SampleRate = 960000.0;
+                            break;
+
+                        case "1.024 Msps":
+                            comboAudioSampleRate1.Text = "1024000";
+                            idx = 2;        // SampleRate = 1024000.0;
+                            break;
+
+                        case "1.2 Msps":
+                            comboAudioSampleRate1.Text = "1200000";
+                            idx = 3;        // SampleRate = 1200000.0;
+                            break;
+
+                        case "1.44 Msps":
+                            comboAudioSampleRate1.Text = "1440000";
+                            idx = 4;        // SampleRate = 1440000.0;
+                            break;
+
+                        case "1.8 Msps":
+                            comboAudioSampleRate1.Text = "1800000";
+                            idx = 5;        // SampleRate = 1800000.0;
+                            break;
+
+                        case "2.4 Msps":
+                            comboAudioSampleRate1.Text = "2400000";
+                            idx = 6;        // SampleRate = 2400000.0;
+                            break;
+
+                        case "2.88 Msps":
+                            comboAudioSampleRate1.Text = "2880000";
+                            idx = 7;        // SampleRate = 2880000.0;
+                            break;
+
+                        case "3.2 Msps":
+                            comboAudioSampleRate1.Text = "3200000";
+                            idx = 8;        // SampleRate = 3200000.0;
+                            break;
+                    }
+
+                    console.RTL_SDR.SetSampleRate(idx);
+                }
+            }
         }
 
         #endregion

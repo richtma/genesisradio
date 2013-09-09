@@ -1,6 +1,6 @@
 /*
  *  Changes for GenesisRadio
- *  Copyright (C)2008,2009,2010,2011 YT7PWR Goran Radivojevic
+ *  Copyright (C)2008-2013 YT7PWR Goran Radivojevic
  *  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 */
 
@@ -9,6 +9,7 @@ using System.Drawing;
 using System.Collections;
 using System.ComponentModel;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace PowerSDR
 {
@@ -19,6 +20,8 @@ namespace PowerSDR
 	{
 		#region Variable Declaration 
 
+        private FilterPreset[] filter_presets = new FilterPreset[(int)DSPMode.LAST];
+        private FilterPreset[] filter_presets_subrx = new FilterPreset[(int)DSPMode.LAST];
         public bool show_subRX = false;
 		private Console console;
 		private System.Windows.Forms.ComboBox comboDSPMode;
@@ -46,6 +49,8 @@ namespace PowerSDR
 		private System.Windows.Forms.PictureBox picDisplay;
 		private System.Windows.Forms.Label lblWidth;
 		private System.Windows.Forms.NumericUpDown udWidth;
+        private ButtonTS btnApply;
+        private ButtonTS btnCancel;
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
@@ -55,13 +60,35 @@ namespace PowerSDR
 
 		#region Constructor and Destructor
 
-		public FilterForm(Console c)
-		{
-			//
-			// Required for Windows Form Designer support
-			//
-			console = c;
+        public FilterForm(Console c, DSPMode mode, Filter filter, bool subrx)
+        {
+            //
+            // Required for Windows Form Designer support
+            //
+            console = c;
+
+            if (subrx)
+                show_subRX = true;
+
             this.AutoScaleMode = AutoScaleMode.Inherit;
+            // used to initialize all the filter variables
+            for (int m = (int)DSPMode.FIRST + 1; m < (int)DSPMode.LAST; m++)
+            {
+                filter_presets[m] = new FilterPreset();
+                filter_presets_subrx[m] = new FilterPreset();
+
+                for (Filter f = Filter.F1; f != Filter.LAST; f++)
+                {
+                    filter_presets[m].CopyFilter(f, console.filter_presets[m].GetLow(f),
+                        console.filter_presets[m].GetHigh(f), console.filter_presets[m].LastFilter,
+                        console.filter_presets[m].GetName(f));
+
+                    filter_presets_subrx[m].CopyFilter(f, console.filter_presets_subRX[m].GetLow(f),
+                        console.filter_presets_subRX[m].GetHigh(f), console.filter_presets_subRX[m].LastFilter,
+                        console.filter_presets_subRX[m].GetName(f));
+                }
+            }
+
             InitializeComponent();
             int dpi = (int)this.CreateGraphics().DpiX;
 
@@ -72,9 +99,19 @@ namespace PowerSDR
                 this.Font = new_font;
             }
 
-			comboDSPMode.SelectedIndex = 0;	
-			radFilter1.Checked = true;
-		}
+            if(show_subRX)
+                this.Text += " VFOB";
+            else
+                this.Text += " VFOA";
+
+            Win32.SetWindowPos(this.Handle.ToInt32(),
+                -1, this.Left, this.Top, this.Width, this.Height, 0);
+
+            CurrentDSPMode = mode;
+            CurrentFilter = filter;
+            comboDSPMode.SelectedIndex = 0;
+            radFilter1.Checked = true;
+        }
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -126,6 +163,8 @@ namespace PowerSDR
             this.udWidth = new System.Windows.Forms.NumericUpDown();
             this.lblWidth = new System.Windows.Forms.Label();
             this.picDisplay = new System.Windows.Forms.PictureBox();
+            this.btnApply = new System.Windows.Forms.ButtonTS();
+            this.btnCancel = new System.Windows.Forms.ButtonTS();
             ((System.ComponentModel.ISupportInitialize)(this.udLow)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.udHigh)).BeginInit();
             this.groupBox1.SuspendLayout();
@@ -141,9 +180,10 @@ namespace PowerSDR
             "LSB",
             "USB",
             "DSB",
-            "CWL",
             "CWU",
+            "CWL",
             "FMN",
+            "WFM",
             "AM",
             "SAM",
             "DIGL",
@@ -339,12 +379,12 @@ namespace PowerSDR
             // 
             this.udLow.Location = new System.Drawing.Point(72, 64);
             this.udLow.Maximum = new decimal(new int[] {
-            20000,
+            125000,
             0,
             0,
             0});
             this.udLow.Minimum = new decimal(new int[] {
-            20000,
+            125000,
             0,
             0,
             -2147483648});
@@ -358,12 +398,12 @@ namespace PowerSDR
             // 
             this.udHigh.Location = new System.Drawing.Point(72, 40);
             this.udHigh.Maximum = new decimal(new int[] {
-            20000,
+            125000,
             0,
             0,
             0});
             this.udHigh.Minimum = new decimal(new int[] {
-            20000,
+            125000,
             0,
             0,
             -2147483648});
@@ -431,15 +471,15 @@ namespace PowerSDR
             // 
             this.udWidth.Location = new System.Drawing.Point(72, 88);
             this.udWidth.Maximum = new decimal(new int[] {
-            19998,
+            192000,
             0,
             0,
             0});
             this.udWidth.Minimum = new decimal(new int[] {
-            10,
+            192000,
             0,
             0,
-            0});
+            -2147483648});
             this.udWidth.Name = "udWidth";
             this.udWidth.Size = new System.Drawing.Size(64, 20);
             this.udWidth.TabIndex = 56;
@@ -466,21 +506,48 @@ namespace PowerSDR
             this.picDisplay.Size = new System.Drawing.Size(328, 50);
             this.picDisplay.TabIndex = 58;
             this.picDisplay.TabStop = false;
+            this.picDisplay.MouseLeave += new System.EventHandler(this.picDisplay_MouseLeave);
             this.picDisplay.MouseMove += new System.Windows.Forms.MouseEventHandler(this.picDisplay_MouseMove);
             this.picDisplay.MouseDown += new System.Windows.Forms.MouseEventHandler(this.picDisplay_MouseDown);
             this.picDisplay.Paint += new System.Windows.Forms.PaintEventHandler(this.picDisplay_Paint);
             this.picDisplay.MouseUp += new System.Windows.Forms.MouseEventHandler(this.picDisplay_MouseUp);
             // 
+            // btnApply
+            // 
+            this.btnApply.Image = null;
+            this.btnApply.Location = new System.Drawing.Point(72, 221);
+            this.btnApply.Name = "btnApply";
+            this.btnApply.Size = new System.Drawing.Size(75, 23);
+            this.btnApply.TabIndex = 59;
+            this.btnApply.Text = "Apply";
+            this.btnApply.UseVisualStyleBackColor = true;
+            this.btnApply.Click += new System.EventHandler(this.btnApply_Click);
+            // 
+            // btnCancel
+            // 
+            this.btnCancel.Image = null;
+            this.btnCancel.Location = new System.Drawing.Point(198, 221);
+            this.btnCancel.Name = "btnCancel";
+            this.btnCancel.Size = new System.Drawing.Size(75, 23);
+            this.btnCancel.TabIndex = 60;
+            this.btnCancel.Text = "Cancel";
+            this.btnCancel.UseVisualStyleBackColor = true;
+            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+            // 
             // FilterForm
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
-            this.ClientSize = new System.Drawing.Size(344, 206);
+            this.ClientSize = new System.Drawing.Size(344, 256);
+            this.Controls.Add(this.btnCancel);
+            this.Controls.Add(this.btnApply);
             this.Controls.Add(this.picDisplay);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
+            this.MaximumSize = new System.Drawing.Size(360, 294);
             this.MinimizeBox = false;
+            this.MinimumSize = new System.Drawing.Size(360, 294);
             this.Name = "FilterForm";
             this.Text = "Filter Setup";
             this.TopMost = true;
@@ -497,58 +564,6 @@ namespace PowerSDR
 		#endregion
 
 		#region Properties
-
-        private Filter current_filter_subRX = Filter.F1;
-        public Filter CurrentFilterSubRX
-        {
-            get { return current_filter_subRX; }
-            set
-            {
-                current_filter_subRX = value;
-
-                switch (current_filter_subRX)
-                {
-                    case Filter.F1:
-                        radFilter1.Checked = true;
-                        break;
-                    case Filter.F2:
-                        radFilter2.Checked = true;
-                        break;
-                    case Filter.F3:
-                        radFilter3.Checked = true;
-                        break;
-                    case Filter.F4:
-                        radFilter4.Checked = true;
-                        break;
-                    case Filter.F5:
-                        radFilter5.Checked = true;
-                        break;
-                    case Filter.F6:
-                        radFilter6.Checked = true;
-                        break;
-                    case Filter.F7:
-                        radFilter7.Checked = true;
-                        break;
-                    case Filter.F8:
-                        radFilter8.Checked = true;
-                        break;
-                    case Filter.F9:
-                        radFilter9.Checked = true;
-                        break;
-                    case Filter.F10:
-                        radFilter10.Checked = true;
-                        break;
-                    case Filter.VAR1:
-                        radFilterVar1.Checked = true;
-                        break;
-                    case Filter.VAR2:
-                        radFilterVar2.Checked = true;
-                        break;
-                }
-
-                GetFilterInfo();
-            }
-        }
 
 		private Filter current_filter = Filter.F1;
 		public Filter CurrentFilter
@@ -600,69 +615,10 @@ namespace PowerSDR
 
 				GetFilterInfo();
 			}
-		}
-
-        private DSPMode current_dsp_mode_subRX = DSPMode.FIRST;
-        public DSPMode CurrentDSPModeSubRX
-        {
-            get { return current_dsp_mode_subRX; }
-            set
-            {
-                current_dsp_mode_subRX = value;
-
-                switch (current_dsp_mode_subRX)
-                {
-                    case DSPMode.LSB:
-                        comboDSPMode.Text = "LSB";
-                        break;
-                    case DSPMode.USB:
-                        comboDSPMode.Text = "USB";
-                        break;
-                    case DSPMode.DSB:
-                        comboDSPMode.Text = "DSB";
-                        break;
-                    case DSPMode.CWL:
-                        comboDSPMode.Text = "CWL";
-                        break;
-                    case DSPMode.CWU:
-                        comboDSPMode.Text = "CWU";
-                        break;
-                    case DSPMode.FMN:
-                        comboDSPMode.Text = "FMN";
-                        break;
-                    case DSPMode.AM:
-                        comboDSPMode.Text = "AM";
-                        break;
-                    case DSPMode.SAM:
-                        comboDSPMode.Text = "SAM";
-                        break;
-                    case DSPMode.DIGL:
-                        comboDSPMode.Text = "DIGL";
-                        break;
-                    case DSPMode.DIGU:
-                        comboDSPMode.Text = "DIGU";
-                        break;
-                }
-
-                radFilter1.Text = console.filter_presets_subRX[(int)value].GetName(Filter.F1);
-                radFilter2.Text = console.filter_presets_subRX[(int)value].GetName(Filter.F2);
-                radFilter3.Text = console.filter_presets_subRX[(int)value].GetName(Filter.F3);
-                radFilter4.Text = console.filter_presets_subRX[(int)value].GetName(Filter.F4);
-                radFilter5.Text = console.filter_presets_subRX[(int)value].GetName(Filter.F5);
-                radFilter6.Text = console.filter_presets_subRX[(int)value].GetName(Filter.F6);
-                radFilter7.Text = console.filter_presets_subRX[(int)value].GetName(Filter.F7);
-                radFilter8.Text = console.filter_presets_subRX[(int)value].GetName(Filter.F8);
-                radFilter9.Text = console.filter_presets_subRX[(int)value].GetName(Filter.F9);
-                radFilter10.Text = console.filter_presets_subRX[(int)value].GetName(Filter.F10);
-                radFilterVar1.Text = console.filter_presets_subRX[(int)value].GetName(Filter.VAR1);
-                radFilterVar2.Text = console.filter_presets_subRX[(int)value].GetName(Filter.VAR2);
-
-                GetFilterInfo();
-            }
-        }
+		}       
 
 		private DSPMode current_dsp_mode = DSPMode.FIRST;
-		public DSPMode CurrentDSPMode
+		public DSPMode CurrentDSPMode               // changes yt7pwr
 		{
 			get { return current_dsp_mode; }
             set
@@ -689,6 +645,9 @@ namespace PowerSDR
                     case DSPMode.FMN:
                         comboDSPMode.Text = "FMN";
                         break;
+                    case DSPMode.WFM:
+                        comboDSPMode.Text = "WFM";
+                        break;
                     case DSPMode.AM:
                         comboDSPMode.Text = "AM";
                         break;
@@ -702,18 +661,19 @@ namespace PowerSDR
                         comboDSPMode.Text = "DIGU";
                         break;
                 }
-                radFilter1.Text = console.filter_presets[(int)value].GetName(Filter.F1);
-                radFilter2.Text = console.filter_presets[(int)value].GetName(Filter.F2);
-                radFilter3.Text = console.filter_presets[(int)value].GetName(Filter.F3);
-                radFilter4.Text = console.filter_presets[(int)value].GetName(Filter.F4);
-                radFilter5.Text = console.filter_presets[(int)value].GetName(Filter.F5);
-                radFilter6.Text = console.filter_presets[(int)value].GetName(Filter.F6);
-                radFilter7.Text = console.filter_presets[(int)value].GetName(Filter.F7);
-                radFilter8.Text = console.filter_presets[(int)value].GetName(Filter.F8);
-                radFilter9.Text = console.filter_presets[(int)value].GetName(Filter.F9);
-                radFilter10.Text = console.filter_presets[(int)value].GetName(Filter.F10);
-                radFilterVar1.Text = console.filter_presets[(int)value].GetName(Filter.VAR1);
-                radFilterVar2.Text = console.filter_presets[(int)value].GetName(Filter.VAR2);
+
+                radFilter1.Text = filter_presets[(int)value].GetName(Filter.F1);
+                radFilter2.Text = filter_presets[(int)value].GetName(Filter.F2);
+                radFilter3.Text = filter_presets[(int)value].GetName(Filter.F3);
+                radFilter4.Text = filter_presets[(int)value].GetName(Filter.F4);
+                radFilter5.Text = filter_presets[(int)value].GetName(Filter.F5);
+                radFilter6.Text = filter_presets[(int)value].GetName(Filter.F6);
+                radFilter7.Text = filter_presets[(int)value].GetName(Filter.F7);
+                radFilter8.Text = filter_presets[(int)value].GetName(Filter.F8);
+                radFilter9.Text = filter_presets[(int)value].GetName(Filter.F9);
+                radFilter10.Text = filter_presets[(int)value].GetName(Filter.F10);
+                radFilterVar1.Text = filter_presets[(int)value].GetName(Filter.VAR1);
+                radFilterVar2.Text = filter_presets[(int)value].GetName(Filter.VAR2);
 
                 GetFilterInfo();
             }
@@ -725,56 +685,86 @@ namespace PowerSDR
 
 		private void GetFilterInfo()        // changes yt7pwr
 		{
-			DSPMode m = DSPMode.FIRST;
-			Filter f = Filter.FIRST;
-
-			m = (DSPMode)Enum.Parse(typeof(DSPMode), comboDSPMode.Text);
-			f = current_filter;
-
-            if (show_subRX)
+            try
             {
-                txtName.Text = console.filter_presets_subRX[(int)m].GetName(f);
-                udLow.Value = console.filter_presets_subRX[(int)m].GetLow(f);
-                udHigh.Value = console.filter_presets_subRX[(int)m].GetHigh(f);
+                DSPMode m = DSPMode.FIRST;
+                Filter f = Filter.FIRST;
+
+                m = (DSPMode)Enum.Parse(typeof(DSPMode), comboDSPMode.Text);
+                f = current_filter;
+
+                if (show_subRX)
+                {
+                    txtName.Text = filter_presets_subrx[(int)m].GetName(f);
+                    udLow.Value = filter_presets_subrx[(int)m].GetLow(f);
+                    udHigh.Value = filter_presets_subrx[(int)m].GetHigh(f);
+                }
+                else
+                {
+                    txtName.Text = filter_presets[(int)m].GetName(f);
+                    udLow.Value = filter_presets[(int)m].GetLow(f);
+                    udHigh.Value = filter_presets[(int)m].GetHigh(f);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                txtName.Text = console.filter_presets[(int)m].GetName(f);
-                udLow.Value = console.filter_presets[(int)m].GetLow(f);
-                udHigh.Value = console.filter_presets[(int)m].GetHigh(f);
+                Debug.Write(ex.ToString());
             }
 		}
 
 		private int HzToPixel(float freq)
 		{
-			int	low = (int)(-10000*console.SampleRate1/48000.0);
-			int	high = (int)(10000*console.SampleRate1/48000.0);
+            try
+            {
+                int low = (int)(-10000 * console.SampleRate1 / 48000.0);
+                int high = (int)(10000 * console.SampleRate1 / 48000.0);
 
-			return picDisplay.Width/2+(int)(freq/(high-low)*picDisplay.Width);
+                return picDisplay.Width / 2 + (int)(freq / (high - low) * picDisplay.Width);
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+                return 0;
+            }
 		}
 
 		private float PixelToHz(float x)
 		{
-			int low = (int)(-10000*console.SampleRate1/48000.0);
-			int high = (int)(10000*console.SampleRate1/48000.0);
-			
-			return (float)(low + ((double)x*(high - low)/picDisplay.Width));
+            try
+            {
+                int low = (int)(-10000 * console.SampleRate1 / 48000.0);
+                int high = (int)(10000 * console.SampleRate1 / 48000.0);
+
+                return (float)(low + ((double)x * (high - low) / picDisplay.Width));
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+                return 0;
+            }
 		}
 
 		private bool filter_updating = false;
 		private void UpdateFilter(int low, int high)
 		{
-			filter_updating = true;
-			if(low < udLow.Minimum) low = (int)udLow.Minimum;
-			if(low > udLow.Maximum) low = (int)udLow.Maximum;
-			if(high < udHigh.Minimum) high = (int)udHigh.Minimum;
-			if(high > udHigh.Maximum) high = (int)udHigh.Maximum;
-			
-			udLow.Value = low;
-			udHigh.Value = high;
+            try
+            {
+                filter_updating = true;
+                if (low < udLow.Minimum) low = (int)udLow.Minimum;
+                if (low > udLow.Maximum) low = (int)udLow.Maximum;
+                if (high < udHigh.Minimum) high = (int)udHigh.Minimum;
+                if (high > udHigh.Maximum) high = (int)udHigh.Maximum;
 
-			udWidth.Value = high - low;
-			filter_updating = false;
+                udLow.Value = Math.Min(udLow.Maximum, low);
+                udHigh.Value = Math.Min(udHigh.Maximum, high);
+
+                udWidth.Value = Math.Abs(Math.Min(udWidth.Maximum, high - low));
+                filter_updating = false;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		#endregion
@@ -783,220 +773,274 @@ namespace PowerSDR
 
 		private void radFilter_CheckedChanged(object sender, System.EventArgs e)
 		{
-			RadioButtonTS r = (RadioButtonTS)sender;
-			if(((RadioButtonTS)sender).Checked)
-			{
-				string filter = r.Name.Substring(r.Name.IndexOf("Filter")+6);
-				if(!filter.StartsWith("V")) filter = "F"+filter;
-				else filter = filter.ToUpper();
-				CurrentFilter = (Filter)Enum.Parse(typeof(Filter), filter);
-				r.BackColor = console.ButtonSelectedColor;
-			}
-			else
-			{
-				r.BackColor = SystemColors.Control;
-			}
+            try
+            {
+                RadioButtonTS r = (RadioButtonTS)sender;
+                if (((RadioButtonTS)sender).Checked)
+                {
+                    string filter = r.Name.Substring(r.Name.IndexOf("Filter") + 6);
+
+                    if (!filter.StartsWith("V"))
+                        filter = "F" + filter;
+                    else
+                        filter = filter.ToUpper();
+
+                    current_filter = (Filter)Enum.Parse(typeof(Filter), filter);
+                    CurrentFilter = current_filter;
+                    r.BackColor = console.ButtonSelectedColor;
+                }
+                else
+                {
+                    r.BackColor = SystemColors.Control;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void comboDSPMode_SelectedIndexChanged(object sender, System.EventArgs e)
 		{
-			CurrentDSPMode = (DSPMode)Enum.Parse(typeof(DSPMode), comboDSPMode.Text);
+            try
+            {
+                current_dsp_mode = (DSPMode)Enum.Parse(typeof(DSPMode), comboDSPMode.Text);
+                CurrentDSPMode = current_dsp_mode;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void txtName_LostFocus(object sender, System.EventArgs e)   // changes yt7pwr
 		{
-            if (show_subRX)
+            try
             {
-                console.filter_presets_subRX[(int)current_dsp_mode].SetName(current_filter, txtName.Text);
-                GetFilterInfo();
-                if (console.CurrentDSPModeSubRX == current_dsp_mode)
-                    console.UpdateFilterPresetNames(current_filter, true);
-
-                switch (current_filter)
+                if (show_subRX)
                 {
-                    case Filter.F1:
-                        radFilter1.Text = console.filter_presets_subRX[(int)current_dsp_mode].GetName(Filter.F1);
-                        break;
-                    case Filter.F2:
-                        radFilter2.Text = console.filter_presets_subRX[(int)current_dsp_mode].GetName(Filter.F2);
-                        break;
-                    case Filter.F3:
-                        radFilter3.Text = console.filter_presets_subRX[(int)current_dsp_mode].GetName(Filter.F3);
-                        break;
-                    case Filter.F4:
-                        radFilter4.Text = console.filter_presets_subRX[(int)current_dsp_mode].GetName(Filter.F4);
-                        break;
-                    case Filter.F5:
-                        radFilter5.Text = console.filter_presets_subRX[(int)current_dsp_mode].GetName(Filter.F5);
-                        break;
-                    case Filter.F6:
-                        radFilter6.Text = console.filter_presets_subRX[(int)current_dsp_mode].GetName(Filter.F6);
-                        break;
-                    case Filter.F7:
-                        radFilter7.Text = console.filter_presets_subRX[(int)current_dsp_mode].GetName(Filter.F7);
-                        break;
-                    case Filter.F8:
-                        radFilter8.Text = console.filter_presets_subRX[(int)current_dsp_mode].GetName(Filter.F8);
-                        break;
-                    case Filter.F9:
-                        radFilter9.Text = console.filter_presets_subRX[(int)current_dsp_mode].GetName(Filter.F9);
-                        break;
-                    case Filter.F10:
-                        radFilter10.Text = console.filter_presets_subRX[(int)current_dsp_mode].GetName(Filter.F10);
-                        break;
-                    case Filter.VAR1:
-                        radFilterVar1.Text = console.filter_presets_subRX[(int)current_dsp_mode].GetName(Filter.VAR1);
-                        break;
-                    case Filter.VAR2:
-                        radFilterVar2.Text = console.filter_presets_subRX[(int)current_dsp_mode].GetName(Filter.VAR2);
-                        break;
+                    filter_presets_subrx[(int)current_dsp_mode].SetName(current_filter, txtName.Text);
+                    GetFilterInfo();
+
+                    switch (current_filter)
+                    {
+                        case Filter.F1:
+                            radFilter1.Text = filter_presets_subrx[(int)current_dsp_mode].GetName(Filter.F1);
+                            break;
+                        case Filter.F2:
+                            radFilter2.Text = filter_presets_subrx[(int)current_dsp_mode].GetName(Filter.F2);
+                            break;
+                        case Filter.F3:
+                            radFilter3.Text = filter_presets_subrx[(int)current_dsp_mode].GetName(Filter.F3);
+                            break;
+                        case Filter.F4:
+                            radFilter4.Text = filter_presets_subrx[(int)current_dsp_mode].GetName(Filter.F4);
+                            break;
+                        case Filter.F5:
+                            radFilter5.Text = filter_presets_subrx[(int)current_dsp_mode].GetName(Filter.F5);
+                            break;
+                        case Filter.F6:
+                            radFilter6.Text = filter_presets_subrx[(int)current_dsp_mode].GetName(Filter.F6);
+                            break;
+                        case Filter.F7:
+                            radFilter7.Text = filter_presets_subrx[(int)current_dsp_mode].GetName(Filter.F7);
+                            break;
+                        case Filter.F8:
+                            radFilter8.Text = filter_presets_subrx[(int)current_dsp_mode].GetName(Filter.F8);
+                            break;
+                        case Filter.F9:
+                            radFilter9.Text = filter_presets_subrx[(int)current_dsp_mode].GetName(Filter.F9);
+                            break;
+                        case Filter.F10:
+                            radFilter10.Text = filter_presets_subrx[(int)current_dsp_mode].GetName(Filter.F10);
+                            break;
+                        case Filter.VAR1:
+                            radFilterVar1.Text = filter_presets_subrx[(int)current_dsp_mode].GetName(Filter.VAR1);
+                            break;
+                        case Filter.VAR2:
+                            radFilterVar2.Text = filter_presets_subrx[(int)current_dsp_mode].GetName(Filter.VAR2);
+                            break;
+                    }
+                }
+                else
+                {
+                    filter_presets[(int)current_dsp_mode].SetName(current_filter, txtName.Text);
+                    GetFilterInfo();
+
+                    switch (current_filter)
+                    {
+                        case Filter.F1:
+                            radFilter1.Text = filter_presets[(int)current_dsp_mode].GetName(Filter.F1);
+                            break;
+                        case Filter.F2:
+                            radFilter2.Text = filter_presets[(int)current_dsp_mode].GetName(Filter.F2);
+                            break;
+                        case Filter.F3:
+                            radFilter3.Text = filter_presets[(int)current_dsp_mode].GetName(Filter.F3);
+                            break;
+                        case Filter.F4:
+                            radFilter4.Text = filter_presets[(int)current_dsp_mode].GetName(Filter.F4);
+                            break;
+                        case Filter.F5:
+                            radFilter5.Text = filter_presets[(int)current_dsp_mode].GetName(Filter.F5);
+                            break;
+                        case Filter.F6:
+                            radFilter6.Text = filter_presets[(int)current_dsp_mode].GetName(Filter.F6);
+                            break;
+                        case Filter.F7:
+                            radFilter7.Text = filter_presets[(int)current_dsp_mode].GetName(Filter.F7);
+                            break;
+                        case Filter.F8:
+                            radFilter8.Text = filter_presets[(int)current_dsp_mode].GetName(Filter.F8);
+                            break;
+                        case Filter.F9:
+                            radFilter9.Text = filter_presets[(int)current_dsp_mode].GetName(Filter.F9);
+                            break;
+                        case Filter.F10:
+                            radFilter10.Text = filter_presets[(int)current_dsp_mode].GetName(Filter.F10);
+                            break;
+                        case Filter.VAR1:
+                            radFilterVar1.Text = filter_presets[(int)current_dsp_mode].GetName(Filter.VAR1);
+                            break;
+                        case Filter.VAR2:
+                            radFilterVar2.Text = filter_presets[(int)current_dsp_mode].GetName(Filter.VAR2);
+                            break;
+                    }
                 }
             }
-            else
+            catch (Exception ex)
             {
-                console.filter_presets[(int)current_dsp_mode].SetName(current_filter, txtName.Text);
-                GetFilterInfo();
-
-                if (console.CurrentDSPMode == current_dsp_mode)
-                    console.UpdateFilterPresetNames(current_filter, false);
-
-                switch (current_filter)
-                {
-                    case Filter.F1:
-                        radFilter1.Text = console.filter_presets[(int)current_dsp_mode].GetName(Filter.F1);
-                        break;
-                    case Filter.F2:
-                        radFilter2.Text = console.filter_presets[(int)current_dsp_mode].GetName(Filter.F2);
-                        break;
-                    case Filter.F3:
-                        radFilter3.Text = console.filter_presets[(int)current_dsp_mode].GetName(Filter.F3);
-                        break;
-                    case Filter.F4:
-                        radFilter4.Text = console.filter_presets[(int)current_dsp_mode].GetName(Filter.F4);
-                        break;
-                    case Filter.F5:
-                        radFilter5.Text = console.filter_presets[(int)current_dsp_mode].GetName(Filter.F5);
-                        break;
-                    case Filter.F6:
-                        radFilter6.Text = console.filter_presets[(int)current_dsp_mode].GetName(Filter.F6);
-                        break;
-                    case Filter.F7:
-                        radFilter7.Text = console.filter_presets[(int)current_dsp_mode].GetName(Filter.F7);
-                        break;
-                    case Filter.F8:
-                        radFilter8.Text = console.filter_presets[(int)current_dsp_mode].GetName(Filter.F8);
-                        break;
-                    case Filter.F9:
-                        radFilter9.Text = console.filter_presets[(int)current_dsp_mode].GetName(Filter.F9);
-                        break;
-                    case Filter.F10:
-                        radFilter10.Text = console.filter_presets[(int)current_dsp_mode].GetName(Filter.F10);
-                        break;
-                    case Filter.VAR1:
-                        radFilterVar1.Text = console.filter_presets[(int)current_dsp_mode].GetName(Filter.VAR1);
-                        break;
-                    case Filter.VAR2:
-                        radFilterVar2.Text = console.filter_presets[(int)current_dsp_mode].GetName(Filter.VAR2);
-                        break;
-                }
+                Debug.Write(ex.ToString());
             }
 		}
 
 		private void udLow_ValueChanged(object sender, System.EventArgs e)
 		{
-            if (show_subRX)
+            try
             {
-                if (udLow.Value + 10 > udHigh.Value) udLow.Value = udHigh.Value - 10;
-                console.filter_presets_subRX[(int)current_dsp_mode_subRX].SetLow(current_filter, (int)udLow.Value);
-                if (console.CurrentDSPModeSubRX == current_dsp_mode_subRX &&
-                    console.CurrentFilterSubRX == current_filter_subRX)
-                    console.UpdateFilterPresetLowSubRX((int)udLow.Value);
-                if (!filter_updating) UpdateFilter((int)udLow.Value, (int)udHigh.Value);
-            }
-            else
-            {
-                if (udLow.Value + 10 > udHigh.Value) udLow.Value = udHigh.Value - 10;
-                console.filter_presets[(int)current_dsp_mode].SetLow(current_filter, (int)udLow.Value);
-                if (console.CurrentDSPMode == current_dsp_mode &&
-                    console.CurrentFilter == current_filter)
-                    console.UpdateFilterPresetLow((int)udLow.Value);
-                if (!filter_updating) UpdateFilter((int)udLow.Value, (int)udHigh.Value);
-            }
+                if (show_subRX)
+                {
+                    //if (udLow.Value + 10 > udHigh.Value) udLow.Value = udHigh.Value - 10;
+                    filter_presets_subrx[(int)current_dsp_mode].SetLow(current_filter, (int)udLow.Value);
+                    if (!filter_updating) UpdateFilter((int)udLow.Value, (int)udHigh.Value);
+                }
+                else
+                {
+                    //if (udLow.Value + 10 > udHigh.Value) udLow.Value = udHigh.Value - 10;
+                    int q = (int)current_dsp_mode;
+                    Debug.Write("DSP mode: " + q.ToString() + "\n");
+                    filter_presets[(int)current_dsp_mode].SetLow(current_filter, (int)udLow.Value);
+                    if (!filter_updating) UpdateFilter((int)udLow.Value, (int)udHigh.Value);
+                }
 
-			picDisplay.Invalidate();
+                picDisplay.Invalidate();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
         private void udHigh_ValueChanged(object sender, System.EventArgs e)
         {
-            if (show_subRX)
+            try
             {
-                if (udHigh.Value - 10 < udLow.Value) udHigh.Value = udLow.Value + 10;
-                console.filter_presets_subRX[(int)current_dsp_mode].SetHigh(current_filter_subRX, (int)udHigh.Value);
-                if (console.CurrentDSPModeSubRX == current_dsp_mode_subRX &&
-                    console.CurrentFilterSubRX == current_filter_subRX)
-                    console.UpdateFilterPresetHighSubRX((int)udHigh.Value);
-                if (!filter_updating) UpdateFilter((int)udLow.Value, (int)udHigh.Value);
-            }
-            else
-            {
-                if (udHigh.Value - 10 < udLow.Value) udHigh.Value = udLow.Value + 10;
-                console.filter_presets[(int)current_dsp_mode].SetHigh(current_filter, (int)udHigh.Value);
-                if (console.CurrentDSPMode == current_dsp_mode &&
-                    console.CurrentFilter == current_filter)
-                    console.UpdateFilterPresetHigh((int)udHigh.Value);
-                if (!filter_updating) UpdateFilter((int)udLow.Value, (int)udHigh.Value);
-            }
+                if (show_subRX)
+                {
+                    //if (udHigh.Value - 10 < udLow.Value) udHigh.Value = udLow.Value + 10;
+                    filter_presets_subrx[(int)current_dsp_mode].SetHigh(current_filter, (int)udHigh.Value);
+                    if (!filter_updating) UpdateFilter((int)udLow.Value, (int)udHigh.Value);
+                }
+                else
+                {
+                    //if (udHigh.Value - 10 < udLow.Value) udHigh.Value = udLow.Value + 10;
+                    filter_presets[(int)current_dsp_mode].SetHigh(current_filter, (int)udHigh.Value);
+                    if (!filter_updating) UpdateFilter((int)udLow.Value, (int)udHigh.Value);
+                }
 
-            picDisplay.Invalidate();
+                picDisplay.Invalidate();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
 		private void udLow_LostFocus(object sender, EventArgs e)
 		{
-			udLow_ValueChanged(sender, e);
+            try
+            {
+                udLow_ValueChanged(sender, e);
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void udHigh_LostFocus(object sender, EventArgs e)
 		{
-			udHigh_ValueChanged(sender, e);
+            try
+            {
+                udHigh_ValueChanged(sender, e);
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void picDisplay_Paint(object sender, System.Windows.Forms.PaintEventArgs e)
 		{
-			// draw background
-			e.Graphics.FillRectangle(
-				new SolidBrush(Display_GDI.DisplayBackgroundColor),
-				0, 0, picDisplay.Width, picDisplay.Height);
+            try
+            {
+                // draw background
+                e.Graphics.FillRectangle(
+                    new SolidBrush(Display_GDI.DisplayBackgroundColor),
+                    0, 0, picDisplay.Width, picDisplay.Height);
 
-			e.Graphics.FillRectangle(
-				new SolidBrush(Display_GDI.DisplayFilterColor),
-				HzToPixel((int)udLow.Value), 0, 
-				Math.Max(1, HzToPixel((int)udHigh.Value)-HzToPixel((int)udLow.Value)), picDisplay.Height);
+                e.Graphics.FillRectangle(
+                    new SolidBrush(Display_GDI.DisplayFilterColor),
+                    HzToPixel((int)udLow.Value), 0,
+                    Math.Max(1, HzToPixel((int)udHigh.Value) - HzToPixel((int)udLow.Value)), picDisplay.Height);
 
-			// draw center line
-			e.Graphics.DrawLine(new Pen(Display_GDI.GridZeroColor, 1.0f),
-				picDisplay.Width/2, 0, picDisplay.Width/2, picDisplay.Height);
+                // draw center line
+                e.Graphics.DrawLine(new Pen(Display_GDI.GridZeroColor, 1.0f),
+                    picDisplay.Width / 2, 0, picDisplay.Width / 2, picDisplay.Height);
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void picDisplay_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
 		{
-			int low = HzToPixel((float)udLow.Value);
-			int high = HzToPixel((float)udHigh.Value);
+            try
+            {
+                int low = HzToPixel((float)udLow.Value);
+                int high = HzToPixel((float)udHigh.Value);
 
-			if(Math.Abs(e.X - low) < 2 || Math.Abs(e.X - high) < 2)
-				Cursor = Cursors.SizeWE;
-			else if(e.X > low && e.X < high)
-				Cursor = Cursors.NoMoveHoriz;
-			else 
-				Cursor = Cursors.Arrow;
+                if (Math.Abs(e.X - low) < 2 || Math.Abs(e.X - high) < 2)
+                    Cursor = Cursors.SizeWE;
+                else if (e.X > low && e.X < high)
+                    Cursor = Cursors.NoMoveHoriz;
+                else
+                    Cursor = Cursors.Arrow;
 
-			if(drag_low) udLow.Value = Math.Max(Math.Min(udLow.Maximum, (int)PixelToHz((float)e.X)), udLow.Minimum);
-			if(drag_high) udHigh.Value = Math.Max(Math.Min(udHigh.Maximum, (int)PixelToHz((float)e.X)), udHigh.Minimum);;
-			if(drag_filter)
-			{
-				int delta = (int)(PixelToHz((float)e.X) - PixelToHz(drag_filter_start));
-				udLow.Value = Math.Max(Math.Min(udLow.Maximum, drag_filter_low + delta), udLow.Minimum);
-				udHigh.Value = Math.Max(Math.Min(udHigh.Maximum, drag_filter_high + delta), udHigh.Minimum);
-			}
+                if (drag_low) udLow.Value = Math.Max(Math.Min(udLow.Maximum, (int)PixelToHz((float)e.X)), udLow.Minimum);
+                if (drag_high) udHigh.Value = Math.Max(Math.Min(udHigh.Maximum, (int)PixelToHz((float)e.X)), udHigh.Minimum); ;
+                if (drag_filter)
+                {
+                    int delta = (int)(PixelToHz((float)e.X) - PixelToHz(drag_filter_start));
+                    udLow.Value = Math.Max(Math.Min(udLow.Maximum, drag_filter_low + delta), udLow.Minimum);
+                    udHigh.Value = Math.Max(Math.Min(udHigh.Maximum, drag_filter_high + delta), udHigh.Minimum);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private bool drag_low = false;
@@ -1008,75 +1052,169 @@ namespace PowerSDR
 
 		private void picDisplay_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
 		{
-			if(e.Button == MouseButtons.Left)
-			{
-				int low = HzToPixel((float)udLow.Value);
-				int high = HzToPixel((float)udHigh.Value);
+            try
+            {
+                if (e.Button == MouseButtons.Left)
+                {
+                    int low = HzToPixel((float)udLow.Value);
+                    int high = HzToPixel((float)udHigh.Value);
 
-				if(Math.Abs(e.X - low) < 2)
-					drag_low = true;
-				else if(Math.Abs(e.X - high) < 2)
-					drag_high = true;
-				else if(e.X > low && e.X < high)
-				{
-					drag_filter = true;
-					drag_filter_low = (int)udLow.Value;
-					drag_filter_high = (int)udHigh.Value;
-					drag_filter_start = e.X;
-				}
-			}
+                    if (Math.Abs(e.X - low) < 2)
+                        drag_low = true;
+                    else if (Math.Abs(e.X - high) < 2)
+                        drag_high = true;
+                    else if (e.X > low && e.X < high)
+                    {
+                        drag_filter = true;
+                        drag_filter_low = (int)udLow.Value;
+                        drag_filter_high = (int)udHigh.Value;
+                        drag_filter_start = e.X;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 
 		private void picDisplay_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
 		{
-			if(e.Button == MouseButtons.Left)
-			{
-				drag_low = false;
-				drag_high = false;
-				drag_filter = false;
-				drag_filter_low = -1;
-				drag_filter_high = -1;
-				drag_filter_start = -1;
-			}
+            try
+            {
+                if (e.Button == MouseButtons.Left)
+                {
+                    drag_low = false;
+                    drag_high = false;
+                    drag_filter = false;
+                    drag_filter_low = -1;
+                    drag_filter_high = -1;
+                    drag_filter_start = -1;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
+
+        private void picDisplay_MouseLeave(object sender, EventArgs e)
+        {
+            try
+            {
+                Cursor = Cursors.Arrow;
+                drag_low = false;
+                drag_high = false;
+                drag_filter = false;
+                drag_filter_low = -1;
+                drag_filter_high = -1;
+                drag_filter_start = -1;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
 
 		private void udWidth_ValueChanged(object sender, System.EventArgs e)
 		{
-			if(udWidth.Focused)
-			{
-				int low = 0, high = 0;
-				switch(comboDSPMode.Text)
-				{
-					case "CWL":
-						low = (int)(-console.CWPitch - udWidth.Value/2);
-						high = (int)(-console.CWPitch + udWidth.Value/2);
-						break;
-					case "CWU":
-						low = (int)(console.CWPitch - udWidth.Value/2);
-						high = (int)(console.CWPitch + udWidth.Value/2);
-						break;
-					case "LSB":
-					case "DIGL":
-						high = -console.DefaultLowCut;
-						low = high - (int)udWidth.Value;						
-						break;
-					case "USB":
-					case "DIGU":
-						low = console.DefaultLowCut;
-						high = low + (int)udWidth.Value;
-						break;
-					case "AM":
-					case "SAM":
-					case "FMN":
-						low = -(int)udWidth.Value/2;
-						high = (int)udWidth.Value/2;
-						break;
-				}
+            try
+            {
+                if (udWidth.Focused)
+                {
+                    int low = 0, high = 0;
+                    switch (comboDSPMode.Text)
+                    {
+                        case "CWL":
+                            low = (int)(-console.CWPitch - udWidth.Value / 2);
+                            high = (int)(-console.CWPitch + udWidth.Value / 2);
+                            break;
+                        case "CWU":
+                            low = (int)(console.CWPitch - udWidth.Value / 2);
+                            high = (int)(console.CWPitch + udWidth.Value / 2);
+                            break;
+                        case "LSB":
+                        case "DIGL":
+                            high = -console.DefaultLowCut;
+                            low = high - (int)udWidth.Value;
+                            break;
+                        case "USB":
+                        case "DIGU":
+                            low = console.DefaultLowCut;
+                            high = low + (int)udWidth.Value;
+                            break;
+                        case "AM":
+                        case "SAM":
+                        case "FMN":
+                            low = -(int)udWidth.Value / 2;
+                            high = (int)udWidth.Value / 2;
+                            break;
+                    }
 
-				if(!filter_updating) UpdateFilter(low, high);
-			}			
+                    if (!filter_updating) UpdateFilter(low, high);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		}
 		
 		#endregion		
+
+        private void btnApply_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (show_subRX)
+                {
+                    for (int m = (int)DSPMode.FIRST + 1; m < (int)DSPMode.LAST; m++)
+                    {
+                        for (Filter f = Filter.F1; f != Filter.LAST; f++)
+                        {
+                            console.filter_presets_subRX[m].CopyFilter(f, filter_presets_subrx[m].GetLow(f),
+                                filter_presets_subrx[m].GetHigh(f), filter_presets_subrx[m].LastFilter,
+                                filter_presets_subrx[m].GetName(f));
+                        }
+                    }
+
+                    if (console.CurrentDSPModeSubRX == current_dsp_mode &&
+                        console.CurrentFilterSubRX == current_filter)
+                        console.UpdateFiltersSubRX((int)udLow.Value, (int)udHigh.Value);
+                }
+                else
+                {
+                    for (int m = (int)DSPMode.FIRST + 1; m < (int)DSPMode.LAST; m++)
+                    {
+                        for (Filter f = Filter.F1; f != Filter.LAST; f++)
+                        {
+                            console.filter_presets[m].CopyFilter(f, filter_presets[m].GetLow(f),
+                                filter_presets[m].GetHigh(f), filter_presets[m].LastFilter,
+                                filter_presets[m].GetName(f));
+                        }
+                    }
+
+                    if (console.CurrentDSPMode == current_dsp_mode &&
+                        console.CurrentFilter == current_filter)
+                        console.UpdateFilters((int)udLow.Value, (int)udHigh.Value);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
 	}
 }

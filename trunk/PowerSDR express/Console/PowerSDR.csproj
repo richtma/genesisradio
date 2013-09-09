@@ -2,7 +2,7 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>..\..\..\bin\Release_new\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;WIN32;DirectX</DefineConstants>
+    <DefineConstants>WIN32;DirectX</DefineConstants>
     <BaseAddress>285212672</BaseAddress>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
@@ -153,6 +153,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Dependency\G6.dll</HintPath>
     </Reference>
+    <Reference Include="LumiSoft.Net, Version=2.0.4746.36861, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Dependency\LumiSoft.Net.dll</HintPath>
+    </Reference>
     <Reference Include="MemCompressor, Version=1.0.0.3, Culture=neutral, PublicKeyToken=d7dc4571284f76c3, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Dependency\MemCompressor.dll</HintPath>
@@ -162,7 +166,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Dependency\NetworkControl.dll</HintPath>
     </Reference>
-    <Reference Include="ProgressODoom, Version=1.0.4386.37036, Culture=neutral, processorArchitecture=x86">
+    <Reference Include="ProgressODoom, Version=1.0.4752.27241, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Dependency\ProgressODoom.dll</HintPath>
     </Reference>
@@ -191,6 +195,7 @@
     <Compile Include="About.Designer.cs">
       <DependentUpon>About.cs</DependentUpon>
     </Compile>
+    <Compile Include="RTL_SDR.cs" />
     <Compile Include="Invoke\AGauge.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -366,6 +371,9 @@
     <Compile Include="VoiceMessages.Designer.cs">
       <DependentUpon>VoiceMessages.cs</DependentUpon>
     </Compile>
+    <Compile Include="VoIP.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="wave.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -453,11 +461,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
       <Visible>False</Visible>
       <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
@@ -473,15 +476,22 @@
       <ProductName>.NET Framework 3.5</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Genesis.ico" />
+    <None Include="images\call.ico" />
+    <None Include="images\call_hangup.ico" />
+    <None Include="images\app.ico" />
     <Content Include="images\genesis.ico" />
+    <Content Include="images\mic.ico" />
+    <Content Include="Resources\app.ico" />
+    <EmbeddedResource Include="Resources\call.ico" />
+    <EmbeddedResource Include="Resources\call_hangup.ico" />
+    <EmbeddedResource Include="Resources\mic.ico" />
+    <EmbeddedResource Include="Resources\router.ico" />
+    <EmbeddedResource Include="Resources\speaker.ico" />
+    <None Include="images\speaker.ico" />
+    <None Include="images\router.ico" />
     <EmbeddedResource Include="ClusterSetup.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>ClusterSetup1.Designer.cs</LastGenOutput>
@@ -519,13 +529,16 @@
       <DependentUpon>VoiceMessages.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="VoIP.resx">
+      <DependentUpon>VoIP.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="XTRV.resx">
       <DependentUpon>XTRV.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Resources\" />
     <Folder Include="Skins\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

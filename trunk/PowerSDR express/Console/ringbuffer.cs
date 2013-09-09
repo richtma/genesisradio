@@ -31,7 +31,7 @@
 
 /*
  *  Changes for GenesisRadio
- *  Copyright (C)2010-2012 YT7PWR Goran Radivojevic
+ *  Copyright (C)2010-2013 YT7PWR Goran Radivojevic
  *  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 */
 
@@ -391,6 +391,15 @@ namespace PowerSDR
             wptr = (wptr + cnt) % mask;
         }
 
+        /// <summary>
+        /// Returnes ring buffer size
+        /// </summary>
+        /// <returns></returns>
+        public int Size()
+        {
+            return size;
+        }
+
         #endregion
     }
 
@@ -704,6 +713,15 @@ namespace PowerSDR
         public void WriteAdvance(int cnt)
         {
             wptr = (wptr + cnt) % mask;
+        }
+
+        /// <summary>
+        /// Returnes ring buffer size
+        /// </summary>
+        /// <returns></returns>
+        public int Size()
+        {
+            return size;
         }
 
         #endregion
