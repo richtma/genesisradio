@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 
 namespace PowerSDR
 {
@@ -26,6 +27,11 @@ namespace PowerSDR
 		public void SetHigh(Filter f, int val)
 		{
 			high[(int)f] = val;
+
+            if (val == 1170)
+            {
+
+            }
 		}
 
 		public void SetName(Filter f, string n)
@@ -67,5 +73,21 @@ namespace PowerSDR
 			return name[(int)f]+": "+low[(int)f].ToString()+", "+high[(int)f].ToString();
 		}
 
+        public bool CopyFilter(Filter source, int f_low, int f_high, Filter f_last, string f_name)       // yt7pwr
+        {
+            try
+            {
+                high[(int)source] = f_high;
+                low[(int)source] = f_low;
+                last_filter = f_last;
+                name[(int)source] = f_name;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+                return false;
+            }
+        }
 	}
 }

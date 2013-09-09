@@ -78,7 +78,7 @@
     <StartWithIE>true</StartWithIE>
     <RemoteDebugEnabled>true</RemoteDebugEnabled>
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
-    <StartWorkingDirectory>E:\PowerSDR express\bin\Debug x64\</StartWorkingDirectory>
+    <StartWorkingDirectory>F:\PowerSDR express\bin\Debug x64\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>

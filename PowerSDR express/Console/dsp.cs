@@ -28,7 +28,7 @@
 
 /*
  *  Changes for GenesisRadio
- *  Copyright (C)2009,2010,2011 YT7PWR Goran Radivojevic
+ *  Copyright (C)2009-2013 YT7PWR Goran Radivojevic
  *  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 */
 
@@ -128,6 +128,7 @@ namespace PowerSDR
             {
                 current_mode_subRX = value;
                 int i = SetMode(0, 1, current_mode_subRX);
+
                 if (i != 0)
                     MessageBox.Show("Error in DttSP.SetModeSubRX: " + i);
             }
@@ -147,6 +148,7 @@ namespace PowerSDR
             {
                 current_mode = value;
                 int i = SetMode(0, 0, current_mode);
+
                 if (i != 0)
                     MessageBox.Show("Error in DttSP.SetModeMainRX: " + i);
             }
@@ -233,8 +235,9 @@ namespace PowerSDR
                 {
                     i = DttSP.SetRXFilter(0, 1, rx_filter_low_cut_subRX, rx_filter_high_cut_subRX);
                 }
-                if (i != 0)
-                    MessageBox.Show("Error in DttSP.SetFilter(RXFilterLowCutSubRX): " + i);
+
+                /*if (i != 0)
+                    MessageBox.Show("Error in DttSP.SetFilter(RXFilterLowCutSubRX): " + i);*/
             }
         }
 
@@ -252,8 +255,9 @@ namespace PowerSDR
                 {
                     i = DttSP.SetRXFilter(0, 0, rx_filter_low_cut, rx_filter_high_cut);
                 }
-                if (i != 0)
-                    MessageBox.Show("Error in DttSP.SetFilter(RXFilterLowCut): " + i);
+
+                /*if (i != 0)
+                    MessageBox.Show("Error in DttSP.SetFilter(RXFilterLowCut): " + i);*/
             }
         }
 
@@ -271,8 +275,9 @@ namespace PowerSDR
                 {
                     i = DttSP.SetRXFilter(0, 1, rx_filter_low_cut_subRX, rx_filter_high_cut_subRX);
                 }
-                if (i != 0)
-                    MessageBox.Show("Error in DttSP.SetFilter(RXFilterHighCutSubRX): " + i);
+
+                /*if (i != 0)
+                    MessageBox.Show("Error in DttSP.SetFilter(RXFilterHighCutSubRX): " + i);*/
             }
         }
 
@@ -290,8 +295,9 @@ namespace PowerSDR
                 {
                     i = DttSP.SetRXFilter(0, 0, rx_filter_low_cut, rx_filter_high_cut);
                 }
-                if (i != 0)
-                    MessageBox.Show("Error in DttSP.SetFilter(RXFilterHighCut): " + i);
+
+                /*if (i != 0)
+                    MessageBox.Show("Error in DttSP.SetFilter(RXFilterHighCut): " + i);*/
             }
         }
 
@@ -305,8 +311,9 @@ namespace PowerSDR
                 if (not_pan) UpdateTXDisplayVars();
 
                 int i = DttSP.SetTXFilter(0,tx_filter_low_cut, tx_filter_high_cut);
-                if (i != 0)
-                    MessageBox.Show("Error in DttSP.SetFilter(TXFilterLowCut): " + i);
+
+                /*if (i != 0)
+                    MessageBox.Show("Error in DttSP.SetFilter(TXFilterLowCut): " + i);*/
             }
         }
 
@@ -319,8 +326,9 @@ namespace PowerSDR
                 tx_fm_filter_low_cut = value;
 
                 int i = DttSP.SetTXFilter(0, tx_fm_filter_low_cut, tx_fm_filter_high_cut);
-                if (i != 0)
-                    MessageBox.Show("Error in DttSP.SetFilter(TXFilterLowCut): " + i);
+
+                /*if (i != 0)
+                    MessageBox.Show("Error in DttSP.SetFilter(TXFilterLowCut): " + i);*/
             }
         }
 
@@ -334,8 +342,9 @@ namespace PowerSDR
                 if (not_pan) UpdateTXDisplayVars();
 
                 int i = DttSP.SetTXFilter(0, tx_filter_low_cut, tx_filter_high_cut);
-                if (i != 0)
-                    MessageBox.Show("Error in DttSP.SetFilter(TXFilterHighCut): " + i);
+
+                /*if (i != 0)
+                    MessageBox.Show("Error in DttSP.SetFilter(TXFilterHighCut): " + i);*/
             }
         }
 
@@ -348,8 +357,9 @@ namespace PowerSDR
                 tx_fm_filter_high_cut = value;
 
                 int i = DttSP.SetTXFilter(0, tx_fm_filter_low_cut, tx_fm_filter_high_cut);
-                if (i != 0)
-                    MessageBox.Show("Error in DttSP.SetFilter(TXFilterHighCut): " + i);
+
+                /*if (i != 0)
+                    MessageBox.Show("Error in DttSP.SetFilter(TXFilterHighCut): " + i);*/
             }
         }
 
@@ -509,6 +519,9 @@ namespace PowerSDR
 		[DllImport("DttSP.dll", EntryPoint="Audio_Callback")]
 		public static extern void ExchangeSamples(int thread, void *input_l, void *input_r, void *output_l, void *output_r, int numsamples);
 
+        [DllImport("DttSP.dll", EntryPoint = "GetResamplerSize")]           // yt7pwr
+        public static extern void GetResamplerSize_RTL_SDR(int thread, int subrx, int* numsamples);
+
         [DllImport("DttSP.dll", EntryPoint = "Audio_Input_Callback")]       // yt7pwr
         public static extern void ExchangeInputSamples(int thread, void* input_l, void* input_r, int numsamples);
 
@@ -525,7 +538,16 @@ namespace PowerSDR
 		public static extern int SetMode(uint thread, uint subrx, DSPMode m);
 
         [DllImport("DttSP.dll", EntryPoint = "SetTXMode")]///
-        public static extern int SetTXMode(uint thread, DSPMode m);		
+        public static extern int SetTXMode(uint thread, DSPMode m);
+
+        [DllImport("DttSP.dll", EntryPoint = "FMreload")]///            // yt7pwr
+        public static extern int FMreload(uint thread, uint subrx, double low, double high, double bandwidth, int wide);
+
+        [DllImport("DttSP.dll", EntryPoint = "FMenableStereo")]///      // yt7pwr
+        public static extern int FMenableStereo(uint thread, uint subrx, int stereo);
+
+        [DllImport("DttSP.dll", EntryPoint = "FMStereoDetected")]///    // yt7pwr
+        public static extern int FMStereoDetected(uint thread, uint subrx, int stereo);
 
 		[DllImport("DttSP.dll", EntryPoint="SetRXFilter")]///
 		public static extern int SetRXFilter(uint thread, uint subrx, double low, double high);
@@ -810,6 +832,12 @@ namespace PowerSDR
 		[DllImport("DttSP.dll", EntryPoint="DelPolyPhaseFIR")]
 		unsafe public static extern void DelResampler(void *ptr);
 
+        [DllImport("DttSP.dll", EntryPoint = "SetResamplerF")]                      // yt7pwr
+        unsafe public static extern void* SetResamplerF(int thread, int subrx, int samplerate_in, int samplerate_out);
+
+        [DllImport("DttSP.dll", EntryPoint = "EnableResamplerF")]                   // yt7pwr
+        unsafe public static extern void* EnableResamplerF(int thread, int subrx, int enable);
+
 		[DllImport("DttSP.dll", EntryPoint="NewResamplerF")]
 		unsafe public static extern void *NewResamplerF(int sampin, int sampout);
 
@@ -871,8 +899,8 @@ namespace PowerSDR
                 i = DttSP.SetRXFilter(0, 1, rx_filter_low_cut_subRX, rx_filter_high_cut_subRX);
             }
 
-            if (i != 0)
-                MessageBox.Show("Error in DttSP.SetRXFilterSubRX: " + i);
+            /*if (i != 0)
+                MessageBox.Show("Error in DttSP.SetRXFilterSubRX: " + i);*/
         }
 
         public static void SetNotchFilter(int low, int high)
@@ -884,8 +912,8 @@ namespace PowerSDR
                 i = DttSP.SetRXHighPassFilter(0, 0, Math.Abs(high));
             }
 
-            if (i != 0)
-                MessageBox.Show("Error in DttSP.SetRXNotchFilters (SetFilter): " + i);
+            /*if (i != 0)
+                MessageBox.Show("Error in DttSP.SetRXNotchFilters (SetFilter): " + i);*/
         }
 
         public static void SetStopBandFilter(int low, int high)
@@ -896,24 +924,42 @@ namespace PowerSDR
                 i = DttSP.SetRXStopBandFilter(0, 0, low, high);
             }
 
-            if (i != 0)
-                MessageBox.Show("Error in DttSP.SetRXNotchFilters (SetFilter): " + i);
+            /*if (i != 0)
+                MessageBox.Show("Error in DttSP.SetRXNotchFilters (SetFilter): " + i);*/
         }
 
-        public static void SetFilter(int low, int high)
+        public static void SetFilter(int low, int high)     // changes yt7pwr
         {
-            rx_filter_low_cut = low;
-            rx_filter_high_cut = high;
-            if (not_pan) UpdateRXDisplayVars();
-
-            int i = 0;
-            if (rx_filter_high_cut - rx_filter_low_cut >= 10)
+            try
             {
-                i = DttSP.SetRXFilter(0, 0, rx_filter_low_cut, rx_filter_high_cut);
-            }
+                rx_filter_low_cut = low;
+                rx_filter_high_cut = high;
+                if (not_pan) UpdateRXDisplayVars();
 
-            if (i != 0)
-                MessageBox.Show("Error in DttSP.SetRXFilters (SetFilter): " + i);
+                int i = 0;
+                if (rx_filter_high_cut - rx_filter_low_cut >= 10)
+                {
+                    i = DttSP.SetRXFilter(0, 0, rx_filter_low_cut, rx_filter_high_cut);
+                }
+
+                if (CurrentMode == DSPMode.FMN)
+                {
+                    DttSP.FMreload(0, 0, low, high, high - low, 0);
+                    DttSP.FMreload(0, 1, low, high, high - low, 0);
+                }
+                else if (CurrentMode == DSPMode.WFM)
+                {
+                    DttSP.FMreload(0, 0, low, high, (high - low), 1);
+                    DttSP.FMreload(0, 1, low, high, (high - low), 1);
+                }
+
+                /*if (i != 0)
+                    MessageBox.Show("Error in DttSP.SetRXFilters (SetFilter): " + i);*/
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         public static void SetTXFilters(int low, int high)
@@ -983,8 +1029,9 @@ namespace PowerSDR
             if (not_pan) UpdateTXDisplayVars();
 
             int i = DttSP.SetTXFilter(0, tx_filter_low_cut, tx_filter_high_cut);
-            if (i != 0)
-                MessageBox.Show("Error in DttSP.SetTXFilters (SetFilter): " + i);
+
+            /*if (i != 0)
+                MessageBox.Show("Error in DttSP.SetTXFilters (SetFilter): " + i);*/
         }
 
         public static void UpdateRXDisplayVars()

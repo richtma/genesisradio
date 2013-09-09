@@ -30,7 +30,7 @@
  
 /*
  *  Changes for GenesisRadio
- *  Copyright (C)2008,2009,2010,2011 YT7PWR Goran Radivojevic
+ *  Copyright (C)2008-2013 YT7PWR Goran Radivojevic
  *  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 */
 
@@ -753,8 +753,9 @@ namespace PowerSDR
             else if (c.Name == "picAGauge" && File.Exists(path + "\\" + c.TopLevelControl.Name + "\\" + 
                 "NewVFOAnalogSignalGauge" + ".jpg"))
             {
-                c.BackgroundImage = Image.FromFile(path + "\\" + c.TopLevelControl.Name + "\\" + "NewVFOAnalogSignalGauge" + ".jpg");
+                //c.BackgroundImage = Image.FromFile(path + "\\" + c.TopLevelControl.Name + "\\" + "NewVFOAnalogSignalGauge" + ".jpg");
                 console.NewVFO_background_image = path + "\\" + c.TopLevelControl.Name + "\\" + "NewVFOAnalogSignalGauge" + ".jpg";
+                console.NewVFOSignalGauge.gaugeBitmap = new Bitmap(System.Drawing.Image.FromFile(console.NewVFO_background_image, true));
             }
             else if (c.Name == "picSmallAGauge" && File.Exists(path + "\\" + c.TopLevelControl.Name + "\\" +
                 "AnalogSignalGauge" + ".jpg"))
@@ -767,7 +768,9 @@ namespace PowerSDR
 #if(DirectX)
                 Display_DirectX.background_image = path + "\\" + c.TopLevelControl.Name + "\\" + c.Name + pic_file_ext;
 #endif
-                c.BackgroundImage = Image.FromFile(path + "\\" + c.TopLevelControl.Name + "\\" + c.Name + pic_file_ext);
+                Display_GDI.panadapter_img = path + "\\" + c.TopLevelControl.Name + "\\" + c.Name + pic_file_ext;
+                Display_GDI.panadapter_bmp = new Bitmap(System.Drawing.Image.FromFile(Display_GDI.panadapter_img, true));
+                //c.BackgroundImage = Image.FromFile(path + "\\" + c.TopLevelControl.Name + "\\" + c.Name + pic_file_ext);
                 //console.DXform.BackgroundImage = Image.FromFile(path + "\\" + c.TopLevelControl.Name + "\\" + c.Name + pic_file_ext);
             }
 

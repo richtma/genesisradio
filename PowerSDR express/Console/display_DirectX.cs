@@ -28,7 +28,7 @@
 
 /*
  *  Changes for GenesisRadio
- *  Copyright (C)2010,2011,2012 YT7PWR Goran Radivojevic
+ *  Copyright (C)2010-2013 YT7PWR Goran Radivojevic
  *  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 */
 
@@ -942,11 +942,8 @@ namespace PowerSDR
             {
                 if (average_buffer != null)
                 {
-                    if (average_buffer != null)
-                    {
-                        average_buffer[0] = CLEAR_FLAG;	// set reset flag
-                        average_waterfall_buffer[0] = CLEAR_FLAG;
-                    }
+                    average_buffer[0] = CLEAR_FLAG;	            // set reset flag
+                    average_waterfall_buffer[0] = CLEAR_FLAG;
                 }
             }
             catch (Exception ex)
@@ -960,7 +957,7 @@ namespace PowerSDR
             try
             {
                 if (peak_buffer != null)
-                    peak_buffer[0] = CLEAR_FLAG; // set reset flag
+                    peak_buffer[0] = CLEAR_FLAG;                // set reset flag
             }
             catch (Exception ex)
             {
@@ -2255,7 +2252,7 @@ namespace PowerSDR
                     RenderVerticalLine(device, (int)x3, H, Color.FromArgb(Math.Max(grid_color.A - 30, 0), grid_color));
                 }
 
-                int[] band_edge_list = { 135700, 138700, 415000, 525000, 18068000, 18168000 };
+                int[] band_edge_list = { 135700, 138700, 415000, 525000, 10150000, 14350000, 18068000, 18168000, 24890000, 24990000 };
 
                 bool first = true;
                 VerLines_vb.Lock(41 * 40, 80, LockFlags.None).WriteRange(new[] {    // clear first!
@@ -2891,7 +2888,7 @@ namespace PowerSDR
                 waterfall_data = new float[W];			                    // array of points to display
 
             float slope = 0.0F;						                        // samples to process per pixel
-            int num_samples = 0;					                        // number of samples to process
+            UInt64 num_samples = 0;					                        // number of samples to process
             int start_sample_index = 0;				                        // index to begin looking at samples
             int low = 0;
             int high = 0;
@@ -2924,14 +2921,12 @@ namespace PowerSDR
                 if (peak_on)
                     UpdateDisplayPeak();
 
-                num_samples = (high - low);
-
-                start_sample_index = (BUFFER_SIZE >> 1) + (int)((low * BUFFER_SIZE) / DttSP.SampleRate);
-                num_samples = (int)((high - low) * BUFFER_SIZE / DttSP.SampleRate);
+                start_sample_index = (BUFFER_SIZE >> 1) + (int)(((double)low * (double)BUFFER_SIZE) / DttSP.SampleRate);
+                num_samples = (UInt64)((((double)high - (double)low)/1e4) * (double)BUFFER_SIZE / (DttSP.SampleRate/1e4));
                 start_sample_index = (start_sample_index + 4096) % 4096;
 
-                if ((num_samples - start_sample_index) > (BUFFER_SIZE + 1))
-                    num_samples = BUFFER_SIZE - start_sample_index;
+                if (((int)num_samples - start_sample_index) > (BUFFER_SIZE + 1))
+                    num_samples = (UInt64)(BUFFER_SIZE - start_sample_index);
 
                 slope = (float)num_samples / (float)W;
 
@@ -3563,12 +3558,8 @@ namespace PowerSDR
                     waterfall_data = new float[panadapter_W];			                    // array of points to display
 
                 int W = waterfall_W;
-                //if (current_display_mode == DisplayMode.WATERFALL)
-                //RenderWaterfallGrid();
-
-                int R = 0, G = 0, B = 0;
                 float slope = 0.0f;				        	            	// samples to process per pixel
-                int num_samples = 0;					                    // number of samples to process
+                UInt64 num_samples = 0;					                    // number of samples to process
                 int start_sample_index = 0;			        	            // index to begin looking at samples
                 int Low = rx_display_low;
                 int High = rx_display_high;
@@ -3589,7 +3580,7 @@ namespace PowerSDR
                     average_buffer[0] = CLEAR_FLAG;
                     UpdateDisplayPanadapterAverage();
                 }
-                if (average_on && (Audio.CurrentAudioState1 != Audio.AudioState.SWITCH ||
+                else if (average_on && (Audio.CurrentAudioState1 != Audio.AudioState.SWITCH ||
                     Audio.NextAudioState1 != Audio.AudioState.SWITCH))
                 {
                     if (!UpdateDisplayPanadapterAverage())
@@ -3604,12 +3595,11 @@ namespace PowerSDR
                 if (peak_on)
                     UpdateDisplayPeak();
 
-                num_samples = (High - Low);
-                start_sample_index = (BUFFER_SIZE >> 1) + (int)((Low * BUFFER_SIZE) / sample_rate);
-                num_samples = (int)((High - Low) * BUFFER_SIZE / sample_rate);
+                start_sample_index = (BUFFER_SIZE >> 1) + (int)(((double)Low * (double)BUFFER_SIZE) / (double)sample_rate);
+                num_samples = (UInt64)(((((double)High - (double)Low)/1e4) * BUFFER_SIZE) / ((double)sample_rate/1e4));
                 if (start_sample_index < 0) start_sample_index += 4096;
-                if ((num_samples - start_sample_index) > (BUFFER_SIZE + 1))
-                    num_samples = BUFFER_SIZE - start_sample_index;
+                if (((int)num_samples - start_sample_index) > (BUFFER_SIZE + 1))
+                    num_samples = (uint)(BUFFER_SIZE - start_sample_index);
                 slope = (float)num_samples / (float)panadapter_W;
 
                 for (int i = 0; i < panadapter_W; i++)
@@ -3803,9 +3793,8 @@ namespace PowerSDR
         {
             try
             {
-                //float[] data = new float[W];			// array of points to display
                 float slope = 0.0f;						// samples to process per pixel
-                int num_samples = 0;					// number of samples to process
+                UInt64 num_samples = 0;					// number of samples to process
                 int start_sample_index = 0;				// index to begin looking at samples
                 int low = 0;
                 int high = 0;
@@ -3839,14 +3828,14 @@ namespace PowerSDR
                 if (peak_on)
                     UpdateDisplayPeak();
 
-                start_sample_index = (BUFFER_SIZE >> 1) + (int)((low * BUFFER_SIZE) / sample_rate);
-                num_samples = (int)((high - low) * BUFFER_SIZE / sample_rate);
 
-                if (start_sample_index < 0) start_sample_index = 0;
-                if ((num_samples - start_sample_index) > (BUFFER_SIZE + 1))
-                    num_samples = BUFFER_SIZE - start_sample_index;
-
+                start_sample_index = (BUFFER_SIZE >> 1) + (int)(((double)low * (double)BUFFER_SIZE) / (double)sample_rate);
+                num_samples = (UInt64)(((((double)high - (double)low) / 1e4) * BUFFER_SIZE) / ((double)sample_rate / 1e4));
+                if (start_sample_index < 0) start_sample_index += 4096;
+                if (((int)num_samples - start_sample_index) > (BUFFER_SIZE + 1))
+                    num_samples = (uint)(BUFFER_SIZE - start_sample_index);
                 slope = (float)num_samples / (float)panadapter_W;
+
                 for (int i = 0; i < panadapter_W; i++)
                 {
                     float max = float.MinValue;

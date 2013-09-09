@@ -26,6 +26,12 @@
 //    USA
 //=================================================================
 
+/*
+ *  Changes for GenesisRadio
+ *  Copyright (C)2008-2013 YT7PWR Goran Radivojevic
+ *  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
+*/
+
 using System;
 using System.Diagnostics;
 using System.Drawing;
@@ -470,6 +476,9 @@ namespace PowerSDR
 			ArrayList a = new ArrayList();
 			ArrayList temp = new ArrayList();
 
+            if (waveOptionsForm != null)
+                waveOptionsForm.SaveSettings();
+
 			ControlList(this, ref temp);
 
 			foreach(Control c in temp)				// For each control
@@ -494,19 +503,9 @@ namespace PowerSDR
 					Color clr = ((ColorButton)c).Color;
 					a.Add(c.Name+"/"+clr.R+"."+clr.G+"."+clr.B+"."+clr.A);
 				}
-#if(DEBUG)
-				else if(c.GetType() == typeof(GroupBox) ||
-					c.GetType() == typeof(CheckBoxTS) ||
-					c.GetType() == typeof(ComboBox) ||
-					c.GetType() == typeof(NumericUpDown) ||
-					c.GetType() == typeof(RadioButton) ||
-					c.GetType() == typeof(TextBox) ||
-					c.GetType() == typeof(TrackBar))
-					Debug.WriteLine(c.Name+" needs to be converted to a Thread Safe control.");
-#endif
 			}
 
-			DB.SaveVars("WaveOptions", ref a);		// save the values to the DB
+			DB.SaveVars("WaveForm", ref a);		// save the values to the DB
 		}
 
 		public void RestoreSettings()
@@ -542,7 +541,7 @@ namespace PowerSDR
 			}
 			temp.Clear();	// now that we have the controls we want, delete first list 
 
-			ArrayList a = DB.GetVars("WaveOptions");			// Get the saved list of controls
+			ArrayList a = DB.GetVars("WaveForm");			// Get the saved list of controls
 			a.Sort();
 			
 			// restore saved values to the controls
@@ -805,6 +804,14 @@ namespace PowerSDR
                 case 44100:
                 case 96000:
                 case 192000:
+                case 250000:
+                case 960000:
+                case 1024000:
+                case 1440000:
+                case 1800000:
+                case 2400000:
+                case 2880000:
+                case 3200000:
                     retval = true;
                     break;
             }
@@ -935,14 +942,19 @@ namespace PowerSDR
                     if (!Directory.Exists(Application.StartupPath + "\\Recordings"))
                         Directory.CreateDirectory(Application.StartupPath + "\\Recordings");
                     string file_name = "";
-                    file_name += Math.Round(console.LOSCFreq,3).ToString("f3") + "MHz ";
+                    file_name += Math.Round(console.LOSCFreq, 3).ToString("f3") + "MHz ";
                     file_name += Audio.SampleRate1.ToString() + " ";
                     file_name += DateTime.Now.ToString() + ".wav";
                     file_name = file_name.Replace("/", "-");
                     file_name = file_name.Replace(":", " ");
                     string file = Application.StartupPath + "\\Recordings\\" +
                          console.CurrentDSPMode.ToString() + file_name;
-                    Audio.wave_file_writer = new WaveFileWriter(console.BlockSize1, 2, Audio.SampleRate1, file);
+
+                    if ((console.CurrentModel == Model.RTL_SDR && !Audio.RecordRXPreProcessed) ||
+                        (console.CurrentModel == Model.GENESIS_G6 && !Audio.RecordRXPreProcessed))
+                        Audio.wave_file_writer = new WaveFileWriter(console.CurrentModel, console.BlockSize2, 2, Audio.SampleRateVAC, file);
+                    else
+                        Audio.wave_file_writer = new WaveFileWriter(console.CurrentModel, console.BlockSize1, 2, Audio.SampleRate1, file);
                 }
                 else
                 {
@@ -1356,13 +1368,19 @@ namespace PowerSDR
 
         unsafe private void* resamp_l, resamp_r;
 
-        public WaveFileWriter(int frames, short chan, int samp_rate, string file)
+        public WaveFileWriter(Model model, int frames, short chan, int samp_rate, string file)
         {
             frames_per_buffer = frames;
             channels = chan;
             sample_rate = samp_rate;
             IN_BLOCK = frames;
-            int OUT_BLOCK = (int)Math.Ceiling(IN_BLOCK * (double)sample_rate / Audio.SampleRate1);
+            int OUT_BLOCK;
+
+            if(model != Model.RTL_SDR && model != Model.GENESIS_G6)
+                OUT_BLOCK = (int)Math.Ceiling(IN_BLOCK * (double)sample_rate / Audio.SampleRate1);
+            else
+                OUT_BLOCK = IN_BLOCK;               // resample is done by RTL callback!
+
             rb_l = new RingBufferFloat(IN_BLOCK * 16);
             rb_r = new RingBufferFloat(IN_BLOCK * 16);
             in_buf_l = new float[IN_BLOCK];
@@ -1375,7 +1393,7 @@ namespace PowerSDR
             length_counter = 0;
             record = true;
 
-            if (sample_rate != Audio.SampleRate1)
+            if (model != Model.RTL_SDR && sample_rate != Audio.SampleRate1)
             {
                 resamp_l = DttSP.NewResamplerF(Audio.SampleRate1, sample_rate);
                 if (channels > 1) resamp_r = DttSP.NewResamplerF(Audio.SampleRate1, sample_rate);
@@ -1393,30 +1411,44 @@ namespace PowerSDR
 
         private void ProcessRecordBuffers()
         {
-            WriteWaveHeader(ref writer, channels, sample_rate, 32, 0);
-
-            while (record == true || rb_l.ReadSpace() > 0)
+            try
             {
-                while ((rb_r.ReadSpace() > IN_BLOCK) ||
-                    (record == false && rb_r.ReadSpace() > 0))
-                {
-                    WriteBuffer(ref writer, ref length_counter);
-                }
-                Thread.Sleep(1);
-            }
+                WriteWaveHeader(ref writer, channels, sample_rate, 32, 0);
 
-            writer.Seek(0, SeekOrigin.Begin);
-            WriteWaveHeader(ref writer, channels, sample_rate, 32, length_counter);
-            writer.Flush();
-            writer.Close();
-            writer = null;
+                while (record == true || rb_l.ReadSpace() > 0)
+                {
+                    while ((rb_r.ReadSpace() > IN_BLOCK) ||
+                        (record == false && rb_r.ReadSpace() > 0))
+                    {
+                        WriteBuffer(ref writer, ref length_counter);
+                    }
+                    Thread.Sleep(1);
+                }
+
+                writer.Seek(0, SeekOrigin.Begin);
+                WriteWaveHeader(ref writer, channels, sample_rate, 32, length_counter);
+                writer.Flush();
+                writer.Close();
+                writer = null;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         unsafe public void AddWriteBuffer(float* left, float* right)
         {
-            rb_l.WritePtr(left, frames_per_buffer);
-            rb_r.WritePtr(right, frames_per_buffer);
-            //Debug.WriteLine("ReadSpace: "+rb.ReadSpace());
+            try
+            {
+                rb_l.WritePtr(left, frames_per_buffer);
+                rb_r.WritePtr(right, frames_per_buffer);
+                //Debug.WriteLine("ReadSpace: "+rb.ReadSpace());
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
 		public string Stop()
@@ -1427,55 +1459,62 @@ namespace PowerSDR
 
         private void WriteBuffer(ref BinaryWriter writer, ref int count)
         {
-            int cnt = rb_l.Read(in_buf_l, IN_BLOCK);
-            rb_r.Read(in_buf_r, IN_BLOCK);
-            int out_cnt = IN_BLOCK;
-
-            // resample
-            if (sample_rate != Audio.SampleRate1)
+            try
             {
-                fixed (float* in_ptr = &in_buf_l[0])
-                fixed (float* out_ptr = &out_buf_l[0])
-                    DttSP.DoResamplerF(in_ptr, out_ptr, cnt, &out_cnt, resamp_l);
+                int cnt = rb_l.Read(in_buf_l, IN_BLOCK);
+                rb_r.Read(in_buf_r, IN_BLOCK);
+                int out_cnt = IN_BLOCK;
+
+                // resample
+                /*if (sample_rate != Audio.SampleRate1)
+                {
+                    fixed (float* in_ptr = &in_buf_l[0])
+                    fixed (float* out_ptr = &out_buf_l[0])
+                        DttSP.DoResamplerF(in_ptr, out_ptr, cnt, &out_cnt, resamp_l);
+                    if (channels > 1)
+                    {
+                        fixed (float* in_ptr = &in_buf_r[0])
+                        fixed (float* out_ptr = &out_buf_r[0])
+                            DttSP.DoResamplerF(in_ptr, out_ptr, cnt, &out_cnt, resamp_r);
+                    }
+                }
+                else*/
+                {
+                    in_buf_l.CopyTo(out_buf_l, 0);
+                    in_buf_r.CopyTo(out_buf_r, 0);
+                }
+
                 if (channels > 1)
                 {
-                    fixed (float* in_ptr = &in_buf_r[0])
-                    fixed (float* out_ptr = &out_buf_r[0])
-                        DttSP.DoResamplerF(in_ptr, out_ptr, cnt, &out_cnt, resamp_r);
+                    // interleave samples
+                    for (int i = 0; i < out_cnt; i++)
+                    {
+                        out_buf[i * 2] = out_buf_l[i];
+                        out_buf[i * 2 + 1] = out_buf_r[i];
+                    }
                 }
-            }
-            else
-            {
-                in_buf_l.CopyTo(out_buf_l, 0);
-                in_buf_r.CopyTo(out_buf_r, 0);
-            }
-
-            if (channels > 1)
-            {
-                // interleave samples
-                for (int i = 0; i < out_cnt; i++)
+                else
                 {
-                    out_buf[i * 2] = out_buf_l[i];
-                    out_buf[i * 2 + 1] = out_buf_r[i];
+                    out_buf_l.CopyTo(out_buf, 0);
                 }
-            }
-            else
-            {
-                out_buf_l.CopyTo(out_buf, 0);
-            }
 
-            byte[] temp = new byte[4];
-            int length = out_cnt;
-            if (channels > 1) length *= 2;
-            for (int i = 0; i < length; i++)
-            {
-                temp = BitConverter.GetBytes(out_buf[i]);
-                for (int j = 0; j < 4; j++)
-                    byte_buf[i * 4 + j] = temp[j];
-            }
+                byte[] temp = new byte[4];
+                int length = out_cnt;
+                if (channels > 1) length *= 2;
+                for (int i = 0; i < length; i++)
+                {
+                    temp = BitConverter.GetBytes(out_buf[i]);
+                    for (int j = 0; j < 4; j++)
+                        byte_buf[i * 4 + j] = temp[j];
+                }
 
-            writer.Write(byte_buf, 0, out_cnt * 2 * 4);
-            count += out_cnt * 2 * 4;
+                writer.Write(byte_buf, 0, out_cnt * 2 * 4);
+                count += out_cnt * 2 * 4;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void WriteWaveHeader(ref BinaryWriter writer, short channels, int sample_rate, short bit_depth, int data_length)
@@ -1543,8 +1582,8 @@ namespace PowerSDR
             rb_r = new RingBufferFloat(16 * OUT_BLOCK);
             buf_l_in = new float[IN_BLOCK];
             buf_r_in = new float[IN_BLOCK];
-            buf_l_out = new float[OUT_BLOCK];
-            buf_r_out = new float[OUT_BLOCK];
+            buf_l_out = new float[16*OUT_BLOCK];
+            buf_r_out = new float[16*OUT_BLOCK];
             if (format == 1)
                 io_buf_size = 2048 * 2 * 2;
             else if (format == 3)

@@ -2,7 +2,7 @@
 // About
 //=================================================================
 //  
-//  Copyright (C)2009,2010,2011 YT7PWR Goran Radivojevic
+//  Copyright (C)2009-2013 YT7PWR Goran Radivojevic
 //  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 //
 // This program is free software; you can redistribute it and/or
@@ -111,6 +111,34 @@ namespace PowerSDR
                         console.g11.BOOT_VER = "";
                         console.g11.SERIAL_NO = "";
                         lblRadioModel.Text = "Genesis G11";
+                    }
+                    break;
+
+                case Model.GENESIS_G6:
+                    {
+                        console.g6.WriteToDevice(19, 0);  // read software version
+                        Thread.Sleep(100);
+                        console.g6.WriteToDevice(29, 0);  // read serial number
+                        Thread.Sleep(100);
+                        lblFirm_version.Text = console.g6.FIRMWARE_VER;
+                        lblSerialNumber.Text = console.g6.SERIAL_NO;
+                        Point loc = lblBoot_version.Location;
+                        loc.X = groupBox1.Width / 2 - 65;
+                        lblBoot_version.Location = loc;
+                        lblBoot_version.Text = console.g6.BOOT_VER;
+                        console.g6.FIRMWARE_VER = "";
+                        console.g6.BOOT_VER = "";
+                        console.g6.SERIAL_NO = "";
+                        lblRadioModel.Text = "Genesis G6";
+                    }
+                    break;
+
+                case Model.RTL_SDR:
+                    {
+                        lblFirm_version.Text = "****";
+                        lblSerialNumber.Text = "****";
+                        lblBoot_version.Text = "****";
+                        lblRadioModel.Text = "RTL SDR";
                     }
                     break;
 

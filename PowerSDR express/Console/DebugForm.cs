@@ -1,4 +1,32 @@
-﻿using System;
+﻿//=================================================================
+// Debug form
+//=================================================================
+// PowerSDR is a C# implementation of a Software Defined Radio.
+// Copyright (C) 2011-2013 YT7PWR
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+//
+// You may contact us via email at: sales@flex-radio.com.
+// Paper mail may be sent to: 
+//    FlexRadio Systems
+//    12100 Technology Blvd.
+//    Austin, TX 78727
+//    USA
+//=================================================================
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -20,36 +48,64 @@ namespace PowerSDR
 
         public DebugForm(Console c)
         {
-            this.AutoScaleMode = AutoScaleMode.Inherit;
-            InitializeComponent();
-            float dpi = this.CreateGraphics().DpiX;
-            float ratio = dpi / 96.0f;
-            string font_name = this.Font.Name;
-            float size = (float)(8.25 / ratio);
-            System.Drawing.Font new_font = new System.Drawing.Font(font_name, size);
-            this.Font = new_font;
-            this.PerformAutoScale();
-            this.PerformLayout();
+            try
+            {
+                this.AutoScaleMode = AutoScaleMode.Inherit;
+                InitializeComponent();
+                float dpi = this.CreateGraphics().DpiX;
+                float ratio = dpi / 96.0f;
+                string font_name = this.Font.Name;
+                float size = (float)(8.25 / ratio);
+                System.Drawing.Font new_font = new System.Drawing.Font(font_name, size);
+                this.Font = new_font;
+                this.PerformAutoScale();
+                this.PerformLayout();
 
-            console = c;
+                console = c;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void btnClear_Click(object sender, EventArgs e)
         {
-            rtbDebugMsg.Clear();
+            try
+            {
+                rtbDebugMsg.Clear();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void btnSave_Click(object sender, EventArgs e)
         {
-            saveFileDialog1.Title = "Save debug report";
-            saveFileDialog1.ShowDialog();
+            try
+            {
+                saveFileDialog1.Title = "Save debug report";
+                saveFileDialog1.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         #region enable/disable debugging
 
         private void chkAudio_CheckedChanged(object sender, EventArgs e)
         {
-            Audio.debug = chkAudio.Checked;
+            try
+            {
+                Audio.debug = chkAudio.Checked;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void chkDirectX_CheckedChanged(object sender, EventArgs e)
@@ -61,12 +117,26 @@ namespace PowerSDR
 
         private void chkCAT_CheckedChanged(object sender, EventArgs e)
         {
-            console.Siolisten.debug = chkCAT.Checked;
+            try
+            {
+                console.Siolisten.debug = chkCAT.Checked;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void chkConsole_CheckedChanged(object sender, EventArgs e)
         {
-            console.debug_enabled = chkConsole.Checked;
+            try
+            {
+                console.debug_enabled = chkConsole.Checked;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void chkUSB_CheckedChanged(object sender, EventArgs e)
@@ -133,27 +203,41 @@ namespace PowerSDR
 
         private void saveFileDialog1_FileOk(object sender, CancelEventArgs e)
         {
-            if (saveFileDialog1.FileName != "")
-                file = saveFileDialog1.FileName.ToString();
+            try
+            {
+                if (saveFileDialog1.FileName != "")
+                    file = saveFileDialog1.FileName.ToString();
 
-            BinaryWriter writer = new BinaryWriter(File.Open(file, FileMode.Create));
-            writer.Seek(0, SeekOrigin.Begin);
-            writer.Write(rtbDebugMsg.Text.ToCharArray(),0, rtbDebugMsg.Text.Length);
-            writer.Flush();
-            writer.Close();
-            writer = null;
+                BinaryWriter writer = new BinaryWriter(File.Open(file, FileMode.Create));
+                writer.Seek(0, SeekOrigin.Begin);
+                writer.Write(rtbDebugMsg.Text.ToCharArray(), 0, rtbDebugMsg.Text.Length);
+                writer.Flush();
+                writer.Close();
+                writer = null;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void buttonTS1_Click(object sender, EventArgs e)
         {
-            Direct3D w = new Direct3D();
-            Capabilities q = w.GetDeviceCaps(0, DeviceType.Hardware);
-            rtbDebugMsg.AppendText("Vertex Shader ver: \n" +  q.VertexShaderVersion.ToString() + "\n");
-            rtbDebugMsg.AppendText("Device Type: \n" + q.DeviceType.ToString() + "\n");
-            rtbDebugMsg.AppendText("Device Caps: \n" + q.DeviceCaps.ToString() + "\n");
-            rtbDebugMsg.AppendText("Device Caps2: \n" + q.DeviceCaps2.ToString() + "\n");
-            rtbDebugMsg.AppendText("Pixel Shader: \n" + q.PixelShaderVersion.ToString() + "\n");
-            rtbDebugMsg.AppendText("Texture Caps: \n" + q.TextureCaps.ToString() + "\n");
+            try
+            {
+                Direct3D w = new Direct3D();
+                Capabilities q = w.GetDeviceCaps(0, DeviceType.Hardware);
+                rtbDebugMsg.AppendText("Vertex Shader ver: \n" + q.VertexShaderVersion.ToString() + "\n");
+                rtbDebugMsg.AppendText("Device Type: \n" + q.DeviceType.ToString() + "\n");
+                rtbDebugMsg.AppendText("Device Caps: \n" + q.DeviceCaps.ToString() + "\n");
+                rtbDebugMsg.AppendText("Device Caps2: \n" + q.DeviceCaps2.ToString() + "\n");
+                rtbDebugMsg.AppendText("Pixel Shader: \n" + q.PixelShaderVersion.ToString() + "\n");
+                rtbDebugMsg.AppendText("Texture Caps: \n" + q.TextureCaps.ToString() + "\n");
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
     }
 }

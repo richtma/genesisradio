@@ -319,15 +319,15 @@ namespace PowerSDR
                are specified in pa_win_waveformat.h. Will be used only if 
                paWinWasapiUseChannelMask flag is specified.
             */
-            UInt32 channelMask;
+            public UInt32 channelMask;
 
             /* Delivers raw data to callback obtained from GetBuffer() methods skipping 
                internal PortAudio processing inventory completely. userData parameter will 
                be the same that was passed to Pa_OpenStream method. Will be used only if 
                paWinWasapiRedirectHostProcessor flag is specified.
             */
-            //            PaWasapiHostProcessorCallback hostProcessorOutput;
-            //            PaWasapiHostProcessorCallback hostProcessorInput;
+            //public PaWasapiHostProcessorCallback hostProcessorOutput;
+            //public PaWasapiHostProcessorCallback hostProcessorInput;
 
             /* Specifies thread priority explicitly. Will be used only if paWinWasapiThreadPriority flag
                is specified.
@@ -523,9 +523,13 @@ namespace PowerSDR
 
         unsafe public delegate void PaStreamFinishedCallback(void* userData);
 
-        unsafe public delegate void PaWasapiHostProcessorCallback(void* inputBuffer, UInt32 inputFrames,
+        /*unsafe public delegate void PaWasapiHostProcessorCallback(void* inputBuffer, UInt32 inputFrames,
                                                void* outputBuffer, UInt32 outputFrames,
-                                               void* userData);
+                                               void* userData);*/
+
+        public delegate void PaWasapiHostProcessorCallback(float[] inputBuffer, UInt32 inputFrames,
+                                      float[] outputBuffer, UInt32 outputFrames,
+                                       int[] userData);
 
         #endregion	// Function Definitions
     }

@@ -28,7 +28,7 @@
 
 /*
  *  Changes for GenesisRadio
- *  Copyright (C)2008,2009,2010,2011,2012 YT7PWR Goran Radivojevic
+ *  Copyright (C)2008-2013 YT7PWR Goran Radivojevic
  *  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 */
 
@@ -61,7 +61,7 @@ namespace PowerSDR
         public static Console console;
         //private static Mutex background_image_mutex;			// used to lock the base display image
         //private static Bitmap background_bmp;					// saved background picture for display
-        //private static Bitmap display_bmp;					// Bitmap for use when drawing
+        public static Bitmap panadapter_bmp;  				    // Bitmap for use when drawing
         //private static int waterfall_counter;
         private static Bitmap waterfall_bmp;					// saved waterfall picture for display
         //private static Graphics display_graphics;				// GDI graphics object
@@ -87,6 +87,7 @@ namespace PowerSDR
         public static byte[] server_display_data;
         public static byte[] client_display_data;
         private static System.Drawing.Font swr_font = new System.Drawing.Font("Arial", 14, FontStyle.Bold);
+        public static string panadapter_img = "";
 
         #endregion
 
@@ -733,7 +734,7 @@ namespace PowerSDR
 
         #region General Routines
 
-        public static void Init() // changes yt7pwr
+        public static void Init()               // changes yt7pwr
         {
             try
             {
@@ -748,18 +749,31 @@ namespace PowerSDR
                 if (waterfall_bmp != null)
                     waterfall_bmp.Dispose();
 
-                waterfall_bmp = new Bitmap(W, H, PixelFormat.Format24bppRgb);	// initialize waterfall display
+                if (panadapter_bmp != null)
+                    panadapter_bmp.Dispose();
 
-                average_buffer = new float[BUFFER_SIZE];	// initialize averaging buffer array
-                average_buffer[0] = CLEAR_FLAG;		// set the clear flag
+                if (panadapter_img != "")
+                {
+                    try
+                    {
+                        panadapter_bmp = new Bitmap(System.Drawing.Image.FromFile(panadapter_img, true));	// initialize panadapter display
+                    }
+                    catch (Exception ex)
+                    {
+                        panadapter_bmp = new Bitmap(W, H, PixelFormat.Format24bppRgb);	                    // initialize panadapter display
+                        Debug.Write(ex.ToString());
+                    }
+                }
+                else
+                    panadapter_bmp = new Bitmap(W, H, PixelFormat.Format24bppRgb);	                    // initialize paterfall display
 
-                average_waterfall_buffer = new float[BUFFER_SIZE];	// initialize averaging buffer array
-                average_waterfall_buffer[0] = CLEAR_FLAG;		// set the clear flag
-
+                waterfall_bmp = new Bitmap(W, H, PixelFormat.Format24bppRgb);	                        // initialize waterfall display
+                average_buffer = new float[BUFFER_SIZE];	                                            // initialize averaging buffer array
+                average_buffer[0] = CLEAR_FLAG;		                                                    // set the clear flag
+                average_waterfall_buffer = new float[BUFFER_SIZE];	                                    // initialize averaging buffer array
+                average_waterfall_buffer[0] = CLEAR_FLAG;		                                        // set the clear flag
                 peak_buffer = new float[BUFFER_SIZE];
                 peak_buffer[0] = CLEAR_FLAG;
-
-                //background_image_mutex = new Mutex(false);
                 scope_min = new float[W];
                 scope_max = new float[W];
                 new_display_data = new float[BUFFER_SIZE];
@@ -769,6 +783,7 @@ namespace PowerSDR
                 current_scope_data = new float[BUFFER_SIZE];
                 current_waterfall_data = new float[BUFFER_SIZE];
                 waterfall_display_data = new float[BUFFER_SIZE];
+
                 for (int i = 0; i < BUFFER_SIZE; i++)
                 {
                     new_display_data[i] = -200.0f;
@@ -1135,7 +1150,7 @@ namespace PowerSDR
                 }
             }
 
-            int[] band_edge_list = { 135700, 137800, 415000, 525000, 18068000, 18168000 };
+            int[] band_edge_list = { 135700, 137800, 415000, 525000, 10150000, 14350000, 18068000, 18168000, 24880000, 24990000 };
 
             for (i = 0; i < band_edge_list.Length; i++)
             {
@@ -1469,7 +1484,7 @@ namespace PowerSDR
                 }
 
                 float slope = 0.0F;						// samples to process per pixel
-                int num_samples = 0;					// number of samples to process
+                UInt64 num_samples = 0;					// number of samples to process
                 int start_sample_index = 0;				// index to begin looking at samples
                 int Low = rx_display_low;
                 int High = rx_display_high;
@@ -1512,6 +1527,7 @@ namespace PowerSDR
                                         points[i].Y = Math.Min(client_display_data[i], H);
                                     }
 
+                                    g.DrawImage(panadapter_bmp, 0, 0);
                                     DrawPanadapterGrid(ref g, W, H);
 
                                     if (pan_fill)
@@ -1584,8 +1600,6 @@ namespace PowerSDR
                     if (peak_on)
                         UpdateDisplayPeak();
 
-                    num_samples = (High - Low);
-
                     if (console.SetupForm.EnableCATOverEthernetServer &&
                         Audio.EnableEthernetServerDevice && Audio.ServerAFSpectar)
                     {
@@ -1593,16 +1607,15 @@ namespace PowerSDR
                     }
                     else
                     {
+                        g.DrawImage(panadapter_bmp, 0, 0, W, H);
                         DrawPanadapterGrid(ref g, W, H);
                     }
 
-                    start_sample_index = (BUFFER_SIZE >> 1) + (int)((Low * BUFFER_SIZE) / DttSP.SampleRate);
-                    num_samples = (int)((High - Low) * BUFFER_SIZE / DttSP.SampleRate);
+                    start_sample_index = (BUFFER_SIZE >> 1) + (int)(((double)Low * (double)BUFFER_SIZE) / (double)sample_rate);
+                    num_samples = (UInt64)(((((double)High - (double)Low) / 1e4) * BUFFER_SIZE) / ((double)sample_rate / 1e4));
                     if (start_sample_index < 0) start_sample_index += 4096;
-                    if ((num_samples - start_sample_index) > (BUFFER_SIZE + 1))
-                        num_samples = BUFFER_SIZE - start_sample_index;
-
-                    //Debug.WriteLine("start_sample_index: "+start_sample_index);
+                    if (((int)num_samples - start_sample_index) > (BUFFER_SIZE + 1))
+                        num_samples = (uint)(BUFFER_SIZE - start_sample_index);
                     slope = (float)num_samples / (float)W;
 
                     for (int i = 0; i < W; i++)
@@ -1774,12 +1787,12 @@ namespace PowerSDR
                 if (waterfall_data == null || waterfall_data.Length < W)
                     waterfall_data = new float[W];			                    // array of points to display
                 float slope = 0.0F;						                        // samples to process per pixel
-                int num_samples = 0;					                        // number of samples to process
+                UInt64 num_samples = 0;					                        // number of samples to process
                 int start_sample_index = 0;				                        // index to begin looking at samples
-                int low = 0;
-                int high = 0;
-                low = rx_display_low;
-                high = rx_display_high;
+                int Low = 0;
+                int High = 0;
+                Low = rx_display_low;
+                High = rx_display_high;
                 max_y = Int32.MinValue;
                 int R = 0, G = 0, B = 0;	                                	// variables to save Red, Green and Blue component values
 
@@ -1814,16 +1827,12 @@ namespace PowerSDR
                     if (peak_on)
                         UpdateDisplayPeak();
 
-                    timer_waterfall.Stop();
-
-                    timer_waterfall.Start();
-                    num_samples = (high - low);
-
-                    start_sample_index = (BUFFER_SIZE >> 1) + (int)((low * BUFFER_SIZE) / DttSP.SampleRate);
-                    num_samples = (int)((high - low) * BUFFER_SIZE / DttSP.SampleRate);
-                    start_sample_index = (start_sample_index + 4096) % 4096;
-                    if ((num_samples - start_sample_index) > (BUFFER_SIZE + 1))
-                        num_samples = BUFFER_SIZE - start_sample_index;
+                    start_sample_index = (BUFFER_SIZE >> 1) + (int)(((double)Low * (double)BUFFER_SIZE) / (double)sample_rate);
+                    num_samples = (UInt64)(((((double)High - (double)Low) / 1e4) * BUFFER_SIZE) / ((double)sample_rate / 1e4));
+                    if (start_sample_index < 0) start_sample_index += 4096;
+                    if (((int)num_samples - start_sample_index) > (BUFFER_SIZE + 1))
+                        num_samples = (uint)(BUFFER_SIZE - start_sample_index);
+                    slope = (float)num_samples / (float)W;
 
                     slope = (float)num_samples / (float)W;
                     for (int i = 0; i < W; i++)
@@ -2544,13 +2553,27 @@ namespace PowerSDR
 
         public static void ResetDisplayAverage()
         {
-            average_buffer[0] = CLEAR_FLAG;	// set reset flag
-            average_waterfall_buffer[0] = CLEAR_FLAG;
+            try
+            {
+                average_buffer[0] = CLEAR_FLAG;	// set reset flag
+                average_waterfall_buffer[0] = CLEAR_FLAG;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         public static void ResetDisplayPeak()
         {
-            peak_buffer[0] = CLEAR_FLAG; // set reset flag
+            try
+            {
+                peak_buffer[0] = CLEAR_FLAG; // set reset flag
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private static float[] scope_min;

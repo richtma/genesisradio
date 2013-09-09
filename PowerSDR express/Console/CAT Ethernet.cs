@@ -76,8 +76,7 @@ namespace PowerSDR
         bool client2_connected = false;
         public bool HRDserver = false;
         public delegate void CATCrossThreadCallback(string type, int parm1, int[] parm2, string parm3);
-        public bool VoIP_enabled = true;
-        //public VoIP voip;
+        public VoIP voip;
         public float[] display_data = new float[4096];
 
         #endregion
@@ -92,8 +91,8 @@ namespace PowerSDR
             {
                 debug = value;
 
-                //if (VoIP_enabled && voip != null)
-                    //voip.debug = value;
+                if (!HRDserver && voip != null)
+                    voip.debug = value;
             }
         }
 
@@ -119,12 +118,12 @@ namespace PowerSDR
 
         public virtual void Dispose()
         {
-            /*if (VoIP_enabled)
+            if (!HRDserver)
             {
                 if (voip != null)
                     voip.Dispose();
             }
-            else*/
+            else
             {
                 if (ConnectionWatchdog != null)
                     ConnectionWatchdog.Dispose();
@@ -139,13 +138,13 @@ namespace PowerSDR
         {
             try
             {
-                if (VoIP_enabled)
+                if (!HRDserver)
                 {
-                    CATpassword = password;
+                    /*CATpassword = password;
                     ServerIPAddress = ipAddress;
                     ServerPort = port;
                     // VoIP initialization
-                    /*voip = new VoIP(console);
+                    voip = new VoIP(console);
                     voip.debug = debug;
                     voip.OpMode = VoIP_mode.Server;
                     voip.Text = "Remote server";
@@ -158,7 +157,7 @@ namespace PowerSDR
                         console.Invoke(new DebugCallbackFunction(console.DebugCallback),
                             "VoIP Server started!");*/
                 }
-                else if (HRDserver)
+                else
                 {
                     CATpassword = password;
                     ServerIPAddress = ipAddress;
@@ -242,7 +241,7 @@ namespace PowerSDR
         {
             try
             {
-                if (VoIP_enabled)
+                if (!HRDserver)
                 {
                     /*if (voip != null)
                         voip.Dispose();
@@ -1507,7 +1506,7 @@ namespace PowerSDR
         private bool header_added = false;
         private delegate void DebugCallbackFunction(string name);
         public bool VoIP_enabled = true;
-        //public VoIP voip;
+        public VoIP voip;
         public float[] display_data = new float[4096];
 
         #endregion
@@ -1522,8 +1521,8 @@ namespace PowerSDR
             {
                 debug = value;
 
-                //if (VoIP_enabled && voip != null)
-                    //voip.debug = value;
+                if (VoIP_enabled && voip != null)
+                    voip.debug = value;
             }
         }
 
@@ -1540,6 +1539,7 @@ namespace PowerSDR
                 receive_buffer = new byte[2048];
                 send_buffer = new byte[2048];
                 send_event = new AutoResetEvent(false);
+                //connect_event = new AutoResetEvent(false);
                 send_mutex = new Mutex();
                 timeout_timer = new System.Windows.Forms.Timer();
                 timeout_timer.Tick += new System.EventHandler(SendEventTimerTick);
@@ -1559,8 +1559,8 @@ namespace PowerSDR
         {
             if (VoIP_enabled)
             {
-                //if (voip != null)
-                    //voip.Dispose();
+                if (voip != null)
+                    voip.Dispose();
             }
             else
             {
@@ -1603,8 +1603,8 @@ namespace PowerSDR
             {
                 if (VoIP_enabled)
                 {
-                    //if (voip != null)
-                        //voip.Dispose();
+                    if (voip != null)
+                        voip.Dispose();
                 }
                 else
                 {
@@ -1851,7 +1851,7 @@ namespace PowerSDR
                 byte[] header = new byte[16];
                 int out_string_index = 0;
 
-                /*if (VoIP_enabled && voip != null)
+                if (VoIP_enabled && voip != null)
                 {
                     answer = command_type + version + CATpassword + ";";
 
@@ -1864,7 +1864,7 @@ namespace PowerSDR
 
                     voip.SendMessage(answer, "CAT");
                 }
-                else*/
+                else
                 {
                     send_mutex.WaitOne();
 
@@ -1954,7 +1954,7 @@ namespace PowerSDR
                         byte[] out_string = new byte[2048];
                         int out_index = 13;
 
-                        /*if (VoIP_enabled && voip != null)
+                        if (VoIP_enabled && voip != null)
                         {
                             string ans = "";
                             string cmd = "";
@@ -1978,7 +1978,7 @@ namespace PowerSDR
 
                             answer = "CAT;01;" + CATpassword + ";" + ans;
                         }
-                        else*/
+                        else
                         {
                             buffer.GetBytes(command_type + version + password, 0, 16, out_string, 0);
 

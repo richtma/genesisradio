@@ -83,7 +83,7 @@ namespace PowerSDR
             this.lblRadioModel.AutoSize = true;
             this.lblRadioModel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblRadioModel.Image = null;
-            this.lblRadioModel.Location = new System.Drawing.Point(138, 134);
+            this.lblRadioModel.Location = new System.Drawing.Point(128, 134);
             this.lblRadioModel.Name = "lblRadioModel";
             this.lblRadioModel.Size = new System.Drawing.Size(97, 20);
             this.lblRadioModel.TabIndex = 12;
@@ -93,7 +93,7 @@ namespace PowerSDR
             // 
             this.lblModel.AutoSize = true;
             this.lblModel.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblModel.Location = new System.Drawing.Point(122, 105);
+            this.lblModel.Location = new System.Drawing.Point(112, 105);
             this.lblModel.Name = "lblModel";
             this.lblModel.Size = new System.Drawing.Size(134, 24);
             this.lblModel.TabIndex = 11;
@@ -104,7 +104,7 @@ namespace PowerSDR
             this.lblBoot_version.AutoSize = true;
             this.lblBoot_version.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblBoot_version.Image = null;
-            this.lblBoot_version.Location = new System.Drawing.Point(166, 188);
+            this.lblBoot_version.Location = new System.Drawing.Point(156, 188);
             this.lblBoot_version.Name = "lblBoot_version";
             this.lblBoot_version.Size = new System.Drawing.Size(44, 20);
             this.lblBoot_version.TabIndex = 10;
@@ -114,7 +114,7 @@ namespace PowerSDR
             // 
             this.lblBoot.AutoSize = true;
             this.lblBoot.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblBoot.Location = new System.Drawing.Point(122, 159);
+            this.lblBoot.Location = new System.Drawing.Point(112, 159);
             this.lblBoot.Name = "lblBoot";
             this.lblBoot.Size = new System.Drawing.Size(132, 24);
             this.lblBoot.TabIndex = 9;
@@ -125,7 +125,7 @@ namespace PowerSDR
             this.lblSerialNumber.AutoSize = true;
             this.lblSerialNumber.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblSerialNumber.Image = null;
-            this.lblSerialNumber.Location = new System.Drawing.Point(170, 296);
+            this.lblSerialNumber.Location = new System.Drawing.Point(160, 296);
             this.lblSerialNumber.Name = "lblSerialNumber";
             this.lblSerialNumber.Size = new System.Drawing.Size(36, 20);
             this.lblSerialNumber.TabIndex = 8;
@@ -136,7 +136,7 @@ namespace PowerSDR
             // 
             this.lblSerialNo.AutoSize = true;
             this.lblSerialNo.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblSerialNo.Location = new System.Drawing.Point(115, 267);
+            this.lblSerialNo.Location = new System.Drawing.Point(105, 267);
             this.lblSerialNo.Name = "lblSerialNo";
             this.lblSerialNo.Size = new System.Drawing.Size(147, 24);
             this.lblSerialNo.TabIndex = 7;
@@ -147,7 +147,7 @@ namespace PowerSDR
             this.lblFirm_version.AutoSize = true;
             this.lblFirm_version.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblFirm_version.Image = null;
-            this.lblFirm_version.Location = new System.Drawing.Point(166, 242);
+            this.lblFirm_version.Location = new System.Drawing.Point(156, 242);
             this.lblFirm_version.Name = "lblFirm_version";
             this.lblFirm_version.Size = new System.Drawing.Size(44, 20);
             this.lblFirm_version.TabIndex = 6;
@@ -158,7 +158,7 @@ namespace PowerSDR
             this.labelTS1.AutoSize = true;
             this.labelTS1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelTS1.Image = null;
-            this.labelTS1.Location = new System.Drawing.Point(126, 78);
+            this.labelTS1.Location = new System.Drawing.Point(116, 78);
             this.labelTS1.Name = "labelTS1";
             this.labelTS1.Size = new System.Drawing.Size(125, 20);
             this.labelTS1.TabIndex = 4;
@@ -168,7 +168,7 @@ namespace PowerSDR
             // 
             this.lblPowerSDR.AutoSize = true;
             this.lblPowerSDR.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblPowerSDR.Location = new System.Drawing.Point(105, 54);
+            this.lblPowerSDR.Location = new System.Drawing.Point(95, 54);
             this.lblPowerSDR.Name = "lblPowerSDR";
             this.lblPowerSDR.Size = new System.Drawing.Size(167, 20);
             this.lblPowerSDR.TabIndex = 3;
@@ -182,13 +182,13 @@ namespace PowerSDR
             this.lblGenesis.Name = "lblGenesis";
             this.lblGenesis.Size = new System.Drawing.Size(279, 25);
             this.lblGenesis.TabIndex = 2;
-            this.lblGenesis.Text = "Genesis  1.1 by YT7PWR";
+            this.lblGenesis.Text = "Genesis  2.0 by YT7PWR";
             // 
             // lblFIRMWARE
             // 
             this.lblFIRMWARE.AutoSize = true;
             this.lblFIRMWARE.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblFIRMWARE.Location = new System.Drawing.Point(100, 213);
+            this.lblFIRMWARE.Location = new System.Drawing.Point(90, 213);
             this.lblFIRMWARE.Name = "lblFIRMWARE";
             this.lblFIRMWARE.Size = new System.Drawing.Size(177, 24);
             this.lblFIRMWARE.TabIndex = 1;

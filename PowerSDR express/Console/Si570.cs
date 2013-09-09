@@ -3,7 +3,7 @@
 //=================================================================
 //
 //  USB communication with External Si570(QRP2000 from www.sdr-kits.net)
-//  Copyright (C)2008,2009,2010,2011 YT7PWR Goran Radivojevic
+//  Copyright (C)2008-2011 YT7PWR Goran Radivojevic
 //  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 //
 // This program is free software; you can redistribute it and/or
