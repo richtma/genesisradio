@@ -561,7 +561,7 @@ namespace PowerSDR
 
     unsafe public partial class Console : System.Windows.Forms.Form
     {
-        const string GSDR_revision = "  v2.0.5";
+        const string GSDR_revision = "  v2.0.6";
         private CheckBoxTS chkG6ATT_18dB;
         private CheckBoxTS chkG6ATT_12dB;
 
