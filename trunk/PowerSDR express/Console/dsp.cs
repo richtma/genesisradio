@@ -97,9 +97,6 @@ namespace PowerSDR
 		#endregion
 
         #region Properties
-        // ======================================================
-        // Properties
-        // ======================================================
 
         private static FilterMode AF_filter_mode = FilterMode.PASS_BAND;
         public static FilterMode AFFilterMode
@@ -377,9 +374,6 @@ namespace PowerSDR
         #endregion
 
 		#region Dll Method Definitions
-		// ======================================================
-		// DLL Method Definitions
-		// ======================================================
 
         [DllImport("DttSP.dll", EntryPoint = "ResetRingBuffer")]
         public static extern void ResetRB(uint thread);
@@ -500,6 +494,9 @@ namespace PowerSDR
 
 		[DllImport("DttSP.dll", EntryPoint="PollTimerWait")]
 		public static extern void PollTimerWait();
+
+        [DllImport("DttSP.dll", EntryPoint = "TimerRead")]              // zt7pwr
+        public static extern double TimerRead();
 
 		[DllImport("DttSP.dll", EntryPoint="DeleteKeyer")]
 		public static extern void DeleteKeyer();
@@ -879,53 +876,75 @@ namespace PowerSDR
 
         #region Misc routines
 
-        public static void Init()
+        public static bool Init()
         {
-            block_size = 2048;
-            SetupSDR(Application.StartupPath.ToString() + "\\wisdom");
-            ReleaseUpdate();
-            SetSampleRate(48000.0);
+            try
+            {
+                block_size = 2048;
+                SetupSDR(Application.StartupPath.ToString() + "\\wisdom");
+                ReleaseUpdate();
+                SetSampleRate(48000.0);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+                return false;
+            }
         }
 
         public static void SetFilterSubRX(int low, int high)
         {
-            rx_filter_low_cut_subRX = low;
-            rx_filter_high_cut_subRX = high;
-            if (not_pan) UpdateRXDisplayVars();
-
-            int i = 0;
-            if (rx_filter_high_cut_subRX - rx_filter_low_cut_subRX >= 10)
+            try
             {
-                i = DttSP.SetRXFilter(0, 1, rx_filter_low_cut_subRX, rx_filter_high_cut_subRX);
-            }
+                rx_filter_low_cut_subRX = low;
+                rx_filter_high_cut_subRX = high;
+                if (not_pan) UpdateRXDisplayVars();
 
-            /*if (i != 0)
-                MessageBox.Show("Error in DttSP.SetRXFilterSubRX: " + i);*/
+                int i = 0;
+                if (rx_filter_high_cut_subRX - rx_filter_low_cut_subRX >= 10)
+                {
+                    i = DttSP.SetRXFilter(0, 1, rx_filter_low_cut_subRX, rx_filter_high_cut_subRX);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         public static void SetNotchFilter(int low, int high)
         {
-            int i = 0;
-            if (high - low >= 10)
+            try
             {
-                i = DttSP.SetRXLowPassFilter(0, 0, Math.Abs(low));
-                i = DttSP.SetRXHighPassFilter(0, 0, Math.Abs(high));
+                int i = 0;
+                if (high - low >= 10)
+                {
+                    i = DttSP.SetRXLowPassFilter(0, 0, Math.Abs(low));
+                    i = DttSP.SetRXHighPassFilter(0, 0, Math.Abs(high));
+                }
             }
-
-            /*if (i != 0)
-                MessageBox.Show("Error in DttSP.SetRXNotchFilters (SetFilter): " + i);*/
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         public static void SetStopBandFilter(int low, int high)
         {
-            int i = 0;
-            if (high - low >= 10)
+            try
             {
-                i = DttSP.SetRXStopBandFilter(0, 0, low, high);
+                int i = 0;
+                if (high - low >= 10)
+                {
+                    i = DttSP.SetRXStopBandFilter(0, 0, low, high);
+                }
             }
-
-            /*if (i != 0)
-                MessageBox.Show("Error in DttSP.SetRXNotchFilters (SetFilter): " + i);*/
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         public static void SetFilter(int low, int high)     // changes yt7pwr

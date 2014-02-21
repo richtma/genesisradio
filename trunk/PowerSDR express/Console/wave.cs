@@ -936,19 +936,36 @@ namespace PowerSDR
 		{
             try
             {
+                string file_name = "";
+                string file = "";
+
                 if (checkBoxRecord.Checked && console.chkPower.Checked)
                 {
                     checkBoxRecord.BackColor = console.ButtonSelectedColor;
+
                     if (!Directory.Exists(Application.StartupPath + "\\Recordings"))
                         Directory.CreateDirectory(Application.StartupPath + "\\Recordings");
-                    string file_name = "";
-                    file_name += Math.Round(console.LOSCFreq, 3).ToString("f3") + "MHz ";
-                    file_name += Audio.SampleRate1.ToString() + " ";
-                    file_name += DateTime.Now.ToString() + ".wav";
-                    file_name = file_name.Replace("/", "-");
-                    file_name = file_name.Replace(":", " ");
-                    string file = Application.StartupPath + "\\Recordings\\" +
-                         console.CurrentDSPMode.ToString() + file_name;
+
+                    if (!Audio.RecordRXPreProcessed)
+                    {
+                        file_name += Math.Round(console.VFOAFreq, 3).ToString("f3") + "MHz ";
+                        file_name += DateTime.Now.ToString() + ".wav";
+                        file_name = file_name.Replace("/", "-");
+                        file_name = file_name.Replace(":", " ");
+                        file_name = file_name.Replace(",", ".");
+                        file = Application.StartupPath + "\\Recordings\\" +
+                             console.CurrentDSPMode.ToString() + " " + file_name;
+                    }
+                    else
+                    {
+                        file_name += Math.Round(console.LOSCFreq, 3).ToString("f3") + "MHz ";
+                        file_name += Audio.SampleRate1.ToString() + " ";
+                        file_name += DateTime.Now.ToString() + ".wav";
+                        file_name = file_name.Replace("/", "-");
+                        file_name = file_name.Replace(":", " ");
+                        file = Application.StartupPath + "\\Recordings\\" +
+                             console.CurrentDSPMode.ToString() + " " + file_name;
+                    }
 
                     if ((console.CurrentModel == Model.RTL_SDR && !Audio.RecordRXPreProcessed) ||
                         (console.CurrentModel == Model.GENESIS_G6 && !Audio.RecordRXPreProcessed))
@@ -958,7 +975,7 @@ namespace PowerSDR
                 }
                 else
                 {
-                    string file_name = Audio.wave_file_writer.Stop();
+                    file_name = Audio.wave_file_writer.Stop();
                     checkBoxRecord.BackColor = SystemColors.Control;
                     MessageBox.Show("The file has been written to the following location:\n" + file_name);
                 }
@@ -1453,8 +1470,16 @@ namespace PowerSDR
 
 		public string Stop()
 		{
-			record = false;
-			return filename;
+            try
+            {
+                record = false;
+                return filename;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+                return "Error";
+            }
 		}
 
         private void WriteBuffer(ref BinaryWriter writer, ref int count)

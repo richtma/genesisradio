@@ -535,7 +535,7 @@ namespace PowerSDR
                                 3.630001, 3.650000, "80M All/SSB contest",		true,
 								3.650001, 3.689999, "80M All modes",        	true,
                                 3.690000, 3.690000, "80M SSB QRP",          	true,
-                                3.650001, 3.699999, "80M All modes",        	true,
+                                3.690001, 3.699999, "80M All modes",        	true,
 								3.700000, 3.734999, "80M All/SSB contest",  	true,
                                 3.735000, 3.735000, "80M Emergency",          	true,
                                 3.735001, 3.775000, "80M All/SSB contest",  	true,
@@ -1400,6 +1400,40 @@ namespace PowerSDR
                 dr["Low"] = (double)data[i * 3 + 0];
                 dr["High"] = (double)data[i * 3 + 1];
                 dr["Name"] = (string)data[i * 3 + 2];
+                t.Rows.Add(dr);
+            }
+        }
+
+        private static void AddQRP2000BandFiltersTable()   // yt7pwr
+        {
+            ds_band.Tables.Add("QRP2000BandFilters");
+            DataTable t = ds_band.Tables["QRP2000BandFilters"];
+
+            t.Columns.Add("Low", typeof(double));
+            t.Columns.Add("High", typeof(double));
+            t.Columns.Add("Filter", typeof(string));
+
+            object[] data = {
+                                1.0, 2.75, Band.B160M.ToString(),
+                                2.7500001, 5.2, Band.B80M.ToString(),
+                                5.200001, 5.5, Band.B60M.ToString(),
+                                5.500001, 8.7, Band.B40M.ToString(),
+                                8.700001, 12.75, Band.B30M.ToString(),
+                                12.750001, 16.209, Band.B20M.ToString(),
+                                16.209001, 19.584, Band.B17M.ToString(),
+                                19.584001, 23.17, Band.B15M.ToString(),
+                                23.170001, 26.495, Band.B12M.ToString(),
+                                26.495001, 30.0, Band.B10M.ToString(),
+                                49.9, 54.1, Band.B6M.ToString(),
+                                144.0, 148.0, Band.B2M.ToString(),
+                             };
+
+            for (int i = 0; i < data.Length / 3; i++)
+            {
+                DataRow dr = t.NewRow();
+                dr["Low"] = (double)data[i * 3 + 0];
+                dr["High"] = (double)data[i * 3 + 1];
+                dr["Filter"] = (string)data[i * 3 + 2];
                 t.Rows.Add(dr);
             }
         }
@@ -2581,6 +2615,12 @@ namespace PowerSDR
                     result = false;
                 }
 
+                if (!ds_band.Tables.Contains("QRP2000BandFilters"))
+                {
+                    AddQRP2000BandFiltersTable();
+                    result = false;
+                }
+
                 if (!ds_band.Tables.Contains("G11BandFilters"))
                 {
                     AddG11BandFiltersTable();
@@ -2758,6 +2798,7 @@ namespace PowerSDR
                     AddIARU3BandTextTable();
                     AddBandLimitsTable();
                     AddG59BandFiltersTable();
+                    AddQRP2000BandFiltersTable();
                     AddG11BandFiltersTable();
                     AddG6BandFiltersTable();
                     ds_band.WriteXml(app_data_path + "\\" + "band_database.xml", XmlWriteMode.WriteSchema);
@@ -2870,6 +2911,14 @@ namespace PowerSDR
                     case Model.GENESIS_G6:
                         rows = ds_band.Tables["G6BandFilters"].Select(f + ">=Low AND " + f + "<=High");
                         break;
+
+                    case Model.QRP2000:
+                        rows = ds_band.Tables["QRP2000BandFilters"].Select(f + ">=Low AND " + f + "<=High");
+                        break;
+
+                    default:
+                        rows = ds_band.Tables["G59BandFilters"].Select(f + ">=Low AND " + f + "<=High");
+                        break;
                 }
 
                 if (rows.Length == 0)		// band not found
@@ -2881,78 +2930,6 @@ namespace PowerSDR
                 {
                     switch (radio)
                     {
-                        case Model.GENESIS_G59NET:
-                        case Model.GENESIS_G59USB:
-                        case Model.GENESIS_G11:
-                            {
-                                outBandFilter = Band.GEN;
-                                sBand = ((string)rows[0]["Filter"]);
-
-                                switch (sBand)
-                                {
-                                    case "B2190M":
-                                        outBandFilter = Band.B2190M;
-                                        break;
-
-                                    case "B600M":
-                                        outBandFilter = Band.B600M;
-                                        break;
-
-                                    case "B160M":
-                                        outBandFilter = Band.B160M;
-                                        break;
-
-                                    case "B80M":
-                                        outBandFilter = Band.B80M;
-                                        break;
-
-                                    case "B60M":
-                                        outBandFilter = Band.B60M;
-                                        break;
-
-                                    case "B40M":
-                                        outBandFilter = Band.B40M;
-                                        break;
-
-                                    case "B30M":
-                                        outBandFilter = Band.B30M;
-                                        break;
-
-                                    case "B20M":
-                                        outBandFilter = Band.B20M;
-                                        break;
-
-                                    case "B17M":
-                                        outBandFilter = Band.B17M;
-                                        break;
-
-                                    case "B15M":
-                                        outBandFilter = Band.B15M;
-                                        break;
-
-                                    case "B12M":
-                                        outBandFilter = Band.B12M;
-                                        break;
-
-                                    case "B10M":
-                                        outBandFilter = Band.B10M;
-                                        break;
-
-                                    case "B6M":
-                                        outBandFilter = Band.B6M;
-                                        break;
-
-                                    case "B2M":
-                                        outBandFilter = Band.B2M;
-                                        break;
-
-                                    case "WWV":
-                                        outBandFilter = Band.WWV;
-                                        break;
-                                }
-                            }
-                            break;
-
                         case Model.GENESIS_G6:
                             {
                                 outBandFilter = Band.B5;
@@ -3038,6 +3015,76 @@ namespace PowerSDR
                                 }
                                 break;
                             }
+
+                        default:
+                            {
+                                outBandFilter = Band.GEN;
+                                sBand = ((string)rows[0]["Filter"]);
+
+                                switch (sBand)
+                                {
+                                    case "B2190M":
+                                        outBandFilter = Band.B2190M;
+                                        break;
+
+                                    case "B600M":
+                                        outBandFilter = Band.B600M;
+                                        break;
+
+                                    case "B160M":
+                                        outBandFilter = Band.B160M;
+                                        break;
+
+                                    case "B80M":
+                                        outBandFilter = Band.B80M;
+                                        break;
+
+                                    case "B60M":
+                                        outBandFilter = Band.B60M;
+                                        break;
+
+                                    case "B40M":
+                                        outBandFilter = Band.B40M;
+                                        break;
+
+                                    case "B30M":
+                                        outBandFilter = Band.B30M;
+                                        break;
+
+                                    case "B20M":
+                                        outBandFilter = Band.B20M;
+                                        break;
+
+                                    case "B17M":
+                                        outBandFilter = Band.B17M;
+                                        break;
+
+                                    case "B15M":
+                                        outBandFilter = Band.B15M;
+                                        break;
+
+                                    case "B12M":
+                                        outBandFilter = Band.B12M;
+                                        break;
+
+                                    case "B10M":
+                                        outBandFilter = Band.B10M;
+                                        break;
+
+                                    case "B6M":
+                                        outBandFilter = Band.B6M;
+                                        break;
+
+                                    case "B2M":
+                                        outBandFilter = Band.B2M;
+                                        break;
+
+                                    case "WWV":
+                                        outBandFilter = Band.WWV;
+                                        break;
+                                }
+                            }
+                            break;
                     }
 
                     return true;
@@ -3060,6 +3107,36 @@ namespace PowerSDR
                 MessageBox.Show(e.Message + "\n\n\n" + e.StackTrace, "BandFilter Database Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
                 outBandFilter = Band.GEN;
+                return false;
+            }
+        }
+
+        public static bool GetBandLimitsEdges(ref double[] limits)
+        {
+            try
+            {
+                int i = 0;
+                DataRow[] rows = ds_band.Tables["BandLimits"].Select();
+
+                if (rows.Length == 0)		// no entries found
+                {                    
+                    return false;
+                }
+                else
+                {
+                    foreach (DataRow row in rows)
+                    {
+                        limits[i] = (double)row["Low"];
+                        limits[i+1] = (double)row["High"];
+                        i += 2;
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                Debug.Write(e.ToString());
                 return false;
             }
         }
@@ -3139,6 +3216,10 @@ namespace PowerSDR
 
                         case "B2M":
                             outBand = Band.B2M;
+                            break;
+
+                        case "B07M":
+                            outBand = Band.B07M;
                             break;
 
                         case "WWV":

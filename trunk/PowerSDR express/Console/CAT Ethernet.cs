@@ -258,11 +258,12 @@ namespace PowerSDR
 
                     if (client1.Connected)
                     {
-                        client1.Disconnect(true);
+                        client1.Shutdown(SocketShutdown.Both);
                         client1.Close();
                     }
                     if (client2.Connected)
                     {
+                        client2.Shutdown(SocketShutdown.Both);
                         client2.Disconnect(true);
                         client2.Close();
                     }
@@ -387,24 +388,44 @@ namespace PowerSDR
                     sock.Shutdown(SocketShutdown.Both);     // loost connection
                     sock.Close(1000);
 
-                    if (!client1.Connected)
+                    if (!client1.Connected && client1_connected)
+                    {
                         client1_connected = false;
-                    if (!client2.Connected)
+
+                        if (debug && !console.ConsoleClosing)
+                            console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                            "Client1 disconnected!");
+                    }
+                    if (!client2.Connected && client2_connected)
+                    {
                         client2_connected = false;
+
+                        if (debug && !console.ConsoleClosing)
+                            console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                            "Client2 disconnected!");
+                    }
                 }
             }
             catch (Exception ex)
             {
                 Debug.Write(ex.ToString());
 
-                if (!client1.Connected)
+                if (!client1.Connected && client1_connected)
+                {
                     client1_connected = false;
-                if (!client2.Connected)
+
+                    if (debug && !console.ConsoleClosing)
+                        console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                        "Client1 disconnected!");
+                }
+                if (!client2.Connected && client2_connected)
+                {
                     client2_connected = false;
 
-                if (debug && !console.ConsoleClosing)
-                    console.Invoke(new DebugCallbackFunction(console.DebugCallback),
-                    "Client disconnected!");
+                    if (debug && !console.ConsoleClosing)
+                        console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                        "Client disconnected!");
+                }
             }
         }
 
@@ -1422,7 +1443,7 @@ namespace PowerSDR
                         text = header + CATpassword +
                             "ZZPS;ZZAG;ZZBI;ZZCL;ZZTX;ZZCP;ZZCS;ZZDA;ZZNR;" +
                             "ZZFI;ZZGT;ZZID;ZZCM;ZZMD;ZZME;ZZSP;" +
-                            "ZZMT;ZZNB;ZZNL;ZZNM;ZZPA;ZZPL;ZZRF;" +
+                            "ZZMT;ZZNB;ZZNL;ZZNM;ZZPA;ZZPL;ZZRI;" +
                             "ZZRM;ZZSF;ZZSM0;ZZSO;ZZSQ;ZZST;ZZTH;ZZTL;ZZVN;" +
                             "ZZSO;ZZXF;ZZRS;ZZST;ZZSV;ZZCB;ZZVG;ZZAR;" +
                             "ZZFO;ZZFA;ZZFB;ZZPC;ZZS1;";
@@ -1433,6 +1454,7 @@ namespace PowerSDR
                     {
                         if (!once)
                         {
+                            client1.Shutdown(SocketShutdown.Both);
                             client1.Close();
                             once = true;
                         }

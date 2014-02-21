@@ -29,7 +29,6 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DatabaseEditorClass));
             this.btnAdd = new System.Windows.Forms.Button();
             this.btnRemove = new System.Windows.Forms.Button();
@@ -39,7 +38,6 @@
             this.btnFirst = new System.Windows.Forms.Button();
             this.btnUp = new System.Windows.Forms.Button();
             this.btnLast = new System.Windows.Forms.Button();
-            this.dataGridView = new DatabaseEditor.DBDataGridView();
             this.comboDatabaseTable = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
@@ -50,6 +48,7 @@
             this.btnOpenDatabase = new System.Windows.Forms.Button();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
+            this.dataGridView = new DatabaseEditor.DBDataGridView();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
             this.SuspendLayout();
             // 
@@ -141,29 +140,12 @@
             this.btnLast.UseVisualStyleBackColor = true;
             this.btnLast.Click += new System.EventHandler(this.btnLast_Click);
             // 
-            // dataGridView
-            // 
-            this.dataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridView.DefaultCellStyle = dataGridViewCellStyle1;
-            this.dataGridView.Location = new System.Drawing.Point(21, 75);
-            this.dataGridView.MultiSelect = false;
-            this.dataGridView.Name = "dataGridView";
-            this.dataGridView.Size = new System.Drawing.Size(492, 387);
-            this.dataGridView.TabIndex = 0;
-            // 
             // comboDatabaseTable
             // 
             this.comboDatabaseTable.FormattingEnabled = true;
-            this.comboDatabaseTable.Location = new System.Drawing.Point(242, 12);
+            this.comboDatabaseTable.Location = new System.Drawing.Point(230, 12);
             this.comboDatabaseTable.Name = "comboDatabaseTable";
-            this.comboDatabaseTable.Size = new System.Drawing.Size(118, 21);
+            this.comboDatabaseTable.Size = new System.Drawing.Size(144, 21);
             this.comboDatabaseTable.TabIndex = 9;
             this.toolTip.SetToolTip(this.comboDatabaseTable, "Select table");
             this.comboDatabaseTable.SelectedIndexChanged += new System.EventHandler(this.comboDatabaseTable_SelectedIndexChanged);
@@ -171,7 +153,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(174, 15);
+            this.label1.Location = new System.Drawing.Point(161, 15);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(63, 13);
             this.label1.TabIndex = 10;
@@ -243,11 +225,20 @@
             this.saveFileDialog.Filter = "XML file|*.xml| All files|*.*";
             this.saveFileDialog.FileOk += new System.ComponentModel.CancelEventHandler(this.saveFileDialog_FileOk);
             // 
+            // dataGridView
+            // 
+            this.dataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView.Location = new System.Drawing.Point(12, 72);
+            this.dataGridView.Name = "dataGridView";
+            this.dataGridView.Size = new System.Drawing.Size(510, 386);
+            this.dataGridView.TabIndex = 16;
+            // 
             // DatabaseEditorClass
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(534, 512);
+            this.Controls.Add(this.dataGridView);
             this.Controls.Add(this.btnExportDatabase);
             this.Controls.Add(this.btnOpenDatabase);
             this.Controls.Add(this.btnTableRemove);
@@ -263,14 +254,14 @@
             this.Controls.Add(this.btnSave);
             this.Controls.Add(this.btnRemove);
             this.Controls.Add(this.btnAdd);
-            this.Controls.Add(this.dataGridView);
             this.DoubleBuffered = true;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MaximumSize = new System.Drawing.Size(550, 550);
+            this.MinimizeBox = false;
             this.MinimumSize = new System.Drawing.Size(550, 550);
             this.Name = "DatabaseEditorClass";
-            this.Text = "Database Editor v1.2.1 by yt7pwr";
+            this.Text = "Database Editor v1.5 by yt7pwr";
             this.Load += new System.EventHandler(this.LoadForm);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).EndInit();
             this.ResumeLayout(false);
@@ -280,7 +271,6 @@
 
         #endregion
 
-        private DBDataGridView dataGridView;
         private System.Windows.Forms.Button btnAdd;
         private System.Windows.Forms.Button btnRemove;
         private System.Windows.Forms.Button btnSave;
@@ -299,6 +289,7 @@
         private System.Windows.Forms.Button btnTableRemove;
         private System.Windows.Forms.Button btnExportDatabase;
         private System.Windows.Forms.Button btnOpenDatabase;
+        private DBDataGridView dataGridView;
     }
 
     public class DBDataGridView : System.Windows.Forms.DataGridView

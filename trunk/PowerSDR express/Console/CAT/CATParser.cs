@@ -225,12 +225,7 @@ namespace PowerSDR
 
             // Abort if the overall string length is less than 3 (aa;)
             if (current_cat.Length < 3)
-                return Error1;
-
-            if (pCmdString.StartsWith("ZZAR"))
-            {
-
-            }
+                return ""; // Error1;
 
             goodcmd = CheckFormat();
 
@@ -318,6 +313,9 @@ namespace PowerSDR
                     case "FC":
                         break;
                     case "FD":
+                        break;
+                    case "FL":
+                        rtncmd = cmdlist.FL(suffix);
                         break;
                     case "FR":
                         rtncmd = cmdlist.FR(suffix);
@@ -412,6 +410,9 @@ namespace PowerSDR
                     case "PS":
                         rtncmd = cmdlist.PS(suffix);
                         break;
+                    case "PT":
+                        rtncmd = cmdlist.PT(suffix);
+                        break;
                     case "QC":
                         break;
                     case "QI":
@@ -427,6 +428,9 @@ namespace PowerSDR
                         break;
                     case "RD":
                         rtncmd = cmdlist.RD(suffix);
+                        break;
+                    case "RI":
+                        rtncmd = cmdlist.RI(suffix);
                         break;
                     case "RG":
                         rtncmd = cmdlist.RG(suffix);
@@ -514,18 +518,18 @@ namespace PowerSDR
                         break;
                 }
 
-                if (prefix != "ZZ")	// if this is a standard command
+                if (prefix != "ZZ")	                                    // if this is a standard command
                 {
                     // and it's not an error
                     if (rtncmd != Error1 && rtncmd != Error2 && rtncmd != Error3)
                     {
                         // if it has the correct length
                         if (rtncmd.Length == nAns && nAns > 0)
-                            rtncmd = prefix + rtncmd + ";";	// return the formatted CAT answer
-                        else if (nAns == -1 || rtncmd == "")	// no answer is required
+                            rtncmd = prefix + rtncmd + ";";	            // return the formatted CAT answer
+                        else if (nAns == -1 || rtncmd == "")	        // no answer is required
                             rtncmd = "";
                         else
-                            rtncmd = Error3;	// processing incomplete for some reason
+                            rtncmd = Error3;	                        // processing incomplete for some reason
                     }
                 }
             }
@@ -775,6 +779,9 @@ namespace PowerSDR
                     break;
                 case "ZZDM":
                     rtncmd = cmdlist.ZZDM(suffix);
+                    break;
+                case "ZZDU":
+                    rtncmd = cmdlist.ZZDU(suffix);
                     break;
                 case "ZZDX":
                     rtncmd = cmdlist.ZZDX(suffix);
@@ -1124,6 +1131,9 @@ namespace PowerSDR
                     break;
                 case "ZZZZ":
                     rtncmd = cmdlist.ZZZZ();
+                    break;
+                case "ZZUB":                    // USB status
+                    rtncmd = cmdlist.ZZUB(suffix);
                     break;
             }
 

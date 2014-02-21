@@ -88,7 +88,10 @@ namespace PowerSDR
                 run_client = false;
 
                 if (CliendSocket != null)
-                    CliendSocket.Disconnect(true);
+                {
+                    CliendSocket.Shutdown(SocketShutdown.Both);
+                    CliendSocket.Close();
+                }
 
                 Debug.Write("Disconnected! \n");
             }

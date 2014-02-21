@@ -101,7 +101,9 @@ namespace PowerSDR
         public bool connected = false;
         public delegate void AudioCallbackFunction(float* in_l, float* in_r, float* out_l, float* out_r, int count);
         static AudioCallbackFunction audio_callback;
+        public delegate void DebugCallbackFunction(string msg);
         int BufferSize = 0;
+        public bool debug = false;
 
         #endregion
 
@@ -141,6 +143,9 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
+                if (debug && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback), "StartHW error: \n" + ex.ToString());
+
                 Debug.Write(ex.ToString());
             }
         }
@@ -206,6 +211,9 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
+                if (debug && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback), "InitUSB error: \n" + ex.ToString());
+
                 Debug.Write("Error while RTL_SDR init!\n",
                     "Error!\n" + ex.ToString());
                 return false;
@@ -221,10 +229,13 @@ namespace PowerSDR
 
                 connected = false;
             }
-            catch
+            catch(Exception ex)
             {
+                if (debug && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback), "CloseUSB error: \n" + ex.ToString());
+
                 Debug.Write("Error while closing USB connection!\n",
-                    "Error!");
+                    "Error!" + ex.ToString() + "\n");
             }
         }
 
@@ -239,6 +250,9 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
+                if (debug && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback), "SetLOSC error: \n" + ex.ToString());
+
                 Debug.Write("Error setting new frequency!\nValue is wrong!\n",
                     "Error!\n" + ex.ToString());
             }
@@ -252,6 +266,9 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
+                if (debug && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback), "SetAGCgain error: \n" + ex.ToString());
+
                 Debug.Write("Error setting new AGC gain!\nValue is wrong!\n",
                     "Error!\n" + ex.ToString());
             }
@@ -265,6 +282,9 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
+                if (debug && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback), "GetAGCgain error: \n" + ex.ToString());
+
                 Debug.Write("Error getting AGC gain!\nValue is wrong!\n",
                     "Error!\n" + ex.ToString());
                 return -1;
@@ -279,6 +299,9 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
+                if (debug && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback), "SetAGCmode error: \n" + ex.ToString());
+
                 Debug.Write("Error setting new AGC mode!\nValue is wrong!\n",
                     "Error!\n" + ex.ToString());
             }
@@ -294,6 +317,9 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
+                if (debug && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback), "GetAGCmode error: \n" + ex.ToString());
+
                 Debug.Write("Error getting AGC mode!\n",
                     "Error!\n" + ex.ToString());
 
@@ -301,7 +327,7 @@ namespace PowerSDR
             }
         }
 
-        public void SetFrquencyOffset(int offset)
+        public void SetFrequencyOffset(int offset)
         {
             try
             {
@@ -309,6 +335,9 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
+                if (debug && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback), "SetFrequencyOffset error: \n" + ex.ToString());
+
                 Debug.Write("Error setting new Frequency offset!\nValue is wrong!\n",
                     "Error!\n" + ex.ToString());
             }
@@ -323,6 +352,9 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
+                if (debug && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback), "SetSampleRate error: \n" + ex.ToString());
+
                 Debug.Write(ex.ToString());
             }
         }
@@ -339,6 +371,9 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
+                if (debug && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback), "SetBufferSize error: \n" + ex.ToString());
+
                 Debug.Write(ex.ToString());
             }
         }
@@ -352,6 +387,9 @@ namespace PowerSDR
             }
             catch(Exception ex)
             {
+                if (debug && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback), "QRP2000: \n" + ex.ToString());
+
                 Debug.Write("Error in StopHW!\n",
                     "Error!\n" + ex.ToString());
             }

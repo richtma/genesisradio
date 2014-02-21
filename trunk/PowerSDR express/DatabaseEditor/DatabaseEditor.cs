@@ -521,8 +521,21 @@ namespace DatabaseEditor
                 if (open_table)
                 {
                     string file = openFileDialog.FileName;
-                    string table = comboDatabaseTable.Text;
-                    DB.ImportTable(file, table);
+                    string table_name = "";
+
+                    if (DB.CheckImportTable(file, out table_name))      // check if valid one table exist!
+                    {
+                        if (DB.ImportTable(file, table_name))
+                        {
+                            string[] tables;
+                            DB.GetTableNames(out tables);
+                            comboDatabaseTable.Items.Clear();
+
+                            foreach (string str in tables)
+                                comboDatabaseTable.Items.Add(str);
+                        }
+                    }
+
                     comboDatabaseTable_SelectedIndexChanged(this, EventArgs.Empty);  // refresh table view
 
                     if (!database_changed)

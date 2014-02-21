@@ -24,7 +24,6 @@
 
 using System;
 using System.Threading;
-//using SerialPorts;
 using System.Diagnostics;
 using System.IO.Ports;
 
@@ -33,12 +32,16 @@ namespace SDRSerialSupportII
 	public class SDRSerialPort
 	{
 		public static event SDRSerialSupportII.SerialRXEventHandler serial_rx_event;
-		
 		private SerialPort commPort; 		
 		private bool isOpen = false; 
-		private bool bitBangOnly = false; 
-						
-		public enum Parity
+		private bool bitBangOnly = false;
+        public AutoResetEvent rx_event = new AutoResetEvent(false);
+        public bool run;
+
+
+        #region properties
+
+        public enum Parity
 		{
 			FIRST = -1,
 			NONE, ODD, EVEN, MARK, SPACE
@@ -82,15 +85,17 @@ namespace SDRSerialSupportII
             return HandshakeBits.None;
         }
 
-		public SDRSerialPort(int portidx)
+        #endregion
+
+        #region constructor
+
+        public SDRSerialPort(int portidx)
 		{
+            run = true;
 			commPort = new SerialPort();
 			commPort.Encoding = System.Text.Encoding.ASCII;
-			//commPort.ErrorEvent += new SerialPorts.SerialEventHandler(this.SerialPortErrorEvent);
             commPort.ErrorReceived += new SerialErrorReceivedEventHandler(this.SerialPortErrorEvent);
-			//commPort.ReceivedEvent += new SerialPorts.SerialEventHandler(this.SerialPortReceivedEvent);
             commPort.DataReceived += new  SerialDataReceivedEventHandler(this.SerialPortReceivedEvent);
-			//commPort.PinChangedEvent += new SerialPorts.SerialEventHandler(this.SerialPortPinChangedEvent);
             commPort.PinChanged += new SerialPinChangedEventHandler(this.SerialPortPinChangedEvent);
 
 			commPort.PortName = "COM" + portidx.ToString(); 
@@ -102,8 +107,12 @@ namespace SDRSerialSupportII
 			commPort.ReadTimeout = 5000;
 			commPort.WriteTimeout = 500;
 			commPort.ReceivedBytesThreshold = 1;
-		}
-		// set the comm parms ... can only be done if port is not open -- silently fails if port is open (fixme -- add some error checking) 
+            commPort.Handshake = Handshake.None;
+        }
+
+        #endregion
+
+        // set the comm parms ... can only be done if port is not open -- silently fails if port is open (fixme -- add some error checking) 
 		// 
 		public void setCommParms(int baudrate, Parity p, DataBits data, StopBits stop, HandshakeBits h)  
 		{ 
@@ -174,6 +183,10 @@ namespace SDRSerialSupportII
                 case HandshakeBits.XOnXOff:
                     commPort.Handshake = Handshake.XOnXOff;
                     break;
+
+                case HandshakeBits.None:
+                    commPort.Handshake = Handshake.None;
+                    break;
             }
 		}
 		
@@ -202,25 +215,39 @@ namespace SDRSerialSupportII
 		public int Create(bool bit_bang_only) 
 		{ 
 			bitBangOnly = bit_bang_only; 
-			if ( isOpen ){ return -1; }
-			commPort.Open();  
-			isOpen = commPort.IsOpen; 			
 			if ( isOpen )
-                return 0; // all is well
-			else
-				return -1;  //error
+                return -1;
+
+			commPort.Open();  
+			isOpen = commPort.IsOpen;
+
+            if (isOpen)
+            {
+                run = true;
+                return 0;   // all is well
+            }
+            else
+            {
+                run = false;
+                return -1;  //error
+            }
 		}				  
 				  
 		public void Destroy()
 		{
 			try 
             {
+                run = false;
+                rx_event.WaitOne();
+                commPort.DiscardInBuffer();
+                commPort.DiscardOutBuffer();
 				commPort.Close(); 
 			}
 			catch(Exception)
 			{
 
 			}
+
 			isOpen = false;
 		}
 
@@ -262,10 +289,17 @@ namespace SDRSerialSupportII
 		{
             try
             {
-                int num_to_read = commPort.BytesToRead;  // InBufferBytes;
-                byte[] inbuf = new byte[num_to_read];
-                commPort.Read(inbuf, 0, num_to_read);
-                serial_rx_event(this, new SDRSerialSupportII.SerialRXEvent(inbuf, (uint)num_to_read));
+                //rx_event.WaitOne(1000);
+
+                if (run)
+                {
+                    int num_to_read = commPort.BytesToRead;  // InBufferBytes;
+                    byte[] inbuf = new byte[num_to_read];
+                    commPort.Read(inbuf, 0, num_to_read);
+                    serial_rx_event(this, new SDRSerialSupportII.SerialRXEvent(inbuf, (uint)num_to_read));
+                }
+                else
+                    rx_event.Set();
             }
             catch (Exception ex)
             {

@@ -22,7 +22,7 @@
 
 /*
  *  Changes for GenesisRadio
- *  Copyright (C)2010,2011,2012 YT7PWR Goran Radivojevic
+ *  Copyright (C)2010-2013 YT7PWR Goran Radivojevic
  *  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 */
 
@@ -95,7 +95,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)	// if this is a read command
+            else if (s.Length == parser.nGet || s.Length == 0)	// if this is a read command
             {
                 int af = (int)Math.Round(console.AF / 0.392, 0);
                 //				return AddLeadingZeros(console.AF);		// Get the console setting
@@ -183,16 +183,18 @@ namespace PowerSDR
         // Sets or reads the frequency of LOSC  yt7pwr
         public string FL(string s)
         {
-            if (s.Length == parser.nSet)
+            /*if (s.Length == parser.nSet)
             {
                 s = s.Insert(5, separator);
                 console.LOSCFreq = double.Parse(s);
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
                 return StrVFOFreq("L");
             else
-                return parser.Error1;
+                return parser.Error1;*/
+
+            return ZZFO(s);
         }
 
         // Sets VFO A to control rx
@@ -204,7 +206,7 @@ namespace PowerSDR
             {
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
                 return "0";
             else
                 return parser.Error1;
@@ -233,7 +235,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
                 return Filter2String(console.CurrentFilter);
             else
                 return parser.Error1;
@@ -290,7 +292,7 @@ namespace PowerSDR
             string rtn = "";
             string rit = "0";
             string xit = "0";
-            string incr;
+            string incr = "";
             string tx = "0";
             string tempmode = "";
             int ITValue = 0;
@@ -437,7 +439,7 @@ namespace PowerSDR
                     return "";
                 }
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 int ch = console.CWXForm.Characters2Send;
 
@@ -501,7 +503,7 @@ namespace PowerSDR
                 else
                     return parser.Error1;
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return Mode2KString(console.CurrentDSPMode);
 
@@ -523,7 +525,7 @@ namespace PowerSDR
                 s = AddLeadingZeros(mg);
                 return ZZMG(s);
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 s = ZZMG("");
                 n = Convert.ToInt32(s);
@@ -581,6 +583,12 @@ namespace PowerSDR
             return ZZPS(s);
         }
 
+        // Sets or reads the PITCH
+        public string PT(string s)
+        {
+            return ZZCL(s);
+        }
+
         // Sets the Quick Memory with the current contents of VFO A
         public string QI()
         {
@@ -607,6 +615,12 @@ namespace PowerSDR
         public string RD(string s)
         {
             return ZZRD(s);
+        }
+
+        // Read/Set RIT value
+        public string RI(string s)
+        {
+            return ZZRF(s);
         }
 
         // RF gain level
@@ -636,7 +650,7 @@ namespace PowerSDR
             if (!console.ConsoleClosing)
                 console.Invoke(new CATCrossThreadCallback(console.CATCallback), "MOX", 0, parm2, "");
 
-            return "";  // ZZTX("0");
+            return "";
         }
 
         // Sets or reads the variable DSP filter high side
@@ -647,7 +661,7 @@ namespace PowerSDR
                 SetFilter(s, "SH");
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 switch (console.CurrentDSPMode)
                 {
@@ -682,7 +696,7 @@ namespace PowerSDR
                 SetFilter(s, "SL");
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 switch (console.CurrentDSPMode)
                 {
@@ -718,14 +732,15 @@ namespace PowerSDR
             if (s == "0" || s == "2")	// read the main transceiver s meter
             {
                 float num = 0f;
+
                 if (console.PowerOn)
                     num = DttSP.CalculateRXMeter(0, 0, DttSP.MeterType.SIGNAL_STRENGTH);
-                num = num + console.MultimeterCalOffset;
 
+                num = num + console.MultimeterCalOffset;
                 num = Math.Max(-140, num);
                 num = Math.Min(-10, num);
-
                 sx = (num + 127) / 6;
+
                 if (sx < 0) sx = 0;
 
                 if (sx <= 9.0F)
@@ -737,6 +752,7 @@ namespace PowerSDR
                     double over_s9 = num + 73;
                     sm = 15 + (int)over_s9;
                 }
+
                 if (sm < 0) sm = 0;
                 if (sm > 30) sm = 30;
 
@@ -772,7 +788,7 @@ namespace PowerSDR
                 //console.SquelchMainRX = Convert.ToInt32(Math.Round(level,0));
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return rx + AddLeadingZeros(console.SquelchMainRX).Substring(1);
             }
@@ -830,7 +846,7 @@ namespace PowerSDR
                 else
                     return parser.Error1;
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 step = console.StepSizeSubRX;
                 return AddLeadingZeros(step);
@@ -857,10 +873,11 @@ namespace PowerSDR
                 else
                     return parser.Error1;
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 step = console.StepSize;
-                return AddLeadingZeros(step);
+                string answer = step.ToString().PadLeft(2, '0');
+                return answer;
             }
             else
                 return parser.Error1;
@@ -905,9 +922,10 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)	// if this is a read command
+            else if (s.Length == parser.nGet || s.Length == 0)	// if this is a read command
             {
-                return AddLeadingZeros(console.AF);		// Get the console setting
+                string answer = console.AF.ToString().PadLeft(3, '0');
+                return answer;
             }
             else
             {
@@ -935,7 +953,7 @@ namespace PowerSDR
 
                     return "";
                 }
-                else if (s.Length == parser.nGet)
+                else if (s.Length == parser.nGet || s.Length == 0)
                 {
                     if (console.KWAutoInformation)
                         return "1";
@@ -972,15 +990,11 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 x = console.RF;
-                if (x >= 0)
-                    sign = "+";
-                else
-                    sign = "-";
                 // we have to remove the leading zero and replace it with the sign.
-                return sign + AddLeadingZeros(Math.Abs(x)).Substring(1);
+                return AddLeadingZeros(x);
             }
             else
             {
@@ -1035,7 +1049,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return console.CATBandGroup.ToString();
             }
@@ -1057,7 +1071,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return console.CATBIN.ToString();
             }
@@ -1155,7 +1169,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 if (console.BreakInEnabled)
                     return "1";
@@ -1187,7 +1201,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return AddLeadingZeros((int)console.SetupForm.BreakInDelay);
             }
@@ -1220,7 +1234,7 @@ namespace PowerSDR
 
                         return "";
                     }
-                    else if (s.Length == parser.nGet)
+                    else if (s.Length == parser.nGet || s.Length == 0)
                     {
                         if (console.ShowCWTXFreq)
                             return "1";
@@ -1254,7 +1268,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 if (console.CWIambic)
                     return "1";
@@ -1284,7 +1298,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return AddLeadingZeros(console.SetupForm.CATCWPitch);
             }
@@ -1312,7 +1326,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 if (console.CATCWMonitor == "1")
                     return "1";
@@ -1343,7 +1357,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return console.CATCmpd.ToString();
             }
@@ -1370,7 +1384,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return AddLeadingZeros(console.CATCWSpeed);
             }
@@ -1399,7 +1413,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return AddLeadingZeros((int)console.CPDRVal);
             }
@@ -1413,7 +1427,8 @@ namespace PowerSDR
         // Reads the CPU Usage
         public string ZZCU()
         {
-            return console.CpuUsage.ToString("f").PadLeft(6, '0');
+            string answer = console.CpuUsage.ToString("f").PadLeft(6, '0');
+            return answer;
         }
 
         // Sets or reads the Display Average status
@@ -1428,7 +1443,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return console.CATDisplayAvg.ToString();
             }
@@ -1459,15 +1474,43 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
-                return ((int)console.CurrentDisplayMode).ToString();
+                string answer = ((int)console.CurrentDisplayMode).ToString();
+                return answer;
             }
             else
             {
                 return parser.Error1;
             }
 
+        }
+
+        /// <summary>
+        /// Reads DDUtil command word
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        public string ZZDU(string s)
+        {
+            if (s.Length == parser.nSet)
+            {
+                return "Set not allowed!";
+            }
+            else if (s.Length == parser.nGet)
+            {
+                string answer = "ZZDU";
+                answer += ZZSW(s) + ":" + ZZSP(s) + ":" + ZZTU(s) + ":" + ZZTX(s) + ":" + "0:" + "0:" +
+                    "0:" + "0:" + ZZRT(s) + ":" + ZZDM(s) + ":" + ZZGT(s) + ":" + ZZMU(s) + ":" + ZZXS(s) +
+                    ":" + ZZAC(s) + ":" + ZZMD(s) + ":" + ZZME(s) + ":" + ZZFJ(s) + ":" +
+                    ZZFI(s) + ":" + "000:" + ZZBS(s) + ":" + ZZPC(s) + ":" + ZZBS(s) + ":" + ZZAG(s) + ":" +
+                    ZZKS(s) + ":" + ZZTO(s) + ":" + "0012:" + ZZSM(s) + ":" + ZZRF(s) + ":" + ZZTS(s) + ":" +
+                    ZZXF(s) + ":" + ZZCU() + ":" + ZZFA(s) + ":" + ZZFB(s) + ";";
+
+                return answer;
+            }
+            else
+                return parser.Error1;
         }
 
         /// <summary>
@@ -1486,7 +1529,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return console.CATPhoneDX;
             }
@@ -1525,7 +1568,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 int[] eqarray = console.EQForm.RXEQ;			//Get the equalizer array
                 int nb = 10;                    				//Get the number of bands in the array
@@ -1569,7 +1612,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 int[] eqarray = console.EQForm.TXEQ;			//Get the equalizer array
                 int nb = 10;                    				//Get the number of bands in the array
@@ -1611,7 +1654,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return console.CATRXEQ;
             }
@@ -1637,7 +1680,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return console.CATTXEQ;
             }
@@ -1671,7 +1714,7 @@ namespace PowerSDR
 
                 return "ZZF11;";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 string result = "false";
 
@@ -1723,7 +1766,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 string result = "false";
 
@@ -1775,7 +1818,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 string result = "false";
 
@@ -1827,7 +1870,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 string result = "false";
 
@@ -1878,7 +1921,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 string result = "false";
 
@@ -1930,7 +1973,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 string result = "false";
 
@@ -2021,7 +2064,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
                 return StrVFOFreq("A");
             else
                 return parser.Error1;
@@ -2052,7 +2095,7 @@ namespace PowerSDR
                 console.cat_vfob = false;
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
                 return StrVFOFreq("B");
             else
                 return parser.Error1;
@@ -2072,7 +2115,7 @@ namespace PowerSDR
                 console.cat_losc = false;
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 int f = Convert.ToInt32(Math.Round(console.CATLOSC, 6) * 1e6);
                 return AddLeadingZeros(f);
@@ -2104,9 +2147,10 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
-                return AddLeadingZeros((int)console.CurrentFilter);
+                string answer = ((int)console.CurrentFilter).ToString().PadLeft(2, '0');
+                return answer;
             }
             else
             {
@@ -2136,9 +2180,10 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
-                return AddLeadingZeros((int)console.CurrentFilterSubRX);
+                string answer = ((int)console.CurrentFilterSubRX).ToString().PadLeft(2, '0');
+                return answer;
             }
             else
             {
@@ -2168,7 +2213,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 n = console.FilterLowValue;
                 if (n < 0)
@@ -2206,7 +2251,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 n = console.FilterHighValue;
                 if (n < 0)
@@ -2223,7 +2268,9 @@ namespace PowerSDR
 
         public string ZZFM()
         {
-            string radio = console.CurrentModel.ToString();
+            return "0";
+
+            /*string radio = console.CurrentModel.ToString();
 
             if (radio == "GENESIS_G59USB")
                 return "0";
@@ -2239,8 +2286,10 @@ namespace PowerSDR
                 return "5";
             else if (radio == "GENESIS_G6")
                 return "6";
+            else if (radio == "GENESIS_G11")
+                return "7";
             else
-                return parser.Error1;
+                return parser.Error1;*/
         }
 
         #endregion Extended CAT Methods ZZA-ZZF
@@ -2265,7 +2314,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 if (console.AF_button)
                     return "1";
@@ -2296,7 +2345,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 if (console.RF_button)
                     return "1";
@@ -2327,7 +2376,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 if (console.ATT_button)
                     return "1";
@@ -2358,7 +2407,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 if (console.NoiseGateEnabled)
                     return "1";
@@ -2394,7 +2443,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 x = console.NoiseGate;
                 if (x >= 0)
@@ -2413,13 +2462,18 @@ namespace PowerSDR
         // Sets or reads the AGC constant
         public string ZZGT(string s)
         {
-#if !DEBUG
 			if(s.Length == parser.nSet)
 			{
-				if((Convert.ToInt32(s) > (int) AGCMode.FIRST && Convert.ToInt32(s) < (int) AGCMode.LAST))
-					console.CurrentAGCMode = (AGCMode) Convert.ToInt32(s);
-				else
-					return parser.Error1;
+                int[] parm2 = new int[1];
+
+                if ((Convert.ToInt32(s) > (int)AGCMode.FIRST && Convert.ToInt32(s) < (int)AGCMode.LAST))
+                {
+                    if (!console.ConsoleClosing)
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "AGC mode",
+                        Convert.ToInt32(s), parm2, "");
+                }
+                else
+                    return parser.Error1;
 
 				return "";
 			}
@@ -2431,8 +2485,6 @@ namespace PowerSDR
 			{
 				return parser.Error1;
 			}
-#endif
-            return "0";
         }
 
         // Sets or reads the Audio Buffer Size
@@ -2448,7 +2500,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return Width2Index(console.SetupForm.DSPBufferSize);
             }
@@ -2669,7 +2721,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return AddLeadingZeros(console.CATFilterWidth);
             }
@@ -2697,7 +2749,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 n = console.CATFilterShift;
                 if (n >= 0)
@@ -2790,9 +2842,10 @@ namespace PowerSDR
                 return "";
 
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
-                return AddLeadingZeros(console.CWXForm.WPM);
+                string answer = console.CWXForm.WPM.ToString().PadLeft(3, '0');
+                return answer;
             }
             else
                 return parser.Error1;
@@ -2853,7 +2906,7 @@ namespace PowerSDR
                     return "";
                 }
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 int ch = console.CWXForm.Characters2Send;
                 if (ch > 0 && ch < 72)
@@ -2887,7 +2940,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 bool retval = console.MUT;
                 if (retval)
@@ -2919,7 +2972,7 @@ namespace PowerSDR
                 else
                     return parser.Error1;
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return Mode2String(console.CurrentDSPMode);
             }
@@ -2946,7 +2999,7 @@ namespace PowerSDR
                 else
                     return parser.Error1;
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return Mode2String(console.CurrentDSPModeSubRX);
             }
@@ -2977,7 +3030,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return AddLeadingZeros(console.CATMIC);
             }
@@ -3003,7 +3056,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 bool retval = console.MON;
                 if (retval)
@@ -3028,7 +3081,7 @@ namespace PowerSDR
                 String2RXMeter(m);
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return RXMeter2String();
             }
@@ -3057,7 +3110,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return console.CATPanSwap;
             }
@@ -3083,7 +3136,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return console.CATSubRX;
             }
@@ -3104,7 +3157,7 @@ namespace PowerSDR
                 String2TXMeter(m);
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return TXMeter2String().PadLeft(2, '0');		//Added padleft 4/2/2007 BT
             }
@@ -3130,7 +3183,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return console.CATNB1.ToString();
             }
@@ -3152,7 +3205,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return console.CATNB2.ToString();
             }
@@ -3175,7 +3228,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return AddLeadingZeros(console.SetupForm.CATNB1Threshold);
             }
@@ -3198,7 +3251,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return AddLeadingZeros(console.SetupForm.CATNB2Threshold);
             }
@@ -3227,7 +3280,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return console.CATNR.ToString();
             }
@@ -3249,7 +3302,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return console.CATANF.ToString();
             }
@@ -3275,7 +3328,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 rf = console.RF;
                 rf = (int)((rf + 20) * 255 / 140);
@@ -3302,9 +3355,10 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
-                return AddLeadingZeros((int)console.PWR);
+                string answer = console.PWR.ToString().PadLeft(3, '0');
+                return answer;
             }
             else
             {
@@ -3340,7 +3394,7 @@ namespace PowerSDR
                 }
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 bool comp = console.COMP;
                 if (comp)
@@ -3366,7 +3420,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return AddLeadingZeros(console.SetupForm.CATCompThreshold);
             }
@@ -3389,7 +3443,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return console.CATDispPeak;
             }
@@ -3415,9 +3469,10 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 bool pwr = console.PowerOn;
+
                 if (pwr)
                     return "1";
                 else
@@ -3441,7 +3496,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return console.CATDispZoom;
             }
@@ -3494,7 +3549,7 @@ namespace PowerSDR
                                     console.SetupForm.RttyOffsetEnabledA = true;*/
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 bool ans = console.SetupForm.RttyOffsetEnabledA;
                 if (ans)
@@ -3519,7 +3574,7 @@ namespace PowerSDR
                                     console.SetupForm.RttyOffsetEnabledB = true;*/
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 bool ans = console.SetupForm.RttyOffsetEnabledB;
                 if (ans)
@@ -3568,6 +3623,7 @@ namespace PowerSDR
                             console.Invoke(new CATCrossThreadCallback(console.CATCallback), "RIT Down", 50, parm2, "");
                         break;
                 }
+
                 return "";
             }
             else
@@ -3579,7 +3635,7 @@ namespace PowerSDR
         {
             int n = 0;
             int x = 0;
-            string sign;
+            string sign = "";
 
             if (s != "")
             {
@@ -3597,15 +3653,17 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 x = console.RITValue;
+
                 if (x >= 0)
                     sign = "+";
                 else
                     sign = "-";
+
                 // we have to remove the leading zero and replace it with the sign.
-                return sign + AddLeadingZeros(Math.Abs(x)).Substring(1);
+                return sign + Convert.ToString(Math.Abs(x)).PadLeft(4, '0');
             }
             else
             {
@@ -3637,7 +3695,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 x = console.SetupForm.RttyOffsetHigh;
                 if (x >= 0)
@@ -3677,7 +3735,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 x = console.SetupForm.RttyOffsetLow;
                 if (x >= 0)
@@ -3762,7 +3820,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 if (console.EnableSubRX)
                     return "1";
@@ -3793,7 +3851,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 bool rit = console.RITOn;
                 if (rit)
@@ -3929,11 +3987,12 @@ namespace PowerSDR
         {
             int sm = 0;
 
-            if (s == "0" || s == "1")	// read the main transceiver s meter
+            if (s == "0" || s == "1" || s == "")	// read the main transceiver s meter
             {
                 float num = 0f;
+
                 if (console.PowerOn)
-                    if (s == "0")
+                    if (s == "0" || s == "")
                         num = DttSP.CalculateRXMeter(0, 0, DttSP.MeterType.SIGNAL_STRENGTH);
                     else
                         num = DttSP.CalculateRXMeter(0, 1, DttSP.MeterType.SIGNAL_STRENGTH);
@@ -3971,7 +4030,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 bool retval = console.VFOSplit;
                 if (!retval)
@@ -3998,7 +4057,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return console.CATSquelch.ToString();
             }
@@ -4018,7 +4077,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return console.CATSquelchSubRX.ToString();
             }
@@ -4043,7 +4102,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return AddLeadingZeros(console.SquelchMainRX);
             }
@@ -4070,7 +4129,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return AddLeadingZeros(console.SquelchSubRX);
             }
@@ -4102,7 +4161,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 int step = console.StepSize;
                 return Step2String(step);
@@ -4123,7 +4182,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 int step = console.StepSizeSubRX;
                 return Step2String(step);
@@ -4161,7 +4220,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 bool retval = console.SplitAB_TX;
                 if (retval)
@@ -4202,7 +4261,7 @@ namespace PowerSDR
 
                         return "";
                     }
-                    else if (s.Length == parser.nGet)
+                    else if (s.Length == parser.nGet || s.Length == 0)
                     {
                         if (console.ShowTXFilter)
                             return "1";
@@ -4232,7 +4291,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)	// if this is a read command
+            else if (s.Length == parser.nGet || s.Length == 0)	// if this is a read command
             {
                 return AddLeadingZeros(console.SetupForm.TXFilterHigh);
             }
@@ -4286,7 +4345,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)	// if this is a read command
+            else if (s.Length == parser.nGet || s.Length == 0)	// if this is a read command
             {
                 return AddLeadingZeros(console.SetupForm.TXFilterLow);
             }
@@ -4313,9 +4372,10 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)	// if this is a read command
+            else if (s.Length == parser.nGet || s.Length == 0)	// if this is a read command
             {
-                return AddLeadingZeros((int)console.SetupForm.TunePower);
+                string answer = console.SetupForm.TunePower.ToString().PadLeft(3, '0');
+                return answer;
             }
             else
             {
@@ -4341,9 +4401,24 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return AddLeadingZeros(console.CATTXProfile);
+            }
+            else
+                return parser.Error1;
+        }
+
+        //Reads temperature
+        public string ZZTS(string s)
+        {
+            if (s.Length == parser.nSet)
+            {
+                return "?";
+            }
+            else if (s.Length == parser.nGet || s.Length == 0)
+            {
+                return "00030";
             }
             else
                 return parser.Error1;
@@ -4367,7 +4442,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 bool retval = console.TUN;
                 if (retval)
@@ -4400,7 +4475,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 if (console.CATPTT)
                     return "1";
@@ -4430,7 +4505,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 if (console.SetupForm.VACEnable)
                     return "1";
@@ -4472,7 +4547,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 x = console.VACRXGain;
                 if (x >= 0)
@@ -4515,7 +4590,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 x = console.VACTXGain;
                 if (x >= 0)
@@ -4590,7 +4665,7 @@ namespace PowerSDR
                 }
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 string rate = console.VACSampleRate;
                 string ans = "";
@@ -4651,7 +4726,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 if (console.VOXEnable)
                     return "1";
@@ -4676,7 +4751,7 @@ namespace PowerSDR
             {
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return "1";     // always 1!
             }
@@ -4705,7 +4780,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 return AddLeadingZeros((int)console.VOXSens);
             }
@@ -4734,7 +4809,7 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 bool retval = console.CATVFOLock;
                 if (retval)
@@ -4751,14 +4826,15 @@ namespace PowerSDR
         // Returns the version number of the PowerSDR program
         public string ZZVN()
         {
-            return console.CATGetVersion().PadLeft(10, '0');
+            return "ZZVN02.4.4.0000;";
+            //return console.CATGetVersion().PadLeft(10, '0');
         }
 
         // Sets the VFO swap status
         // write only
         public string ZZVS(string s)
         {
-            if (s.Length == parser.nSet & Convert.ToInt32(s) <= 3)
+            if (s.Length == parser.nSet & Convert.ToInt32(s) <= 6)
             {
                 int[] parm2 = new int[1];
 
@@ -4808,15 +4884,16 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 x = console.XITValue;
+
                 if (x >= 0)
                     sign = "+";
                 else
                     sign = "-";
                 // we have to remove the leading zero and replace it with the sign.
-                return sign + AddLeadingZeros(Math.Abs(x)).Substring(1);
+                return sign + x.ToString().PadLeft(4, '0');
             }
             else
             {
@@ -4842,10 +4919,54 @@ namespace PowerSDR
 
                 return "";
             }
-            else if (s.Length == parser.nGet)
+            else if (s.Length == parser.nGet || s.Length == 0)
             {
                 bool xit = console.XITOn;
                 if (xit)
+                    return "1";
+                else
+                    return "0";
+            }
+            else
+            {
+                return parser.Error1;
+            }
+        }
+
+        //Reads USB connection status
+        public string ZZUB(string s)
+        {
+            if (s.Length == parser.nSet)
+            {
+                int[] parm2 = new int[1];
+
+                if (s == "0")
+                {
+                    if (!console.ConsoleClosing)
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "USB", 0, parm2, "");
+                }
+                else if (s == "1")
+                    if (!console.ConsoleClosing)
+                        console.Invoke(new CATCrossThreadCallback(console.CATCallback), "USB", 1, parm2, "");
+
+                return "";
+            }
+            else if (s.Length == parser.nGet || s.Length == 0)
+            {
+                bool usb = false;
+
+                switch (console.CurrentModel)
+                {
+                    case Model.GENESIS_G59USB:
+                        usb = console.g59.Connected;
+                        break;
+
+                    case Model.GENESIS_G11:
+                        usb = console.g11.Connected;
+                        break;
+                }
+
+                if (usb)
                     return "1";
                 else
                     return "0";
@@ -4867,7 +4988,1165 @@ namespace PowerSDR
         }
         #endregion Extended CAT Methods ZZR-ZZZ
 
-        #region ICOM CAT command    // yt7pwr
+        #region Helper methods
+
+        #region General Helpers
+
+        private string AddLeadingZeros(int n)
+        {
+            string num = n.ToString();
+
+            while (num.Length < parser.nAns)
+                num = num.Insert(0, "0");
+
+            return num;
+        }
+
+        #endregion General Helpers
+
+        #region Split Methods
+
+        private string GetP10()
+        {
+            return lastFT;
+        }
+
+        private string GetP12()
+        {
+            return lastFT;
+        }
+
+        #endregion Split Methods
+
+        #region VFO Methods
+
+        // Converts a vfo frequency to a proper CAT frequency string
+        private string StrVFOFreq(string vfo)
+        {
+            double freq = 0;
+            string cmd_string = "";
+
+            if (vfo == "A")
+                freq = Math.Round(console.CATVFOA, 6);
+            else if (vfo == "B")
+                freq = Math.Round(console.CATVFOB, 6);
+            else if (vfo == "L")
+                freq = console.LOSCFreq;        // yt7pwr
+
+
+            if ((int)freq < 10)
+            {
+                cmd_string += "0000" + freq.ToString();
+            }
+            else if ((int)freq < 100)
+            {
+                cmd_string += "000" + freq.ToString();
+            }
+            else if ((int)freq < 1000)
+            {
+                cmd_string += "00" + freq.ToString();
+            }
+            else if ((int)freq < 10000)
+            {
+                cmd_string += "0" + freq.ToString();
+            }
+            else
+                cmd_string = freq.ToString();
+
+            // Get rid of the decimal separator and pad the right side with 0's 
+            // Modified 05/01/05 BT for globalization
+            if (cmd_string.IndexOf(separator) > 0)
+                cmd_string = cmd_string.Remove(cmd_string.IndexOf(separator), 1);
+            cmd_string = cmd_string.PadRight(11, '0');
+            return cmd_string;
+        }
+        #endregion VFO Methods
+
+        #region Filter Methods
+
+        public string Filter2String(Filter f)
+        {
+            string fw = f.ToString();
+            string strfilt = "";
+            int retval = 0;
+
+            switch (fw)
+            {
+                case "F6000":
+                    strfilt = "6000";
+                    break;
+                case "F4000":
+                    strfilt = "4000";
+                    break;
+                case "F2600":
+                    strfilt = "2600";
+                    break;
+                case "F2100":
+                    strfilt = "2100";
+                    break;
+                case "F1000":
+                    strfilt = "1000";
+                    break;
+                case "F500":
+                    strfilt = "0500";
+                    break;
+                case "F250":
+                    strfilt = "0250";
+                    break;
+                case "F100":
+                    strfilt = "0100";
+                    break;
+                case "F50":
+                    strfilt = "0050";
+                    break;
+                case "F25":
+                    strfilt = "0025";
+                    break;
+                case "VAR1":
+                    retval = Math.Abs(console.FilterHighValue - console.FilterLowValue);
+                    strfilt = AddLeadingZeros(retval);
+                    break;
+                case "VAR2":
+                    retval = Math.Abs(console.FilterHighValue - console.FilterLowValue);
+                    strfilt = AddLeadingZeros(retval);
+                    break;
+            }
+            return strfilt;
+        }
+
+        public Filter String2Filter(string f)
+        {
+            Filter filter = Filter.FIRST;
+
+            switch (f)
+            {
+                case "6000":
+                    filter = Filter.F1;
+                    break;
+                case "4000":
+                    filter = Filter.F2;
+                    break;
+                case "2600":
+                    filter = Filter.F3;
+                    break;
+                case "2100":
+                    filter = Filter.F4;
+                    break;
+                case "1000":
+                    filter = Filter.F5;
+                    break;
+                case "0500":
+                    filter = Filter.F6;
+                    break;
+                case "0250":
+                    filter = Filter.F7;
+                    break;
+                case "0100":
+                    filter = Filter.F8;
+                    break;
+                case "0050":
+                    filter = Filter.F9;
+                    break;
+                case "0025":
+                    filter = Filter.F10;
+                    break;
+                case "VAR1":
+                    filter = Filter.VAR1;
+                    break;
+                case "VAR2":
+                    filter = Filter.VAR2;
+                    break;
+            }
+            return filter;
+        }
+
+        // set variable filter 1 to indicate center and width 
+        // 
+        // if either center or width is zero, current value of center or width is 
+        // contained 
+        // fixme ... what should this thing do for am, fm, dsb ... ignore width? 
+        private void SetFilterCenterAndWidth(int center, int width)
+        {
+            int new_lo;
+            int new_hi;
+
+            if (center == 0 || width == 0)  // need to get current values 
+            {
+                return; // not implemented yet 
+            }
+            else
+            {
+                // Debug.WriteLine("center: " + center  + " width: " + width); 
+                new_lo = center - (width / 2);
+                new_hi = center + (width / 2);
+                if (new_lo < 0) new_lo = 0;
+            }
+
+            // new_lo and new_hi calculated assuming a USB mode .. do the right thing 
+            // for lsb and other modes 
+            // fixme -- needs more thinking 
+            switch (console.CurrentDSPMode)
+            {
+                case DSPMode.LSB:
+                    int scratch = new_hi;
+                    new_hi = -new_lo;
+                    new_lo = -scratch;
+                    break;
+
+                case DSPMode.AM:
+                case DSPMode.SAM:
+                    new_lo = -new_hi;
+                    break;
+            }
+
+
+            // System.Console.WriteLine("zzsf: " + new_lo + " " + new_hi); 
+            console.SelectVarFilter();
+            console.UpdateFilters(new_lo, new_hi);
+
+            return;
+        }
+
+        // Converts interger filter frequency into Kenwood SL/SH codes
+        private string Frequency2Code(int f, string n)
+        {
+            f = Math.Abs(f);
+            string code = "";
+            switch (console.CurrentDSPMode)
+            {
+                case DSPMode.CWL:
+                case DSPMode.CWU:
+                case DSPMode.LSB:
+                case DSPMode.USB:
+                case DSPMode.DIGU:
+                case DSPMode.DIGL:
+                    switch (n)
+                    {
+                        case "SH":
+                            if (f >= 0 && f <= 1500)
+                                code = "00";
+                            else if (f > 1500 && f <= 1700)
+                                code = "01";
+                            else if (f > 1700 && f <= 1900)
+                                code = "02";
+                            else if (f > 1900 && f <= 2100)
+                                code = "03";
+                            else if (f > 2100 && f <= 2300)
+                                code = "04";
+                            else if (f > 2300 && f <= 2500)
+                                code = "05";
+                            else if (f > 2500 && f <= 2700)
+                                code = "06";
+                            else if (f > 2700 && f <= 2900)
+                                code = "07";
+                            else if (f > 2900 && f <= 3200)
+                                code = "08";
+                            else if (f > 3200 && f <= 3700)
+                                code = "09";
+                            else if (f > 3700 && f <= 4500)
+                                code = "10";
+                            else if (f > 4500)
+                                code = "11";
+                            break;
+                        case "SL":
+                            if (f >= 0 && f <= 25)
+                                code = "00";
+                            else if (f > 25 && f <= 75)
+                                code = "01";
+                            else if (f > 75 && f <= 150)
+                                code = "02";
+                            else if (f > 150 && f <= 250)
+                                code = "03";
+                            else if (f > 250 && f <= 350)
+                                code = "04";
+                            else if (f > 350 && f <= 450)
+                                code = "05";
+                            else if (f > 450 && f <= 550)
+                                code = "06";
+                            else if (f > 550 && f <= 650)
+                                code = "07";
+                            else if (f > 650 && f <= 750)
+                                code = "08";
+                            else if (f > 750 && f <= 850)
+                                code = "09";
+                            else if (f > 850 && f <= 950)
+                                code = "10";
+                            else if (f > 950)
+                                code = "11";
+                            break;
+                    }
+                    break;
+                case DSPMode.AM:
+                case DSPMode.DRM:
+                case DSPMode.DSB:
+                case DSPMode.FMN:
+                case DSPMode.SAM:
+                    switch (n)
+                    {
+                        case "SH":
+                            if (f >= 0 && f <= 2750)
+                                code = "00";
+                            else if (f > 2750 && f <= 3500)
+                                code = "01";
+                            else if (f > 3500 && f <= 4500)
+                                code = "02";
+                            else if (f > 4500)
+                                code = "03";
+                            break;
+                        case "SL":
+                            if (f >= 0 && f <= 50)
+                                code = "00";
+                            else if (f > 50 && f <= 150)
+                                code = "01";
+                            else if (f > 150 && f <= 350)
+                                code = "02";
+                            else if (f > 350)
+                                code = "03";
+                            break;
+                    }
+                    break;
+
+                /*case DSPMode.DIGU:
+                case DSPMode.DIGL:
+                switch (n)
+                {
+                    case "SH":
+                        break;
+
+                    case "SL":
+                        break;
+                }
+                break;*/
+            }
+            return code;
+        }
+
+        // Converts a frequency code pair to frequency in hz according to
+        // the Kenwood TS-2000 spec.  Receives code and calling methd as parameters
+        private int Code2Frequency(string c, string n)
+        {
+            int freq = 0;
+            string mode = "SSB";
+            int fgroup = 0;
+
+            // Get the current console mode
+            switch (console.CurrentDSPMode)
+            {
+                case DSPMode.LSB:
+                case DSPMode.USB:
+                    break;
+                case DSPMode.AM:
+                case DSPMode.DSB:
+                case DSPMode.DRM:
+                case DSPMode.FMN:
+                case DSPMode.SAM:
+                    mode = "DSB";
+                    break;
+            }
+            // Get the frequency group(SSB/SL, SSB/SH, DSB/SL, and DSB/SH)
+            switch (n)
+            {
+                case "SL":
+                    if (mode == "SSB")
+                        fgroup = 1;
+                    else
+                        fgroup = 3;
+                    break;
+                case "SH":
+                    if (mode == "SSB")
+                        fgroup = 2;
+                    else
+                        fgroup = 4;
+                    break;
+            }
+            // return the frequency for the current DSP mode and calling method
+            switch (fgroup)
+            {
+                case 1:		//SL SSB
+                    switch (c)
+                    {
+                        case "00":
+                            freq = 0;
+                            break;
+                        case "01":
+                            freq = 50;
+                            break;
+                        case "02":
+                            freq = 100;
+                            break;
+                        case "03":
+                            freq = 200;
+                            break;
+                        case "04":
+                            freq = 300;
+                            break;
+                        case "05":
+                            freq = 400;
+                            break;
+                        case "06":
+                            freq = 500;
+                            break;
+                        case "07":
+                            freq = 600;
+                            break;
+                        case "08":
+                            freq = 700;
+                            break;
+                        case "09":
+                            freq = 800;
+                            break;
+                        case "10":
+                            freq = 900;
+                            break;
+                        case "11":
+                            freq = 1000;
+                            break;
+                    }
+                    break;
+                case 2:		//SH SSB
+                    switch (c)
+                    {
+                        case "00":
+                            freq = 1400;
+                            break;
+                        case "01":
+                            freq = 1600;
+                            break;
+                        case "02":
+                            freq = 1800;
+                            break;
+                        case "03":
+                            freq = 2000;
+                            break;
+                        case "04":
+                            freq = 2200;
+                            break;
+                        case "05":
+                            freq = 2400;
+                            break;
+                        case "06":
+                            freq = 2600;
+                            break;
+                        case "07":
+                            freq = 2800;
+                            break;
+                        case "08":
+                            freq = 3000;
+                            break;
+                        case "09":
+                            freq = 3400;
+                            break;
+                        case "10":
+                            freq = 4000;
+                            break;
+                        case "11":
+                            freq = 5000;
+                            break;
+                    }
+                    break;
+                case 3:		//SL DSB
+                    switch (c)
+                    {
+                        case "00":
+                            freq = 0;
+                            break;
+                        case "01":
+                            freq = 100;
+                            break;
+                        case "02":
+                            freq = 200;
+                            break;
+                        case "03":
+                            freq = 500;
+                            break;
+                    }
+                    break;
+                case 4:		//SH DSB
+                    switch (c)
+                    {
+                        case "00":
+                            freq = 2500;
+                            break;
+                        case "01":
+                            freq = 3000;
+                            break;
+                        case "02":
+                            freq = 4000;
+                            break;
+                        case "03":
+                            freq = 5000;
+                            break;
+                    }
+                    break;
+            }
+            return freq;
+        }
+
+        private void SetFilter(string c, string n)
+        {
+            // c = code, n = SH or SL
+            int[] parm2 = new int[1];
+
+            if (!console.ConsoleClosing)
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter", (int)Filter.VAR1, parm2, "");
+
+            Thread.Sleep(100);
+            int freq = 0;
+            int offset = 0;
+            string code;
+
+            switch (console.CurrentDSPMode)
+            {
+                case DSPMode.USB:
+                case DSPMode.CWU:
+                    freq = Code2Frequency(c, n);
+
+                    if (n == "SH")
+                    {
+                        if (!console.ConsoleClosing)
+                            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter High", freq, parm2, "");
+                    }
+                    else
+                        if (!console.ConsoleClosing)
+                            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter Low", freq, parm2, "");
+                    break;
+                case DSPMode.LSB:
+                case DSPMode.CWL:
+                    if (n == "SH")
+                    {
+                        freq = Code2Frequency(c, "SH");	// get the upper limit from the lower value set
+
+                        if (!console.ConsoleClosing)
+                            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter Low", freq, parm2, "");
+                    }
+                    else
+                    {
+                        freq = Code2Frequency(c, "SL");	// do the reverse here, the less positive value
+
+                        if (!console.ConsoleClosing)
+                            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter High", freq, parm2, "");
+                    }
+                    break;
+                case DSPMode.AM:
+                case DSPMode.DRM:
+                case DSPMode.DSB:
+                case DSPMode.FMN:
+                case DSPMode.SAM:
+                    if (n == "SH")
+                    {
+                        // Set the bandwith equally across the center freq
+                        freq = Code2Frequency(c, "SH");
+
+                        if (!console.ConsoleClosing)
+                        {
+                            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter High", freq / 2, parm2, "");
+                            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter Low", -freq / 2, parm2, "");
+                        }
+                    }
+                    else
+                    {
+                        // reset the frequency to the nominal value (in case it's been changed)
+                        freq = console.FilterHighValue * 2;
+                        code = Frequency2Code(freq, "SH");
+                        freq = Code2Frequency(code, "SH");
+
+                        if (!console.ConsoleClosing)
+                        {
+                            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter High", freq / 2, parm2, "");
+                            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter Low", -freq / 2, parm2, "");
+                        }
+
+                        offset = Code2Frequency(c, "SL");
+
+                        if (!console.ConsoleClosing)
+                            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter Low",
+                                console.FilterLowValue + offset, parm2, "");
+                    }
+                    break;
+            }
+        }
+
+        #endregion Filter Methods
+
+        #region Mode Methods
+
+        public string Mode2String(DSPMode pMode)
+        {
+            DSPMode s = pMode;
+            string retval = "";
+
+            switch (s)
+            {
+                case DSPMode.LSB:
+                    retval = "00";
+                    break;
+                case DSPMode.USB:
+                    retval = "01";
+                    break;
+                case DSPMode.DSB:
+                    retval = "02";
+                    break;
+                case DSPMode.CWL:
+                    retval = "03";
+                    break;
+                case DSPMode.CWU:
+                    retval = "04";
+                    break;
+                case DSPMode.FMN:
+                    retval = "05";
+                    break;
+                case DSPMode.AM:
+                    retval = "06";
+                    break;
+                case DSPMode.DIGU:
+                    retval = "07";
+                    break;
+                case DSPMode.SPEC:
+                    retval = "08";
+                    break;
+                case DSPMode.DIGL:
+                    retval = "09";
+                    break;
+                case DSPMode.SAM:
+                    retval = "10";
+                    break;
+                case DSPMode.DRM:
+                    retval = "11";
+                    break;
+                default:
+                    retval = parser.Error1;
+                    break;
+            }
+
+            return retval;
+        }
+
+        // converts SDR mode to Kenwood single digit mode code
+        public string Mode2KString(DSPMode pMode)
+        {
+            DSPMode s = pMode;
+            string retval = "";
+
+            switch (s)
+            {
+                case DSPMode.LSB:
+                    retval = "1";
+                    break;
+                case DSPMode.USB:
+                    retval = "2";
+                    break;
+                case DSPMode.CWU:
+                    retval = "3";
+                    break;
+                case DSPMode.FMN:
+                    retval = "4";
+                    break;
+                case DSPMode.AM:
+                    //				case DSPMode.SAM:		//possible fix for SAM problem
+                    retval = "5";
+                    break;
+                case DSPMode.DIGL:
+                    retval = "6";
+                    break;
+                case DSPMode.CWL:
+                    retval = "7";
+                    break;
+                case DSPMode.DIGU:
+                    retval = "9";
+                    break;
+                default:
+                    retval = parser.Error1;
+                    break;
+            }
+
+            return retval;
+        }
+
+        #endregion Mode Methods
+
+        #region Band Methods
+
+        private void MakeBandList()
+        //Construct an array of the PowerSDR.Band enums.
+        //If the 2m xverter is present, set the last index to B2M
+        //otherwise, set it to B6M.
+        {
+            int ndx = 0;
+            BandList = new Band[(int)Band.LAST + 2];
+            foreach (Band b in Enum.GetValues(typeof(Band)))
+            {
+                BandList.SetValue(b, ndx);
+                ndx++;
+            }
+            LastBandIndex = Array.IndexOf(BandList, Band.B6M);
+        }
+
+        private void SetBandGroup(int band)
+        {
+            int oldval = parser.nSet;
+            parser.nSet = 1;
+            if (band == 0)
+                ZZBG("0");
+            else
+                ZZBG("1");
+
+            parser.nSet = oldval;
+        }
+
+        private string GetBand(string b)
+        {
+            if (b.Length == parser.nSet)
+            {
+                if (b.StartsWith("V") || b.StartsWith("v"))
+                    SetBandGroup(1);
+                else
+                    SetBandGroup(0);
+            }
+
+            if (b.Length == parser.nSet)
+            {
+                console.SetCATBand(String2Band(b));
+                return "";
+            }
+            else if (b.Length == parser.nGet)
+            {
+                string answer = Band2String(console.CurrentBand);
+                return answer;
+            }
+            else
+            {
+                return parser.Error1;
+            }
+        }
+
+        private void BandUp()
+        {
+            Band nextband;
+            Band current = console.CurrentBand;
+            int currndx = Array.IndexOf(BandList, current);
+
+            if (currndx == LastBandIndex)
+                nextband = BandList[0];
+            else
+                nextband = BandList[currndx + 1];
+
+            int[] parm2 = new int[1];
+
+            if (!console.ConsoleClosing)
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Band set", (int)nextband, parm2, "");
+        }
+
+        private void BandDown()
+        {
+            Band nextband;
+            Band current = console.CurrentBand;
+            int currndx = Array.IndexOf(BandList, current);
+            if (currndx > 0)
+                nextband = BandList[currndx - 1];
+            else
+                nextband = BandList[LastBandIndex];
+
+            int[] parm2 = new int[1];
+
+            if (!console.ConsoleClosing)
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Band set", (int)nextband, parm2, "");
+        }
+
+        private string Band2String(Band pBand)
+        {
+            Band band = pBand;
+            string retval;
+
+            switch (band)
+            {
+                case Band.GEN:
+                    retval = "888";
+                    break;
+                case Band.B160M:
+                    retval = "160";
+                    break;
+                case Band.B60M:
+                    retval = "060";
+                    break;
+                case Band.B80M:
+                    retval = "080";
+                    break;
+                case Band.B40M:
+                    retval = "040";
+                    break;
+                case Band.B30M:
+                    retval = "030";
+                    break;
+                case Band.B20M:
+                    retval = "020";
+                    break;
+                case Band.B17M:
+                    retval = "017";
+                    break;
+                case Band.B15M:
+                    retval = "015";
+                    break;
+                case Band.B12M:
+                    retval = "012";
+                    break;
+                case Band.B10M:
+                    retval = "010";
+                    break;
+                case Band.B6M:
+                    retval = "006";
+                    break;
+                case Band.B2M:
+                    retval = "002";
+                    break;
+                case Band.WWV:
+                    retval = "999";
+                    break;
+                default:
+                    retval = "888";
+                    break;
+            }
+            return retval;
+        }
+
+        private Band String2Band(string pBand)
+        {
+            string band = pBand.ToUpper(); ;
+            Band retval;
+
+            switch (band)
+            {
+                case "888":
+                    retval = Band.GEN;
+                    break;
+                case "160":
+                    retval = Band.B160M;
+                    break;
+                case "060":
+                    retval = Band.B60M;
+                    break;
+                case "080":
+                    retval = Band.B80M;
+                    break;
+                case "040":
+                    retval = Band.B40M;
+                    break;
+                case "030":
+                    retval = Band.B30M;
+                    break;
+                case "020":
+                    retval = Band.B20M;
+                    break;
+                case "017":
+                    retval = Band.B17M;
+                    break;
+                case "015":
+                    retval = Band.B15M;
+                    break;
+                case "012":
+                    retval = Band.B12M;
+                    break;
+                case "010":
+                    retval = Band.B10M;
+                    break;
+                case "006":
+                    retval = Band.B6M;
+                    break;
+                case "002":
+                    retval = Band.B2M;
+                    break;
+                case "999":
+                    retval = Band.WWV;
+                    break;
+                default:
+                    retval = Band.GEN;
+                    break;
+            }
+
+            return retval;
+        }
+
+        #endregion Band Methods
+
+        #region Step Methods
+
+        private double Step2Freq(int step)
+        {
+            double freq = 0.0;
+
+            switch (step)
+            {
+                case 0:
+                    freq = 0.000001;
+                    break;
+                case 1:
+                    freq = 0.000010;
+                    break;
+                case 2:
+                    freq = 0.000050;
+                    break;
+                case 3:
+                    freq = 0.000100;
+                    break;
+                case 4:
+                    freq = 0.000250;
+                    break;
+                case 5:
+                    freq = 0.000500;
+                    break;
+                case 6:
+                    freq = 0.001000;
+                    break;
+                case 7:
+                    freq = 0.005000;
+                    break;
+                case 8:
+                    freq = 0.009000;
+                    break;
+                case 9:
+                    freq = 0.010000;
+                    break;
+                case 10:
+                    freq = 0.100000;
+                    break;
+                case 11:
+                    freq = 0.250000;
+                    break;
+                case 12:
+                    freq = 0.500000;
+                    break;
+                case 13:
+                    freq = 1.000000;
+                    break;
+                case 14:
+                    freq = 10.000000;
+                    break;
+            }
+
+            return freq;
+        }
+
+        private string Step2String(int pSize)
+        {
+            // Modified 2/25/07 to accomodate changes to console where odd step sizes added.  BT
+            string stepval = "";
+            int step = pSize;
+
+            switch (step)
+            {
+                case 0:
+                    stepval = "0000";	//10e0 = 1 hz
+                    break;
+                case 1:
+                    stepval = "0001";	//10e1 = 10 hz
+                    break;
+                case 2:
+                    stepval = "1000";	//special default for 50 hz
+                    break;
+                case 3:
+                    stepval = "0010";	//10e2 = 100 hz
+                    break;
+                case 4:
+                    stepval = "1001";	//special default for 250 hz
+                    break;
+                case 5:
+                    stepval = "1010";	//10e3 = 1 kHz default for 500 hz
+                    break;
+                case 6:
+                    stepval = "0011";	//10e3 = 1 kHz
+                    break;
+                case 7:
+                    stepval = "1011";	//special default for 5 kHz
+                    break;
+                case 8:
+                    stepval = "1100";	//special default for 9 kHz
+                    break;
+                case 9:
+                    stepval = "0100";	//10e4 = 10 khZ
+                    break;
+                case 10:
+                    stepval = "0101";	//10e5 = 100 kHz
+                    break;
+                case 11:
+                    stepval = "1101";   //special default for 250 kHz
+                    break;
+                case 12:
+                    stepval = "1110";   //special default for 500 kHz
+                    break;
+                case 13:
+                    stepval = "0110";	//10e6 = 1 mHz
+                    break;
+                case 14:
+                    stepval = "0111";	//10e7 = 10 mHz
+                    break;
+            }
+
+            return stepval;
+        }
+
+        private int String2Step(string step_string)       // yt7pwr
+        {
+            int stepval = -1;
+
+            switch (step_string)
+            {
+                case "0000":
+                    stepval = 0;	//10e0 = 1 hz
+                    break;
+                case "0001":
+                    stepval = 1;	//10e1 = 10 hz
+                    break;
+                case "1000":
+                    stepval = 2;	//special default for 50 hz
+                    break;
+                case "0010":
+                    stepval = 3;	//10e2 = 100 hz
+                    break;
+                case "1001":
+                    stepval = 4;	//special default for 250 hz
+                    break;
+                case "1010":
+                    stepval = 5;	//10e3 = 1 kHz default for 500 hz
+                    break;
+                case "0011":
+                    stepval = 6;	//10e3 = 1 kHz
+                    break;
+                case "1011":
+                    stepval = 7;	//special default for 5 kHz
+                    break;
+                case "1100":
+                    stepval = 8;	//special default for 9 kHz
+                    break;
+                case "0100":
+                    stepval = 9;	//10e4 = 10 khZ
+                    break;
+                case "0101":
+                    stepval = 10;	//10e5 = 100 kHz
+                    break;
+                case "1101":
+                    stepval = 11;   //special default for 250 kHz
+                    break;
+                case "1110":
+                    stepval = 12;   //special default for 500 kHz
+                    break;
+                case "0110":
+                    stepval = 13;	//10e6 = 1 mHz
+                    break;
+                case "0111":
+                    stepval = 14;	//10e7 = 10 mHz
+                    break;
+            }
+            return stepval;
+        }
+
+        #endregion Step Methods
+
+        #region Meter Methods
+
+        private void String2RXMeter(int m)
+        {
+            int[] parm2 = new int[1];
+
+            if (!console.ConsoleClosing)
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Meter RXMode", m, parm2, "");
+        }
+
+        private string RXMeter2String()
+        {
+            return ((int)console.CurrentMeterRXMode).ToString();
+        }
+
+        private void String2TXMeter(int m)
+        {
+            int[] parm2 = new int[1];
+
+            if (!console.ConsoleClosing)
+                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Meter TXMode", m, parm2, "");
+        }
+
+        private string TXMeter2String()
+        {
+            return ((int)console.CurrentMeterTXMode).ToString();
+        }
+
+        #endregion Meter Methods
+
+        #region Rig ID Methods
+
+        private string CAT2RigType()
+        {
+            return "";
+        }
+
+        private string RigType2CAT()
+        {
+            return "";
+        }
+
+        #endregion Rig ID Methods
+
+        #region DSP Filter Size Methods
+
+        private string Width2Index(int txt)
+        {
+            string ans = "";
+
+            switch (txt)
+            {
+                case 256:
+                    ans = "0";
+                    break;
+                case 512:
+                    ans = "1";
+                    break;
+                case 1024:
+                    ans = "2";
+                    break;
+                case 2048:
+                    ans = "3";
+                    break;
+                case 4096:
+                    ans = "4";
+                    break;
+                default:
+                    ans = "0";
+                    break;
+            }
+            return ans;
+        }
+
+        private int Index2Width(string ndx)
+        {
+            int ans;
+
+            switch (ndx)
+            {
+                case "0":
+                    ans = 256;
+                    break;
+                case "1":
+                    ans = 512;
+                    break;
+                case "2":
+                    ans = 1024;
+                    break;
+                case "3":
+                    ans = 2048;
+                    break;
+                case "4":
+                    ans = 4096;
+                    break;
+                default:
+                    ans = 256;
+                    break;
+            }
+            return ans;
+        }
+
+        #endregion DSP Filter Size Methods
+
+        #endregion Helper methods
+
+        #region ICOM CAT commands    // yt7pwr
 
         public byte[] CMD_00(byte[] command)     // transfer op freq data
         {
@@ -7014,1161 +8293,6 @@ namespace PowerSDR
         }
 
         #endregion
-
-        #region Helper methods
-
-        #region General Helpers
-
-        private string AddLeadingZeros(int n)
-        {
-            string num = n.ToString();
-
-            while (num.Length < parser.nAns)
-                num = num.Insert(0, "0");
-
-            return num;
-        }
-
-        #endregion General Helpers
-
-        #region Split Methods
-
-        private string GetP10()
-        {
-            return lastFT;
-        }
-
-        private string GetP12()
-        {
-            return lastFT;
-        }
-
-        #endregion Split Methods
-
-        #region VFO Methods
-
-        // Converts a vfo frequency to a proper CAT frequency string
-        private string StrVFOFreq(string vfo)
-        {
-            double freq = 0;
-            string cmd_string = "";
-
-            if (vfo == "A")
-                freq = Math.Round(console.CATVFOA, 6);
-            else if (vfo == "B")
-                freq = Math.Round(console.CATVFOB, 6);
-            else if (vfo == "L")
-                freq = console.LOSCFreq;        // yt7pwr
-
-
-            if ((int)freq < 10)
-            {
-                cmd_string += "0000" + freq.ToString();
-            }
-            else if ((int)freq < 100)
-            {
-                cmd_string += "000" + freq.ToString();
-            }
-            else if ((int)freq < 1000)
-            {
-                cmd_string += "00" + freq.ToString();
-            }
-            else if ((int)freq < 10000)
-            {
-                cmd_string += "0" + freq.ToString();
-            }
-            else
-                cmd_string = freq.ToString();
-
-            // Get rid of the decimal separator and pad the right side with 0's 
-            // Modified 05/01/05 BT for globalization
-            if (cmd_string.IndexOf(separator) > 0)
-                cmd_string = cmd_string.Remove(cmd_string.IndexOf(separator), 1);
-            cmd_string = cmd_string.PadRight(11, '0');
-            return cmd_string;
-        }
-        #endregion VFO Methods
-
-        #region Filter Methods
-
-        public string Filter2String(Filter f)
-        {
-            string fw = f.ToString();
-            string strfilt = "";
-            int retval = 0;
-            switch (fw)
-            {
-                case "F6000":
-                    strfilt = "6000";
-                    break;
-                case "F4000":
-                    strfilt = "4000";
-                    break;
-                case "F2600":
-                    strfilt = "2600";
-                    break;
-                case "F2100":
-                    strfilt = "2100";
-                    break;
-                case "F1000":
-                    strfilt = "1000";
-                    break;
-                case "F500":
-                    strfilt = "0500";
-                    break;
-                case "F250":
-                    strfilt = "0250";
-                    break;
-                case "F100":
-                    strfilt = "0100";
-                    break;
-                case "F50":
-                    strfilt = "0050";
-                    break;
-                case "F25":
-                    strfilt = "0025";
-                    break;
-                case "VAR1":
-                    retval = Math.Abs(console.FilterHighValue - console.FilterLowValue);
-                    strfilt = AddLeadingZeros(retval);
-                    break;
-                case "VAR2":
-                    retval = Math.Abs(console.FilterHighValue - console.FilterLowValue);
-                    strfilt = AddLeadingZeros(retval);
-                    break;
-            }
-            return strfilt;
-        }
-
-        public Filter String2Filter(string f)
-        {
-            Filter filter = Filter.FIRST;
-            switch (f)
-            {
-                case "6000":
-                    filter = Filter.F1;
-                    break;
-                case "4000":
-                    filter = Filter.F2;
-                    break;
-                case "2600":
-                    filter = Filter.F3;
-                    break;
-                case "2100":
-                    filter = Filter.F4;
-                    break;
-                case "1000":
-                    filter = Filter.F5;
-                    break;
-                case "0500":
-                    filter = Filter.F6;
-                    break;
-                case "0250":
-                    filter = Filter.F7;
-                    break;
-                case "0100":
-                    filter = Filter.F8;
-                    break;
-                case "0050":
-                    filter = Filter.F9;
-                    break;
-                case "0025":
-                    filter = Filter.F10;
-                    break;
-                case "VAR1":
-                    filter = Filter.VAR1;
-                    break;
-                case "VAR2":
-                    filter = Filter.VAR2;
-                    break;
-            }
-            return filter;
-        }
-
-        // set variable filter 1 to indicate center and width 
-        // 
-        // if either center or width is zero, current value of center or width is 
-        // contained 
-        // fixme ... what should this thing do for am, fm, dsb ... ignore width? 
-        private void SetFilterCenterAndWidth(int center, int width)
-        {
-            int new_lo;
-            int new_hi;
-
-            if (center == 0 || width == 0)  // need to get current values 
-            {
-                return; // not implemented yet 
-            }
-            else
-            {
-                // Debug.WriteLine("center: " + center  + " width: " + width); 
-                new_lo = center - (width / 2);
-                new_hi = center + (width / 2);
-                if (new_lo < 0) new_lo = 0;
-            }
-
-            // new_lo and new_hi calculated assuming a USB mode .. do the right thing 
-            // for lsb and other modes 
-            // fixme -- needs more thinking 
-            switch (console.CurrentDSPMode)
-            {
-                case DSPMode.LSB:
-                    int scratch = new_hi;
-                    new_hi = -new_lo;
-                    new_lo = -scratch;
-                    break;
-
-                case DSPMode.AM:
-                case DSPMode.SAM:
-                    new_lo = -new_hi;
-                    break;
-            }
-
-
-            // System.Console.WriteLine("zzsf: " + new_lo + " " + new_hi); 
-            console.SelectVarFilter();
-            console.UpdateFilters(new_lo, new_hi);
-
-            return;
-        }
-
-        // Converts interger filter frequency into Kenwood SL/SH codes
-        private string Frequency2Code(int f, string n)
-        {
-            f = Math.Abs(f);
-            string code = "";
-            switch (console.CurrentDSPMode)
-            {
-                case DSPMode.CWL:
-                case DSPMode.CWU:
-                case DSPMode.LSB:
-                case DSPMode.USB:
-                case DSPMode.DIGU:
-                case DSPMode.DIGL:
-                    switch (n)
-                    {
-                        case "SH":
-                            if (f >= 0 && f <= 1500)
-                                code = "00";
-                            else if (f > 1500 && f <= 1700)
-                                code = "01";
-                            else if (f > 1700 && f <= 1900)
-                                code = "02";
-                            else if (f > 1900 && f <= 2100)
-                                code = "03";
-                            else if (f > 2100 && f <= 2300)
-                                code = "04";
-                            else if (f > 2300 && f <= 2500)
-                                code = "05";
-                            else if (f > 2500 && f <= 2700)
-                                code = "06";
-                            else if (f > 2700 && f <= 2900)
-                                code = "07";
-                            else if (f > 2900 && f <= 3200)
-                                code = "08";
-                            else if (f > 3200 && f <= 3700)
-                                code = "09";
-                            else if (f > 3700 && f <= 4500)
-                                code = "10";
-                            else if (f > 4500)
-                                code = "11";
-                            break;
-                        case "SL":
-                            if (f >= 0 && f <= 25)
-                                code = "00";
-                            else if (f > 25 && f <= 75)
-                                code = "01";
-                            else if (f > 75 && f <= 150)
-                                code = "02";
-                            else if (f > 150 && f <= 250)
-                                code = "03";
-                            else if (f > 250 && f <= 350)
-                                code = "04";
-                            else if (f > 350 && f <= 450)
-                                code = "05";
-                            else if (f > 450 && f <= 550)
-                                code = "06";
-                            else if (f > 550 && f <= 650)
-                                code = "07";
-                            else if (f > 650 && f <= 750)
-                                code = "08";
-                            else if (f > 750 && f <= 850)
-                                code = "09";
-                            else if (f > 850 && f <= 950)
-                                code = "10";
-                            else if (f > 950)
-                                code = "11";
-                            break;
-                    }
-                    break;
-                case DSPMode.AM:
-                case DSPMode.DRM:
-                case DSPMode.DSB:
-                case DSPMode.FMN:
-                case DSPMode.SAM:
-                    switch (n)
-                    {
-                        case "SH":
-                            if (f >= 0 && f <= 2750)
-                                code = "00";
-                            else if (f > 2750 && f <= 3500)
-                                code = "01";
-                            else if (f > 3500 && f <= 4500)
-                                code = "02";
-                            else if (f > 4500)
-                                code = "03";
-                            break;
-                        case "SL":
-                            if (f >= 0 && f <= 50)
-                                code = "00";
-                            else if (f > 50 && f <= 150)
-                                code = "01";
-                            else if (f > 150 && f <= 350)
-                                code = "02";
-                            else if (f > 350)
-                                code = "03";
-                            break;
-                    }
-                    break;
-
-                /*case DSPMode.DIGU:
-                case DSPMode.DIGL:
-                switch (n)
-                {
-                    case "SH":
-                        break;
-
-                    case "SL":
-                        break;
-                }
-                break;*/
-            }
-            return code;
-        }
-
-        // Converts a frequency code pair to frequency in hz according to
-        // the Kenwood TS-2000 spec.  Receives code and calling methd as parameters
-        private int Code2Frequency(string c, string n)
-        {
-            int freq = 0;
-            string mode = "SSB";
-            int fgroup = 0;
-
-            // Get the current console mode
-            switch (console.CurrentDSPMode)
-            {
-                case DSPMode.LSB:
-                case DSPMode.USB:
-                    break;
-                case DSPMode.AM:
-                case DSPMode.DSB:
-                case DSPMode.DRM:
-                case DSPMode.FMN:
-                case DSPMode.SAM:
-                    mode = "DSB";
-                    break;
-            }
-            // Get the frequency group(SSB/SL, SSB/SH, DSB/SL, and DSB/SH)
-            switch (n)
-            {
-                case "SL":
-                    if (mode == "SSB")
-                        fgroup = 1;
-                    else
-                        fgroup = 3;
-                    break;
-                case "SH":
-                    if (mode == "SSB")
-                        fgroup = 2;
-                    else
-                        fgroup = 4;
-                    break;
-            }
-            // return the frequency for the current DSP mode and calling method
-            switch (fgroup)
-            {
-                case 1:		//SL SSB
-                    switch (c)
-                    {
-                        case "00":
-                            freq = 0;
-                            break;
-                        case "01":
-                            freq = 50;
-                            break;
-                        case "02":
-                            freq = 100;
-                            break;
-                        case "03":
-                            freq = 200;
-                            break;
-                        case "04":
-                            freq = 300;
-                            break;
-                        case "05":
-                            freq = 400;
-                            break;
-                        case "06":
-                            freq = 500;
-                            break;
-                        case "07":
-                            freq = 600;
-                            break;
-                        case "08":
-                            freq = 700;
-                            break;
-                        case "09":
-                            freq = 800;
-                            break;
-                        case "10":
-                            freq = 900;
-                            break;
-                        case "11":
-                            freq = 1000;
-                            break;
-                    }
-                    break;
-                case 2:		//SH SSB
-                    switch (c)
-                    {
-                        case "00":
-                            freq = 1400;
-                            break;
-                        case "01":
-                            freq = 1600;
-                            break;
-                        case "02":
-                            freq = 1800;
-                            break;
-                        case "03":
-                            freq = 2000;
-                            break;
-                        case "04":
-                            freq = 2200;
-                            break;
-                        case "05":
-                            freq = 2400;
-                            break;
-                        case "06":
-                            freq = 2600;
-                            break;
-                        case "07":
-                            freq = 2800;
-                            break;
-                        case "08":
-                            freq = 3000;
-                            break;
-                        case "09":
-                            freq = 3400;
-                            break;
-                        case "10":
-                            freq = 4000;
-                            break;
-                        case "11":
-                            freq = 5000;
-                            break;
-                    }
-                    break;
-                case 3:		//SL DSB
-                    switch (c)
-                    {
-                        case "00":
-                            freq = 0;
-                            break;
-                        case "01":
-                            freq = 100;
-                            break;
-                        case "02":
-                            freq = 200;
-                            break;
-                        case "03":
-                            freq = 500;
-                            break;
-                    }
-                    break;
-                case 4:		//SH DSB
-                    switch (c)
-                    {
-                        case "00":
-                            freq = 2500;
-                            break;
-                        case "01":
-                            freq = 3000;
-                            break;
-                        case "02":
-                            freq = 4000;
-                            break;
-                        case "03":
-                            freq = 5000;
-                            break;
-                    }
-                    break;
-            }
-            return freq;
-        }
-
-        private void SetFilter(string c, string n)
-        {
-            // c = code, n = SH or SL
-            int[] parm2 = new int[1];
-
-            if (!console.ConsoleClosing)
-                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter", (int)Filter.VAR1, parm2, "");
-
-            Thread.Sleep(100);
-            int freq = 0;
-            int offset = 0;
-            string code;
-
-            switch (console.CurrentDSPMode)
-            {
-                case DSPMode.USB:
-                case DSPMode.CWU:
-                    freq = Code2Frequency(c, n);
-
-                    if (n == "SH")
-                    {
-                        if (!console.ConsoleClosing)
-                            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter High", freq, parm2, "");
-                    }
-                    else
-                        if (!console.ConsoleClosing)
-                            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter Low", freq, parm2, "");
-                    break;
-                case DSPMode.LSB:
-                case DSPMode.CWL:
-                    if (n == "SH")
-                    {
-                        freq = Code2Frequency(c, "SH");	// get the upper limit from the lower value set
-
-                        if (!console.ConsoleClosing)
-                            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter Low", freq, parm2, "");
-                    }
-                    else
-                    {
-                        freq = Code2Frequency(c, "SL");	// do the reverse here, the less positive value
-
-                        if (!console.ConsoleClosing)
-                            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter High", freq, parm2, "");
-                    }
-                    break;
-                case DSPMode.AM:
-                case DSPMode.DRM:
-                case DSPMode.DSB:
-                case DSPMode.FMN:
-                case DSPMode.SAM:
-                    if (n == "SH")
-                    {
-                        // Set the bandwith equally across the center freq
-                        freq = Code2Frequency(c, "SH");
-
-                        if (!console.ConsoleClosing)
-                        {
-                            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter High", freq / 2, parm2, "");
-                            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter Low", -freq / 2, parm2, "");
-                        }
-                    }
-                    else
-                    {
-                        // reset the frequency to the nominal value (in case it's been changed)
-                        freq = console.FilterHighValue * 2;
-                        code = Frequency2Code(freq, "SH");
-                        freq = Code2Frequency(code, "SH");
-
-                        if (!console.ConsoleClosing)
-                        {
-                            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter High", freq / 2, parm2, "");
-                            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter Low", -freq / 2, parm2, "");
-                        }
-
-                        offset = Code2Frequency(c, "SL");
-
-                        if (!console.ConsoleClosing)
-                            console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Filter Low",
-                                console.FilterLowValue + offset, parm2, "");
-                    }
-                    break;
-            }
-        }
-
-        #endregion Filter Methods
-
-        #region Mode Methods
-
-        public string Mode2String(DSPMode pMode)
-        {
-            DSPMode s = pMode;
-            string retval = "";
-
-            switch (s)
-            {
-                case DSPMode.LSB:
-                    retval = "00";
-                    break;
-                case DSPMode.USB:
-                    retval = "01";
-                    break;
-                case DSPMode.DSB:
-                    retval = "02";
-                    break;
-                case DSPMode.CWL:
-                    retval = "03";
-                    break;
-                case DSPMode.CWU:
-                    retval = "04";
-                    break;
-                case DSPMode.FMN:
-                    retval = "05";
-                    break;
-                case DSPMode.AM:
-                    retval = "06";
-                    break;
-                case DSPMode.DIGU:
-                    retval = "07";
-                    break;
-                case DSPMode.SPEC:
-                    retval = "08";
-                    break;
-                case DSPMode.DIGL:
-                    retval = "09";
-                    break;
-                case DSPMode.SAM:
-                    retval = "10";
-                    break;
-                case DSPMode.DRM:
-                    retval = "11";
-                    break;
-                default:
-                    retval = parser.Error1;
-                    break;
-            }
-
-            return retval;
-        }
-
-        // converts SDR mode to Kenwood single digit mode code
-        public string Mode2KString(DSPMode pMode)
-        {
-            DSPMode s = pMode;
-            string retval = "";
-
-            switch (s)
-            {
-                case DSPMode.LSB:
-                    retval = "1";
-                    break;
-                case DSPMode.USB:
-                    retval = "2";
-                    break;
-                case DSPMode.CWU:
-                    retval = "3";
-                    break;
-                case DSPMode.FMN:
-                    retval = "4";
-                    break;
-                case DSPMode.AM:
-                    //				case DSPMode.SAM:		//possible fix for SAM problem
-                    retval = "5";
-                    break;
-                case DSPMode.DIGL:
-                    retval = "6";
-                    break;
-                case DSPMode.CWL:
-                    retval = "7";
-                    break;
-                case DSPMode.DIGU:
-                    retval = "9";
-                    break;
-                default:
-                    retval = parser.Error1;
-                    break;
-            }
-
-            return retval;
-        }
-
-        #endregion Mode Methods
-
-        #region Band Methods
-
-        private void MakeBandList()
-        //Construct an array of the PowerSDR.Band enums.
-        //If the 2m xverter is present, set the last index to B2M
-        //otherwise, set it to B6M.
-        {
-            int ndx = 0;
-            BandList = new Band[(int)Band.LAST + 2];
-            foreach (Band b in Enum.GetValues(typeof(Band)))
-            {
-                BandList.SetValue(b, ndx);
-                ndx++;
-            }
-            LastBandIndex = Array.IndexOf(BandList, Band.B6M);
-        }
-
-        private void SetBandGroup(int band)
-        {
-            int oldval = parser.nSet;
-            parser.nSet = 1;
-            if (band == 0)
-                ZZBG("0");
-            else
-                ZZBG("1");
-
-            parser.nSet = oldval;
-        }
-
-        private string GetBand(string b)
-        {
-            if (b.Length == parser.nSet)
-            {
-                if (b.StartsWith("V") || b.StartsWith("v"))
-                    SetBandGroup(1);
-                else
-                    SetBandGroup(0);
-            }
-
-            if (b.Length == parser.nSet)
-            {
-                console.SetCATBand(String2Band(b));
-                return "";
-            }
-            else if (b.Length == parser.nGet)
-            {
-                return Band2String(console.CurrentBand);
-            }
-            else
-            {
-                return parser.Error1;
-            }
-        }
-
-        private void BandUp()
-        {
-            Band nextband;
-            Band current = console.CurrentBand;
-            int currndx = Array.IndexOf(BandList, current);
-
-            if (currndx == LastBandIndex)
-                nextband = BandList[0];
-            else
-                nextband = BandList[currndx + 1];
-
-            int[] parm2 = new int[1];
-
-            if (!console.ConsoleClosing)
-                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Band set", (int)nextband, parm2, "");
-        }
-
-        private void BandDown()
-        {
-            Band nextband;
-            Band current = console.CurrentBand;
-            int currndx = Array.IndexOf(BandList, current);
-            if (currndx > 0)
-                nextband = BandList[currndx - 1];
-            else
-                nextband = BandList[LastBandIndex];
-
-            int[] parm2 = new int[1];
-
-            if (!console.ConsoleClosing)
-                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Band set", (int)nextband, parm2, "");
-        }
-
-        private string Band2String(Band pBand)
-        {
-            Band band = pBand;
-            string retval;
-
-            switch (band)
-            {
-                case Band.GEN:
-                    retval = "888";
-                    break;
-                case Band.B160M:
-                    retval = "160";
-                    break;
-                case Band.B60M:
-                    retval = "060";
-                    break;
-                case Band.B80M:
-                    retval = "080";
-                    break;
-                case Band.B40M:
-                    retval = "040";
-                    break;
-                case Band.B30M:
-                    retval = "030";
-                    break;
-                case Band.B20M:
-                    retval = "020";
-                    break;
-                case Band.B17M:
-                    retval = "017";
-                    break;
-                case Band.B15M:
-                    retval = "015";
-                    break;
-                case Band.B12M:
-                    retval = "012";
-                    break;
-                case Band.B10M:
-                    retval = "010";
-                    break;
-                case Band.B6M:
-                    retval = "006";
-                    break;
-                case Band.B2M:
-                    retval = "002";
-                    break;
-                case Band.WWV:
-                    retval = "999";
-                    break;
-                default:
-                    retval = "888";
-                    break;
-            }
-            return retval;
-        }
-
-        private Band String2Band(string pBand)
-        {
-            string band = pBand.ToUpper(); ;
-            Band retval;
-
-            switch (band)
-            {
-                case "888":
-                    retval = Band.GEN;
-                    break;
-                case "160":
-                    retval = Band.B160M;
-                    break;
-                case "060":
-                    retval = Band.B60M;
-                    break;
-                case "080":
-                    retval = Band.B80M;
-                    break;
-                case "040":
-                    retval = Band.B40M;
-                    break;
-                case "030":
-                    retval = Band.B30M;
-                    break;
-                case "020":
-                    retval = Band.B20M;
-                    break;
-                case "017":
-                    retval = Band.B17M;
-                    break;
-                case "015":
-                    retval = Band.B15M;
-                    break;
-                case "012":
-                    retval = Band.B12M;
-                    break;
-                case "010":
-                    retval = Band.B10M;
-                    break;
-                case "006":
-                    retval = Band.B6M;
-                    break;
-                case "002":
-                    retval = Band.B2M;
-                    break;
-                case "999":
-                    retval = Band.WWV;
-                    break;
-                default:
-                    retval = Band.GEN;
-                    break;
-            }
-
-            return retval;
-        }
-
-        #endregion Band Methods
-
-        #region Step Methods
-
-        private double Step2Freq(int step)
-        {
-            double freq = 0.0;
-
-            switch (step)
-            {
-                case 0:
-                    freq = 0.000001;
-                    break;
-                case 1:
-                    freq = 0.000010;
-                    break;
-                case 2:
-                    freq = 0.000050;
-                    break;
-                case 3:
-                    freq = 0.000100;
-                    break;
-                case 4:
-                    freq = 0.000250;
-                    break;
-                case 5:
-                    freq = 0.000500;
-                    break;
-                case 6:
-                    freq = 0.001000;
-                    break;
-                case 7:
-                    freq = 0.005000;
-                    break;
-                case 8:
-                    freq = 0.009000;
-                    break;
-                case 9:
-                    freq = 0.010000;
-                    break;
-                case 10:
-                    freq = 0.100000;
-                    break;
-                case 11:
-                    freq = 0.250000;
-                    break;
-                case 12:
-                    freq = 0.500000;
-                    break;
-                case 13:
-                    freq = 1.000000;
-                    break;
-                case 14:
-                    freq = 10.000000;
-                    break;
-            }
-
-            return freq;
-        }
-
-        private string Step2String(int pSize)
-        {
-            // Modified 2/25/07 to accomodate changes to console where odd step sizes added.  BT
-            string stepval = "";
-            int step = pSize;
-
-            switch (step)
-            {
-                case 0:
-                    stepval = "0000";	//10e0 = 1 hz
-                    break;
-                case 1:
-                    stepval = "0001";	//10e1 = 10 hz
-                    break;
-                case 2:
-                    stepval = "1000";	//special default for 50 hz
-                    break;
-                case 3:
-                    stepval = "0010";	//10e2 = 100 hz
-                    break;
-                case 4:
-                    stepval = "1001";	//special default for 250 hz
-                    break;
-                case 5:
-                    stepval = "1010";	//10e3 = 1 kHz default for 500 hz
-                    break;
-                case 6:
-                    stepval = "0011";	//10e3 = 1 kHz
-                    break;
-                case 7:
-                    stepval = "1011";	//special default for 5 kHz
-                    break;
-                case 8:
-                    stepval = "1100";	//special default for 9 kHz
-                    break;
-                case 9:
-                    stepval = "0100";	//10e4 = 10 khZ
-                    break;
-                case 10:
-                    stepval = "0101";	//10e5 = 100 kHz
-                    break;
-                case 11:
-                    stepval = "1101";   //special default for 250 kHz
-                    break;
-                case 12:
-                    stepval = "1110";   //special default for 500 kHz
-                    break;
-                case 13:
-                    stepval = "0110";	//10e6 = 1 mHz
-                    break;
-                case 14:
-                    stepval = "0111";	//10e7 = 10 mHz
-                    break;
-            }
-
-            return stepval;
-        }
-
-        private int String2Step(string step_string)       // yt7pwr
-        {
-            int stepval = -1;
-
-            switch (step_string)
-            {
-                case "0000":
-                    stepval = 0;	//10e0 = 1 hz
-                    break;
-                case "0001":
-                    stepval = 1;	//10e1 = 10 hz
-                    break;
-                case "1000":
-                    stepval = 2;	//special default for 50 hz
-                    break;
-                case "0010":
-                    stepval = 3;	//10e2 = 100 hz
-                    break;
-                case "1001":
-                    stepval = 4;	//special default for 250 hz
-                    break;
-                case "1010":
-                    stepval = 5;	//10e3 = 1 kHz default for 500 hz
-                    break;
-                case "0011":
-                    stepval = 6;	//10e3 = 1 kHz
-                    break;
-                case "1011":
-                    stepval = 7;	//special default for 5 kHz
-                    break;
-                case "1100":
-                    stepval = 8;	//special default for 9 kHz
-                    break;
-                case "0100":
-                    stepval = 9;	//10e4 = 10 khZ
-                    break;
-                case "0101":
-                    stepval = 10;	//10e5 = 100 kHz
-                    break;
-                case "1101":
-                    stepval = 11;   //special default for 250 kHz
-                    break;
-                case "1110":
-                    stepval = 12;   //special default for 500 kHz
-                    break;
-                case "0110":
-                    stepval = 13;	//10e6 = 1 mHz
-                    break;
-                case "0111":
-                    stepval = 14;	//10e7 = 10 mHz
-                    break;
-            }
-            return stepval;
-        }
-
-        #endregion Step Methods
-
-        #region Meter Methods
-
-        private void String2RXMeter(int m)
-        {
-            int[] parm2 = new int[1];
-
-            if (!console.ConsoleClosing)
-                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Meter RXMode", m, parm2, "");
-        }
-
-        private string RXMeter2String()
-        {
-            return ((int)console.CurrentMeterRXMode).ToString();
-        }
-
-        private void String2TXMeter(int m)
-        {
-            int[] parm2 = new int[1];
-
-            if (!console.ConsoleClosing)
-                console.Invoke(new CATCrossThreadCallback(console.CATCallback), "Meter TXMode", m, parm2, "");
-        }
-
-        private string TXMeter2String()
-        {
-            return ((int)console.CurrentMeterTXMode).ToString();
-        }
-
-        #endregion Meter Methods
-
-        #region Rig ID Methods
-
-        private string CAT2RigType()
-        {
-            return "";
-        }
-
-        private string RigType2CAT()
-        {
-            return "";
-        }
-
-        #endregion Rig ID Methods
-
-        #region DSP Filter Size Methods
-
-        private string Width2Index(int txt)
-        {
-            string ans = "";
-
-            switch (txt)
-            {
-                case 256:
-                    ans = "0";
-                    break;
-                case 512:
-                    ans = "1";
-                    break;
-                case 1024:
-                    ans = "2";
-                    break;
-                case 2048:
-                    ans = "3";
-                    break;
-                case 4096:
-                    ans = "4";
-                    break;
-                default:
-                    ans = "0";
-                    break;
-            }
-            return ans;
-        }
-
-        private int Index2Width(string ndx)
-        {
-            int ans;
-
-            switch (ndx)
-            {
-                case "0":
-                    ans = 256;
-                    break;
-                case "1":
-                    ans = 512;
-                    break;
-                case "2":
-                    ans = 1024;
-                    break;
-                case "3":
-                    ans = 2048;
-                    break;
-                case "4":
-                    ans = 4096;
-                    break;
-                default:
-                    ans = 256;
-                    break;
-            }
-            return ans;
-        }
-
-        #endregion DSP Filter Size Methods
-
-        #endregion Helper methods
     }
 }
 
