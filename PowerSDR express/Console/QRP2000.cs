@@ -45,7 +45,6 @@ namespace PowerSDR
 
         public Console console;
         public bool connected = false;
-        int tmp;
         public bool debug = false;
 
         public QRP2000(Console c)
@@ -54,9 +53,6 @@ namespace PowerSDR
         }
 
         #region Dll Method Definitions
-        // ======================================================
-        // DLL Method Definitions
-        // ======================================================
 
         [DllImport("SRDLL.dll", EntryPoint = "srOpen")]
         public static extern bool Open(int vid, int pid, char[] Manufacturer, char[] product, char[] SerialNumber);
@@ -96,9 +92,6 @@ namespace PowerSDR
         #endregion
 
         #region QRP2000 routines
-        // ======================================================
-        // Misc Routines
-        // ======================================================
 
         public bool QRP2000Status()
         {

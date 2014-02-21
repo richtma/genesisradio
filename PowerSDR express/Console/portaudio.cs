@@ -347,16 +347,30 @@ namespace PowerSDR
         [DllImport("PA19.dll")]
         public static extern int PA_GetVersion();
 
+#if(WIN32)
         [DllImport("PA19.dll")]
         public static extern String PA_GetVersionText();
+#endif
+#if(WIN64)
+        [DllImport("PA19.dll", CharSet = CharSet.None, CallingConvention = CallingConvention.Cdecl, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.LPTStr)]
+        public static extern String PA_GetVersionText();
+#endif
 
         // note that using the stock source and calling this function
         // on errorCode = 0 will result in an Exception (no object
         // reference.  To fix this, I added a single statement in
         // pa_front.c.  The new line 444 is below.
         // case paNoError:                  result = "1"; result = "Success"; break;
+#if(WIN32)
         [DllImport("PA19.dll")]
         public static extern String PA_GetErrorText(PaError errorCode);
+#endif
+#if(WIN64)
+        [DllImport("PA19.dll", CharSet = CharSet.None, CallingConvention = CallingConvention.Cdecl, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.LPTStr)]
+        public static extern String PA_GetErrorText(PaError errorCode);
+#endif
 
         [DllImport("PA19.dll")]
         public static extern PaError PA_Initialize();

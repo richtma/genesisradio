@@ -25,7 +25,6 @@
 using System;
 using System.Text;
 using System.Collections;
-//using System.Threading;
 using System.Windows.Forms; // needed for MessageBox (wjt)
 using System.Text.RegularExpressions;
 using System.Diagnostics;
@@ -41,7 +40,7 @@ namespace PowerSDR
         bool run_thread = false;
         Thread send_thread;
         AutoResetEvent send_event = new AutoResetEvent(false);
-        byte[] send_data = new byte[256];
+        byte[] send_data = new byte[1024];
         uint data_length = 0;
         private delegate void DebugCallbackFunction(string name);
         public bool debug = false;
@@ -53,7 +52,6 @@ namespace PowerSDR
         public SIOListenerII(Console c)
 		{
 			console = c;
-			//console.Activated += new EventHandler(console_Activated);
 			console.Closing += new System.ComponentModel.CancelEventHandler(console_Closing);
 			parser = new CATParser(console);
 
@@ -151,6 +149,8 @@ namespace PowerSDR
 
 			if ( SIO != null ) 
 			{
+                SIO.run = false;
+                SIO.rx_event.Set();
                 SIOMonitor.Stop();
 				SIO.Destroy(); 
 				SIO = null; 
@@ -256,8 +256,13 @@ namespace PowerSDR
 
 		private void console_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
+            run_thread = false;
+            send_event.Set();
+
 			if ( SIO != null ) 
-			{ 
+			{
+                SIO.run = false;
+                SIO.rx_event.Set();
 				SIO.Destroy(); 
 			}
 		}
@@ -274,10 +279,11 @@ namespace PowerSDR
                 Regex rex = new Regex(".*?;");
                 byte[] out_string = new byte[1024];
                 CommBuffer += AE.GetString(e.buffer, 0, e.buffer.Length);
+                Debug.Write(CommBuffer + "\n");
 
                 if (console.CATRigType == 1)
                 {
-                    byte[] buffer = new byte[e.buffer.Length+1];
+                    byte[] buffer = new byte[e.buffer.Length + 1];
                     byte[] question = new byte[16];
                     byte[] answer = new byte[16];
                     byte[] question1 = new byte[1];
@@ -301,9 +307,11 @@ namespace PowerSDR
                                         dbg_msg += " ";
                                     }
 
-                                    if (!console.ConsoleClosing)
+                                    if (debug && !console.ConsoleClosing)
+                                    {
                                         console.Invoke(new DebugCallbackFunction(console.DebugCallback),
                                             "CAT command: " + dbg_msg);
+                                    }
                                 }
 
                                 if (console.CATEcho)
@@ -327,7 +335,7 @@ namespace PowerSDR
                             else
                             {
 
-                            }                                    
+                            }
                         }
                         else
                         {
@@ -340,8 +348,11 @@ namespace PowerSDR
                 }
                 else
                 {
+                    bool split = true;
+
                     for (Match m = rex.Match(CommBuffer); m.Success; m = m.NextMatch())
                     {
+                        split = false;
                         string answer;
                         answer = parser.Get(m.Value);
 
@@ -356,19 +367,25 @@ namespace PowerSDR
                         send_event.Set();
                     }
 
-                    CommBuffer = "";
+                    if(!split)
+                        CommBuffer = "";
                 }
             }
             catch (Exception ex)
             {
-                Debug.Write(ex.ToString());
                 CommBuffer = "";
 
                 if (debug && !console.ConsoleClosing)
                 {
                     console.Invoke(new DebugCallbackFunction(console.DebugCallback),
                         "CAT SerialRXEvent error! \n" + ex.ToString());
+
+                    Debug.Write(ex.ToString());
                 }
+            }
+            finally
+            {
+                SIO.rx_event.Set();
             }
 		}
 
@@ -383,7 +400,7 @@ namespace PowerSDR
                 switch (command)
                 {
                     case "send":
-                        if (data.Length <= 256)
+                        if (data.Length <= 1024)
                         {
                             lock (this)
                             {
@@ -397,12 +414,11 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
-                Debug.Write(ex.ToString());
-
                 if (debug && !console.ConsoleClosing)
                 {
                     console.Invoke(new DebugCallbackFunction(console.DebugCallback),
                         "CAT CrossThreasCallback error! \n" + ex.ToString());
+                    Debug.Write(ex.ToString());
                 }
             }
         }
@@ -411,7 +427,6 @@ namespace PowerSDR
         {
             ASCIIEncoding buffer = new ASCIIEncoding();
             string out_string = "";
-            uint length = 0;
 
             while (run_thread)
             {
@@ -439,13 +454,13 @@ namespace PowerSDR
                             dbg_msg += " ";
                         }
 
-                        if (!console.ConsoleClosing)
+                        if (debug && !console.ConsoleClosing)
                             console.Invoke(new DebugCallbackFunction(console.DebugCallback),
                                 "CAT answer: " + dbg_msg);
                     }
                     else
                     {
-                        if (!console.ConsoleClosing)
+                        if (debug && !console.ConsoleClosing)
                         {
                             console.Invoke(new DebugCallbackFunction(console.DebugCallback),
                                 "CAT answer: " + out_string);

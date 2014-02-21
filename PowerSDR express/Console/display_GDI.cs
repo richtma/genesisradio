@@ -112,10 +112,7 @@ namespace PowerSDR
         public static bool smooth_line = false;
         public static bool pan_fill = false;
 
-        public static string display_font_name = "Arial";
-        public static float display_font_size = 9;
-
-        private static Font panadapter_font = new System.Drawing.Font(display_font_name, display_font_size);
+        private static Font panadapter_font = new System.Drawing.Font("Arial", 9);
         public static Font PanadapterFont
         {
             get { return panadapter_font; }
@@ -129,7 +126,14 @@ namespace PowerSDR
             set { pan_fill_color = value; }
         }
 
-        private static Color display_text_background = Color.FromArgb(127, 127, 127, 127);
+        private static Color scope_color = Color.FromArgb(100, 0, 0, 127);
+        public static Color ScopeColor
+        {
+            get { return scope_color; }
+            set { scope_color = value; }
+        }
+
+        private static Color display_text_background = Color.FromArgb(127, 0, 0, 0);
         public static Color DisplayTextBackground
         {
             get { return display_text_background; }
@@ -940,9 +944,6 @@ namespace PowerSDR
         #endregion
 
         #region Drawing Routines
-        // ======================================================
-        // Drawing Routines
-        // ======================================================
 
         public static int center_line_x = 415;
         public static int filter_left_x = 150;
@@ -975,6 +976,8 @@ namespace PowerSDR
             int filter_high_subRX = 0;
             int notch_low = 0;
             int notch_high = 0;
+            double[] BandEdges = new double[100];
+            int i;
 
             center_line_x = W / 2;
 
@@ -1037,7 +1040,7 @@ namespace PowerSDR
             long vfo_delta = (long)(vfo - vfo_round);
 
             // Draw vertical lines
-            int i, vert_num;
+            int vert_num;
 
             if (current_model == Model.GENESIS_G137)
                 vert_num = 20;
@@ -1053,18 +1056,9 @@ namespace PowerSDR
                 double actual_fgrid = ((double)(vfo_round + fgrid)) / 1000000;
                 int vgrid = (int)((double)(fgrid - vfo_delta - low) / (high - low) * W);
 
-                if (actual_fgrid == 1.8 || actual_fgrid == 2.0 ||
-                    actual_fgrid == 3.5 || actual_fgrid == 4.0 ||
-                    actual_fgrid == 7.0 || actual_fgrid == 7.3 ||
-                    actual_fgrid == 10.1 || actual_fgrid == 10.15 ||
-                    actual_fgrid == 14.0 || actual_fgrid == 14.35 ||
-                    actual_fgrid == 18.068 || actual_fgrid == 18.168 ||
-                    actual_fgrid == 21.0 || actual_fgrid == 21.45 ||
-                    actual_fgrid == 24.89 || actual_fgrid == 24.99 ||
-                    actual_fgrid == 21.0 || actual_fgrid == 21.45 ||
-                    actual_fgrid == 28.0 || actual_fgrid == 29.7 ||
-                    actual_fgrid == 50.0 || actual_fgrid == 54.0 ||
-                    actual_fgrid == 144.0 || actual_fgrid == 146.0 ||
+                DB.GetBandLimitsEdges(ref BandEdges);
+
+                if (
                     actual_fgrid == console.xBand[1].freq_max || actual_fgrid == console.xBand[1].freq_min ||
                     actual_fgrid == console.xBand[2].freq_max || actual_fgrid == console.xBand[2].freq_min ||
                     actual_fgrid == console.xBand[3].freq_max || actual_fgrid == console.xBand[3].freq_min ||
@@ -1150,11 +1144,12 @@ namespace PowerSDR
                 }
             }
 
-            int[] band_edge_list = { 135700, 137800, 415000, 525000, 10150000, 14350000, 18068000, 18168000, 24880000, 24990000 };
+            //int[] band_edge_list = { 135700, 137800, 415000, 525000, 10150000, 14350000, 18068000, 18168000, 24880000, 24990000 };
 
-            for (i = 0; i < band_edge_list.Length; i++)
+            foreach (double b_edge in BandEdges)
+            //for (i = 0; i < band_edge_list.Length; i++)
             {
-                double band_edge_offset = band_edge_list[i] - losc_hz;
+                double band_edge_offset = b_edge * 1e6 - losc_hz;
                 if (band_edge_offset >= low && band_edge_offset <= high)
                 {
                     int temp_vline = (int)((double)(band_edge_offset - low) / (high - low) * W);//wa6ahl

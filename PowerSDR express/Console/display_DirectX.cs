@@ -116,6 +116,7 @@ namespace PowerSDR
         private static Device device = null;
         private static Texture PanadapterTexture = null;
         private static Texture WaterfallTexture = null;
+        private static Texture WaterfallBackgroundTexture = null;
         private static Sprite Panadapter_Sprite = null;
         private static Sprite Waterfall_Sprite = null;
         private static Rectangle Panadapter_texture_size;
@@ -126,16 +127,16 @@ namespace PowerSDR
         private static VertexBuffer HorLine_vb = null;
         private static VertexBuffer VerLines_vb = null;
         private static VertexBuffer HorLines_vb = null;
-        private static VertexBuffer PanLine_vb = null;
-        private static VertexBuffer WaterfallLine_vb = null;
-        private static VertexBuffer ScopeLine_vb = null;
+        private static VertexBuffer Panadapter_vb = null;
+        private static VertexBuffer Waterfall_vb = null;
+        //private static VertexBuffer ScopeLine_vb = null;
         private static VertexBuffer PanLine_vb_fill = null;
-        private static Vertex[] PanLine_verts = null;
-        private static Vertex[] WaterfallLine_verts = null;
-        private static Vertex[] ScopeLine_verts = null;
-        private static Vertex[] PanLine_verts_fill = null;
-        private static Vertex[] Phase_verts = null;
-        private static VertexBuffer Phase_vb = null;
+        private static Vertex[] Panadapter_verts = null;
+        private static Vertex[] Waterfall_verts = null;
+        //private static Vertex[] ScopeLine_verts = null;
+        private static Vertex[] Panadapter_verts_fill = null;
+        //private static Vertex[] Phase_verts = null;
+        //private static VertexBuffer Phase_vb = null;
         private static Vertex[] HistogramLine_verts = null;
         private static VertexBuffer Histogram_vb = null;
         private static float[] waterfallX_data = null;
@@ -253,6 +254,13 @@ namespace PowerSDR
                     panadapter_font = new SlimDX.Direct3D9.Font(device, pan_font);
                 }
             }
+        }
+
+        private static Color scope_color = Color.FromArgb(100, 0, 0, 127);
+        public static Color ScopeColor
+        {
+            get { return scope_color; }
+            set { scope_color = value; }
         }
 
         private static Color pan_fill_color = Color.FromArgb(100, 0, 0, 127);
@@ -1050,7 +1058,7 @@ namespace PowerSDR
                         presentParms.SwapEffect = SwapEffect.Discard;
                         presentParms.Multisample = MultisampleType.None;
                         presentParms.EnableAutoDepthStencil = true;
-                        presentParms.AutoDepthStencilFormat = Format.D16;
+                        presentParms.AutoDepthStencilFormat = Format.D24X8;
                         presentParms.PresentFlags = PresentFlags.DiscardDepthStencil;
                         presentParms.PresentationInterval = PresentInterval.Default;
                         presentParms.BackBufferFormat = Format.X8R8G8B8;
@@ -1127,7 +1135,7 @@ namespace PowerSDR
                         waterfall_memory = new byte[waterfall_bmp_size];
                         waterfall_bmp.UnlockBits(bitmapData);
                         waterfall_rect = new Rectangle(0, 0, waterfall_target.Width, waterfall_target.Height);
-                        backbuf = waterfall_dx_device.GetBackBuffer(0, 0);
+                        //backbuf = waterfall_dx_device.GetBackBuffer(0, 0);
 
                         panadapter_font = new SlimDX.Direct3D9.Font(device, pan_font);
 
@@ -1139,15 +1147,19 @@ namespace PowerSDR
                             Panadapter_texture_size.Height = panadapter_target.Height;
                             Panadapter_Sprite = new Sprite(device);
                             WaterfallTexture = Texture.FromFile(waterfall_dx_device, background_image, waterfall_target.Width, waterfall_target.Height,
-                                1, Usage.None, Format.X8R8G8B8, Pool.Managed, SlimDX.Direct3D9.Filter.Default, SlimDX.Direct3D9.Filter.Default, 0);
+                                1, Usage.None, Format.Unknown, Pool.Managed, SlimDX.Direct3D9.Filter.Default, SlimDX.Direct3D9.Filter.Default, 0);
                             Waterfall_texture_size.Width = waterfall_target.Width;
                             Waterfall_texture_size.Height = waterfall_target.Height;
+                            WaterfallBackgroundTexture = Texture.FromFile(waterfall_dx_device, background_image, waterfall_target.Width, waterfall_target.Height,
+                                1, Usage.None, Format.Unknown, Pool.Managed, SlimDX.Direct3D9.Filter.Default, SlimDX.Direct3D9.Filter.Default, 0);
                             Waterfall_Sprite = new Sprite(waterfall_dx_device);
                         }
                         else
                         {
                             Panadapter_Sprite = null;
                             WaterfallTexture = new Texture(waterfall_dx_device, waterfall_target.Width, waterfall_target.Height, 0,
+                                Usage.None, Format.X8R8G8B8, Pool.Managed);
+                            WaterfallBackgroundTexture = new Texture(waterfall_dx_device, waterfall_target.Width, waterfall_target.Height, 0,
                                 Usage.None, Format.X8R8G8B8, Pool.Managed);
                             Waterfall_texture_size.Width = waterfall_target.Width;
                             Waterfall_texture_size.Height = waterfall_target.Height;
@@ -1156,63 +1168,25 @@ namespace PowerSDR
 
                         if (directx_render_type == RenderType.HARDWARE)
                         {
-                            WaterfallLine_vb = new VertexBuffer(waterfall_dx_device, panadapterX_data.Length * 20, Usage.WriteOnly, VertexFormat.None, Pool.Managed);
-                            WaterfallLine_verts = new Vertex[waterfall_W];
-                            PanLine_vb = new VertexBuffer(device, panadapterX_data.Length * 20, Usage.WriteOnly, VertexFormat.None, Pool.Managed);
+                            Waterfall_vb = new VertexBuffer(waterfall_dx_device, panadapterX_data.Length * 2 * 20, Usage.WriteOnly, VertexFormat.None, Pool.Managed);
+                            Waterfall_verts = new Vertex[waterfall_W * 2];
+                            Panadapter_vb = new VertexBuffer(device, panadapterX_data.Length * 2 * 20, Usage.WriteOnly, VertexFormat.None, Pool.Managed);
                             PanLine_vb_fill = new VertexBuffer(device, panadapter_W * 2 * 20, Usage.WriteOnly, VertexFormat.None, Pool.Managed);
-                            PanLine_verts = new Vertex[panadapter_W];
-                            PanLine_verts_fill = new Vertex[panadapter_W * 2];
-
-                            if (current_display_mode == DisplayMode.PANASCOPE)
-                            {
-                                ScopeLine_vb = new VertexBuffer(waterfall_dx_device, waterfall_W * 2 * 20, Usage.WriteOnly, VertexFormat.None, Pool.Managed);
-                                ScopeLine_verts = new Vertex[waterfall_W * 2];
-                            }
-                            else if (current_display_mode == DisplayMode.SCOPE)
-                            {
-                                ScopeLine_vb = new VertexBuffer(device, panadapter_W * 2 * 20, Usage.WriteOnly, VertexFormat.None, Pool.Managed);
-                                ScopeLine_verts = new Vertex[panadapter_W * 2];
-                            }
-                            else if (current_display_mode == DisplayMode.PHASE || current_display_mode == DisplayMode.PHASE2)
-                            {
-                                Phase_verts = new Vertex[PhaseNumPts * 2];
-                                Phase_vb = new VertexBuffer(device, phase_num_pts * 2 * 20, Usage.WriteOnly, VertexFormat.None, Pool.Managed);
-                            }
-                            else if (current_display_mode == DisplayMode.HISTOGRAM)
-                            {
-                                HistogramLine_verts = new Vertex[panadapter_W * 6];
-                                Histogram_vb = new VertexBuffer(device, panadapter_W * 4 * 20, Usage.WriteOnly, VertexFormat.None, Pool.Managed);
-                            }
+                            Panadapter_verts = new Vertex[panadapter_W * 2];
+                            Panadapter_verts_fill = new Vertex[panadapter_W * 2];
+                            HistogramLine_verts = new Vertex[panadapter_W * 6];
+                            Histogram_vb = new VertexBuffer(device, panadapter_W * 4 * 20, Usage.WriteOnly, VertexFormat.None, Pool.Managed);
                         }
                         else if (directx_render_type == RenderType.SOFTWARE)
                         {
-                            WaterfallLine_vb = new VertexBuffer(waterfall_dx_device, panadapterX_data.Length * 20, Usage.WriteOnly, VertexFormat.None, Pool.Default);
-                            WaterfallLine_verts = new Vertex[waterfall_W];
-                            PanLine_vb = new VertexBuffer(device, panadapterX_data.Length * 20, Usage.WriteOnly, VertexFormat.None, Pool.Default);
+                            Waterfall_vb = new VertexBuffer(waterfall_dx_device, panadapterX_data.Length * 20, Usage.WriteOnly, VertexFormat.None, Pool.Default);
+                            Waterfall_verts = new Vertex[waterfall_W];
+                            Panadapter_vb = new VertexBuffer(device, panadapterX_data.Length * 20, Usage.WriteOnly, VertexFormat.None, Pool.Default);
                             PanLine_vb_fill = new VertexBuffer(device, panadapter_W * 2 * 20, Usage.WriteOnly, VertexFormat.None, Pool.Default);
-                            PanLine_verts = new Vertex[panadapter_W];
-                            PanLine_verts_fill = new Vertex[panadapter_W * 2];
-
-                            if (current_display_mode == DisplayMode.PANASCOPE)
-                            {
-                                ScopeLine_vb = new VertexBuffer(waterfall_dx_device, waterfall_W * 2 * 20, Usage.WriteOnly, VertexFormat.None, Pool.Default);
-                                ScopeLine_verts = new Vertex[waterfall_W * 2];
-                            }
-                            else if (current_display_mode == DisplayMode.SCOPE)
-                            {
-                                ScopeLine_vb = new VertexBuffer(device, panadapter_W * 2 * 20, Usage.WriteOnly, VertexFormat.None, Pool.Default);
-                                ScopeLine_verts = new Vertex[panadapter_W* 2];
-                            }
-                            else if (current_display_mode == DisplayMode.PHASE || current_display_mode == DisplayMode.PHASE2)
-                            {
-                                Phase_verts = new Vertex[PhaseNumPts * 2];
-                                Phase_vb = new VertexBuffer(device, phase_num_pts * 2 * 20, Usage.WriteOnly, VertexFormat.None, Pool.Default);
-                            }
-                            else if (current_display_mode == DisplayMode.HISTOGRAM)
-                            {
-                                HistogramLine_verts = new Vertex[panadapter_W * 6];
-                                Histogram_vb = new VertexBuffer(device, panadapter_W * 4 * 20, Usage.WriteOnly, VertexFormat.None, Pool.Default);
-                            }
+                            Panadapter_verts = new Vertex[panadapter_W];
+                            Panadapter_verts_fill = new Vertex[panadapter_W * 2];
+                            HistogramLine_verts = new Vertex[panadapter_W * 6];
+                            Histogram_vb = new VertexBuffer(device, panadapter_W * 4 * 20, Usage.WriteOnly, VertexFormat.None, Pool.Default);
                         }
 
                         panadapter_verts = new Vector2[panadapter_W];
@@ -1264,7 +1238,7 @@ namespace PowerSDR
                 {
                     DX_reinit = true;
 
-                    backbuf = null;
+                    //backbuf = null;
                     waterfallX_data = null;
                     panadapterX_data = null;
                     scope_min = null;
@@ -1338,17 +1312,17 @@ namespace PowerSDR
                         HorLines_vb = null;
                     }
 
-                    if (PanLine_vb != null)
+                    if (Panadapter_vb != null)
                     {
-                        PanLine_vb.Dispose();
-                        PanLine_vb.Dispose();
+                        Panadapter_vb.Dispose();
+                        Panadapter_vb.Dispose();
                     }
 
-                    if (ScopeLine_vb != null)
+                    /*if (ScopeLine_vb != null)
                     {
                         ScopeLine_vb.Dispose();
                         ScopeLine_vb.Dispose();
-                    }
+                    }*/
 
                     if (PanLine_vb_fill != null)
                     {
@@ -1362,11 +1336,11 @@ namespace PowerSDR
                     if (horizontal_label != null)
                         horizontal_label = null;
 
-                    if (Phase_vb != null)
+                    /*if (Phase_vb != null)
                     {
                         Phase_vb.Dispose();
                         Phase_vb.Dispose();
-                    }
+                    }*/
 
                     if (device != null)
                     {
@@ -1380,7 +1354,9 @@ namespace PowerSDR
                         waterfall_dx_device = null;
                     }
 
-                    high_swr_font.Dispose();
+                    if(high_swr_font != null)
+                        high_swr_font.Dispose();
+
                     panadapter_fill_verts = null;
                     panadapter_line = null;
                     panadapter_fill_verts = null;
@@ -1407,8 +1383,8 @@ namespace PowerSDR
             int high = rx_display_high;
             int filter_low, filter_high;
             int[] step_list = { 10, 20, 25, 50 };
-            int step_power = 1;
-            int step_index = 0;
+            //int step_power = 1;
+            //int step_index = 0;
             int freq_step_size = 50;
             int filter_left = 0;
             int filter_right = 0;
@@ -1843,20 +1819,14 @@ namespace PowerSDR
             {
                 for (i = 0; i < panadapter_W * 2; i++)
                 {
-                    HistogramLine_verts[i] = new Vertex();
                     HistogramLine_verts[i].Color = histogram_verts[j].color.ToArgb();
-                    HistogramLine_verts[i].Position = new Vector4(j, points[j].Y, 0.0f, 0.0f);
-                    HistogramLine_verts[i + 1] = new Vertex();
+                    HistogramLine_verts[i].Position.X = j;
+                    HistogramLine_verts[i].Position.Y = points[j].Y;
                     HistogramLine_verts[i + 1].Color = histogram_verts[j].color.ToArgb();
-                    HistogramLine_verts[i + 1].Position = new Vector4(j, histogram_data[j], 0.0f, 0.0f);
-                    HistogramLine_verts[i + 2] = new Vertex();
-                    HistogramLine_verts[i + 2].Color = histogram_verts[j].color.ToArgb();
-                    HistogramLine_verts[i + 2].Position = new Vector4(j + 1, points[j].Y, 0.0f, 0.0f);
-                    HistogramLine_verts[i + 3] = new Vertex();
-                    HistogramLine_verts[i + 3].Color = histogram_verts[j].color.ToArgb();
-                    HistogramLine_verts[i + 3].Position = new Vector4(j + 1, histogram_data[j], 0.0f, 0.0f);
-                    i += 3;
-                    j += 2;
+                    HistogramLine_verts[i + 1].Position.X = j;
+                    HistogramLine_verts[i + 1].Position.Y = histogram_data[j];
+                    i++;
+                    j++;
                 }
 
                 Histogram_vb.Lock(0, 0, LockFlags.None).WriteRange(HistogramLine_verts, 0, panadapter_W * 2);
@@ -1868,18 +1838,18 @@ namespace PowerSDR
                 j = 0;
                 for (i = 0; i < panadapter_W * 4; i++)
                 {
-                    HistogramLine_verts[panadapter_W + i] = new Vertex();
                     HistogramLine_verts[panadapter_W + i].Color = histogram_verts[panadapter_W + j].color.ToArgb();
-                    HistogramLine_verts[panadapter_W + i].Position = new Vector4(k, panadapter_H, 0.0f, 0.0f);
-                    HistogramLine_verts[panadapter_W + i + 1] = new Vertex();
+                    HistogramLine_verts[panadapter_W + i].Position.X = k;
+                    HistogramLine_verts[panadapter_W + i].Position.Y = panadapter_H;
                     HistogramLine_verts[panadapter_W + i + 1].Color = histogram_verts[panadapter_W + j].color.ToArgb();
-                    HistogramLine_verts[panadapter_W + i + 1].Position = new Vector4(k, histogram_verts[panadapter_W + j].Y, 0.0f, 0.0f);
-                    HistogramLine_verts[panadapter_W + i + 2] = new Vertex();
+                    HistogramLine_verts[panadapter_W + i + 1].Position.X = k;
+                    HistogramLine_verts[panadapter_W + i + 1].Position.Y = histogram_verts[panadapter_W + j].Y;
                     HistogramLine_verts[panadapter_W + i + 2].Color = histogram_verts[panadapter_W + j + 1].color.ToArgb();
-                    HistogramLine_verts[panadapter_W + i + 2].Position = new Vector4(k, histogram_verts[panadapter_W + j].Y, 0.0f, 0.0f);
-                    HistogramLine_verts[panadapter_W + i + 3] = new Vertex();
+                    HistogramLine_verts[panadapter_W + i + 2].Position.X = k;
+                    HistogramLine_verts[panadapter_W + i + 2].Position.Y = histogram_verts[panadapter_W + j].Y;
                     HistogramLine_verts[panadapter_W + i + 3].Color = histogram_verts[panadapter_W + j + 1].color.ToArgb();
-                    HistogramLine_verts[panadapter_W + i + 3].Position = new Vector4(k, histogram_verts[panadapter_W + j + 1].Y, 0.0f, 0.0f);
+                    HistogramLine_verts[panadapter_W + i + 3].Position.X = k;
+                    HistogramLine_verts[panadapter_W + i + 3].Position.Y = histogram_verts[panadapter_W + j + 1].Y;
                     i += 3;
                     j +=2;
                     k++;
@@ -1901,26 +1871,63 @@ namespace PowerSDR
             }
         }
 
-        private static void RenderScope(Device dev, int count)        // yt7pwr
+        private static void RenderPanadapterScope(Device dev, int count)        // yt7pwr
         {
             try
             {
+                int j = 0;
+
                 for (int i = 0; i < count * 2; i++)
                 {
-                    ScopeLine_verts[i] = new Vertex();
-                    ScopeLine_verts[i].Color = pan_fill_color.ToArgb();
-                    ScopeLine_verts[i].Position = new Vector4(i / 2, panadapterX_scope_data[i], 0.0f, 0.0f);
-                    ScopeLine_verts[i + 1] = new Vertex();
-                    ScopeLine_verts[i + 1].Color = pan_fill_color.ToArgb();
-                    ScopeLine_verts[i + 1].Position = new Vector4(i / 2, panadapterX_scope_data[i + 1], 0.0f, 0.0f);
+                    Panadapter_verts[i].Color = scope_color.ToArgb();
+                    Panadapter_verts[i].Position.X = i / 2;
+                    Panadapter_verts[i].Position.Y = panadapterX_scope_data[i];
+                    Panadapter_verts[i + 1].Color = scope_color.ToArgb();
+                    Panadapter_verts[i + 1].Position.X = i / 2;
+                    Panadapter_verts[i + 1].Position.Y = panadapterX_scope_data[i + 1];
                     i++;
+                    j++;
                 }
 
-                ScopeLine_vb.Lock(0, 0, LockFlags.None).WriteRange(ScopeLine_verts, 0, count * 2);
-                ScopeLine_vb.Unlock();
+                Panadapter_vb.Lock(0, 0, LockFlags.None).WriteRange(Panadapter_verts, 0, panadapter_W * 2);
+                Panadapter_vb.Unlock();
 
-                dev.SetStreamSource(0, ScopeLine_vb, 0, 20);
-                dev.DrawPrimitives(PrimitiveType.LineList, 0, count * 2);
+                dev.SetStreamSource(0, Panadapter_vb, 0, 20);
+                dev.DrawPrimitives(PrimitiveType.LineList, 0, count);
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+
+                if (debug && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                        "Rendering Scope fault!\n" + ex.ToString());
+            }
+        }
+
+        private static void RenderWaterfallrScope(Device dev, int count)        // yt7pwr
+        {
+            try
+            {
+                int j = 0;
+
+                for (int i = 0; i < count * 2; i++)
+                {
+                    Waterfall_verts[i].Color = scope_color.ToArgb();
+                    Waterfall_verts[i].Position.X = i / 2; 
+                    Waterfall_verts[i].Position.Y = panadapterX_scope_data[i];
+                    Waterfall_verts[i + 1].Color = scope_color.ToArgb();
+                    Waterfall_verts[i + 1].Position.X = i / 2;
+                    Waterfall_verts[i + 1].Position.Y = panadapterX_scope_data[i + 1];
+                    i++;
+                    j++;
+                }
+
+                Waterfall_vb.Lock(0, 0, LockFlags.None).WriteRange(Waterfall_verts, 0, panadapter_W * 2);
+                Waterfall_vb.Unlock();
+
+                dev.SetStreamSource(0, Waterfall_vb, 0, 20);
+                dev.DrawPrimitives(PrimitiveType.LineList, 0, count);
             }
             catch (Exception ex)
             {
@@ -1934,115 +1941,102 @@ namespace PowerSDR
 
         private static void RenderPanadapterLine(Device dev)        // yt7pwr
         {
-            //switch (directx_render_type)
+            try
             {
-                //case RenderType.HARDWARE:
+                if (pan_fill)
+                {
+                    int j = 0;
+                    int i = 0;
+
+                    for (i = 0; i < panadapter_W * 2; i++)
                     {
-                        if (pan_fill)
-                        {
-                            int j = 0;
-                            int i = 0;
-
-                            for (i = 0; i < panadapter_W * 2; i++)
-                            {
-                                PanLine_verts_fill[i] = new Vertex();
-                                PanLine_verts_fill[i].Color = pan_fill_color.ToArgb();
-                                PanLine_verts_fill[i].Position = new Vector4(i / 2, panadapterX_data[j], 0.0f, 0.0f);
-                                PanLine_verts_fill[i + 1] = new Vertex();
-                                PanLine_verts_fill[i + 1].Color = pan_fill_color.ToArgb();
-                                PanLine_verts_fill[i + 1].Position = new Vector4(i / 2, panadapter_H, 0.0f, 0.0f);
-                                i++;
-                                j++;
-                            }
-
-                            PanLine_vb_fill.Lock(0, 0, LockFlags.None).WriteRange(PanLine_verts_fill, 0, panadapter_W * 2);
-                            PanLine_vb_fill.Unlock();
-
-                            dev.SetStreamSource(0, PanLine_vb_fill, 0, 20);
-                            dev.DrawPrimitives(PrimitiveType.LineList, 0, panadapter_W);
-                        }
-
-                        for (int i = 0; i < panadapter_W; i++)
-                        {
-                            PanLine_verts[i] = new Vertex();
-                            PanLine_verts[i].Color = data_line_color.ToArgb();
-                            PanLine_verts[i].Position = new Vector4(i, panadapterX_data[i], 0.0f, 0.0f);
-                        }
-
-                        PanLine_vb.Lock(0, 0, LockFlags.None).WriteRange(PanLine_verts, 0, panadapter_W);
-                        PanLine_vb.Unlock();
-
-                        dev.SetStreamSource(0, PanLine_vb, 0, 20);
-                        dev.DrawPrimitives(PrimitiveType.LineStrip, 0, panadapter_W - 1);
+                        Panadapter_verts_fill[i].Color = pan_fill_color.ToArgb();
+                        Panadapter_verts_fill[i].Position.X = i / 2;
+                        Panadapter_verts_fill[i].Position.Y = panadapterX_data[j];
+                        Panadapter_verts_fill[i + 1].Color = pan_fill_color.ToArgb();
+                        Panadapter_verts_fill[i + 1].Position.X = i / 2;
+                        Panadapter_verts_fill[i + 1].Position.Y = panadapter_H;
+                        i++;
+                        j++;
                     }
-                    /*break;
-                case RenderType.SOFTWARE:
-                    {
-                        if (pan_fill)
-                        {
-                            Color4 fill_color = new Color4(pan_fill_color.ToArgb());
 
-                            int j = 0;
-                            int i = 0;
+                    PanLine_vb_fill.Lock(0, 0, LockFlags.None).WriteRange(Panadapter_verts_fill, 0, panadapter_W * 2);
+                    PanLine_vb_fill.Unlock();
 
-                            for (i = 0; i < panadapter_W * 2; i++)
-                            {
-                                panadapter_fill_verts[i].X = i / 2;
-                                panadapter_fill_verts[i].Y = panadapterX_data[j];
-                                panadapter_fill_verts[i + 1].X = i / 2;
-                                panadapter_fill_verts[i + 1].Y = panadapter_H;
-                                i++;
-                                j++;
-                            }
+                    dev.SetStreamSource(0, PanLine_vb_fill, 0, 20);
+                    dev.DrawPrimitives(PrimitiveType.LineList, 0, panadapter_W);
+                }
 
-                            panadapter_line.Draw(panadapter_fill_verts, fill_color);
-                        }
+                for (int i = 0; i < panadapter_W; i++)
+                {
+                    Panadapter_verts[i].Color = data_line_color.ToArgb();
+                    Panadapter_verts[i].Position.X = i;
+                    Panadapter_verts[i].Position.Y = panadapterX_data[i];
+                }
 
-                        Color4 linecolor = new Color4(data_line_color.ToArgb());
-                        panadapter_line.Draw(panadapter_verts, linecolor);
-                    }
-                    break;*/
+                Panadapter_vb.Lock(0, 0, LockFlags.None).WriteRange(Panadapter_verts, 0, panadapter_W);
+                Panadapter_vb.Unlock();
+
+                dev.SetStreamSource(0, Panadapter_vb, 0, 20);
+                dev.DrawPrimitives(PrimitiveType.LineStrip, 0, panadapter_W - 1);
             }
-        }   
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
 
         private static void RenderPhase(Device dev)        // yt7pwr
         {
-            int x,y;
-
-            for (int i = 0, j = 0; i < phase_num_pts; i++, j += 8)	// fill point array
+            try
             {
-                x = (int)(current_display_data[i * 2] * panadapter_H / 2);
-                y = (int)(current_display_data[i * 2 + 1] * panadapter_H / 2);
-                Phase_verts[i] = new Vertex();
-                Phase_verts[i].Color = data_line_color.ToArgb();
-                Phase_verts[i].Position = new Vector4(panadapter_W / 2 + x, panadapter_H / 2 + y, 0.0f, 0.0f);
+                int x, y;
+
+                for (int i = 0, j = 0; i < phase_num_pts; i++, j += 8)	// fill point array
+                {
+                    x = (int)(current_display_data[i * 2] * panadapter_H / 2);
+                    y = (int)(current_display_data[i * 2 + 1] * panadapter_H / 2);
+                    Panadapter_verts[i].Color = data_line_color.ToArgb();
+                    Panadapter_verts[i].Position = new Vector4(panadapter_W / 2 + x, panadapter_H / 2 + y, 0.0f, 0.0f);
+                }
+
+                Panadapter_vb.Lock(0, 0, LockFlags.None).WriteRange(Panadapter_verts, 0, phase_num_pts);
+                Panadapter_vb.Unlock();
+
+                dev.SetStreamSource(0, Panadapter_vb, 0, 20);
+                dev.DrawPrimitives(PrimitiveType.LineStrip, 0, phase_num_pts - 1);
             }
-
-            Phase_vb.Lock(0, 0, LockFlags.None).WriteRange(Phase_verts, 0, phase_num_pts);
-            Phase_vb.Unlock();
-
-            dev.SetStreamSource(0, Phase_vb, 0, 20);
-            dev.DrawPrimitives(PrimitiveType.LineStrip, 0, phase_num_pts-1);
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private static void RenderPhase2(Device dev)        // yt7pwr
         {
-            int x, y;
-
-            for (int i = 0, j = 0; i < phase_num_pts; i++, j += 8)	// fill point array
+            try
             {
-                x = (int)(current_display_data[i * 2] * panadapter_H * 0.5 * 500);
-                y = (int)(current_display_data[i * 2 + 1] * panadapter_H * 0.5 * 500);
-                Phase_verts[i] = new Vertex();
-                Phase_verts[i].Color = data_line_color.ToArgb();
-                Phase_verts[i].Position = new Vector4(panadapter_W * 0.5f + x, panadapter_H * 0.5f + y, 0.0f, 0.0f);
+                int x, y;
+
+                for (int i = 0, j = 0; i < phase_num_pts; i++, j += 8)	// fill point array
+                {
+                    x = (int)(current_display_data[i * 2] * panadapter_H * 0.5 * 500);
+                    y = (int)(current_display_data[i * 2 + 1] * panadapter_H * 0.5 * 500);
+                    Panadapter_verts[i].Color = data_line_color.ToArgb();
+                    Panadapter_verts[i].Position.X = panadapter_W * 0.5f + x;
+                    Panadapter_verts[i].Position.Y = panadapter_H * 0.5f + y;
+                }
+
+                Panadapter_vb.Lock(0, 0, LockFlags.None).WriteRange(Panadapter_verts, 0, phase_num_pts);
+                Panadapter_vb.Unlock();
+
+                dev.SetStreamSource(0, Panadapter_vb, 0, 20);
+                dev.DrawPrimitives(PrimitiveType.LineStrip, 0, phase_num_pts - 1);
             }
-
-            Phase_vb.Lock(0, 0, LockFlags.None).WriteRange(Phase_verts, 0, phase_num_pts);
-            Phase_vb.Unlock();
-
-            dev.SetStreamSource(0, Phase_vb, 0, 20);
-            dev.DrawPrimitives(PrimitiveType.LineStrip, 0, phase_num_pts-1);
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private static int h_steps = 0;
@@ -2065,6 +2059,8 @@ namespace PowerSDR
                 int y_range = spectrum_grid_max - spectrum_grid_min;
                 int center_line_x = W / 2;
                 int first_vgrid = 0;
+                double[] BandEdges = new double[100];
+                int i;
 
                 // Calculate horizontal step size
                 int width = high - low;
@@ -2120,7 +2116,7 @@ namespace PowerSDR
                 h_steps_old = h_steps;
 
                 // Draw vertical lines
-                for (int i = 3; i <= 40; i++)
+                for (i = 3; i <= 40; i++)
                 {
                     int fgrid = (i / 4) * freq_step_size + (low / freq_step_size) * freq_step_size;
                     double actual_fgrid = ((double)(vfo_round + fgrid)) / 1000000;
@@ -2137,22 +2133,9 @@ namespace PowerSDR
                     VerLines_vb.Unlock();
 
                     RenderVerticalLine(device, vgrid, H, grid_color);
+                    DB.GetBandLimitsEdges(ref BandEdges);
 
-                    if (
-                        actual_fgrid == 0.1357 || actual_fgrid == 0.1387 ||
-                        actual_fgrid == 0.415 || actual_fgrid == 0.525 ||
-                        actual_fgrid == 1.8 || actual_fgrid == 2.0 ||
-                        actual_fgrid == 3.5 || actual_fgrid == 4.0 ||
-                        actual_fgrid == 7.0 || actual_fgrid == 7.3 ||
-                        actual_fgrid == 10.1 || actual_fgrid == 10.15 ||
-                        actual_fgrid == 14.0 || actual_fgrid == 14.35 ||
-                        actual_fgrid == 18.068 || actual_fgrid == 18.168 ||
-                        actual_fgrid == 21.0 || actual_fgrid == 21.45 ||
-                        actual_fgrid == 24.89 || actual_fgrid == 24.99 ||
-                        actual_fgrid == 21.0 || actual_fgrid == 21.45 ||
-                        actual_fgrid == 28.0 || actual_fgrid == 29.7 ||
-                        actual_fgrid == 50.0 || actual_fgrid == 54.0 ||
-                        actual_fgrid == 144.0 || actual_fgrid == 146.0 ||
+                        if (
                         actual_fgrid == console.xBand[1].freq_max || actual_fgrid == console.xBand[1].freq_min ||
                         actual_fgrid == console.xBand[2].freq_max || actual_fgrid == console.xBand[2].freq_min ||
                         actual_fgrid == console.xBand[3].freq_max || actual_fgrid == console.xBand[3].freq_min ||
@@ -2165,53 +2148,53 @@ namespace PowerSDR
                         actual_fgrid == console.xBand[10].freq_max || actual_fgrid == console.xBand[10].freq_min ||
                         actual_fgrid == console.xBand[11].freq_max || actual_fgrid == console.xBand[11].freq_min ||
                         actual_fgrid == console.xBand[12].freq_max || actual_fgrid == console.xBand[12].freq_min)
-                    {
-                        VerLines_vb.Lock(i * 40, 40, LockFlags.None).WriteRange(new[] {
+                        {
+                            VerLines_vb.Lock(i * 40, 40, LockFlags.None).WriteRange(new[] {
                         new Vertex() { Color = band_edge_color.ToArgb(), Position = new Vector4((float)vgrid, (float)pan_font.Height, 0.0f, 0.0f) },
                         new Vertex() { Color = band_edge_color.ToArgb(), Position = new Vector4((float)vgrid, (float)H, 0.0f, 0.0f) },
                             });
-                        VerLines_vb.Unlock();
+                            VerLines_vb.Unlock();
 
-                        RenderVerticalLine(device, vgrid, H, band_edge_color);
+                            RenderVerticalLine(device, vgrid, H, band_edge_color);
 
-                        vertical_label[i / 4].label = actual_fgrid.ToString("f3");
-                        if (actual_fgrid < 10) offsetL = (int)((vertical_label[i / 4].label.Length + 1) * 4.1) - 14;
-                        else if (actual_fgrid < 100.0) offsetL = (int)((vertical_label[i / 4].label.Length + 1) * 4.1) - 11;
-                        else offsetL = (int)((vertical_label[i / 4].label.Length + 1) * 4.1) - 8;
-
-                        panadapter_font.DrawString(null, vertical_label[i / 4].label, vgrid - offsetL, 0, grid_zero_color.ToArgb());
-                        vertical_label[i / 4].pos_x = (vgrid - offsetL);
-                        vertical_label[i / 4].pos_y = 0;
-                        vertical_label[i / 4].color = grid_zero_color;
-                    }
-                    else
-                    {
-                        if (((double)((int)(actual_fgrid * 1000))) == actual_fgrid * 1000)
-                        {
                             vertical_label[i / 4].label = actual_fgrid.ToString("f3");
-
                             if (actual_fgrid < 10) offsetL = (int)((vertical_label[i / 4].label.Length + 1) * 4.1) - 14;
                             else if (actual_fgrid < 100.0) offsetL = (int)((vertical_label[i / 4].label.Length + 1) * 4.1) - 11;
                             else offsetL = (int)((vertical_label[i / 4].label.Length + 1) * 4.1) - 8;
+
+                            panadapter_font.DrawString(null, vertical_label[i / 4].label, vgrid - offsetL, 0, grid_zero_color.ToArgb());
+                            vertical_label[i / 4].pos_x = (vgrid - offsetL);
+                            vertical_label[i / 4].pos_y = 0;
+                            vertical_label[i / 4].color = grid_zero_color;
                         }
                         else
                         {
-                            string temp_string;
-                            int jper;
-                            vertical_label[i / 4].label = actual_fgrid.ToString("f4");
-                            temp_string = vertical_label[i / 4].label;
-                            jper = vertical_label[i / 4].label.IndexOf('.') + 4;
-                            vertical_label[i / 4].label = vertical_label[i / 4].label.Insert(jper, " ");
+                            if (((double)((int)(actual_fgrid * 1000))) == actual_fgrid * 1000)
+                            {
+                                vertical_label[i / 4].label = actual_fgrid.ToString("f3");
 
-                            if (actual_fgrid < 10) offsetL = (int)((vertical_label[i / 4].label.Length) * 4.1) - 14;
-                            else if (actual_fgrid < 100.0) offsetL = (int)((vertical_label[i / 4].label.Length) * 4.1) - 11;
-                            else offsetL = (int)((vertical_label[i / 4].label.Length) * 4.1) - 8;
+                                if (actual_fgrid < 10) offsetL = (int)((vertical_label[i / 4].label.Length + 1) * 4.1) - 14;
+                                else if (actual_fgrid < 100.0) offsetL = (int)((vertical_label[i / 4].label.Length + 1) * 4.1) - 11;
+                                else offsetL = (int)((vertical_label[i / 4].label.Length + 1) * 4.1) - 8;
+                            }
+                            else
+                            {
+                                string temp_string;
+                                int jper;
+                                vertical_label[i / 4].label = actual_fgrid.ToString("f4");
+                                temp_string = vertical_label[i / 4].label;
+                                jper = vertical_label[i / 4].label.IndexOf('.') + 4;
+                                vertical_label[i / 4].label = vertical_label[i / 4].label.Insert(jper, " ");
+
+                                if (actual_fgrid < 10) offsetL = (int)((vertical_label[i / 4].label.Length) * 4.1) - 14;
+                                else if (actual_fgrid < 100.0) offsetL = (int)((vertical_label[i / 4].label.Length) * 4.1) - 11;
+                                else offsetL = (int)((vertical_label[i / 4].label.Length) * 4.1) - 8;
+                            }
+
+                            vertical_label[i / 4].pos_x = (vgrid - offsetL);
+                            vertical_label[i / 4].pos_y = 0;
+                            vertical_label[i / 4].color = grid_text_color;
                         }
-
-                        vertical_label[i / 4].pos_x = (vgrid - offsetL);
-                        vertical_label[i / 4].pos_y = 0;
-                        vertical_label[i / 4].color = grid_text_color;
-                    }
 
                     int fgrid_2 = ((i / 4 + 1) * freq_step_size) + (int)((low / freq_step_size) * freq_step_size);
                     int x_2 = (int)(((float)(fgrid_2 - vfo_delta - low) / width * W));
@@ -2252,7 +2235,7 @@ namespace PowerSDR
                     RenderVerticalLine(device, (int)x3, H, Color.FromArgb(Math.Max(grid_color.A - 30, 0), grid_color));
                 }
 
-                int[] band_edge_list = { 135700, 138700, 415000, 525000, 10150000, 14350000, 18068000, 18168000, 24890000, 24990000 };
+                //int[] band_edge_list = { 135700, 138700, 415000, 525000, 10150000, 14350000, 18068000, 18168000, 24890000, 24990000 };
 
                 bool first = true;
                 VerLines_vb.Lock(41 * 40, 80, LockFlags.None).WriteRange(new[] {    // clear first!
@@ -2262,9 +2245,10 @@ namespace PowerSDR
                         new Vertex() { Color = band_edge_color.ToArgb(), Position = new Vector4(0.0f, 0.0f, 0.0f, 0.0f) },
                             });
 
-                for (int i = 0; i < band_edge_list.Length; i++)
+                foreach (double b_edge in BandEdges)
+                //for (int i = 0; i < band_edge_list.Length; i++)
                 {
-                    double band_edge_offset = band_edge_list[i] - losc_hz;
+                    double band_edge_offset = b_edge * 1e6 - losc_hz;
 
                     if (band_edge_offset >= low && band_edge_offset <= high)
                     {
@@ -2293,6 +2277,8 @@ namespace PowerSDR
                             break;
                         }
                     }
+
+                    i++;
                 }
 
                 ///////////////////// tx filter ////////////////////////////////
@@ -2470,7 +2456,7 @@ namespace PowerSDR
                 }
 
                 // Draw horizontal lines
-                for (int i = 1; i < h_steps; i++)
+                for (i = 1; i < h_steps; i++)
                 {
                     int xOffset = 0;
                     int num = spectrum_grid_max - i * spectrum_grid_step;
@@ -3244,8 +3230,21 @@ namespace PowerSDR
                 switch (current_display_mode)
                 {
                     case DisplayMode.PANASCOPE:
-                        ConvertDataForPanadapter();
-                        ConvertDataForScope(waterfall_W, waterfall_H);
+                        if (mox)
+                        {
+                            if (current_dsp_mode == DSPMode.CWU || current_dsp_mode == DSPMode.CWL)
+                                ConvertDataForScope(waterfall_W, waterfall_H);
+                            else
+                            {
+                                ConvertDataForScope(waterfall_W, waterfall_H);
+                                ConvertDataForPanadapter();
+                            }
+                        }
+                        else
+                        {
+                            ConvertDataForPanadapter();
+                            ConvertDataForScope(waterfall_W, waterfall_H);
+                        }
                         break;
                     case DisplayMode.HISTOGRAM:
                         ConvertDataForHistogram();
@@ -3312,7 +3311,7 @@ namespace PowerSDR
                         {
                             waterfall_dx_device.Clear(ClearFlags.Target | ClearFlags.ZBuffer, display_background_color.ToArgb(), 0.0f, 0);
                             Waterfall_Sprite.Begin(SpriteFlags.AlphaBlend);
-                            Waterfall_Sprite.Draw(WaterfallTexture, Waterfall_texture_size, (Color4)Color.White);
+                            Waterfall_Sprite.Draw(WaterfallBackgroundTexture, Waterfall_texture_size, (Color4)Color.White);
                             Waterfall_Sprite.End();
                             //Begin the scene
                             waterfall_dx_device.BeginScene();
@@ -3323,8 +3322,7 @@ namespace PowerSDR
 
                             if (console.chkPower.Checked)
                             {
-                                RenderScopeGrid();
-                                RenderScope(waterfall_dx_device, waterfall_W);
+                                RenderWaterfallrScope(waterfall_dx_device, waterfall_W);
                             }
 
                             waterfall_dx_device.EndScene();
@@ -3354,7 +3352,7 @@ namespace PowerSDR
                             break;
                         case DisplayMode.SCOPE:
                             RenderScopeGrid();
-                            RenderScope(device, panadapter_W);
+                            RenderPanadapterScope(device, panadapter_W);
                             break;
                         case DisplayMode.WATERFALL:
                         case DisplayMode.PANADAPTER:
@@ -3932,6 +3930,10 @@ namespace PowerSDR
             catch (Exception ex)
             {
                 Debug.Write(ex.ToString());
+
+                if (debug && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                        "Convert data for scope error!\n" + ex.ToString());
             }
         }
 

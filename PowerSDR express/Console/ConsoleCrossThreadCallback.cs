@@ -828,7 +828,7 @@ namespace PowerSDR
                     // setup ... will let that wait for the great console refactoring 
                     try
                     {
-                        string ptt = SetupForm.comboCATPTTPort.Text;
+                        //string ptt = SetupForm.comboCATPTTPort.Text;
                         serialPTT = new SerialPortPTT(CATPTTBingBangPort_name, cat_ptt_dtr, cat_ptt_rts);
                         serialPTT.Init();
                     }
@@ -1428,6 +1428,8 @@ namespace PowerSDR
                     VACSampleRate = parm1.ToString();
                     break;
                 case "CAT Serial Destroy":
+                    Siolisten.SIO.run = false;
+                    Siolisten.SIO.rx_event.Set();
                     Siolisten.SIO.Destroy();
                     break;
                 case "Band set":

@@ -661,9 +661,9 @@ namespace PowerSDR
         public ComboBoxTS comboAppSkin;
         private GroupBoxTS grpG59Keyer;
         private NumericUpDownTS udG59CWSpeed;
-        private CheckBoxTS chkG59Iambic;
+        private CheckBoxTS chkGenesisIambic;
         private LabelTS lblG59CWSPEED;
-        private CheckBoxTS chkG59IambicReverse;
+        private CheckBoxTS chkIambicReverse;
         private GroupBoxTS grpG59;
         private CheckBoxTS chkG59_PA10;
         private LabelTS lblG59_DASH_DOT_ratio;
@@ -920,7 +920,7 @@ namespace PowerSDR
         private CheckBoxTS chkPA10_6m;
         private ButtonTS btnPA10Abort;
         private LabelTS lblPA10Calibration;
-        public ProgressBar progressPA10Calibration;
+        public ProgressBar progressPAcalibration;
         private CheckBoxTS chkIARU;
         public RadioButtonTS radGenModelGenesisG137;
         private GroupBoxTS grpGenesis137;
@@ -958,7 +958,7 @@ namespace PowerSDR
         private RadioButtonTS radTestLeftChannel;
         private RadioButtonTS radTestRightChannel;
         private CheckBoxTS chkExtATU;
-        private CheckBoxTS chkG59IambicBMode;
+        private CheckBoxTS chkIambicBMode;
         private GroupBoxTS grpAudioTests;
         private ButtonTS btnAudioStreamInfo;
         private LabelTS lblAudioStreamSampleRate;
@@ -999,7 +999,6 @@ namespace PowerSDR
         private CheckBoxTS chkVFOB_extend;
         public RadioButtonTS radGenModelGenesisG11;
         private GroupBoxTS grpG11;
-        private CheckBoxTS chkG11PTTinverted;
         private CheckBoxTS chkG11MicPreamp;
         private GroupBoxTS grpG11XTRV;
         public NumericUpDownTS udG11XTRVLosc;
@@ -1212,6 +1211,26 @@ namespace PowerSDR
         private LabelTS labelTS71;
         public NumericUpDownTS udRTL_VACcorr;
         private LabelTS labelTS72;
+        private CheckBoxTS chkDragSpectrum;
+        public CheckBoxTS chkG6SendAudio;
+        public CheckBoxTS chkG6TXDACmute;
+        private LabelTS lblScopeColor;
+        private ColorButton clrbtnScopeColor;
+        private CheckBoxTS chkG11ExtPA;
+        public NumericUpDownTS udG11extPAOFF;
+        private LabelTS labelTS73;
+        private LabelTS labelTS74;
+        public NumericUpDownTS udG11extPAON;
+        private LabelTS lblG11extPApttDelay;
+        private CheckBoxTS chkG11extPAinverted;
+        private LabelTS labelTS75;
+        private LabelTS labelTS76;
+        public NumericUpDownTS udG6ExtPAoffTime;
+        private CheckBoxTS chkG6ExtPA;
+        public NumericUpDownTS udG6ExtPAonTime;
+        private LabelTS labelTS77;
+        private CheckBoxTS chkG6ExtPAinv;
+        public CheckBoxTS checkBoxTS4;
 		private System.ComponentModel.IContainer components;
 
 		#endregion
@@ -1481,7 +1500,7 @@ namespace PowerSDR
             this.chkOptFilterSaveChanges = new System.Windows.Forms.CheckBoxTS();
             this.lblG59_DASH_DOT_ratio = new System.Windows.Forms.LabelTS();
             this.udG59DASH_DOT_ratio = new System.Windows.Forms.NumericUpDownTS();
-            this.chkG59IambicReverse = new System.Windows.Forms.CheckBoxTS();
+            this.chkIambicReverse = new System.Windows.Forms.CheckBoxTS();
             this.udG59CWSpeed = new System.Windows.Forms.NumericUpDownTS();
             this.btnSi570Test = new System.Windows.Forms.ButtonTS();
             this.udSi570_divisor = new System.Windows.Forms.NumericUpDownTS();
@@ -1736,7 +1755,7 @@ namespace PowerSDR
             this.lblCATEthServerWatchdogTime = new System.Windows.Forms.LabelTS();
             this.udCATEthServerWatchdogTime = new System.Windows.Forms.NumericUpDownTS();
             this.chkExtATU = new System.Windows.Forms.CheckBoxTS();
-            this.chkG59IambicBMode = new System.Windows.Forms.CheckBoxTS();
+            this.chkIambicBMode = new System.Windows.Forms.CheckBoxTS();
             this.comboKeyerConnPTTLine = new System.Windows.Forms.ComboBoxTS();
             this.udG59TXSwitchTime = new System.Windows.Forms.NumericUpDownTS();
             this.chkTX_IF_shift = new System.Windows.Forms.CheckBoxTS();
@@ -1752,7 +1771,6 @@ namespace PowerSDR
             this.chkG59_PTT_Inv = new System.Windows.Forms.CheckBoxTS();
             this.chkVFOB_extend = new System.Windows.Forms.CheckBoxTS();
             this.radGenModelGenesisG11 = new System.Windows.Forms.RadioButtonTS();
-            this.chkG11PTTinverted = new System.Windows.Forms.CheckBoxTS();
             this.udG11XTRVLosc = new System.Windows.Forms.NumericUpDownTS();
             this.udMultimeterCalValue = new System.Windows.Forms.NumericUpDownTS();
             this.udDisplayCalValue = new System.Windows.Forms.NumericUpDownTS();
@@ -1802,6 +1820,33 @@ namespace PowerSDR
             this.chkCAT_HRDserver = new System.Windows.Forms.CheckBoxTS();
             this.udVACchNumber = new System.Windows.Forms.NumericUpDownTS();
             this.udRTL_SDR_correction = new System.Windows.Forms.NumericUpDownTS();
+            this.chkDragSpectrum = new System.Windows.Forms.CheckBoxTS();
+            this.chkG6SendAudio = new System.Windows.Forms.CheckBoxTS();
+            this.chkG6TXDACmute = new System.Windows.Forms.CheckBoxTS();
+            this.chkPA10_2190m = new System.Windows.Forms.CheckBoxTS();
+            this.chkPA10_600m = new System.Windows.Forms.CheckBoxTS();
+            this.chkPA10_2m = new System.Windows.Forms.CheckBoxTS();
+            this.chkPA10_6m = new System.Windows.Forms.CheckBoxTS();
+            this.chkPA10_10m = new System.Windows.Forms.CheckBoxTS();
+            this.chkPA10_12m = new System.Windows.Forms.CheckBoxTS();
+            this.chkPA10_15m = new System.Windows.Forms.CheckBoxTS();
+            this.chkPA10_20m = new System.Windows.Forms.CheckBoxTS();
+            this.chkPA10_30m = new System.Windows.Forms.CheckBoxTS();
+            this.chkPA10_40m = new System.Windows.Forms.CheckBoxTS();
+            this.chkPA10_60m = new System.Windows.Forms.CheckBoxTS();
+            this.chkPA10_17m = new System.Windows.Forms.CheckBoxTS();
+            this.chkPA10_80m = new System.Windows.Forms.CheckBoxTS();
+            this.chkPA10_160m = new System.Windows.Forms.CheckBoxTS();
+            this.lblScopeColor = new System.Windows.Forms.LabelTS();
+            this.clrbtnScopeColor = new PowerSDR.ColorButton();
+            this.chkG11ExtPA = new System.Windows.Forms.CheckBoxTS();
+            this.udG11extPAON = new System.Windows.Forms.NumericUpDownTS();
+            this.chkG11extPAinverted = new System.Windows.Forms.CheckBoxTS();
+            this.udG11extPAOFF = new System.Windows.Forms.NumericUpDownTS();
+            this.udG6ExtPAoffTime = new System.Windows.Forms.NumericUpDownTS();
+            this.chkG6ExtPA = new System.Windows.Forms.CheckBoxTS();
+            this.udG6ExtPAonTime = new System.Windows.Forms.NumericUpDownTS();
+            this.chkG6ExtPAinv = new System.Windows.Forms.CheckBoxTS();
             this.lblG59PTT = new System.Windows.Forms.LabelTS();
             this.lblG59PTT_ON = new System.Windows.Forms.LabelTS();
             this.lblG59PTT_OFF = new System.Windows.Forms.LabelTS();
@@ -2041,26 +2086,12 @@ namespace PowerSDR
             this.udPAADC40 = new System.Windows.Forms.NumericUpDownTS();
             this.udPAADC30 = new System.Windows.Forms.NumericUpDownTS();
             this.grpPAGainByBand = new System.Windows.Forms.GroupBoxTS();
-            this.chkPA10_2190m = new System.Windows.Forms.CheckBoxTS();
             this.labelTS47 = new System.Windows.Forms.LabelTS();
             this.udPAGain2190 = new System.Windows.Forms.NumericUpDownTS();
-            this.chkPA10_600m = new System.Windows.Forms.CheckBoxTS();
             this.lblPA10Calibration = new System.Windows.Forms.LabelTS();
             this.labelTS46 = new System.Windows.Forms.LabelTS();
-            this.progressPA10Calibration = new System.Windows.Forms.ProgressBar();
-            this.chkPA10_2m = new System.Windows.Forms.CheckBoxTS();
+            this.progressPAcalibration = new System.Windows.Forms.ProgressBar();
             this.udPAGain600 = new System.Windows.Forms.NumericUpDownTS();
-            this.chkPA10_6m = new System.Windows.Forms.CheckBoxTS();
-            this.chkPA10_10m = new System.Windows.Forms.CheckBoxTS();
-            this.chkPA10_12m = new System.Windows.Forms.CheckBoxTS();
-            this.chkPA10_15m = new System.Windows.Forms.CheckBoxTS();
-            this.chkPA10_20m = new System.Windows.Forms.CheckBoxTS();
-            this.chkPA10_30m = new System.Windows.Forms.CheckBoxTS();
-            this.chkPA10_40m = new System.Windows.Forms.CheckBoxTS();
-            this.chkPA10_60m = new System.Windows.Forms.CheckBoxTS();
-            this.chkPA10_17m = new System.Windows.Forms.CheckBoxTS();
-            this.chkPA10_80m = new System.Windows.Forms.CheckBoxTS();
-            this.chkPA10_160m = new System.Windows.Forms.CheckBoxTS();
             this.lblPAGainByBand2 = new System.Windows.Forms.LabelTS();
             this.udPAGain2 = new System.Windows.Forms.NumericUpDownTS();
             this.lblPAGainByBand6 = new System.Windows.Forms.LabelTS();
@@ -2292,42 +2323,12 @@ namespace PowerSDR
             this.tpGeneral = new System.Windows.Forms.TabPage();
             this.tcGeneral = new System.Windows.Forms.TabControl();
             this.tpGeneralHardware = new System.Windows.Forms.TabPage();
-            this.grpRTL_SDR = new System.Windows.Forms.GroupBoxTS();
-            this.labelTS72 = new System.Windows.Forms.LabelTS();
-            this.udRTL_VACcorr = new System.Windows.Forms.NumericUpDownTS();
-            this.txtRTL_SDR_Device = new System.Windows.Forms.TextBoxTS();
-            this.labelTS71 = new System.Windows.Forms.LabelTS();
-            this.chkRTL_SDR_OffsetTuning = new System.Windows.Forms.CheckBoxTS();
-            this.chkRTL_SDR_RTL_AGC = new System.Windows.Forms.CheckBoxTS();
-            this.chkRTL_SDR_TunerAGC = new System.Windows.Forms.CheckBoxTS();
-            this.labelTS70 = new System.Windows.Forms.LabelTS();
-            this.tbRTL_SDR_AGC_Gain = new System.Windows.Forms.TrackBarTS();
-            this.labelTS69 = new System.Windows.Forms.LabelTS();
-            this.comboRTL_SDR_BufferSize = new System.Windows.Forms.ComboBoxTS();
-            this.labelTS68 = new System.Windows.Forms.LabelTS();
-            this.labelTS67 = new System.Windows.Forms.LabelTS();
-            this.comboRTL_SDR_SampleRate = new System.Windows.Forms.ComboBoxTS();
             this.grpG6 = new System.Windows.Forms.GroupBoxTS();
+            this.labelTS75 = new System.Windows.Forms.LabelTS();
+            this.labelTS76 = new System.Windows.Forms.LabelTS();
+            this.labelTS77 = new System.Windows.Forms.LabelTS();
+            this.checkBoxTS4 = new System.Windows.Forms.CheckBoxTS();
             this.chkG6RX2input = new System.Windows.Forms.CheckBoxTS();
-            this.grpQRP2000 = new System.Windows.Forms.GroupBoxTS();
-            this.groupBoxTS10 = new System.Windows.Forms.GroupBoxTS();
-            this.labelTS57 = new System.Windows.Forms.LabelTS();
-            this.radQRP2000XTRVx4 = new System.Windows.Forms.RadioButtonTS();
-            this.radQRP2000XTRVx2 = new System.Windows.Forms.RadioButtonTS();
-            this.radQRP2000XTRVx1 = new System.Windows.Forms.RadioButtonTS();
-            this.lblSRIFFreq = new System.Windows.Forms.LabelTS();
-            this.groupBoxTS9 = new System.Windows.Forms.GroupBoxTS();
-            this.radQRP2000x4 = new System.Windows.Forms.RadioButtonTS();
-            this.radQRP2000x2 = new System.Windows.Forms.RadioButtonTS();
-            this.radQRP2000x1 = new System.Windows.Forms.RadioButtonTS();
-            this.lblQRP2000PID = new System.Windows.Forms.Label();
-            this.lblQRP2000VID = new System.Windows.Forms.Label();
-            this.lblSRSi570Addr = new System.Windows.Forms.LabelTS();
-            this.grpG59 = new System.Windows.Forms.GroupBoxTS();
-            this.chkG59MicPreamp = new System.Windows.Forms.CheckBoxTS();
-            this.grpXTRV = new System.Windows.Forms.GroupBoxTS();
-            this.lblG59XtrvIF = new System.Windows.Forms.LabelTS();
-            this.chkG59RX2 = new System.Windows.Forms.CheckBoxTS();
             this.grpG11 = new System.Windows.Forms.GroupBoxTS();
             this.grpG11Filters = new System.Windows.Forms.GroupBoxTS();
             this.chkG11B4030_CH2 = new System.Windows.Forms.CheckBoxTS();
@@ -2368,11 +2369,48 @@ namespace PowerSDR
             this.labelTS35 = new System.Windows.Forms.LabelTS();
             this.labelTS34 = new System.Windows.Forms.LabelTS();
             this.labelTS33 = new System.Windows.Forms.LabelTS();
+            this.labelTS73 = new System.Windows.Forms.LabelTS();
+            this.labelTS74 = new System.Windows.Forms.LabelTS();
+            this.lblG11extPApttDelay = new System.Windows.Forms.LabelTS();
             this.btnG11FiltersShow = new System.Windows.Forms.ButtonTS();
             this.chkG11MicPreamp = new System.Windows.Forms.CheckBoxTS();
             this.chkG11RX2 = new System.Windows.Forms.CheckBoxTS();
             this.grpG11XTRV = new System.Windows.Forms.GroupBoxTS();
             this.lblG11XTRVLosc = new System.Windows.Forms.LabelTS();
+            this.grpG59 = new System.Windows.Forms.GroupBoxTS();
+            this.chkG59MicPreamp = new System.Windows.Forms.CheckBoxTS();
+            this.grpXTRV = new System.Windows.Forms.GroupBoxTS();
+            this.lblG59XtrvIF = new System.Windows.Forms.LabelTS();
+            this.chkG59RX2 = new System.Windows.Forms.CheckBoxTS();
+            this.grpRTL_SDR = new System.Windows.Forms.GroupBoxTS();
+            this.labelTS72 = new System.Windows.Forms.LabelTS();
+            this.udRTL_VACcorr = new System.Windows.Forms.NumericUpDownTS();
+            this.txtRTL_SDR_Device = new System.Windows.Forms.TextBoxTS();
+            this.labelTS71 = new System.Windows.Forms.LabelTS();
+            this.chkRTL_SDR_OffsetTuning = new System.Windows.Forms.CheckBoxTS();
+            this.chkRTL_SDR_RTL_AGC = new System.Windows.Forms.CheckBoxTS();
+            this.chkRTL_SDR_TunerAGC = new System.Windows.Forms.CheckBoxTS();
+            this.labelTS70 = new System.Windows.Forms.LabelTS();
+            this.tbRTL_SDR_AGC_Gain = new System.Windows.Forms.TrackBarTS();
+            this.labelTS69 = new System.Windows.Forms.LabelTS();
+            this.comboRTL_SDR_BufferSize = new System.Windows.Forms.ComboBoxTS();
+            this.labelTS68 = new System.Windows.Forms.LabelTS();
+            this.labelTS67 = new System.Windows.Forms.LabelTS();
+            this.comboRTL_SDR_SampleRate = new System.Windows.Forms.ComboBoxTS();
+            this.grpQRP2000 = new System.Windows.Forms.GroupBoxTS();
+            this.groupBoxTS10 = new System.Windows.Forms.GroupBoxTS();
+            this.labelTS57 = new System.Windows.Forms.LabelTS();
+            this.radQRP2000XTRVx4 = new System.Windows.Forms.RadioButtonTS();
+            this.radQRP2000XTRVx2 = new System.Windows.Forms.RadioButtonTS();
+            this.radQRP2000XTRVx1 = new System.Windows.Forms.RadioButtonTS();
+            this.lblSRIFFreq = new System.Windows.Forms.LabelTS();
+            this.groupBoxTS9 = new System.Windows.Forms.GroupBoxTS();
+            this.radQRP2000x4 = new System.Windows.Forms.RadioButtonTS();
+            this.radQRP2000x2 = new System.Windows.Forms.RadioButtonTS();
+            this.radQRP2000x1 = new System.Windows.Forms.RadioButtonTS();
+            this.lblQRP2000PID = new System.Windows.Forms.Label();
+            this.lblQRP2000VID = new System.Windows.Forms.Label();
+            this.lblSRSi570Addr = new System.Windows.Forms.LabelTS();
             this.grpGeneralModel = new System.Windows.Forms.GroupBoxTS();
             this.radGenModel_RTL_SDR = new System.Windows.Forms.RadioButtonTS();
             this.radGenModelGenesisG6 = new System.Windows.Forms.RadioButtonTS();
@@ -2450,7 +2488,7 @@ namespace PowerSDR
             this.grpG59Keyer = new System.Windows.Forms.GroupBoxTS();
             this.lblG59CWCorrection = new System.Windows.Forms.LabelTS();
             this.lblG59CWSPEED = new System.Windows.Forms.LabelTS();
-            this.chkG59Iambic = new System.Windows.Forms.CheckBoxTS();
+            this.chkGenesisIambic = new System.Windows.Forms.CheckBoxTS();
             this.grpSi570 = new System.Windows.Forms.GroupBoxTS();
             this.lblFDCmax = new System.Windows.Forms.LabelTS();
             this.lblFDCOmin = new System.Windows.Forms.LabelTS();
@@ -2694,6 +2732,10 @@ namespace PowerSDR
             ((System.ComponentModel.ISupportInitialize)(this.udCATCI_V)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.udVACchNumber)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.udRTL_SDR_correction)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.udG11extPAON)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.udG11extPAOFF)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.udG6ExtPAoffTime)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.udG6ExtPAonTime)).BeginInit();
             this.tpTests.SuspendLayout();
             this.grpAudioTests.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.udWBIRindex)).BeginInit();
@@ -2859,18 +2901,18 @@ namespace PowerSDR
             this.tpGeneral.SuspendLayout();
             this.tcGeneral.SuspendLayout();
             this.tpGeneralHardware.SuspendLayout();
-            this.grpRTL_SDR.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.udRTL_VACcorr)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tbRTL_SDR_AGC_Gain)).BeginInit();
             this.grpG6.SuspendLayout();
-            this.grpQRP2000.SuspendLayout();
-            this.groupBoxTS10.SuspendLayout();
-            this.groupBoxTS9.SuspendLayout();
-            this.grpG59.SuspendLayout();
-            this.grpXTRV.SuspendLayout();
             this.grpG11.SuspendLayout();
             this.grpG11Filters.SuspendLayout();
             this.grpG11XTRV.SuspendLayout();
+            this.grpG59.SuspendLayout();
+            this.grpXTRV.SuspendLayout();
+            this.grpRTL_SDR.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.udRTL_VACcorr)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbRTL_SDR_AGC_Gain)).BeginInit();
+            this.grpQRP2000.SuspendLayout();
+            this.groupBoxTS10.SuspendLayout();
+            this.groupBoxTS9.SuspendLayout();
             this.grpGeneralModel.SuspendLayout();
             this.grpGeneralHardwareSetup.SuspendLayout();
             this.grpNETBox.SuspendLayout();
@@ -3565,18 +3607,18 @@ namespace PowerSDR
             0});
             this.udG59DASH_DOT_ratio.ValueChanged += new System.EventHandler(this.udG59DASH_DOT_ratio_ValueChanged);
             // 
-            // chkG59IambicReverse
+            // chkIambicReverse
             // 
-            this.chkG59IambicReverse.AutoSize = true;
-            this.chkG59IambicReverse.Image = null;
-            this.chkG59IambicReverse.Location = new System.Drawing.Point(25, 87);
-            this.chkG59IambicReverse.Name = "chkG59IambicReverse";
-            this.chkG59IambicReverse.Size = new System.Drawing.Size(85, 17);
-            this.chkG59IambicReverse.TabIndex = 2;
-            this.chkG59IambicReverse.Text = "Rev. Paddle";
-            this.toolTip1.SetToolTip(this.chkG59IambicReverse, "Reverse Paddle");
-            this.chkG59IambicReverse.UseVisualStyleBackColor = true;
-            this.chkG59IambicReverse.CheckedChanged += new System.EventHandler(this.chkG59IambicReverse_CheckedChanged);
+            this.chkIambicReverse.AutoSize = true;
+            this.chkIambicReverse.Image = null;
+            this.chkIambicReverse.Location = new System.Drawing.Point(25, 87);
+            this.chkIambicReverse.Name = "chkIambicReverse";
+            this.chkIambicReverse.Size = new System.Drawing.Size(85, 17);
+            this.chkIambicReverse.TabIndex = 2;
+            this.chkIambicReverse.Text = "Rev. Paddle";
+            this.toolTip1.SetToolTip(this.chkIambicReverse, "Reverse Paddle");
+            this.chkIambicReverse.UseVisualStyleBackColor = true;
+            this.chkIambicReverse.CheckedChanged += new System.EventHandler(this.chkG59IambicReverse_CheckedChanged);
             // 
             // udG59CWSpeed
             // 
@@ -4071,6 +4113,7 @@ namespace PowerSDR
             "64",
             "128",
             "256",
+            "384",
             "512",
             "1024",
             "2048"});
@@ -6694,13 +6737,13 @@ namespace PowerSDR
             // tkbarTestGenFreq
             // 
             this.tkbarTestGenFreq.Location = new System.Drawing.Point(28, 99);
-            this.tkbarTestGenFreq.Maximum = 48000;
+            this.tkbarTestGenFreq.Maximum = 192000;
             this.tkbarTestGenFreq.Name = "tkbarTestGenFreq";
             this.tkbarTestGenFreq.Size = new System.Drawing.Size(344, 45);
             this.tkbarTestGenFreq.TabIndex = 1;
-            this.tkbarTestGenFreq.TickFrequency = 1000;
+            this.tkbarTestGenFreq.TickFrequency = 5000;
             this.toolTip1.SetToolTip(this.tkbarTestGenFreq, "Sets the frequency of the signal.");
-            this.tkbarTestGenFreq.Value = 24000;
+            this.tkbarTestGenFreq.Value = 10000;
             this.tkbarTestGenFreq.Scroll += new System.EventHandler(this.tkbarTestGenFreq_Scroll);
             // 
             // udTestGenHzSec
@@ -7430,7 +7473,7 @@ namespace PowerSDR
             // 
             this.chkOSD.AutoSize = true;
             this.chkOSD.Image = null;
-            this.chkOSD.Location = new System.Drawing.Point(16, 191);
+            this.chkOSD.Location = new System.Drawing.Point(16, 212);
             this.chkOSD.Name = "chkOSD";
             this.chkOSD.Size = new System.Drawing.Size(114, 17);
             this.chkOSD.TabIndex = 17;
@@ -7521,7 +7564,7 @@ namespace PowerSDR
             // 
             this.chkContinuousTuning.AutoSize = true;
             this.chkContinuousTuning.Image = null;
-            this.chkContinuousTuning.Location = new System.Drawing.Point(16, 218);
+            this.chkContinuousTuning.Location = new System.Drawing.Point(16, 239);
             this.chkContinuousTuning.Name = "chkContinuousTuning";
             this.chkContinuousTuning.Size = new System.Drawing.Size(111, 17);
             this.chkContinuousTuning.TabIndex = 18;
@@ -7672,7 +7715,7 @@ namespace PowerSDR
             this.btnPAGainCalibration.Size = new System.Drawing.Size(75, 23);
             this.btnPAGainCalibration.TabIndex = 20;
             this.btnPAGainCalibration.Text = "Calibrate";
-            this.toolTip1.SetToolTip(this.btnPAGainCalibration, "Only for G59");
+            this.toolTip1.SetToolTip(this.btnPAGainCalibration, "Only for G59, G11 and G6");
             this.btnPAGainCalibration.Click += new System.EventHandler(this.btnPAGainCalibration_Click);
             // 
             // chkCWMonitorVAC
@@ -8199,18 +8242,18 @@ namespace PowerSDR
             this.chkExtATU.UseVisualStyleBackColor = true;
             this.chkExtATU.CheckedChanged += new System.EventHandler(this.chkG59ExtATU_CheckedChanged);
             // 
-            // chkG59IambicBMode
+            // chkIambicBMode
             // 
-            this.chkG59IambicBMode.AutoSize = true;
-            this.chkG59IambicBMode.Image = null;
-            this.chkG59IambicBMode.Location = new System.Drawing.Point(25, 59);
-            this.chkG59IambicBMode.Name = "chkG59IambicBMode";
-            this.chkG59IambicBMode.Size = new System.Drawing.Size(92, 17);
-            this.chkG59IambicBMode.TabIndex = 9;
-            this.chkG59IambicBMode.Text = "Keyer B mode";
-            this.toolTip1.SetToolTip(this.chkG59IambicBMode, "Iambic B mode");
-            this.chkG59IambicBMode.UseVisualStyleBackColor = true;
-            this.chkG59IambicBMode.CheckedChanged += new System.EventHandler(this.chkG59IambicBMode_CheckedChanged);
+            this.chkIambicBMode.AutoSize = true;
+            this.chkIambicBMode.Image = null;
+            this.chkIambicBMode.Location = new System.Drawing.Point(25, 59);
+            this.chkIambicBMode.Name = "chkIambicBMode";
+            this.chkIambicBMode.Size = new System.Drawing.Size(92, 17);
+            this.chkIambicBMode.TabIndex = 9;
+            this.chkIambicBMode.Text = "Keyer B mode";
+            this.toolTip1.SetToolTip(this.chkIambicBMode, "Iambic B mode");
+            this.chkIambicBMode.UseVisualStyleBackColor = true;
+            this.chkIambicBMode.CheckedChanged += new System.EventHandler(this.chkG59IambicBMode_CheckedChanged);
             // 
             // comboKeyerConnPTTLine
             // 
@@ -8308,7 +8351,7 @@ namespace PowerSDR
             // 
             this.chkButtonZoom.AutoSize = true;
             this.chkButtonZoom.Image = null;
-            this.chkButtonZoom.Location = new System.Drawing.Point(16, 245);
+            this.chkButtonZoom.Location = new System.Drawing.Point(16, 266);
             this.chkButtonZoom.Name = "chkButtonZoom";
             this.chkButtonZoom.Size = new System.Drawing.Size(102, 17);
             this.chkButtonZoom.TabIndex = 19;
@@ -8512,19 +8555,6 @@ namespace PowerSDR
             this.radGenModelGenesisG11.UseVisualStyleBackColor = true;
             this.radGenModelGenesisG11.CheckedChanged += new System.EventHandler(this.radGenModelGenesisG11_CheckedChanged);
             // 
-            // chkG11PTTinverted
-            // 
-            this.chkG11PTTinverted.AutoSize = true;
-            this.chkG11PTTinverted.Image = null;
-            this.chkG11PTTinverted.Location = new System.Drawing.Point(43, 39);
-            this.chkG11PTTinverted.Name = "chkG11PTTinverted";
-            this.chkG11PTTinverted.Size = new System.Drawing.Size(88, 17);
-            this.chkG11PTTinverted.TabIndex = 9;
-            this.chkG11PTTinverted.Text = "PTT inverted";
-            this.toolTip1.SetToolTip(this.chkG11PTTinverted, "Check this if you wish PTT output inverted.");
-            this.chkG11PTTinverted.UseVisualStyleBackColor = true;
-            this.chkG11PTTinverted.CheckedChanged += new System.EventHandler(this.chkG11PTTinverted_CheckedChanged);
-            // 
             // udG11XTRVLosc
             // 
             this.udG11XTRVLosc.DecimalPlaces = 1;
@@ -8533,7 +8563,7 @@ namespace PowerSDR
             0,
             0,
             0});
-            this.udG11XTRVLosc.Location = new System.Drawing.Point(64, 96);
+            this.udG11XTRVLosc.Location = new System.Drawing.Point(74, 45);
             this.udG11XTRVLosc.Maximum = new decimal(new int[] {
             144000000,
             0,
@@ -8602,7 +8632,7 @@ namespace PowerSDR
             0,
             0});
             this.udDisplayCalValue.Minimum = new decimal(new int[] {
-            150,
+            250,
             0,
             0,
             -2147483648});
@@ -8908,7 +8938,7 @@ namespace PowerSDR
             // 
             this.chkG11RXIndependent.AutoSize = true;
             this.chkG11RXIndependent.Image = null;
-            this.chkG11RXIndependent.Location = new System.Drawing.Point(13, 61);
+            this.chkG11RXIndependent.Location = new System.Drawing.Point(10, 20);
             this.chkG11RXIndependent.Name = "chkG11RXIndependent";
             this.chkG11RXIndependent.Size = new System.Drawing.Size(123, 17);
             this.chkG11RXIndependent.TabIndex = 6;
@@ -9293,7 +9323,7 @@ namespace PowerSDR
             // 
             this.chkG11MultiBand.AutoSize = true;
             this.chkG11MultiBand.Image = null;
-            this.chkG11MultiBand.Location = new System.Drawing.Point(43, 16);
+            this.chkG11MultiBand.Location = new System.Drawing.Point(36, 13);
             this.chkG11MultiBand.Name = "chkG11MultiBand";
             this.chkG11MultiBand.Size = new System.Drawing.Size(126, 17);
             this.chkG11MultiBand.TabIndex = 12;
@@ -9467,6 +9497,395 @@ namespace PowerSDR
             0,
             0});
             this.udRTL_SDR_correction.ValueChanged += new System.EventHandler(this.udRTL_SDR_correction_ValueChanged);
+            // 
+            // chkDragSpectrum
+            // 
+            this.chkDragSpectrum.AutoSize = true;
+            this.chkDragSpectrum.Image = null;
+            this.chkDragSpectrum.Location = new System.Drawing.Point(16, 158);
+            this.chkDragSpectrum.Name = "chkDragSpectrum";
+            this.chkDragSpectrum.Size = new System.Drawing.Size(95, 17);
+            this.chkDragSpectrum.TabIndex = 20;
+            this.chkDragSpectrum.Text = "Drag spectrum";
+            this.toolTip1.SetToolTip(this.chkDragSpectrum, "Check this if you want to \"drag\" enire spectrum.");
+            this.chkDragSpectrum.UseVisualStyleBackColor = true;
+            this.chkDragSpectrum.CheckedChanged += new System.EventHandler(this.chkDragSpectrum_CheckedChanged);
+            // 
+            // chkG6SendAudio
+            // 
+            this.chkG6SendAudio.AutoSize = true;
+            this.chkG6SendAudio.Image = null;
+            this.chkG6SendAudio.Location = new System.Drawing.Point(36, 55);
+            this.chkG6SendAudio.Name = "chkG6SendAudio";
+            this.chkG6SendAudio.Size = new System.Drawing.Size(81, 17);
+            this.chkG6SendAudio.TabIndex = 1;
+            this.chkG6SendAudio.Text = "Send Audio";
+            this.toolTip1.SetToolTip(this.chkG6SendAudio, "Send demodulated audio.");
+            this.chkG6SendAudio.UseVisualStyleBackColor = true;
+            this.chkG6SendAudio.CheckedChanged += new System.EventHandler(this.chkG6SendAudio_CheckedChanged);
+            // 
+            // chkG6TXDACmute
+            // 
+            this.chkG6TXDACmute.AutoSize = true;
+            this.chkG6TXDACmute.Image = null;
+            this.chkG6TXDACmute.Location = new System.Drawing.Point(36, 81);
+            this.chkG6TXDACmute.Name = "chkG6TXDACmute";
+            this.chkG6TXDACmute.Size = new System.Drawing.Size(92, 17);
+            this.chkG6TXDACmute.TabIndex = 2;
+            this.chkG6TXDACmute.Text = "Mute TX DAC";
+            this.toolTip1.SetToolTip(this.chkG6TXDACmute, "Mute TXDAC");
+            this.chkG6TXDACmute.UseVisualStyleBackColor = true;
+            this.chkG6TXDACmute.CheckedChanged += new System.EventHandler(this.chkG6TXDACmute_CheckedChanged);
+            // 
+            // chkPA10_2190m
+            // 
+            this.chkPA10_2190m.AutoSize = true;
+            this.chkPA10_2190m.Image = null;
+            this.chkPA10_2190m.Location = new System.Drawing.Point(68, 30);
+            this.chkPA10_2190m.Name = "chkPA10_2190m";
+            this.chkPA10_2190m.Size = new System.Drawing.Size(15, 14);
+            this.chkPA10_2190m.TabIndex = 46;
+            this.toolTip1.SetToolTip(this.chkPA10_2190m, "Check if you wish to perform automatic calibration process.");
+            this.chkPA10_2190m.UseVisualStyleBackColor = true;
+            // 
+            // chkPA10_600m
+            // 
+            this.chkPA10_600m.AutoSize = true;
+            this.chkPA10_600m.Image = null;
+            this.chkPA10_600m.Location = new System.Drawing.Point(68, 53);
+            this.chkPA10_600m.Name = "chkPA10_600m";
+            this.chkPA10_600m.Size = new System.Drawing.Size(15, 14);
+            this.chkPA10_600m.TabIndex = 43;
+            this.toolTip1.SetToolTip(this.chkPA10_600m, "Check if you wish to perform automatic calibration process.");
+            this.chkPA10_600m.UseVisualStyleBackColor = true;
+            // 
+            // chkPA10_2m
+            // 
+            this.chkPA10_2m.AutoSize = true;
+            this.chkPA10_2m.Image = null;
+            this.chkPA10_2m.Location = new System.Drawing.Point(207, 172);
+            this.chkPA10_2m.Name = "chkPA10_2m";
+            this.chkPA10_2m.Size = new System.Drawing.Size(15, 14);
+            this.chkPA10_2m.TabIndex = 37;
+            this.toolTip1.SetToolTip(this.chkPA10_2m, "Check if you wish to perform automatic calibration process.");
+            this.chkPA10_2m.UseVisualStyleBackColor = true;
+            // 
+            // chkPA10_6m
+            // 
+            this.chkPA10_6m.AutoSize = true;
+            this.chkPA10_6m.Image = null;
+            this.chkPA10_6m.Location = new System.Drawing.Point(207, 149);
+            this.chkPA10_6m.Name = "chkPA10_6m";
+            this.chkPA10_6m.Size = new System.Drawing.Size(15, 14);
+            this.chkPA10_6m.TabIndex = 36;
+            this.toolTip1.SetToolTip(this.chkPA10_6m, "Check if you wish to perform automatic calibration process.");
+            this.chkPA10_6m.UseVisualStyleBackColor = true;
+            // 
+            // chkPA10_10m
+            // 
+            this.chkPA10_10m.AutoSize = true;
+            this.chkPA10_10m.Image = null;
+            this.chkPA10_10m.Location = new System.Drawing.Point(207, 126);
+            this.chkPA10_10m.Name = "chkPA10_10m";
+            this.chkPA10_10m.Size = new System.Drawing.Size(15, 14);
+            this.chkPA10_10m.TabIndex = 35;
+            this.toolTip1.SetToolTip(this.chkPA10_10m, "Check if you wish to perform automatic calibration process.");
+            this.chkPA10_10m.UseVisualStyleBackColor = true;
+            // 
+            // chkPA10_12m
+            // 
+            this.chkPA10_12m.AutoSize = true;
+            this.chkPA10_12m.Image = null;
+            this.chkPA10_12m.Location = new System.Drawing.Point(207, 102);
+            this.chkPA10_12m.Name = "chkPA10_12m";
+            this.chkPA10_12m.Size = new System.Drawing.Size(15, 14);
+            this.chkPA10_12m.TabIndex = 34;
+            this.toolTip1.SetToolTip(this.chkPA10_12m, "Check if you wish to perform automatic calibration process.");
+            this.chkPA10_12m.UseVisualStyleBackColor = true;
+            // 
+            // chkPA10_15m
+            // 
+            this.chkPA10_15m.AutoSize = true;
+            this.chkPA10_15m.Image = null;
+            this.chkPA10_15m.Location = new System.Drawing.Point(207, 77);
+            this.chkPA10_15m.Name = "chkPA10_15m";
+            this.chkPA10_15m.Size = new System.Drawing.Size(15, 14);
+            this.chkPA10_15m.TabIndex = 33;
+            this.toolTip1.SetToolTip(this.chkPA10_15m, "Check if you wish to perform automatic calibration process.");
+            this.chkPA10_15m.UseVisualStyleBackColor = true;
+            // 
+            // chkPA10_20m
+            // 
+            this.chkPA10_20m.AutoSize = true;
+            this.chkPA10_20m.Image = null;
+            this.chkPA10_20m.Location = new System.Drawing.Point(207, 30);
+            this.chkPA10_20m.Name = "chkPA10_20m";
+            this.chkPA10_20m.Size = new System.Drawing.Size(15, 14);
+            this.chkPA10_20m.TabIndex = 32;
+            this.toolTip1.SetToolTip(this.chkPA10_20m, "Check if you wish to perform automatic calibration process.");
+            this.chkPA10_20m.UseVisualStyleBackColor = true;
+            // 
+            // chkPA10_30m
+            // 
+            this.chkPA10_30m.AutoSize = true;
+            this.chkPA10_30m.Image = null;
+            this.chkPA10_30m.Location = new System.Drawing.Point(68, 174);
+            this.chkPA10_30m.Name = "chkPA10_30m";
+            this.chkPA10_30m.Size = new System.Drawing.Size(15, 14);
+            this.chkPA10_30m.TabIndex = 31;
+            this.toolTip1.SetToolTip(this.chkPA10_30m, "Check if you wish to perform automatic calibration process.");
+            this.chkPA10_30m.UseVisualStyleBackColor = true;
+            // 
+            // chkPA10_40m
+            // 
+            this.chkPA10_40m.AutoSize = true;
+            this.chkPA10_40m.Image = null;
+            this.chkPA10_40m.Location = new System.Drawing.Point(68, 149);
+            this.chkPA10_40m.Name = "chkPA10_40m";
+            this.chkPA10_40m.Size = new System.Drawing.Size(15, 14);
+            this.chkPA10_40m.TabIndex = 30;
+            this.toolTip1.SetToolTip(this.chkPA10_40m, "Check if you wish to perform automatic calibration process.");
+            this.chkPA10_40m.UseVisualStyleBackColor = true;
+            // 
+            // chkPA10_60m
+            // 
+            this.chkPA10_60m.AutoSize = true;
+            this.chkPA10_60m.Image = null;
+            this.chkPA10_60m.Location = new System.Drawing.Point(68, 126);
+            this.chkPA10_60m.Name = "chkPA10_60m";
+            this.chkPA10_60m.Size = new System.Drawing.Size(15, 14);
+            this.chkPA10_60m.TabIndex = 29;
+            this.toolTip1.SetToolTip(this.chkPA10_60m, "Check if you wish to perform automatic calibration process.");
+            this.chkPA10_60m.UseVisualStyleBackColor = true;
+            // 
+            // chkPA10_17m
+            // 
+            this.chkPA10_17m.AutoSize = true;
+            this.chkPA10_17m.Image = null;
+            this.chkPA10_17m.Location = new System.Drawing.Point(207, 54);
+            this.chkPA10_17m.Name = "chkPA10_17m";
+            this.chkPA10_17m.Size = new System.Drawing.Size(15, 14);
+            this.chkPA10_17m.TabIndex = 28;
+            this.toolTip1.SetToolTip(this.chkPA10_17m, "Check if you wish to perform automatic calibration process.");
+            this.chkPA10_17m.UseVisualStyleBackColor = true;
+            // 
+            // chkPA10_80m
+            // 
+            this.chkPA10_80m.AutoSize = true;
+            this.chkPA10_80m.Image = null;
+            this.chkPA10_80m.Location = new System.Drawing.Point(68, 102);
+            this.chkPA10_80m.Name = "chkPA10_80m";
+            this.chkPA10_80m.Size = new System.Drawing.Size(15, 14);
+            this.chkPA10_80m.TabIndex = 27;
+            this.toolTip1.SetToolTip(this.chkPA10_80m, "Check if you wish to perform automatic calibration process.");
+            this.chkPA10_80m.UseVisualStyleBackColor = true;
+            // 
+            // chkPA10_160m
+            // 
+            this.chkPA10_160m.AutoSize = true;
+            this.chkPA10_160m.Image = null;
+            this.chkPA10_160m.Location = new System.Drawing.Point(68, 77);
+            this.chkPA10_160m.Name = "chkPA10_160m";
+            this.chkPA10_160m.Size = new System.Drawing.Size(15, 14);
+            this.chkPA10_160m.TabIndex = 26;
+            this.toolTip1.SetToolTip(this.chkPA10_160m, "Check if you wish to perform automatic calibration process.");
+            this.chkPA10_160m.UseVisualStyleBackColor = true;
+            // 
+            // lblScopeColor
+            // 
+            this.lblScopeColor.Image = null;
+            this.lblScopeColor.Location = new System.Drawing.Point(4, 62);
+            this.lblScopeColor.Name = "lblScopeColor";
+            this.lblScopeColor.Size = new System.Drawing.Size(70, 14);
+            this.lblScopeColor.TabIndex = 91;
+            this.lblScopeColor.Text = "Scope color";
+            this.toolTip1.SetToolTip(this.lblScopeColor, "Scope and Panascope line color");
+            // 
+            // clrbtnScopeColor
+            // 
+            this.clrbtnScopeColor.Automatic = "Automatic";
+            this.clrbtnScopeColor.Color = System.Drawing.Color.CornflowerBlue;
+            this.clrbtnScopeColor.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.clrbtnScopeColor.Image = null;
+            this.clrbtnScopeColor.Location = new System.Drawing.Point(74, 58);
+            this.clrbtnScopeColor.MoreColors = "More Colors...";
+            this.clrbtnScopeColor.Name = "clrbtnScopeColor";
+            this.clrbtnScopeColor.Size = new System.Drawing.Size(40, 23);
+            this.clrbtnScopeColor.TabIndex = 90;
+            this.toolTip1.SetToolTip(this.clrbtnScopeColor, "Change Scope color.");
+            this.clrbtnScopeColor.Changed += new System.EventHandler(this.clrBtnScopeColor_Changed);
+            // 
+            // chkG11ExtPA
+            // 
+            this.chkG11ExtPA.AutoSize = true;
+            this.chkG11ExtPA.Image = null;
+            this.chkG11ExtPA.Location = new System.Drawing.Point(36, 37);
+            this.chkG11ExtPA.Name = "chkG11ExtPA";
+            this.chkG11ExtPA.Size = new System.Drawing.Size(81, 17);
+            this.chkG11ExtPA.TabIndex = 13;
+            this.chkG11ExtPA.Text = "External PA";
+            this.toolTip1.SetToolTip(this.chkG11ExtPA, "External PA present in system.");
+            this.chkG11ExtPA.UseVisualStyleBackColor = true;
+            this.chkG11ExtPA.CheckedChanged += new System.EventHandler(this.chkG11ExtPA_CheckedChanged);
+            // 
+            // udG11extPAON
+            // 
+            this.udG11extPAON.Increment = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.udG11extPAON.Location = new System.Drawing.Point(80, 81);
+            this.udG11extPAON.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            this.udG11extPAON.Minimum = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+            this.udG11extPAON.Name = "udG11extPAON";
+            this.udG11extPAON.Size = new System.Drawing.Size(58, 20);
+            this.udG11extPAON.TabIndex = 34;
+            this.udG11extPAON.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.udG11extPAON, "Delay for external PA in RX/TX transition.");
+            this.udG11extPAON.Value = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            this.udG11extPAON.ValueChanged += new System.EventHandler(this.udG11extPAON_ValueChanged);
+            // 
+            // chkG11extPAinverted
+            // 
+            this.chkG11extPAinverted.AutoSize = true;
+            this.chkG11extPAinverted.Image = null;
+            this.chkG11extPAinverted.Location = new System.Drawing.Point(36, 132);
+            this.chkG11extPAinverted.Name = "chkG11extPAinverted";
+            this.chkG11extPAinverted.Size = new System.Drawing.Size(123, 17);
+            this.chkG11extPAinverted.TabIndex = 32;
+            this.chkG11extPAinverted.Text = "Ext PA PTT inverted";
+            this.toolTip1.SetToolTip(this.chkG11extPAinverted, "Check this if you wish PTT output inverted.");
+            this.chkG11extPAinverted.UseVisualStyleBackColor = true;
+            this.chkG11extPAinverted.CheckedChanged += new System.EventHandler(this.chkG11extPAinverted_CheckedChanged);
+            // 
+            // udG11extPAOFF
+            // 
+            this.udG11extPAOFF.Increment = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.udG11extPAOFF.Location = new System.Drawing.Point(80, 105);
+            this.udG11extPAOFF.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            this.udG11extPAOFF.Minimum = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+            this.udG11extPAOFF.Name = "udG11extPAOFF";
+            this.udG11extPAOFF.Size = new System.Drawing.Size(58, 20);
+            this.udG11extPAOFF.TabIndex = 37;
+            this.udG11extPAOFF.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.udG11extPAOFF, "Delay for external PA in RX/TX transition.");
+            this.udG11extPAOFF.Value = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            this.udG11extPAOFF.ValueChanged += new System.EventHandler(this.udG11extPAOFF_ValueChanged);
+            // 
+            // udG6ExtPAoffTime
+            // 
+            this.udG6ExtPAoffTime.Increment = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.udG6ExtPAoffTime.Location = new System.Drawing.Point(76, 162);
+            this.udG6ExtPAoffTime.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            this.udG6ExtPAoffTime.Minimum = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+            this.udG6ExtPAoffTime.Name = "udG6ExtPAoffTime";
+            this.udG6ExtPAoffTime.Size = new System.Drawing.Size(58, 20);
+            this.udG6ExtPAoffTime.TabIndex = 37;
+            this.udG6ExtPAoffTime.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.udG6ExtPAoffTime, "Delay for external PA in TX/RX transition.");
+            this.udG6ExtPAoffTime.Value = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            this.udG6ExtPAoffTime.ValueChanged += new System.EventHandler(this.udG6ExtPAoffTime_ValueChanged);
+            // 
+            // chkG6ExtPA
+            // 
+            this.chkG6ExtPA.AutoSize = true;
+            this.chkG6ExtPA.Image = null;
+            this.chkG6ExtPA.Location = new System.Drawing.Point(36, 103);
+            this.chkG6ExtPA.Name = "chkG6ExtPA";
+            this.chkG6ExtPA.Size = new System.Drawing.Size(96, 17);
+            this.chkG6ExtPA.TabIndex = 36;
+            this.chkG6ExtPA.Text = "Ext PA present";
+            this.toolTip1.SetToolTip(this.chkG6ExtPA, "Check this if external PA present in system.");
+            this.chkG6ExtPA.UseVisualStyleBackColor = true;
+            this.chkG6ExtPA.CheckedChanged += new System.EventHandler(this.chkG6ExtPA_CheckedChanged);
+            // 
+            // udG6ExtPAonTime
+            // 
+            this.udG6ExtPAonTime.Increment = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.udG6ExtPAonTime.Location = new System.Drawing.Point(76, 140);
+            this.udG6ExtPAonTime.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            this.udG6ExtPAonTime.Minimum = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+            this.udG6ExtPAonTime.Name = "udG6ExtPAonTime";
+            this.udG6ExtPAonTime.Size = new System.Drawing.Size(58, 20);
+            this.udG6ExtPAonTime.TabIndex = 35;
+            this.udG6ExtPAonTime.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.toolTip1.SetToolTip(this.udG6ExtPAonTime, "Delay for external PA in RX/TX transition.");
+            this.udG6ExtPAonTime.Value = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            this.udG6ExtPAonTime.ValueChanged += new System.EventHandler(this.udG6ExtPAonTime_ValueChanged);
+            // 
+            // chkG6ExtPAinv
+            // 
+            this.chkG6ExtPAinv.AutoSize = true;
+            this.chkG6ExtPAinv.Image = null;
+            this.chkG6ExtPAinv.Location = new System.Drawing.Point(36, 186);
+            this.chkG6ExtPAinv.Name = "chkG6ExtPAinv";
+            this.chkG6ExtPAinv.Size = new System.Drawing.Size(123, 17);
+            this.chkG6ExtPAinv.TabIndex = 33;
+            this.chkG6ExtPAinv.Text = "Ext PA PTT inverted";
+            this.toolTip1.SetToolTip(this.chkG6ExtPAinv, "Check this if you wish PTT output inverted.");
+            this.chkG6ExtPAinv.UseVisualStyleBackColor = true;
+            this.chkG6ExtPAinv.CheckedChanged += new System.EventHandler(this.chkG6ExtPAinv_CheckedChanged);
             // 
             // lblG59PTT
             // 
@@ -9759,8 +10178,8 @@ namespace PowerSDR
             this.lblTestSigGenFreqCallout.Name = "lblTestSigGenFreqCallout";
             this.lblTestSigGenFreqCallout.Size = new System.Drawing.Size(336, 16);
             this.lblTestSigGenFreqCallout.TabIndex = 90;
-            this.lblTestSigGenFreqCallout.Text = "0                                                 24k                            " +
-                "                 48k";
+            this.lblTestSigGenFreqCallout.Text = "0                                                 96k                            " +
+                "              192k";
             // 
             // lblTestGenHzSec
             // 
@@ -12491,7 +12910,7 @@ namespace PowerSDR
             this.grpPAGainByBand.Controls.Add(this.btnPA10Abort);
             this.grpPAGainByBand.Controls.Add(this.lblPA10Calibration);
             this.grpPAGainByBand.Controls.Add(this.labelTS46);
-            this.grpPAGainByBand.Controls.Add(this.progressPA10Calibration);
+            this.grpPAGainByBand.Controls.Add(this.progressPAcalibration);
             this.grpPAGainByBand.Controls.Add(this.chkPA10_2m);
             this.grpPAGainByBand.Controls.Add(this.udPAGain600);
             this.grpPAGainByBand.Controls.Add(this.chkPA10_6m);
@@ -12538,16 +12957,6 @@ namespace PowerSDR
             this.grpPAGainByBand.TabStop = false;
             this.grpPAGainByBand.Text = "Gain By Band (dB)";
             // 
-            // chkPA10_2190m
-            // 
-            this.chkPA10_2190m.AutoSize = true;
-            this.chkPA10_2190m.Image = null;
-            this.chkPA10_2190m.Location = new System.Drawing.Point(68, 30);
-            this.chkPA10_2190m.Name = "chkPA10_2190m";
-            this.chkPA10_2190m.Size = new System.Drawing.Size(15, 14);
-            this.chkPA10_2190m.TabIndex = 46;
-            this.chkPA10_2190m.UseVisualStyleBackColor = true;
-            // 
             // labelTS47
             // 
             this.labelTS47.Image = null;
@@ -12586,16 +12995,6 @@ namespace PowerSDR
             65536});
             this.udPAGain2190.ValueChanged += new System.EventHandler(this.udPAGain_ValueChanged);
             // 
-            // chkPA10_600m
-            // 
-            this.chkPA10_600m.AutoSize = true;
-            this.chkPA10_600m.Image = null;
-            this.chkPA10_600m.Location = new System.Drawing.Point(68, 53);
-            this.chkPA10_600m.Name = "chkPA10_600m";
-            this.chkPA10_600m.Size = new System.Drawing.Size(15, 14);
-            this.chkPA10_600m.TabIndex = 43;
-            this.chkPA10_600m.UseVisualStyleBackColor = true;
-            // 
             // lblPA10Calibration
             // 
             this.lblPA10Calibration.AutoSize = true;
@@ -12615,24 +13014,14 @@ namespace PowerSDR
             this.labelTS46.TabIndex = 42;
             this.labelTS46.Text = "600m:";
             // 
-            // progressPA10Calibration
+            // progressPAcalibration
             // 
-            this.progressPA10Calibration.Location = new System.Drawing.Point(42, 232);
-            this.progressPA10Calibration.Name = "progressPA10Calibration";
-            this.progressPA10Calibration.Size = new System.Drawing.Size(234, 23);
-            this.progressPA10Calibration.Step = 1;
-            this.progressPA10Calibration.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
-            this.progressPA10Calibration.TabIndex = 38;
-            // 
-            // chkPA10_2m
-            // 
-            this.chkPA10_2m.AutoSize = true;
-            this.chkPA10_2m.Image = null;
-            this.chkPA10_2m.Location = new System.Drawing.Point(207, 172);
-            this.chkPA10_2m.Name = "chkPA10_2m";
-            this.chkPA10_2m.Size = new System.Drawing.Size(15, 14);
-            this.chkPA10_2m.TabIndex = 37;
-            this.chkPA10_2m.UseVisualStyleBackColor = true;
+            this.progressPAcalibration.Location = new System.Drawing.Point(42, 232);
+            this.progressPAcalibration.Name = "progressPAcalibration";
+            this.progressPAcalibration.Size = new System.Drawing.Size(234, 23);
+            this.progressPAcalibration.Step = 1;
+            this.progressPAcalibration.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
+            this.progressPAcalibration.TabIndex = 38;
             // 
             // udPAGain600
             // 
@@ -12662,116 +13051,6 @@ namespace PowerSDR
             0,
             65536});
             this.udPAGain600.ValueChanged += new System.EventHandler(this.udPAGain_ValueChanged);
-            // 
-            // chkPA10_6m
-            // 
-            this.chkPA10_6m.AutoSize = true;
-            this.chkPA10_6m.Image = null;
-            this.chkPA10_6m.Location = new System.Drawing.Point(207, 149);
-            this.chkPA10_6m.Name = "chkPA10_6m";
-            this.chkPA10_6m.Size = new System.Drawing.Size(15, 14);
-            this.chkPA10_6m.TabIndex = 36;
-            this.chkPA10_6m.UseVisualStyleBackColor = true;
-            // 
-            // chkPA10_10m
-            // 
-            this.chkPA10_10m.AutoSize = true;
-            this.chkPA10_10m.Image = null;
-            this.chkPA10_10m.Location = new System.Drawing.Point(207, 126);
-            this.chkPA10_10m.Name = "chkPA10_10m";
-            this.chkPA10_10m.Size = new System.Drawing.Size(15, 14);
-            this.chkPA10_10m.TabIndex = 35;
-            this.chkPA10_10m.UseVisualStyleBackColor = true;
-            // 
-            // chkPA10_12m
-            // 
-            this.chkPA10_12m.AutoSize = true;
-            this.chkPA10_12m.Image = null;
-            this.chkPA10_12m.Location = new System.Drawing.Point(207, 102);
-            this.chkPA10_12m.Name = "chkPA10_12m";
-            this.chkPA10_12m.Size = new System.Drawing.Size(15, 14);
-            this.chkPA10_12m.TabIndex = 34;
-            this.chkPA10_12m.UseVisualStyleBackColor = true;
-            // 
-            // chkPA10_15m
-            // 
-            this.chkPA10_15m.AutoSize = true;
-            this.chkPA10_15m.Image = null;
-            this.chkPA10_15m.Location = new System.Drawing.Point(207, 77);
-            this.chkPA10_15m.Name = "chkPA10_15m";
-            this.chkPA10_15m.Size = new System.Drawing.Size(15, 14);
-            this.chkPA10_15m.TabIndex = 33;
-            this.chkPA10_15m.UseVisualStyleBackColor = true;
-            // 
-            // chkPA10_20m
-            // 
-            this.chkPA10_20m.AutoSize = true;
-            this.chkPA10_20m.Image = null;
-            this.chkPA10_20m.Location = new System.Drawing.Point(207, 30);
-            this.chkPA10_20m.Name = "chkPA10_20m";
-            this.chkPA10_20m.Size = new System.Drawing.Size(15, 14);
-            this.chkPA10_20m.TabIndex = 32;
-            this.chkPA10_20m.UseVisualStyleBackColor = true;
-            // 
-            // chkPA10_30m
-            // 
-            this.chkPA10_30m.AutoSize = true;
-            this.chkPA10_30m.Image = null;
-            this.chkPA10_30m.Location = new System.Drawing.Point(68, 174);
-            this.chkPA10_30m.Name = "chkPA10_30m";
-            this.chkPA10_30m.Size = new System.Drawing.Size(15, 14);
-            this.chkPA10_30m.TabIndex = 31;
-            this.chkPA10_30m.UseVisualStyleBackColor = true;
-            // 
-            // chkPA10_40m
-            // 
-            this.chkPA10_40m.AutoSize = true;
-            this.chkPA10_40m.Image = null;
-            this.chkPA10_40m.Location = new System.Drawing.Point(68, 149);
-            this.chkPA10_40m.Name = "chkPA10_40m";
-            this.chkPA10_40m.Size = new System.Drawing.Size(15, 14);
-            this.chkPA10_40m.TabIndex = 30;
-            this.chkPA10_40m.UseVisualStyleBackColor = true;
-            // 
-            // chkPA10_60m
-            // 
-            this.chkPA10_60m.AutoSize = true;
-            this.chkPA10_60m.Image = null;
-            this.chkPA10_60m.Location = new System.Drawing.Point(68, 126);
-            this.chkPA10_60m.Name = "chkPA10_60m";
-            this.chkPA10_60m.Size = new System.Drawing.Size(15, 14);
-            this.chkPA10_60m.TabIndex = 29;
-            this.chkPA10_60m.UseVisualStyleBackColor = true;
-            // 
-            // chkPA10_17m
-            // 
-            this.chkPA10_17m.AutoSize = true;
-            this.chkPA10_17m.Image = null;
-            this.chkPA10_17m.Location = new System.Drawing.Point(207, 54);
-            this.chkPA10_17m.Name = "chkPA10_17m";
-            this.chkPA10_17m.Size = new System.Drawing.Size(15, 14);
-            this.chkPA10_17m.TabIndex = 28;
-            this.chkPA10_17m.UseVisualStyleBackColor = true;
-            // 
-            // chkPA10_80m
-            // 
-            this.chkPA10_80m.AutoSize = true;
-            this.chkPA10_80m.Image = null;
-            this.chkPA10_80m.Location = new System.Drawing.Point(68, 102);
-            this.chkPA10_80m.Name = "chkPA10_80m";
-            this.chkPA10_80m.Size = new System.Drawing.Size(15, 14);
-            this.chkPA10_80m.TabIndex = 27;
-            this.chkPA10_80m.UseVisualStyleBackColor = true;
-            // 
-            // chkPA10_160m
-            // 
-            this.chkPA10_160m.AutoSize = true;
-            this.chkPA10_160m.Image = null;
-            this.chkPA10_160m.Location = new System.Drawing.Point(68, 77);
-            this.chkPA10_160m.Name = "chkPA10_160m";
-            this.chkPA10_160m.Size = new System.Drawing.Size(15, 14);
-            this.chkPA10_160m.TabIndex = 26;
-            this.chkPA10_160m.UseVisualStyleBackColor = true;
             // 
             // lblPAGainByBand2
             // 
@@ -14815,7 +15094,7 @@ namespace PowerSDR
             // grpDisplayPolyPhase
             // 
             this.grpDisplayPolyPhase.Controls.Add(this.chkSpectrumPolyphase);
-            this.grpDisplayPolyPhase.Location = new System.Drawing.Point(456, 72);
+            this.grpDisplayPolyPhase.Location = new System.Drawing.Point(456, 115);
             this.grpDisplayPolyPhase.Name = "grpDisplayPolyPhase";
             this.grpDisplayPolyPhase.Size = new System.Drawing.Size(120, 56);
             this.grpDisplayPolyPhase.TabIndex = 44;
@@ -14824,11 +15103,13 @@ namespace PowerSDR
             // 
             // grpDisplayScopeMode
             // 
+            this.grpDisplayScopeMode.Controls.Add(this.lblScopeColor);
+            this.grpDisplayScopeMode.Controls.Add(this.clrbtnScopeColor);
             this.grpDisplayScopeMode.Controls.Add(this.udDisplayScopeTime);
             this.grpDisplayScopeMode.Controls.Add(this.lblDisplayScopeTime);
             this.grpDisplayScopeMode.Location = new System.Drawing.Point(456, 8);
             this.grpDisplayScopeMode.Name = "grpDisplayScopeMode";
-            this.grpDisplayScopeMode.Size = new System.Drawing.Size(120, 56);
+            this.grpDisplayScopeMode.Size = new System.Drawing.Size(120, 101);
             this.grpDisplayScopeMode.TabIndex = 43;
             this.grpDisplayScopeMode.TabStop = false;
             this.grpDisplayScopeMode.Text = "Scope Mode";
@@ -15839,11 +16120,11 @@ namespace PowerSDR
             // 
             // tpGeneralHardware
             // 
-            this.tpGeneralHardware.Controls.Add(this.grpRTL_SDR);
             this.tpGeneralHardware.Controls.Add(this.grpG6);
-            this.tpGeneralHardware.Controls.Add(this.grpQRP2000);
-            this.tpGeneralHardware.Controls.Add(this.grpG59);
             this.tpGeneralHardware.Controls.Add(this.grpG11);
+            this.tpGeneralHardware.Controls.Add(this.grpG59);
+            this.tpGeneralHardware.Controls.Add(this.grpRTL_SDR);
+            this.tpGeneralHardware.Controls.Add(this.grpQRP2000);
             this.tpGeneralHardware.Controls.Add(this.grpGeneralModel);
             this.tpGeneralHardware.Controls.Add(this.grpGeneralHardwareSetup);
             this.tpGeneralHardware.Controls.Add(this.grpNETBox);
@@ -15859,215 +16140,18 @@ namespace PowerSDR
             this.tpGeneralHardware.TabIndex = 0;
             this.tpGeneralHardware.Text = "Hardware Config";
             // 
-            // grpRTL_SDR
-            // 
-            this.grpRTL_SDR.Controls.Add(this.labelTS72);
-            this.grpRTL_SDR.Controls.Add(this.udRTL_VACcorr);
-            this.grpRTL_SDR.Controls.Add(this.txtRTL_SDR_Device);
-            this.grpRTL_SDR.Controls.Add(this.labelTS71);
-            this.grpRTL_SDR.Controls.Add(this.chkRTL_SDR_OffsetTuning);
-            this.grpRTL_SDR.Controls.Add(this.chkRTL_SDR_RTL_AGC);
-            this.grpRTL_SDR.Controls.Add(this.chkRTL_SDR_TunerAGC);
-            this.grpRTL_SDR.Controls.Add(this.labelTS70);
-            this.grpRTL_SDR.Controls.Add(this.tbRTL_SDR_AGC_Gain);
-            this.grpRTL_SDR.Controls.Add(this.labelTS69);
-            this.grpRTL_SDR.Controls.Add(this.comboRTL_SDR_BufferSize);
-            this.grpRTL_SDR.Controls.Add(this.labelTS68);
-            this.grpRTL_SDR.Controls.Add(this.udRTL_SDR_correction);
-            this.grpRTL_SDR.Controls.Add(this.labelTS67);
-            this.grpRTL_SDR.Controls.Add(this.comboRTL_SDR_SampleRate);
-            this.grpRTL_SDR.Location = new System.Drawing.Point(184, 8);
-            this.grpRTL_SDR.Name = "grpRTL_SDR";
-            this.grpRTL_SDR.Size = new System.Drawing.Size(198, 292);
-            this.grpRTL_SDR.TabIndex = 36;
-            this.grpRTL_SDR.TabStop = false;
-            this.grpRTL_SDR.Text = "RTL SDR";
-            // 
-            // labelTS72
-            // 
-            this.labelTS72.AutoSize = true;
-            this.labelTS72.Image = null;
-            this.labelTS72.Location = new System.Drawing.Point(12, 104);
-            this.labelTS72.Name = "labelTS72";
-            this.labelTS72.Size = new System.Drawing.Size(78, 13);
-            this.labelTS72.TabIndex = 15;
-            this.labelTS72.Text = "VAC correction";
-            // 
-            // udRTL_VACcorr
-            // 
-            this.udRTL_VACcorr.Enabled = false;
-            this.udRTL_VACcorr.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.udRTL_VACcorr.Location = new System.Drawing.Point(107, 102);
-            this.udRTL_VACcorr.Maximum = new decimal(new int[] {
-            5000,
-            0,
-            0,
-            0});
-            this.udRTL_VACcorr.Minimum = new decimal(new int[] {
-            5000,
-            0,
-            0,
-            -2147483648});
-            this.udRTL_VACcorr.Name = "udRTL_VACcorr";
-            this.udRTL_VACcorr.Size = new System.Drawing.Size(72, 20);
-            this.udRTL_VACcorr.TabIndex = 14;
-            this.udRTL_VACcorr.Value = new decimal(new int[] {
-            381,
-            0,
-            0,
-            0});
-            // 
-            // txtRTL_SDR_Device
-            // 
-            this.txtRTL_SDR_Device.Location = new System.Drawing.Point(79, 22);
-            this.txtRTL_SDR_Device.MaxLength = 32;
-            this.txtRTL_SDR_Device.Name = "txtRTL_SDR_Device";
-            this.txtRTL_SDR_Device.Size = new System.Drawing.Size(100, 20);
-            this.txtRTL_SDR_Device.TabIndex = 13;
-            // 
-            // labelTS71
-            // 
-            this.labelTS71.AutoSize = true;
-            this.labelTS71.Image = null;
-            this.labelTS71.Location = new System.Drawing.Point(12, 29);
-            this.labelTS71.Name = "labelTS71";
-            this.labelTS71.Size = new System.Drawing.Size(41, 13);
-            this.labelTS71.TabIndex = 12;
-            this.labelTS71.Text = "Device";
-            // 
-            // chkRTL_SDR_OffsetTuning
-            // 
-            this.chkRTL_SDR_OffsetTuning.AutoSize = true;
-            this.chkRTL_SDR_OffsetTuning.Image = null;
-            this.chkRTL_SDR_OffsetTuning.Location = new System.Drawing.Point(52, 263);
-            this.chkRTL_SDR_OffsetTuning.Name = "chkRTL_SDR_OffsetTuning";
-            this.chkRTL_SDR_OffsetTuning.Size = new System.Drawing.Size(90, 17);
-            this.chkRTL_SDR_OffsetTuning.TabIndex = 10;
-            this.chkRTL_SDR_OffsetTuning.Text = "Offset Tuning";
-            this.chkRTL_SDR_OffsetTuning.UseVisualStyleBackColor = true;
-            this.chkRTL_SDR_OffsetTuning.CheckedChanged += new System.EventHandler(this.chkRTL_SDR_OffsetTuning_CheckedChanged);
-            // 
-            // chkRTL_SDR_RTL_AGC
-            // 
-            this.chkRTL_SDR_RTL_AGC.AutoSize = true;
-            this.chkRTL_SDR_RTL_AGC.Image = null;
-            this.chkRTL_SDR_RTL_AGC.Location = new System.Drawing.Point(52, 232);
-            this.chkRTL_SDR_RTL_AGC.Name = "chkRTL_SDR_RTL_AGC";
-            this.chkRTL_SDR_RTL_AGC.Size = new System.Drawing.Size(72, 17);
-            this.chkRTL_SDR_RTL_AGC.TabIndex = 9;
-            this.chkRTL_SDR_RTL_AGC.Text = "RTL AGC";
-            this.chkRTL_SDR_RTL_AGC.UseVisualStyleBackColor = true;
-            this.chkRTL_SDR_RTL_AGC.CheckedChanged += new System.EventHandler(this.chkRTL_SDR_RTL_AGC_CheckedChanged);
-            // 
-            // chkRTL_SDR_TunerAGC
-            // 
-            this.chkRTL_SDR_TunerAGC.AutoSize = true;
-            this.chkRTL_SDR_TunerAGC.Image = null;
-            this.chkRTL_SDR_TunerAGC.Location = new System.Drawing.Point(52, 201);
-            this.chkRTL_SDR_TunerAGC.Name = "chkRTL_SDR_TunerAGC";
-            this.chkRTL_SDR_TunerAGC.Size = new System.Drawing.Size(79, 17);
-            this.chkRTL_SDR_TunerAGC.TabIndex = 8;
-            this.chkRTL_SDR_TunerAGC.Text = "Tuner AGC";
-            this.chkRTL_SDR_TunerAGC.UseVisualStyleBackColor = true;
-            this.chkRTL_SDR_TunerAGC.CheckedChanged += new System.EventHandler(this.chkRTL_SDR_TunerAGC_CheckedChanged);
-            // 
-            // labelTS70
-            // 
-            this.labelTS70.Image = null;
-            this.labelTS70.Location = new System.Drawing.Point(12, 157);
-            this.labelTS70.Name = "labelTS70";
-            this.labelTS70.Size = new System.Drawing.Size(63, 40);
-            this.labelTS70.TabIndex = 7;
-            this.labelTS70.Text = "Tuner AGC Gain";
-            // 
-            // tbRTL_SDR_AGC_Gain
-            // 
-            this.tbRTL_SDR_AGC_Gain.AutoSize = false;
-            this.tbRTL_SDR_AGC_Gain.LargeChange = 1;
-            this.tbRTL_SDR_AGC_Gain.Location = new System.Drawing.Point(85, 158);
-            this.tbRTL_SDR_AGC_Gain.Maximum = 28;
-            this.tbRTL_SDR_AGC_Gain.Name = "tbRTL_SDR_AGC_Gain";
-            this.tbRTL_SDR_AGC_Gain.Size = new System.Drawing.Size(94, 25);
-            this.tbRTL_SDR_AGC_Gain.TabIndex = 6;
-            this.tbRTL_SDR_AGC_Gain.TickStyle = System.Windows.Forms.TickStyle.None;
-            this.tbRTL_SDR_AGC_Gain.Scroll += new System.EventHandler(this.tbRTL_SDR_AGC_Gain_Scroll);
-            // 
-            // labelTS69
-            // 
-            this.labelTS69.AutoSize = true;
-            this.labelTS69.Image = null;
-            this.labelTS69.Location = new System.Drawing.Point(12, 77);
-            this.labelTS69.Name = "labelTS69";
-            this.labelTS69.Size = new System.Drawing.Size(58, 13);
-            this.labelTS69.TabIndex = 5;
-            this.labelTS69.Text = "Buffer Size";
-            // 
-            // comboRTL_SDR_BufferSize
-            // 
-            this.comboRTL_SDR_BufferSize.FormattingEnabled = true;
-            this.comboRTL_SDR_BufferSize.Items.AddRange(new object[] {
-            "1 KB",
-            "2 KB",
-            "4 KB",
-            "8 KB",
-            "16 KB",
-            "32 KB",
-            "64 KB",
-            "128 KB",
-            "256 KB",
-            "512 KB",
-            "1024 KB"});
-            this.comboRTL_SDR_BufferSize.Location = new System.Drawing.Point(80, 75);
-            this.comboRTL_SDR_BufferSize.Name = "comboRTL_SDR_BufferSize";
-            this.comboRTL_SDR_BufferSize.Size = new System.Drawing.Size(99, 21);
-            this.comboRTL_SDR_BufferSize.TabIndex = 4;
-            this.comboRTL_SDR_BufferSize.SelectedIndexChanged += new System.EventHandler(this.comboRTL_SDR_BufferSize_SelectedIndexChanged);
-            // 
-            // labelTS68
-            // 
-            this.labelTS68.AutoSize = true;
-            this.labelTS68.Image = null;
-            this.labelTS68.Location = new System.Drawing.Point(12, 130);
-            this.labelTS68.Name = "labelTS68";
-            this.labelTS68.Size = new System.Drawing.Size(86, 13);
-            this.labelTS68.TabIndex = 3;
-            this.labelTS68.Text = "Frequency offset";
-            // 
-            // labelTS67
-            // 
-            this.labelTS67.AutoSize = true;
-            this.labelTS67.Image = null;
-            this.labelTS67.Location = new System.Drawing.Point(12, 51);
-            this.labelTS67.Name = "labelTS67";
-            this.labelTS67.Size = new System.Drawing.Size(68, 13);
-            this.labelTS67.TabIndex = 1;
-            this.labelTS67.Text = "Sample Rate";
-            // 
-            // comboRTL_SDR_SampleRate
-            // 
-            this.comboRTL_SDR_SampleRate.FormattingEnabled = true;
-            this.comboRTL_SDR_SampleRate.Items.AddRange(new object[] {
-            "0.25 Msps",
-            "0.96 Msps",
-            "1.024 Msps",
-            "1.2 Msps",
-            "1.44 Msps",
-            "1.8 Msps",
-            "2.4 Msps",
-            "2.88 Msps",
-            "3.2 Msps"});
-            this.comboRTL_SDR_SampleRate.Location = new System.Drawing.Point(80, 48);
-            this.comboRTL_SDR_SampleRate.Name = "comboRTL_SDR_SampleRate";
-            this.comboRTL_SDR_SampleRate.Size = new System.Drawing.Size(99, 21);
-            this.comboRTL_SDR_SampleRate.TabIndex = 0;
-            this.comboRTL_SDR_SampleRate.SelectedIndexChanged += new System.EventHandler(this.comboRTL_SDR_SampleRate_SelectedIndexChanged);
-            // 
             // grpG6
             // 
+            this.grpG6.Controls.Add(this.labelTS75);
+            this.grpG6.Controls.Add(this.labelTS76);
+            this.grpG6.Controls.Add(this.udG6ExtPAoffTime);
+            this.grpG6.Controls.Add(this.chkG6ExtPA);
+            this.grpG6.Controls.Add(this.udG6ExtPAonTime);
+            this.grpG6.Controls.Add(this.labelTS77);
+            this.grpG6.Controls.Add(this.chkG6ExtPAinv);
+            this.grpG6.Controls.Add(this.checkBoxTS4);
+            this.grpG6.Controls.Add(this.chkG6TXDACmute);
+            this.grpG6.Controls.Add(this.chkG6SendAudio);
             this.grpG6.Controls.Add(this.chkG6RX2input);
             this.grpG6.Location = new System.Drawing.Point(184, 8);
             this.grpG6.Name = "grpG6";
@@ -16075,6 +16159,47 @@ namespace PowerSDR
             this.grpG6.TabIndex = 35;
             this.grpG6.TabStop = false;
             this.grpG6.Text = "G6";
+            // 
+            // labelTS75
+            // 
+            this.labelTS75.AutoSize = true;
+            this.labelTS75.Image = null;
+            this.labelTS75.Location = new System.Drawing.Point(45, 165);
+            this.labelTS75.Name = "labelTS75";
+            this.labelTS75.Size = new System.Drawing.Size(27, 13);
+            this.labelTS75.TabIndex = 39;
+            this.labelTS75.Text = "OFF";
+            // 
+            // labelTS76
+            // 
+            this.labelTS76.AutoSize = true;
+            this.labelTS76.Image = null;
+            this.labelTS76.Location = new System.Drawing.Point(45, 143);
+            this.labelTS76.Name = "labelTS76";
+            this.labelTS76.Size = new System.Drawing.Size(23, 13);
+            this.labelTS76.TabIndex = 38;
+            this.labelTS76.Text = "ON";
+            // 
+            // labelTS77
+            // 
+            this.labelTS77.AutoSize = true;
+            this.labelTS77.Image = null;
+            this.labelTS77.Location = new System.Drawing.Point(37, 123);
+            this.labelTS77.Name = "labelTS77";
+            this.labelTS77.Size = new System.Drawing.Size(117, 13);
+            this.labelTS77.TabIndex = 34;
+            this.labelTS77.Text = "External PA PTT delay:";
+            // 
+            // checkBoxTS4
+            // 
+            this.checkBoxTS4.AutoSize = true;
+            this.checkBoxTS4.Image = null;
+            this.checkBoxTS4.Location = new System.Drawing.Point(36, 206);
+            this.checkBoxTS4.Name = "checkBoxTS4";
+            this.checkBoxTS4.Size = new System.Drawing.Size(107, 17);
+            this.checkBoxTS4.TabIndex = 32;
+            this.checkBoxTS4.Text = "Second RX input";
+            this.checkBoxTS4.UseVisualStyleBackColor = true;
             // 
             // chkG6RX2input
             // 
@@ -16088,252 +16213,17 @@ namespace PowerSDR
             this.chkG6RX2input.UseVisualStyleBackColor = true;
             this.chkG6RX2input.CheckedChanged += new System.EventHandler(this.chkG6RX2input_CheckedChanged);
             // 
-            // grpQRP2000
-            // 
-            this.grpQRP2000.Controls.Add(this.btnQRP2000XtalSet);
-            this.grpQRP2000.Controls.Add(this.btnQRP2000XtalGet);
-            this.grpQRP2000.Controls.Add(this.udQRP2000_Si570Xtal);
-            this.grpQRP2000.Controls.Add(this.labelTS58);
-            this.grpQRP2000.Controls.Add(this.groupBoxTS10);
-            this.grpQRP2000.Controls.Add(this.groupBoxTS9);
-            this.grpQRP2000.Controls.Add(this.radQRP2000CW2);
-            this.grpQRP2000.Controls.Add(this.radQRP2000CW1);
-            this.grpQRP2000.Controls.Add(this.QRP2000VID);
-            this.grpQRP2000.Controls.Add(this.QRP2000PID);
-            this.grpQRP2000.Controls.Add(this.lblQRP2000PID);
-            this.grpQRP2000.Controls.Add(this.lblQRP2000VID);
-            this.grpQRP2000.Controls.Add(this.lblSRSi570Addr);
-            this.grpQRP2000.Controls.Add(this.udSRSi570Addr);
-            this.grpQRP2000.Location = new System.Drawing.Point(184, 8);
-            this.grpQRP2000.Name = "grpQRP2000";
-            this.grpQRP2000.Size = new System.Drawing.Size(198, 292);
-            this.grpQRP2000.TabIndex = 36;
-            this.grpQRP2000.TabStop = false;
-            this.grpQRP2000.Text = "QRP2000";
-            // 
-            // groupBoxTS10
-            // 
-            this.groupBoxTS10.Controls.Add(this.labelTS57);
-            this.groupBoxTS10.Controls.Add(this.radQRP2000XTRVx4);
-            this.groupBoxTS10.Controls.Add(this.radQRP2000XTRVx2);
-            this.groupBoxTS10.Controls.Add(this.radQRP2000XTRVx1);
-            this.groupBoxTS10.Controls.Add(this.udQRP2000XTRVIF);
-            this.groupBoxTS10.Controls.Add(this.lblSRIFFreq);
-            this.groupBoxTS10.Controls.Add(this.chkQRP2000XTRV);
-            this.groupBoxTS10.Location = new System.Drawing.Point(9, 190);
-            this.groupBoxTS10.Name = "groupBoxTS10";
-            this.groupBoxTS10.Size = new System.Drawing.Size(180, 97);
-            this.groupBoxTS10.TabIndex = 33;
-            this.groupBoxTS10.TabStop = false;
-            this.groupBoxTS10.Text = "XTRV options";
-            // 
-            // labelTS57
-            // 
-            this.labelTS57.AutoSize = true;
-            this.labelTS57.Image = null;
-            this.labelTS57.Location = new System.Drawing.Point(38, 57);
-            this.labelTS57.Name = "labelTS57";
-            this.labelTS57.Size = new System.Drawing.Size(100, 13);
-            this.labelTS57.TabIndex = 39;
-            this.labelTS57.Text = "Frequency multiplier";
-            // 
-            // radQRP2000XTRVx4
-            // 
-            this.radQRP2000XTRVx4.AutoSize = true;
-            this.radQRP2000XTRVx4.Image = null;
-            this.radQRP2000XTRVx4.Location = new System.Drawing.Point(124, 75);
-            this.radQRP2000XTRVx4.Name = "radQRP2000XTRVx4";
-            this.radQRP2000XTRVx4.Size = new System.Drawing.Size(36, 17);
-            this.radQRP2000XTRVx4.TabIndex = 38;
-            this.radQRP2000XTRVx4.Text = "4x";
-            this.radQRP2000XTRVx4.UseVisualStyleBackColor = true;
-            this.radQRP2000XTRVx4.CheckedChanged += new System.EventHandler(this.radQRP2000XTRVx4_CheckedChanged);
-            // 
-            // radQRP2000XTRVx2
-            // 
-            this.radQRP2000XTRVx2.AutoSize = true;
-            this.radQRP2000XTRVx2.Image = null;
-            this.radQRP2000XTRVx2.Location = new System.Drawing.Point(72, 75);
-            this.radQRP2000XTRVx2.Name = "radQRP2000XTRVx2";
-            this.radQRP2000XTRVx2.Size = new System.Drawing.Size(36, 17);
-            this.radQRP2000XTRVx2.TabIndex = 37;
-            this.radQRP2000XTRVx2.Text = "2x";
-            this.radQRP2000XTRVx2.UseVisualStyleBackColor = true;
-            this.radQRP2000XTRVx2.CheckedChanged += new System.EventHandler(this.radQRP2000XTRVx2_CheckedChanged);
-            // 
-            // radQRP2000XTRVx1
-            // 
-            this.radQRP2000XTRVx1.AutoSize = true;
-            this.radQRP2000XTRVx1.Checked = true;
-            this.radQRP2000XTRVx1.Image = null;
-            this.radQRP2000XTRVx1.Location = new System.Drawing.Point(20, 75);
-            this.radQRP2000XTRVx1.Name = "radQRP2000XTRVx1";
-            this.radQRP2000XTRVx1.Size = new System.Drawing.Size(36, 17);
-            this.radQRP2000XTRVx1.TabIndex = 36;
-            this.radQRP2000XTRVx1.TabStop = true;
-            this.radQRP2000XTRVx1.Text = "1x";
-            this.radQRP2000XTRVx1.UseVisualStyleBackColor = true;
-            this.radQRP2000XTRVx1.CheckedChanged += new System.EventHandler(this.radQRP2000XTRVx1_CheckedChanged);
-            // 
-            // lblSRIFFreq
-            // 
-            this.lblSRIFFreq.AutoSize = true;
-            this.lblSRIFFreq.Image = null;
-            this.lblSRIFFreq.Location = new System.Drawing.Point(7, 39);
-            this.lblSRIFFreq.Name = "lblSRIFFreq";
-            this.lblSRIFFreq.Size = new System.Drawing.Size(62, 13);
-            this.lblSRIFFreq.TabIndex = 22;
-            this.lblSRIFFreq.Text = "XTRV Losc";
-            // 
-            // groupBoxTS9
-            // 
-            this.groupBoxTS9.Controls.Add(this.radQRP2000x4);
-            this.groupBoxTS9.Controls.Add(this.radQRP2000x2);
-            this.groupBoxTS9.Controls.Add(this.radQRP2000x1);
-            this.groupBoxTS9.Location = new System.Drawing.Point(9, 145);
-            this.groupBoxTS9.Name = "groupBoxTS9";
-            this.groupBoxTS9.Size = new System.Drawing.Size(180, 45);
-            this.groupBoxTS9.TabIndex = 32;
-            this.groupBoxTS9.TabStop = false;
-            this.groupBoxTS9.Text = "Frequency multiplier";
-            // 
-            // radQRP2000x4
-            // 
-            this.radQRP2000x4.AutoSize = true;
-            this.radQRP2000x4.Checked = true;
-            this.radQRP2000x4.Image = null;
-            this.radQRP2000x4.Location = new System.Drawing.Point(122, 17);
-            this.radQRP2000x4.Name = "radQRP2000x4";
-            this.radQRP2000x4.Size = new System.Drawing.Size(36, 17);
-            this.radQRP2000x4.TabIndex = 35;
-            this.radQRP2000x4.TabStop = true;
-            this.radQRP2000x4.Text = "4x";
-            this.radQRP2000x4.UseVisualStyleBackColor = true;
-            this.radQRP2000x4.CheckedChanged += new System.EventHandler(this.radQRP2000x4_CheckedChanged);
-            // 
-            // radQRP2000x2
-            // 
-            this.radQRP2000x2.AutoSize = true;
-            this.radQRP2000x2.Image = null;
-            this.radQRP2000x2.Location = new System.Drawing.Point(66, 18);
-            this.radQRP2000x2.Name = "radQRP2000x2";
-            this.radQRP2000x2.Size = new System.Drawing.Size(36, 17);
-            this.radQRP2000x2.TabIndex = 34;
-            this.radQRP2000x2.Text = "2x";
-            this.radQRP2000x2.UseVisualStyleBackColor = true;
-            this.radQRP2000x2.CheckedChanged += new System.EventHandler(this.radQRP2000x2_CheckedChanged);
-            // 
-            // radQRP2000x1
-            // 
-            this.radQRP2000x1.AutoSize = true;
-            this.radQRP2000x1.Image = null;
-            this.radQRP2000x1.Location = new System.Drawing.Point(10, 18);
-            this.radQRP2000x1.Name = "radQRP2000x1";
-            this.radQRP2000x1.Size = new System.Drawing.Size(36, 17);
-            this.radQRP2000x1.TabIndex = 33;
-            this.radQRP2000x1.Text = "1x";
-            this.radQRP2000x1.UseVisualStyleBackColor = true;
-            this.radQRP2000x1.CheckedChanged += new System.EventHandler(this.radQRP2000x1_CheckedChanged);
-            // 
-            // lblQRP2000PID
-            // 
-            this.lblQRP2000PID.AutoSize = true;
-            this.lblQRP2000PID.Location = new System.Drawing.Point(103, 69);
-            this.lblQRP2000PID.Name = "lblQRP2000PID";
-            this.lblQRP2000PID.Size = new System.Drawing.Size(25, 13);
-            this.lblQRP2000PID.TabIndex = 27;
-            this.lblQRP2000PID.Text = "PID";
-            // 
-            // lblQRP2000VID
-            // 
-            this.lblQRP2000VID.AutoSize = true;
-            this.lblQRP2000VID.Location = new System.Drawing.Point(23, 69);
-            this.lblQRP2000VID.Name = "lblQRP2000VID";
-            this.lblQRP2000VID.Size = new System.Drawing.Size(25, 13);
-            this.lblQRP2000VID.TabIndex = 26;
-            this.lblQRP2000VID.Text = "VID";
-            // 
-            // lblSRSi570Addr
-            // 
-            this.lblSRSi570Addr.AutoSize = true;
-            this.lblSRSi570Addr.Image = null;
-            this.lblSRSi570Addr.Location = new System.Drawing.Point(25, 43);
-            this.lblSRSi570Addr.Name = "lblSRSi570Addr";
-            this.lblSRSi570Addr.Size = new System.Drawing.Size(74, 13);
-            this.lblSRSi570Addr.TabIndex = 25;
-            this.lblSRSi570Addr.Text = "Si570 address";
-            // 
-            // grpG59
-            // 
-            this.grpG59.Controls.Add(this.lblG59PTT_OFF);
-            this.grpG59.Controls.Add(this.lblG59PTT_ON);
-            this.grpG59.Controls.Add(this.udG59PTT_OFF_time);
-            this.grpG59.Controls.Add(this.chkG59ExtPA);
-            this.grpG59.Controls.Add(this.udG59PTT_ON_time);
-            this.grpG59.Controls.Add(this.lblG59PTT);
-            this.grpG59.Controls.Add(this.chkG59_PTT_Inv);
-            this.grpG59.Controls.Add(this.chkG59MicPreamp);
-            this.grpG59.Controls.Add(this.grpXTRV);
-            this.grpG59.Controls.Add(this.chkG59RX2);
-            this.grpG59.Controls.Add(this.chkG59_PA10);
-            this.grpG59.Location = new System.Drawing.Point(184, 8);
-            this.grpG59.Name = "grpG59";
-            this.grpG59.Size = new System.Drawing.Size(198, 292);
-            this.grpG59.TabIndex = 34;
-            this.grpG59.TabStop = false;
-            this.grpG59.Text = "G59";
-            // 
-            // chkG59MicPreamp
-            // 
-            this.chkG59MicPreamp.AutoSize = true;
-            this.chkG59MicPreamp.Image = null;
-            this.chkG59MicPreamp.Location = new System.Drawing.Point(40, 148);
-            this.chkG59MicPreamp.Name = "chkG59MicPreamp";
-            this.chkG59MicPreamp.Size = new System.Drawing.Size(81, 17);
-            this.chkG59MicPreamp.TabIndex = 8;
-            this.chkG59MicPreamp.Text = "Mic preamp";
-            this.chkG59MicPreamp.UseVisualStyleBackColor = true;
-            this.chkG59MicPreamp.CheckedChanged += new System.EventHandler(this.chkG59MicPreamp_CheckedChanged);
-            // 
-            // grpXTRV
-            // 
-            this.grpXTRV.Controls.Add(this.udG59XtrvIF);
-            this.grpXTRV.Controls.Add(this.lblG59XtrvIF);
-            this.grpXTRV.Controls.Add(this.chG59XTRV_separate_RX_TX);
-            this.grpXTRV.Location = new System.Drawing.Point(21, 168);
-            this.grpXTRV.Name = "grpXTRV";
-            this.grpXTRV.Size = new System.Drawing.Size(157, 121);
-            this.grpXTRV.TabIndex = 7;
-            this.grpXTRV.TabStop = false;
-            this.grpXTRV.Text = "XTRV";
-            // 
-            // lblG59XtrvIF
-            // 
-            this.lblG59XtrvIF.AutoSize = true;
-            this.lblG59XtrvIF.Image = null;
-            this.lblG59XtrvIF.Location = new System.Drawing.Point(3, 96);
-            this.lblG59XtrvIF.Name = "lblG59XtrvIF";
-            this.lblG59XtrvIF.Size = new System.Drawing.Size(61, 13);
-            this.lblG59XtrvIF.TabIndex = 24;
-            this.lblG59XtrvIF.Text = "XTRV OSC";
-            // 
-            // chkG59RX2
-            // 
-            this.chkG59RX2.AutoSize = true;
-            this.chkG59RX2.Image = null;
-            this.chkG59RX2.Location = new System.Drawing.Point(40, 130);
-            this.chkG59RX2.Name = "chkG59RX2";
-            this.chkG59RX2.Size = new System.Drawing.Size(107, 17);
-            this.chkG59RX2.TabIndex = 6;
-            this.chkG59RX2.Text = "Second RX input";
-            this.chkG59RX2.UseVisualStyleBackColor = true;
-            this.chkG59RX2.CheckedChanged += new System.EventHandler(this.chkG59RX2_CheckedChanged);
-            // 
             // grpG11
             // 
             this.grpG11.Controls.Add(this.grpG11Filters);
+            this.grpG11.Controls.Add(this.udG11extPAOFF);
+            this.grpG11.Controls.Add(this.labelTS73);
+            this.grpG11.Controls.Add(this.labelTS74);
+            this.grpG11.Controls.Add(this.udG11extPAON);
+            this.grpG11.Controls.Add(this.lblG11extPApttDelay);
+            this.grpG11.Controls.Add(this.chkG11extPAinverted);
+            this.grpG11.Controls.Add(this.chkG11ExtPA);
             this.grpG11.Controls.Add(this.btnG11FiltersShow);
-            this.grpG11.Controls.Add(this.chkG11PTTinverted);
             this.grpG11.Controls.Add(this.chkG11MicPreamp);
             this.grpG11.Controls.Add(this.chkG11RX2);
             this.grpG11.Controls.Add(this.grpG11XTRV);
@@ -16797,6 +16687,36 @@ namespace PowerSDR
             this.labelTS33.TabIndex = 0;
             this.labelTS33.Text = "CH1";
             // 
+            // labelTS73
+            // 
+            this.labelTS73.AutoSize = true;
+            this.labelTS73.Image = null;
+            this.labelTS73.Location = new System.Drawing.Point(36, 107);
+            this.labelTS73.Name = "labelTS73";
+            this.labelTS73.Size = new System.Drawing.Size(27, 13);
+            this.labelTS73.TabIndex = 36;
+            this.labelTS73.Text = "OFF";
+            // 
+            // labelTS74
+            // 
+            this.labelTS74.AutoSize = true;
+            this.labelTS74.Image = null;
+            this.labelTS74.Location = new System.Drawing.Point(36, 84);
+            this.labelTS74.Name = "labelTS74";
+            this.labelTS74.Size = new System.Drawing.Size(23, 13);
+            this.labelTS74.TabIndex = 35;
+            this.labelTS74.Text = "ON";
+            // 
+            // lblG11extPApttDelay
+            // 
+            this.lblG11extPApttDelay.AutoSize = true;
+            this.lblG11extPApttDelay.Image = null;
+            this.lblG11extPApttDelay.Location = new System.Drawing.Point(36, 61);
+            this.lblG11extPApttDelay.Name = "lblG11extPApttDelay";
+            this.lblG11extPApttDelay.Size = new System.Drawing.Size(117, 13);
+            this.lblG11extPApttDelay.TabIndex = 33;
+            this.lblG11extPApttDelay.Text = "External PA PTT delay:";
+            // 
             // btnG11FiltersShow
             // 
             this.btnG11FiltersShow.AutoSize = true;
@@ -16813,7 +16733,7 @@ namespace PowerSDR
             // 
             this.chkG11MicPreamp.AutoSize = true;
             this.chkG11MicPreamp.Image = null;
-            this.chkG11MicPreamp.Location = new System.Drawing.Point(43, 85);
+            this.chkG11MicPreamp.Location = new System.Drawing.Point(36, 174);
             this.chkG11MicPreamp.Name = "chkG11MicPreamp";
             this.chkG11MicPreamp.Size = new System.Drawing.Size(81, 17);
             this.chkG11MicPreamp.TabIndex = 8;
@@ -16825,7 +16745,7 @@ namespace PowerSDR
             // 
             this.chkG11RX2.AutoSize = true;
             this.chkG11RX2.Image = null;
-            this.chkG11RX2.Location = new System.Drawing.Point(43, 62);
+            this.chkG11RX2.Location = new System.Drawing.Point(36, 153);
             this.chkG11RX2.Name = "chkG11RX2";
             this.chkG11RX2.Size = new System.Drawing.Size(107, 17);
             this.chkG11RX2.TabIndex = 6;
@@ -16838,9 +16758,9 @@ namespace PowerSDR
             this.grpG11XTRV.Controls.Add(this.udG11XTRVLosc);
             this.grpG11XTRV.Controls.Add(this.lblG11XTRVLosc);
             this.grpG11XTRV.Controls.Add(this.chkG11RXIndependent);
-            this.grpG11XTRV.Location = new System.Drawing.Point(21, 136);
+            this.grpG11XTRV.Location = new System.Drawing.Point(14, 194);
             this.grpG11XTRV.Name = "grpG11XTRV";
-            this.grpG11XTRV.Size = new System.Drawing.Size(157, 130);
+            this.grpG11XTRV.Size = new System.Drawing.Size(171, 72);
             this.grpG11XTRV.TabIndex = 7;
             this.grpG11XTRV.TabStop = false;
             this.grpG11XTRV.Text = "XTRV";
@@ -16849,11 +16769,459 @@ namespace PowerSDR
             // 
             this.lblG11XTRVLosc.AutoSize = true;
             this.lblG11XTRVLosc.Image = null;
-            this.lblG11XTRVLosc.Location = new System.Drawing.Point(3, 99);
+            this.lblG11XTRVLosc.Location = new System.Drawing.Point(7, 48);
             this.lblG11XTRVLosc.Name = "lblG11XTRVLosc";
             this.lblG11XTRVLosc.Size = new System.Drawing.Size(61, 13);
             this.lblG11XTRVLosc.TabIndex = 24;
             this.lblG11XTRVLosc.Text = "XTRV OSC";
+            // 
+            // grpG59
+            // 
+            this.grpG59.Controls.Add(this.lblG59PTT_OFF);
+            this.grpG59.Controls.Add(this.lblG59PTT_ON);
+            this.grpG59.Controls.Add(this.udG59PTT_OFF_time);
+            this.grpG59.Controls.Add(this.chkG59ExtPA);
+            this.grpG59.Controls.Add(this.udG59PTT_ON_time);
+            this.grpG59.Controls.Add(this.lblG59PTT);
+            this.grpG59.Controls.Add(this.chkG59_PTT_Inv);
+            this.grpG59.Controls.Add(this.chkG59MicPreamp);
+            this.grpG59.Controls.Add(this.grpXTRV);
+            this.grpG59.Controls.Add(this.chkG59RX2);
+            this.grpG59.Controls.Add(this.chkG59_PA10);
+            this.grpG59.Location = new System.Drawing.Point(184, 8);
+            this.grpG59.Name = "grpG59";
+            this.grpG59.Size = new System.Drawing.Size(198, 292);
+            this.grpG59.TabIndex = 34;
+            this.grpG59.TabStop = false;
+            this.grpG59.Text = "G59";
+            // 
+            // chkG59MicPreamp
+            // 
+            this.chkG59MicPreamp.AutoSize = true;
+            this.chkG59MicPreamp.Image = null;
+            this.chkG59MicPreamp.Location = new System.Drawing.Point(40, 148);
+            this.chkG59MicPreamp.Name = "chkG59MicPreamp";
+            this.chkG59MicPreamp.Size = new System.Drawing.Size(81, 17);
+            this.chkG59MicPreamp.TabIndex = 8;
+            this.chkG59MicPreamp.Text = "Mic preamp";
+            this.chkG59MicPreamp.UseVisualStyleBackColor = true;
+            this.chkG59MicPreamp.CheckedChanged += new System.EventHandler(this.chkG59MicPreamp_CheckedChanged);
+            // 
+            // grpXTRV
+            // 
+            this.grpXTRV.Controls.Add(this.udG59XtrvIF);
+            this.grpXTRV.Controls.Add(this.lblG59XtrvIF);
+            this.grpXTRV.Controls.Add(this.chG59XTRV_separate_RX_TX);
+            this.grpXTRV.Location = new System.Drawing.Point(21, 168);
+            this.grpXTRV.Name = "grpXTRV";
+            this.grpXTRV.Size = new System.Drawing.Size(157, 121);
+            this.grpXTRV.TabIndex = 7;
+            this.grpXTRV.TabStop = false;
+            this.grpXTRV.Text = "XTRV";
+            // 
+            // lblG59XtrvIF
+            // 
+            this.lblG59XtrvIF.AutoSize = true;
+            this.lblG59XtrvIF.Image = null;
+            this.lblG59XtrvIF.Location = new System.Drawing.Point(3, 96);
+            this.lblG59XtrvIF.Name = "lblG59XtrvIF";
+            this.lblG59XtrvIF.Size = new System.Drawing.Size(61, 13);
+            this.lblG59XtrvIF.TabIndex = 24;
+            this.lblG59XtrvIF.Text = "XTRV OSC";
+            // 
+            // chkG59RX2
+            // 
+            this.chkG59RX2.AutoSize = true;
+            this.chkG59RX2.Image = null;
+            this.chkG59RX2.Location = new System.Drawing.Point(40, 130);
+            this.chkG59RX2.Name = "chkG59RX2";
+            this.chkG59RX2.Size = new System.Drawing.Size(107, 17);
+            this.chkG59RX2.TabIndex = 6;
+            this.chkG59RX2.Text = "Second RX input";
+            this.chkG59RX2.UseVisualStyleBackColor = true;
+            this.chkG59RX2.CheckedChanged += new System.EventHandler(this.chkG59RX2_CheckedChanged);
+            // 
+            // grpRTL_SDR
+            // 
+            this.grpRTL_SDR.Controls.Add(this.labelTS72);
+            this.grpRTL_SDR.Controls.Add(this.udRTL_VACcorr);
+            this.grpRTL_SDR.Controls.Add(this.txtRTL_SDR_Device);
+            this.grpRTL_SDR.Controls.Add(this.labelTS71);
+            this.grpRTL_SDR.Controls.Add(this.chkRTL_SDR_OffsetTuning);
+            this.grpRTL_SDR.Controls.Add(this.chkRTL_SDR_RTL_AGC);
+            this.grpRTL_SDR.Controls.Add(this.chkRTL_SDR_TunerAGC);
+            this.grpRTL_SDR.Controls.Add(this.labelTS70);
+            this.grpRTL_SDR.Controls.Add(this.tbRTL_SDR_AGC_Gain);
+            this.grpRTL_SDR.Controls.Add(this.labelTS69);
+            this.grpRTL_SDR.Controls.Add(this.comboRTL_SDR_BufferSize);
+            this.grpRTL_SDR.Controls.Add(this.labelTS68);
+            this.grpRTL_SDR.Controls.Add(this.udRTL_SDR_correction);
+            this.grpRTL_SDR.Controls.Add(this.labelTS67);
+            this.grpRTL_SDR.Controls.Add(this.comboRTL_SDR_SampleRate);
+            this.grpRTL_SDR.Location = new System.Drawing.Point(184, 8);
+            this.grpRTL_SDR.Name = "grpRTL_SDR";
+            this.grpRTL_SDR.Size = new System.Drawing.Size(198, 292);
+            this.grpRTL_SDR.TabIndex = 36;
+            this.grpRTL_SDR.TabStop = false;
+            this.grpRTL_SDR.Text = "RTL SDR";
+            // 
+            // labelTS72
+            // 
+            this.labelTS72.AutoSize = true;
+            this.labelTS72.Image = null;
+            this.labelTS72.Location = new System.Drawing.Point(12, 104);
+            this.labelTS72.Name = "labelTS72";
+            this.labelTS72.Size = new System.Drawing.Size(78, 13);
+            this.labelTS72.TabIndex = 15;
+            this.labelTS72.Text = "VAC correction";
+            // 
+            // udRTL_VACcorr
+            // 
+            this.udRTL_VACcorr.Enabled = false;
+            this.udRTL_VACcorr.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.udRTL_VACcorr.Location = new System.Drawing.Point(107, 102);
+            this.udRTL_VACcorr.Maximum = new decimal(new int[] {
+            5000,
+            0,
+            0,
+            0});
+            this.udRTL_VACcorr.Minimum = new decimal(new int[] {
+            5000,
+            0,
+            0,
+            -2147483648});
+            this.udRTL_VACcorr.Name = "udRTL_VACcorr";
+            this.udRTL_VACcorr.Size = new System.Drawing.Size(72, 20);
+            this.udRTL_VACcorr.TabIndex = 14;
+            this.udRTL_VACcorr.Value = new decimal(new int[] {
+            381,
+            0,
+            0,
+            0});
+            // 
+            // txtRTL_SDR_Device
+            // 
+            this.txtRTL_SDR_Device.Location = new System.Drawing.Point(79, 22);
+            this.txtRTL_SDR_Device.MaxLength = 32;
+            this.txtRTL_SDR_Device.Name = "txtRTL_SDR_Device";
+            this.txtRTL_SDR_Device.Size = new System.Drawing.Size(100, 20);
+            this.txtRTL_SDR_Device.TabIndex = 13;
+            // 
+            // labelTS71
+            // 
+            this.labelTS71.AutoSize = true;
+            this.labelTS71.Image = null;
+            this.labelTS71.Location = new System.Drawing.Point(12, 29);
+            this.labelTS71.Name = "labelTS71";
+            this.labelTS71.Size = new System.Drawing.Size(41, 13);
+            this.labelTS71.TabIndex = 12;
+            this.labelTS71.Text = "Device";
+            // 
+            // chkRTL_SDR_OffsetTuning
+            // 
+            this.chkRTL_SDR_OffsetTuning.AutoSize = true;
+            this.chkRTL_SDR_OffsetTuning.Image = null;
+            this.chkRTL_SDR_OffsetTuning.Location = new System.Drawing.Point(52, 263);
+            this.chkRTL_SDR_OffsetTuning.Name = "chkRTL_SDR_OffsetTuning";
+            this.chkRTL_SDR_OffsetTuning.Size = new System.Drawing.Size(90, 17);
+            this.chkRTL_SDR_OffsetTuning.TabIndex = 10;
+            this.chkRTL_SDR_OffsetTuning.Text = "Offset Tuning";
+            this.chkRTL_SDR_OffsetTuning.UseVisualStyleBackColor = true;
+            this.chkRTL_SDR_OffsetTuning.CheckedChanged += new System.EventHandler(this.chkRTL_SDR_OffsetTuning_CheckedChanged);
+            // 
+            // chkRTL_SDR_RTL_AGC
+            // 
+            this.chkRTL_SDR_RTL_AGC.AutoSize = true;
+            this.chkRTL_SDR_RTL_AGC.Image = null;
+            this.chkRTL_SDR_RTL_AGC.Location = new System.Drawing.Point(52, 232);
+            this.chkRTL_SDR_RTL_AGC.Name = "chkRTL_SDR_RTL_AGC";
+            this.chkRTL_SDR_RTL_AGC.Size = new System.Drawing.Size(72, 17);
+            this.chkRTL_SDR_RTL_AGC.TabIndex = 9;
+            this.chkRTL_SDR_RTL_AGC.Text = "RTL AGC";
+            this.chkRTL_SDR_RTL_AGC.UseVisualStyleBackColor = true;
+            this.chkRTL_SDR_RTL_AGC.CheckedChanged += new System.EventHandler(this.chkRTL_SDR_RTL_AGC_CheckedChanged);
+            // 
+            // chkRTL_SDR_TunerAGC
+            // 
+            this.chkRTL_SDR_TunerAGC.AutoSize = true;
+            this.chkRTL_SDR_TunerAGC.Image = null;
+            this.chkRTL_SDR_TunerAGC.Location = new System.Drawing.Point(52, 201);
+            this.chkRTL_SDR_TunerAGC.Name = "chkRTL_SDR_TunerAGC";
+            this.chkRTL_SDR_TunerAGC.Size = new System.Drawing.Size(79, 17);
+            this.chkRTL_SDR_TunerAGC.TabIndex = 8;
+            this.chkRTL_SDR_TunerAGC.Text = "Tuner AGC";
+            this.chkRTL_SDR_TunerAGC.UseVisualStyleBackColor = true;
+            this.chkRTL_SDR_TunerAGC.CheckedChanged += new System.EventHandler(this.chkRTL_SDR_TunerAGC_CheckedChanged);
+            // 
+            // labelTS70
+            // 
+            this.labelTS70.Image = null;
+            this.labelTS70.Location = new System.Drawing.Point(12, 157);
+            this.labelTS70.Name = "labelTS70";
+            this.labelTS70.Size = new System.Drawing.Size(63, 40);
+            this.labelTS70.TabIndex = 7;
+            this.labelTS70.Text = "Tuner AGC Gain";
+            // 
+            // tbRTL_SDR_AGC_Gain
+            // 
+            this.tbRTL_SDR_AGC_Gain.AutoSize = false;
+            this.tbRTL_SDR_AGC_Gain.LargeChange = 1;
+            this.tbRTL_SDR_AGC_Gain.Location = new System.Drawing.Point(85, 158);
+            this.tbRTL_SDR_AGC_Gain.Maximum = 28;
+            this.tbRTL_SDR_AGC_Gain.Name = "tbRTL_SDR_AGC_Gain";
+            this.tbRTL_SDR_AGC_Gain.Size = new System.Drawing.Size(94, 25);
+            this.tbRTL_SDR_AGC_Gain.TabIndex = 6;
+            this.tbRTL_SDR_AGC_Gain.TickStyle = System.Windows.Forms.TickStyle.None;
+            this.tbRTL_SDR_AGC_Gain.Scroll += new System.EventHandler(this.tbRTL_SDR_AGC_Gain_Scroll);
+            // 
+            // labelTS69
+            // 
+            this.labelTS69.AutoSize = true;
+            this.labelTS69.Image = null;
+            this.labelTS69.Location = new System.Drawing.Point(12, 77);
+            this.labelTS69.Name = "labelTS69";
+            this.labelTS69.Size = new System.Drawing.Size(58, 13);
+            this.labelTS69.TabIndex = 5;
+            this.labelTS69.Text = "Buffer Size";
+            // 
+            // comboRTL_SDR_BufferSize
+            // 
+            this.comboRTL_SDR_BufferSize.FormattingEnabled = true;
+            this.comboRTL_SDR_BufferSize.Items.AddRange(new object[] {
+            "1 KB",
+            "2 KB",
+            "4 KB",
+            "8 KB",
+            "16 KB",
+            "32 KB",
+            "64 KB",
+            "128 KB",
+            "256 KB",
+            "512 KB",
+            "1024 KB"});
+            this.comboRTL_SDR_BufferSize.Location = new System.Drawing.Point(80, 75);
+            this.comboRTL_SDR_BufferSize.Name = "comboRTL_SDR_BufferSize";
+            this.comboRTL_SDR_BufferSize.Size = new System.Drawing.Size(99, 21);
+            this.comboRTL_SDR_BufferSize.TabIndex = 4;
+            this.comboRTL_SDR_BufferSize.SelectedIndexChanged += new System.EventHandler(this.comboRTL_SDR_BufferSize_SelectedIndexChanged);
+            // 
+            // labelTS68
+            // 
+            this.labelTS68.AutoSize = true;
+            this.labelTS68.Image = null;
+            this.labelTS68.Location = new System.Drawing.Point(12, 130);
+            this.labelTS68.Name = "labelTS68";
+            this.labelTS68.Size = new System.Drawing.Size(86, 13);
+            this.labelTS68.TabIndex = 3;
+            this.labelTS68.Text = "Frequency offset";
+            // 
+            // labelTS67
+            // 
+            this.labelTS67.AutoSize = true;
+            this.labelTS67.Image = null;
+            this.labelTS67.Location = new System.Drawing.Point(12, 51);
+            this.labelTS67.Name = "labelTS67";
+            this.labelTS67.Size = new System.Drawing.Size(68, 13);
+            this.labelTS67.TabIndex = 1;
+            this.labelTS67.Text = "Sample Rate";
+            // 
+            // comboRTL_SDR_SampleRate
+            // 
+            this.comboRTL_SDR_SampleRate.FormattingEnabled = true;
+            this.comboRTL_SDR_SampleRate.Items.AddRange(new object[] {
+            "0.25 Msps",
+            "0.96 Msps",
+            "1.024 Msps",
+            "1.2 Msps",
+            "1.44 Msps",
+            "1.8 Msps",
+            "2.4 Msps",
+            "2.88 Msps",
+            "3.2 Msps"});
+            this.comboRTL_SDR_SampleRate.Location = new System.Drawing.Point(80, 48);
+            this.comboRTL_SDR_SampleRate.Name = "comboRTL_SDR_SampleRate";
+            this.comboRTL_SDR_SampleRate.Size = new System.Drawing.Size(99, 21);
+            this.comboRTL_SDR_SampleRate.TabIndex = 0;
+            this.comboRTL_SDR_SampleRate.SelectedIndexChanged += new System.EventHandler(this.comboRTL_SDR_SampleRate_SelectedIndexChanged);
+            // 
+            // grpQRP2000
+            // 
+            this.grpQRP2000.Controls.Add(this.btnQRP2000XtalSet);
+            this.grpQRP2000.Controls.Add(this.btnQRP2000XtalGet);
+            this.grpQRP2000.Controls.Add(this.udQRP2000_Si570Xtal);
+            this.grpQRP2000.Controls.Add(this.labelTS58);
+            this.grpQRP2000.Controls.Add(this.groupBoxTS10);
+            this.grpQRP2000.Controls.Add(this.groupBoxTS9);
+            this.grpQRP2000.Controls.Add(this.radQRP2000CW2);
+            this.grpQRP2000.Controls.Add(this.radQRP2000CW1);
+            this.grpQRP2000.Controls.Add(this.QRP2000VID);
+            this.grpQRP2000.Controls.Add(this.QRP2000PID);
+            this.grpQRP2000.Controls.Add(this.lblQRP2000PID);
+            this.grpQRP2000.Controls.Add(this.lblQRP2000VID);
+            this.grpQRP2000.Controls.Add(this.lblSRSi570Addr);
+            this.grpQRP2000.Controls.Add(this.udSRSi570Addr);
+            this.grpQRP2000.Location = new System.Drawing.Point(184, 8);
+            this.grpQRP2000.Name = "grpQRP2000";
+            this.grpQRP2000.Size = new System.Drawing.Size(198, 292);
+            this.grpQRP2000.TabIndex = 36;
+            this.grpQRP2000.TabStop = false;
+            this.grpQRP2000.Text = "QRP2000";
+            // 
+            // groupBoxTS10
+            // 
+            this.groupBoxTS10.Controls.Add(this.labelTS57);
+            this.groupBoxTS10.Controls.Add(this.radQRP2000XTRVx4);
+            this.groupBoxTS10.Controls.Add(this.radQRP2000XTRVx2);
+            this.groupBoxTS10.Controls.Add(this.radQRP2000XTRVx1);
+            this.groupBoxTS10.Controls.Add(this.udQRP2000XTRVIF);
+            this.groupBoxTS10.Controls.Add(this.lblSRIFFreq);
+            this.groupBoxTS10.Controls.Add(this.chkQRP2000XTRV);
+            this.groupBoxTS10.Location = new System.Drawing.Point(9, 190);
+            this.groupBoxTS10.Name = "groupBoxTS10";
+            this.groupBoxTS10.Size = new System.Drawing.Size(180, 97);
+            this.groupBoxTS10.TabIndex = 33;
+            this.groupBoxTS10.TabStop = false;
+            this.groupBoxTS10.Text = "XTRV options";
+            // 
+            // labelTS57
+            // 
+            this.labelTS57.AutoSize = true;
+            this.labelTS57.Image = null;
+            this.labelTS57.Location = new System.Drawing.Point(38, 57);
+            this.labelTS57.Name = "labelTS57";
+            this.labelTS57.Size = new System.Drawing.Size(100, 13);
+            this.labelTS57.TabIndex = 39;
+            this.labelTS57.Text = "Frequency multiplier";
+            // 
+            // radQRP2000XTRVx4
+            // 
+            this.radQRP2000XTRVx4.AutoSize = true;
+            this.radQRP2000XTRVx4.Image = null;
+            this.radQRP2000XTRVx4.Location = new System.Drawing.Point(124, 75);
+            this.radQRP2000XTRVx4.Name = "radQRP2000XTRVx4";
+            this.radQRP2000XTRVx4.Size = new System.Drawing.Size(36, 17);
+            this.radQRP2000XTRVx4.TabIndex = 38;
+            this.radQRP2000XTRVx4.Text = "4x";
+            this.radQRP2000XTRVx4.UseVisualStyleBackColor = true;
+            this.radQRP2000XTRVx4.CheckedChanged += new System.EventHandler(this.radQRP2000XTRVx4_CheckedChanged);
+            // 
+            // radQRP2000XTRVx2
+            // 
+            this.radQRP2000XTRVx2.AutoSize = true;
+            this.radQRP2000XTRVx2.Image = null;
+            this.radQRP2000XTRVx2.Location = new System.Drawing.Point(72, 75);
+            this.radQRP2000XTRVx2.Name = "radQRP2000XTRVx2";
+            this.radQRP2000XTRVx2.Size = new System.Drawing.Size(36, 17);
+            this.radQRP2000XTRVx2.TabIndex = 37;
+            this.radQRP2000XTRVx2.Text = "2x";
+            this.radQRP2000XTRVx2.UseVisualStyleBackColor = true;
+            this.radQRP2000XTRVx2.CheckedChanged += new System.EventHandler(this.radQRP2000XTRVx2_CheckedChanged);
+            // 
+            // radQRP2000XTRVx1
+            // 
+            this.radQRP2000XTRVx1.AutoSize = true;
+            this.radQRP2000XTRVx1.Checked = true;
+            this.radQRP2000XTRVx1.Image = null;
+            this.radQRP2000XTRVx1.Location = new System.Drawing.Point(20, 75);
+            this.radQRP2000XTRVx1.Name = "radQRP2000XTRVx1";
+            this.radQRP2000XTRVx1.Size = new System.Drawing.Size(36, 17);
+            this.radQRP2000XTRVx1.TabIndex = 36;
+            this.radQRP2000XTRVx1.TabStop = true;
+            this.radQRP2000XTRVx1.Text = "1x";
+            this.radQRP2000XTRVx1.UseVisualStyleBackColor = true;
+            this.radQRP2000XTRVx1.CheckedChanged += new System.EventHandler(this.radQRP2000XTRVx1_CheckedChanged);
+            // 
+            // lblSRIFFreq
+            // 
+            this.lblSRIFFreq.AutoSize = true;
+            this.lblSRIFFreq.Image = null;
+            this.lblSRIFFreq.Location = new System.Drawing.Point(7, 39);
+            this.lblSRIFFreq.Name = "lblSRIFFreq";
+            this.lblSRIFFreq.Size = new System.Drawing.Size(62, 13);
+            this.lblSRIFFreq.TabIndex = 22;
+            this.lblSRIFFreq.Text = "XTRV Losc";
+            // 
+            // groupBoxTS9
+            // 
+            this.groupBoxTS9.Controls.Add(this.radQRP2000x4);
+            this.groupBoxTS9.Controls.Add(this.radQRP2000x2);
+            this.groupBoxTS9.Controls.Add(this.radQRP2000x1);
+            this.groupBoxTS9.Location = new System.Drawing.Point(9, 145);
+            this.groupBoxTS9.Name = "groupBoxTS9";
+            this.groupBoxTS9.Size = new System.Drawing.Size(180, 45);
+            this.groupBoxTS9.TabIndex = 32;
+            this.groupBoxTS9.TabStop = false;
+            this.groupBoxTS9.Text = "Frequency multiplier";
+            // 
+            // radQRP2000x4
+            // 
+            this.radQRP2000x4.AutoSize = true;
+            this.radQRP2000x4.Checked = true;
+            this.radQRP2000x4.Image = null;
+            this.radQRP2000x4.Location = new System.Drawing.Point(122, 17);
+            this.radQRP2000x4.Name = "radQRP2000x4";
+            this.radQRP2000x4.Size = new System.Drawing.Size(36, 17);
+            this.radQRP2000x4.TabIndex = 35;
+            this.radQRP2000x4.TabStop = true;
+            this.radQRP2000x4.Text = "4x";
+            this.radQRP2000x4.UseVisualStyleBackColor = true;
+            this.radQRP2000x4.CheckedChanged += new System.EventHandler(this.radQRP2000x4_CheckedChanged);
+            // 
+            // radQRP2000x2
+            // 
+            this.radQRP2000x2.AutoSize = true;
+            this.radQRP2000x2.Image = null;
+            this.radQRP2000x2.Location = new System.Drawing.Point(66, 18);
+            this.radQRP2000x2.Name = "radQRP2000x2";
+            this.radQRP2000x2.Size = new System.Drawing.Size(36, 17);
+            this.radQRP2000x2.TabIndex = 34;
+            this.radQRP2000x2.Text = "2x";
+            this.radQRP2000x2.UseVisualStyleBackColor = true;
+            this.radQRP2000x2.CheckedChanged += new System.EventHandler(this.radQRP2000x2_CheckedChanged);
+            // 
+            // radQRP2000x1
+            // 
+            this.radQRP2000x1.AutoSize = true;
+            this.radQRP2000x1.Image = null;
+            this.radQRP2000x1.Location = new System.Drawing.Point(10, 18);
+            this.radQRP2000x1.Name = "radQRP2000x1";
+            this.radQRP2000x1.Size = new System.Drawing.Size(36, 17);
+            this.radQRP2000x1.TabIndex = 33;
+            this.radQRP2000x1.Text = "1x";
+            this.radQRP2000x1.UseVisualStyleBackColor = true;
+            this.radQRP2000x1.CheckedChanged += new System.EventHandler(this.radQRP2000x1_CheckedChanged);
+            // 
+            // lblQRP2000PID
+            // 
+            this.lblQRP2000PID.AutoSize = true;
+            this.lblQRP2000PID.Location = new System.Drawing.Point(103, 69);
+            this.lblQRP2000PID.Name = "lblQRP2000PID";
+            this.lblQRP2000PID.Size = new System.Drawing.Size(25, 13);
+            this.lblQRP2000PID.TabIndex = 27;
+            this.lblQRP2000PID.Text = "PID";
+            // 
+            // lblQRP2000VID
+            // 
+            this.lblQRP2000VID.AutoSize = true;
+            this.lblQRP2000VID.Location = new System.Drawing.Point(23, 69);
+            this.lblQRP2000VID.Name = "lblQRP2000VID";
+            this.lblQRP2000VID.Size = new System.Drawing.Size(25, 13);
+            this.lblQRP2000VID.TabIndex = 26;
+            this.lblQRP2000VID.Text = "VID";
+            // 
+            // lblSRSi570Addr
+            // 
+            this.lblSRSi570Addr.AutoSize = true;
+            this.lblSRSi570Addr.Image = null;
+            this.lblSRSi570Addr.Location = new System.Drawing.Point(25, 43);
+            this.lblSRSi570Addr.Name = "lblSRSi570Addr";
+            this.lblSRSi570Addr.Size = new System.Drawing.Size(74, 13);
+            this.lblSRSi570Addr.TabIndex = 25;
+            this.lblSRSi570Addr.Text = "Si570 address";
             // 
             // grpGeneralModel
             // 
@@ -16900,6 +17268,7 @@ namespace PowerSDR
             // 
             // grpGeneralHardwareSetup
             // 
+            this.grpGeneralHardwareSetup.Controls.Add(this.chkDragSpectrum);
             this.grpGeneralHardwareSetup.Controls.Add(this.chkButtonZoom);
             this.grpGeneralHardwareSetup.Controls.Add(this.chkContinuousTuning);
             this.grpGeneralHardwareSetup.Controls.Add(this.chkOSD);
@@ -16921,7 +17290,7 @@ namespace PowerSDR
             // 
             this.chkVFOnew.AutoSize = true;
             this.chkVFOnew.Image = null;
-            this.chkVFOnew.Location = new System.Drawing.Point(16, 161);
+            this.chkVFOnew.Location = new System.Drawing.Point(16, 185);
             this.chkVFOnew.Name = "chkVFOnew";
             this.chkVFOnew.Size = new System.Drawing.Size(95, 17);
             this.chkVFOnew.TabIndex = 16;
@@ -17909,16 +18278,16 @@ namespace PowerSDR
             // 
             // grpG59Keyer
             // 
-            this.grpG59Keyer.Controls.Add(this.chkG59IambicBMode);
+            this.grpG59Keyer.Controls.Add(this.chkIambicBMode);
             this.grpG59Keyer.Controls.Add(this.lblG59CWCorrection);
             this.grpG59Keyer.Controls.Add(this.udG59CWSpeedCorr);
             this.grpG59Keyer.Controls.Add(this.chkG59KeyerAutoCorrection);
             this.grpG59Keyer.Controls.Add(this.lblG59_DASH_DOT_ratio);
             this.grpG59Keyer.Controls.Add(this.udG59DASH_DOT_ratio);
             this.grpG59Keyer.Controls.Add(this.lblG59CWSPEED);
-            this.grpG59Keyer.Controls.Add(this.chkG59IambicReverse);
+            this.grpG59Keyer.Controls.Add(this.chkIambicReverse);
             this.grpG59Keyer.Controls.Add(this.udG59CWSpeed);
-            this.grpG59Keyer.Controls.Add(this.chkG59Iambic);
+            this.grpG59Keyer.Controls.Add(this.chkGenesisIambic);
             this.grpG59Keyer.Location = new System.Drawing.Point(395, 26);
             this.grpG59Keyer.Name = "grpG59Keyer";
             this.grpG59Keyer.Size = new System.Drawing.Size(163, 245);
@@ -17946,17 +18315,17 @@ namespace PowerSDR
             this.lblG59CWSPEED.TabIndex = 3;
             this.lblG59CWSPEED.Text = "CW Speed";
             // 
-            // chkG59Iambic
+            // chkGenesisIambic
             // 
-            this.chkG59Iambic.AutoSize = true;
-            this.chkG59Iambic.Image = null;
-            this.chkG59Iambic.Location = new System.Drawing.Point(25, 31);
-            this.chkG59Iambic.Name = "chkG59Iambic";
-            this.chkG59Iambic.Size = new System.Drawing.Size(57, 17);
-            this.chkG59Iambic.TabIndex = 0;
-            this.chkG59Iambic.Text = "Iambic";
-            this.chkG59Iambic.UseVisualStyleBackColor = true;
-            this.chkG59Iambic.CheckedChanged += new System.EventHandler(this.chkG59Iambic_CheckedChanged);
+            this.chkGenesisIambic.AutoSize = true;
+            this.chkGenesisIambic.Image = null;
+            this.chkGenesisIambic.Location = new System.Drawing.Point(25, 31);
+            this.chkGenesisIambic.Name = "chkGenesisIambic";
+            this.chkGenesisIambic.Size = new System.Drawing.Size(57, 17);
+            this.chkGenesisIambic.TabIndex = 0;
+            this.chkGenesisIambic.Text = "Iambic";
+            this.chkGenesisIambic.UseVisualStyleBackColor = true;
+            this.chkGenesisIambic.CheckedChanged += new System.EventHandler(this.chkG59Iambic_CheckedChanged);
             // 
             // grpSi570
             // 
@@ -19464,6 +19833,10 @@ namespace PowerSDR
             ((System.ComponentModel.ISupportInitialize)(this.udCATCI_V)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.udVACchNumber)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.udRTL_SDR_correction)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.udG11extPAON)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.udG11extPAOFF)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.udG6ExtPAoffTime)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.udG6ExtPAonTime)).EndInit();
             this.tpTests.ResumeLayout(false);
             this.grpAudioTests.ResumeLayout(false);
             this.grpAudioTests.PerformLayout();
@@ -19654,28 +20027,28 @@ namespace PowerSDR
             this.tpGeneral.ResumeLayout(false);
             this.tcGeneral.ResumeLayout(false);
             this.tpGeneralHardware.ResumeLayout(false);
-            this.grpRTL_SDR.ResumeLayout(false);
-            this.grpRTL_SDR.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.udRTL_VACcorr)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tbRTL_SDR_AGC_Gain)).EndInit();
             this.grpG6.ResumeLayout(false);
             this.grpG6.PerformLayout();
-            this.grpQRP2000.ResumeLayout(false);
-            this.grpQRP2000.PerformLayout();
-            this.groupBoxTS10.ResumeLayout(false);
-            this.groupBoxTS10.PerformLayout();
-            this.groupBoxTS9.ResumeLayout(false);
-            this.groupBoxTS9.PerformLayout();
-            this.grpG59.ResumeLayout(false);
-            this.grpG59.PerformLayout();
-            this.grpXTRV.ResumeLayout(false);
-            this.grpXTRV.PerformLayout();
             this.grpG11.ResumeLayout(false);
             this.grpG11.PerformLayout();
             this.grpG11Filters.ResumeLayout(false);
             this.grpG11Filters.PerformLayout();
             this.grpG11XTRV.ResumeLayout(false);
             this.grpG11XTRV.PerformLayout();
+            this.grpG59.ResumeLayout(false);
+            this.grpG59.PerformLayout();
+            this.grpXTRV.ResumeLayout(false);
+            this.grpXTRV.PerformLayout();
+            this.grpRTL_SDR.ResumeLayout(false);
+            this.grpRTL_SDR.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.udRTL_VACcorr)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tbRTL_SDR_AGC_Gain)).EndInit();
+            this.grpQRP2000.ResumeLayout(false);
+            this.grpQRP2000.PerformLayout();
+            this.groupBoxTS10.ResumeLayout(false);
+            this.groupBoxTS10.PerformLayout();
+            this.groupBoxTS9.ResumeLayout(false);
+            this.groupBoxTS9.PerformLayout();
             this.grpGeneralModel.ResumeLayout(false);
             this.grpGeneralModel.PerformLayout();
             this.grpGeneralHardwareSetup.ResumeLayout(false);
@@ -19962,7 +20335,11 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error in InitAppearanceTab!\n" + ex.ToString());
+                Debug.Write("Error in InitAppearanceTab!\n" + ex.ToString());
+
+                if (console.debug_enabled && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                        "InitAppearance error!\n" + ex.ToString());
             }
 		}
 
@@ -19972,24 +20349,35 @@ namespace PowerSDR
 
 		private void InitDelta44()
 		{
-            switch (console.WinVer)
+            try
             {
-                case WindowsVersion.Windows2000:
-                case WindowsVersion.WindowsXP:
-                    {
-                        int retval = DeltaCP.Init();
-                        if (retval != 0) return;
-                        DeltaCP.SetLevels();
-                        DeltaCP.Close();
-                    }
-                    break;
+                switch (console.WinVer)
+                {
+                    case WindowsVersion.Windows2000:
+                    case WindowsVersion.WindowsXP:
+                        {
+                            int retval = DeltaCP.Init();
+                            if (retval != 0) return;
+                            DeltaCP.SetLevels();
+                            DeltaCP.Close();
+                        }
+                        break;
 
-                case WindowsVersion.WindowsVista:
-                case WindowsVersion.Windows7:
-                case WindowsVersion.Windows8:
-                    {
-                    }
-                    break;
+                    case WindowsVersion.WindowsVista:
+                    case WindowsVersion.Windows7:
+                    case WindowsVersion.Windows8:
+                        {
+                        }
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+
+                if (console.debug_enabled && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                        "Init Delta 44 error!\n" + ex.ToString());
             }
 		}
 
@@ -20006,22 +20394,37 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
+                if (console.debug_enabled && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                        "Display font error!\n" + ex.ToString());
+
                 MessageBox.Show(ex.ToString());
             }
         }
 
         private void RefreshSkinList()  // changes yt7pwr
         {
-            string skin = comboAppSkin.Text;
-            comboAppSkin.Items.Clear();
-            if (Directory.Exists(Application.StartupPath + "\\Skins"))
+            try
             {
-                foreach (string d in Directory.GetDirectories(Application.StartupPath + "\\Skins"))
+                string skin = comboAppSkin.Text;
+                comboAppSkin.Items.Clear();
+                if (Directory.Exists(Application.StartupPath + "\\Skins"))
                 {
-                    string s = d.Substring(d.LastIndexOf("\\") + 1);
-                    if (!s.StartsWith("."))
-                        comboAppSkin.Items.Add(d.Substring(d.LastIndexOf("\\") + 1));
+                    foreach (string d in Directory.GetDirectories(Application.StartupPath + "\\Skins"))
+                    {
+                        string s = d.Substring(d.LastIndexOf("\\") + 1);
+                        if (!s.StartsWith("."))
+                            comboAppSkin.Items.Add(d.Substring(d.LastIndexOf("\\") + 1));
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+
+                if (console.debug_enabled && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                        "Refresh skin list error!\n" + ex.ToString());
             }
         }
 
@@ -20053,40 +20456,66 @@ namespace PowerSDR
             }
             catch(Exception ex)
             {
-                MessageBox.Show("Error in RefreshCOMPortLists!\n" + ex.ToString());
+                Debug.Write("Error in RefreshCOMPortLists!\n" + ex.ToString());
+
+                if (console.debug_enabled && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                        "Refresh COM port lists error!\n" + ex.ToString());
             }
         }
 
         private ArrayList GetAvailCOMPorts()
         {
-            ArrayList a = new ArrayList();
-
-            for (int i = 1; i < 25; i++)
+            try
             {
-                try
+                ArrayList a = new ArrayList();
+
+                for (int i = 1; i < 25; i++)
                 {
-                    SerialPort sp = new SerialPort();
-                    sp.PortName = "COM" + i.ToString();
-                    sp.Open();
-                    if (sp.IsOpen)
+                    try
                     {
-                        a.Add(sp.PortName);
-                        sp.Close();
+                        SerialPort sp = new SerialPort();
+                        sp.PortName = "COM" + i.ToString();
+                        sp.Open();
+                        if (sp.IsOpen)
+                        {
+                            a.Add(sp.PortName);
+                            sp.Close();
+                        }
                     }
+                    catch (Exception) { };
                 }
-                catch (Exception) { };
+                return a;
             }
-            return a;
+            catch (Exception ex)
+            {
+                if (console.debug_enabled && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                        "Get COM ports error!\n" + ex.ToString());
+
+                return null;
+            }
         }
 
 		private void InitWindowTypes()                      // DSP window type
 		{
-			for(Window w = Window.FIRST+1; w<Window.LAST; w++)
-			{
-				string s = w.ToString().ToLower();
-				s = s.Substring(0, 1).ToUpper() + s.Substring(1, s.Length-1);
-				comboDSPWindow.Items.Add(s);
-			}
+            try
+            {
+                for (Window w = Window.FIRST + 1; w < Window.LAST; w++)
+                {
+                    string s = w.ToString().ToLower();
+                    s = s.Substring(0, 1).ToUpper() + s.Substring(1, s.Length - 1);
+                    comboDSPWindow.Items.Add(s);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+
+                if (console.debug_enabled && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                        "Init window types error!\n" + ex.ToString());
+            }
 		}
 
         private void GetHosts()         // changes yt7pwr
@@ -20164,6 +20593,10 @@ namespace PowerSDR
             catch (Exception ex)
             {
                 Debug.Write(ex.ToString());
+
+                if (console.debug_enabled && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                        "Audio get hosts error!\n" + ex.ToString());
             }
         }
 
@@ -20206,10 +20639,12 @@ namespace PowerSDR
                                 comboAudioOutput1.Items.Clear();
                                 int host = ((PADeviceInfo)comboAudioDriver1.SelectedItem).Index;
                                 ArrayList a = Audio.GetPAInputdevices(host);
+
                                 foreach (PADeviceInfo p in a)
                                     comboAudioInput1.Items.Add(p);
 
                                 a = Audio.GetPAOutputdevices(host);
+
                                 foreach (PADeviceInfo p in a)
                                     comboAudioOutput1.Items.Add(p);
                             }
@@ -20287,6 +20722,10 @@ namespace PowerSDR
             catch (Exception ex)
             {
                 Debug.Write(ex.ToString());
+
+                if (console.debug_enabled && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                        "Audio get devices error!\n" + ex.ToString());
             }
 		}
 
@@ -20316,6 +20755,10 @@ namespace PowerSDR
             catch (Exception ex)
             {
                 Debug.Write(ex.ToString());
+
+                if (console.debug_enabled && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                        "Audio get VAC devices error!\n" + ex.ToString());
             }
 		}
 
@@ -20379,25 +20822,40 @@ namespace PowerSDR
             catch (Exception ex)
             {
                 Debug.Write(ex.ToString());
+
+                if (console.debug_enabled && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                        "Audio InitDevices1 error!\n" + ex.ToString());
             }
         }
 
 		private void ControlList(Control c, ref ArrayList a)  // changes yt7pwr
 		{
-			if(c.Controls.Count > 0)
-			{
-				foreach(Control c2 in c.Controls)
-					ControlList(c2, ref a);
-			}
+            try
+            {
+                if (c.Controls.Count > 0)
+                {
+                    foreach (Control c2 in c.Controls)
+                        ControlList(c2, ref a);
+                }
 
-			if(c.GetType() == typeof(CheckBoxTS) || c.GetType() == typeof(CheckBoxTS) ||
-				c.GetType() == typeof(ComboBoxTS) || c.GetType() == typeof(ComboBox) ||
-				c.GetType() == typeof(NumericUpDownTS) || c.GetType() == typeof(NumericUpDown) ||
-				c.GetType() == typeof(RadioButtonTS) || c.GetType() == typeof(RadioButton) ||
-				c.GetType() == typeof(TextBoxTS) || c.GetType() == typeof(TextBox) ||
-				c.GetType() == typeof(TrackBarTS) || c.GetType() == typeof(TrackBar) ||
-				c.GetType() == typeof(ColorButton) || c.GetType() == typeof(PrettyTrackBar)) 
-				a.Add(c);
+                if (c.GetType() == typeof(CheckBoxTS) || c.GetType() == typeof(CheckBoxTS) ||
+                    c.GetType() == typeof(ComboBoxTS) || c.GetType() == typeof(ComboBox) ||
+                    c.GetType() == typeof(NumericUpDownTS) || c.GetType() == typeof(NumericUpDown) ||
+                    c.GetType() == typeof(RadioButtonTS) || c.GetType() == typeof(RadioButton) ||
+                    c.GetType() == typeof(TextBoxTS) || c.GetType() == typeof(TextBox) ||
+                    c.GetType() == typeof(TrackBarTS) || c.GetType() == typeof(TrackBar) ||
+                    c.GetType() == typeof(ColorButton) || c.GetType() == typeof(PrettyTrackBar))
+                    a.Add(c);
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+
+                if (console.debug_enabled && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                        "Get control list error!\n" + ex.ToString());
+            }
 		}
 
 		private static bool saving = false;
@@ -20813,6 +21271,8 @@ namespace PowerSDR
                         float font_size = 9;
                         int font_style = 0;
                         float.TryParse(font_vals[2], out font_size);
+                        string[] font_names = font_vals[1].Split(',');
+
                         switch (vals[3])
                         {
                             case ("Regular"):
@@ -20838,7 +21298,8 @@ namespace PowerSDR
                                 break;
                         }
 
-                        Font new_font = new Font(font_vals[1], font_size, (FontStyle)font_style);
+                        string font_name = font_names[0].Substring(12);
+                        Font new_font = new Font(font_name, font_size, (FontStyle)font_style);
                         console.NewVFOBandFont = new_font;
                     }
                     else if (s.StartsWith("DisplayFont"))
@@ -20850,6 +21311,8 @@ namespace PowerSDR
                         float font_size = 9;
                         int font_style = 0;
                         float.TryParse(font_vals[2], out font_size);
+                        string[] font_names = font_vals[1].Split(',');
+
                         switch (vals[3])
                         {
                             case ("Regular"):
@@ -20875,7 +21338,8 @@ namespace PowerSDR
                                 break;
                         }
 
-                        Font new_font = new Font(font_vals[1], font_size, (FontStyle)font_style);
+                        string font_name = font_names[0].Substring(12);
+                        Font new_font = new Font(font_name, font_size, (FontStyle)font_style);
                         DisplayPanadapterFont = new_font;
                     }
                     else if (s.StartsWith("NewVFOSmallFont"))
@@ -20887,6 +21351,8 @@ namespace PowerSDR
                         float font_size = 9;
                         int font_style = 0;
                         float.TryParse(font_vals[2], out font_size);
+                        string[] font_names = font_vals[1].Split(',');
+
                         switch (vals[3])
                         {
                             case ("Regular"):
@@ -20912,7 +21378,8 @@ namespace PowerSDR
                                 break;
                         }
 
-                        Font new_font = new Font(font_vals[1], font_size, (FontStyle)font_style);
+                        string font_name = font_names[0].Substring(12);
+                        Font new_font = new Font(font_name, font_size, (FontStyle)font_style);
                         console.NewVFOSmallFont = new_font;
                     }
                     else if (s.StartsWith("NewVFOLargeFont"))
@@ -20924,6 +21391,8 @@ namespace PowerSDR
                         float font_size = 9;
                         int font_style = 0;
                         float.TryParse(font_vals[2], out font_size);
+                        string[] font_names = font_vals[1].Split(',');
+
                         switch (vals[3])
                         {
                             case ("Regular"):
@@ -20949,7 +21418,8 @@ namespace PowerSDR
                                 break;
                         }
 
-                        Font new_font = new Font(font_vals[1], font_size, (FontStyle)font_style);
+                        string font_name = font_names[0].Substring(12);
+                        Font new_font = new Font(font_name, font_size, (FontStyle)font_style);
                         console.NewVFOLargeFont = new_font;
                     }
                     else if (s.StartsWith("VFOLargeFont"))
@@ -20961,6 +21431,8 @@ namespace PowerSDR
                         float font_size = 9;
                         int font_style = 0;
                         float.TryParse(font_vals[2], out font_size);
+                        string[] font_names = font_vals[1].Split(',');
+
                         switch (vals[3])
                         {
                             case ("Regular"):
@@ -20986,7 +21458,8 @@ namespace PowerSDR
                                 break;
                         }
 
-                        Font new_font = new Font(font_vals[1], font_size, (FontStyle)font_style);
+                        string font_name = font_names[0].Substring(12);
+                        Font new_font = new Font(font_name, font_size, (FontStyle)font_style);
                         console.VFOLargeFont = new_font;
                     }
                     else if (s.StartsWith("VFOSmallFont"))
@@ -20998,6 +21471,8 @@ namespace PowerSDR
                         float font_size = 9;
                         int font_style = 0;
                         float.TryParse(font_vals[2], out font_size);
+                        string[] font_names = font_vals[1].Split(',');
+
                         switch (vals[3])
                         {
                             case ("Regular"):
@@ -21023,7 +21498,8 @@ namespace PowerSDR
                                 break;
                         }
 
-                        Font new_font = new Font(font_vals[1], font_size, (FontStyle)font_style);
+                        string font_name = font_names[0].Substring(12);
+                        Font new_font = new Font(font_name, font_size, (FontStyle)font_style);
                         console.VFOSmallFont = new_font;
                     }
                     else if (s.StartsWith("MainMenuFont"))
@@ -21035,6 +21511,8 @@ namespace PowerSDR
                         float font_size = 9;
                         int font_style = 0;
                         float.TryParse(font_vals[2], out font_size);
+                        string[] font_names = font_vals[1].Split(',');
+
                         switch (vals[3])
                         {
                             case ("Regular"):
@@ -21060,7 +21538,8 @@ namespace PowerSDR
                                 break;
                         }
 
-                        Font menu_font = new Font(font_vals[1], font_size, (FontStyle)font_style);
+                        string font_name = font_names[0].Substring(12);
+                        Font menu_font = new Font(font_name, font_size, (FontStyle)font_style);
                         console.MainMenuFont = menu_font;
                     }
                 }
@@ -21069,7 +21548,11 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error in GetOption function!\n" + ex.ToString());
+                Debug.Write("Error in GetOption function!\n" + ex.ToString());
+
+                if (console.debug_enabled && !console.ConsoleClosing)
+                    console.Invoke(new DebugCallbackFunction(console.DebugCallback),
+                        "Audio get options error!\n" + ex.ToString());
             }
         }
 
@@ -22224,412 +22707,410 @@ namespace PowerSDR
 		}
 
 		private bool force_model = false;
-		public Model CurrentModel
-		{
-			set
-			{
+        public Model CurrentModel
+        {
+            set
+            {
                 console.net_device.Disconnect();
-                    chkLineMic.Checked = false;
-                    grpRTL_SDR.Visible = false;
-                    chkLineMic.Enabled = true;
-                    chkContinuousTuning.Enabled = true;
-                    grpQRP2000.Visible = false;
-                    console.CurrentVisibleGroup = VisibleGroup.ZERO;
-                    chkGeneralUSBPresent.Enabled = false;
-                    grpG59.Visible = false;
-                    grpG11.Visible = false;
-                    console.btnNetwork.Visible = false;
-                    console.btnUSB.Visible = true;
-                    grpSi570.Enabled = false;
-                    grpG59Keyer.Enabled = false;
-                    grpGenesisUSB.Enabled = false;
-                    comboKeyerConnPrimary.Text = "USB";
-                    console.Keyer.PrimaryConnPort = "USB";
-                    grpGenesisConnection.Enabled = false;
-                    grpGenesis160.Visible = false;
-                    grpGenesis3020.Visible = false;
-                    grpGenesis40.Visible = false;
-                    grpGenesis80.Visible = false;
-                    grpNETBox.Visible = false;
-                    grpG6.Visible = false;
-                    grpGenesis137.Visible = false;
-                    grpGenesis500.Visible = false;
-                    console.grpG59.Visible = false;
-                    console.grpG11.Visible = false;
-                    console.grpG160.Visible = false;
-                    console.grpG80.Visible = false;
-                    console.grpG40.Visible = false;
-                    console.grpG3020.Visible = false;
-                    console.UsbSi570Enable = false;
-                    chkGeneralDisablePTT.Checked = false;
-                    chkGeneralUSBPresent.Checked = false;
-                    chkGeneralRXOnly.Enabled = true;
-                    chkGeneralRXOnly.Checked = false;
-                    chkGeneralDisablePTT.Checked = false;
+                grpRTL_SDR.Visible = false;
+                chkLineMic.Enabled = true;
+                chkContinuousTuning.Enabled = true;
+                grpQRP2000.Visible = false;
+                console.CurrentVisibleGroup = VisibleGroup.ZERO;
+                chkGeneralUSBPresent.Enabled = false;
+                grpG59.Visible = false;
+                grpG11.Visible = false;
+                console.btnNetwork.Visible = false;
+                console.btnUSB.Visible = true;
+                grpSi570.Enabled = false;
+                grpG59Keyer.Enabled = false;
+                grpGenesisUSB.Enabled = false;
+                grpGenesisConnection.Enabled = false;
+                grpGenesis160.Visible = false;
+                grpGenesis3020.Visible = false;
+                grpGenesis40.Visible = false;
+                grpGenesis80.Visible = false;
+                grpNETBox.Visible = false;
+                grpG6.Visible = false;
+                grpGenesis137.Visible = false;
+                grpGenesis500.Visible = false;
+                console.grpG59.Visible = false;
+                console.grpG11.Visible = false;
+                console.grpG160.Visible = false;
+                console.grpG80.Visible = false;
+                console.grpG40.Visible = false;
+                console.grpG3020.Visible = false;
+                console.UsbSi570Enable = false;
+                chkGeneralDisablePTT.Checked = false;
+                chkGeneralUSBPresent.Checked = false;
+                //chkGeneralRXOnly.Enabled = true;
+                //chkGeneralRXOnly.Checked = false;
+                chkGeneralDisablePTT.Checked = false;
 
-                    switch (value)
-                    {
-                        case Model.GENESIS_G11:
-                            console.CurrentModel = Model.GENESIS_G11;
-                            chkLineMic.Enabled = true;
-                            chkContinuousTuning.Enabled = true;
-                            console.CurrentVisibleGroup = VisibleGroup.G11;
-                            chkGeneralUSBPresent.Enabled = false;
-                            console.net_device.Disconnect();
-                            grpG11.Visible = true;
-                            console.grpG11.Visible = true;
-                            console.grpG11.BringToFront();
-                            console.btnUSB.Visible = true;
-                            grpSi570.Enabled = true;
-                            grpG59Keyer.Enabled = true;
-                            grpGenesisUSB.Enabled = true;
-                            comboKeyerConnPrimary.Text = "USB";
-                            console.Keyer.PrimaryConnPort = "USB";
-                            grpGenesisConnection.Enabled = false;
+                switch (value)
+                {
+                    case Model.GENESIS_G11:
+                        comboKeyerConnPrimary.Text = "USB";
+                        console.Keyer.PrimaryConnPort = "USB";
+                        console.CurrentModel = Model.GENESIS_G11;
+                        chkLineMic.Enabled = true;
+                        chkContinuousTuning.Enabled = true;
+                        console.CurrentVisibleGroup = VisibleGroup.G11;
+                        chkGeneralUSBPresent.Enabled = false;
+                        console.net_device.Disconnect();
+                        grpG11.Visible = true;
+                        console.grpG11.Visible = true;
+                        console.grpG11.BringToFront();
+                        console.btnUSB.Visible = true;
+                        grpSi570.Enabled = true;
+                        grpG59Keyer.Enabled = true;
+                        grpGenesisUSB.Enabled = true;
+                        comboKeyerConnPrimary.Text = "USB";
+                        console.Keyer.PrimaryConnPort = "USB";
+                        grpGenesisConnection.Enabled = false;
 
-                            if (!console.booting)
-                                chkGeneralUSBPresent.Checked = false;
-
-                            if (radGenModelGenesisG11.Focused || force_model)
-                            {
-                                chkGeneralRXOnly.Enabled = true;
-                                chkGeneralRXOnly.Checked = false;
-                                chkGeneralDisablePTT.Checked = false;
-                                force_model = false;
-                            }
-
-                            chkGeneralRXOnly.Enabled = true;
-                            VID_TextBox.Text = "fffe";
-                            PID_TextBox.Text = "1971";
-                            console.ReInit_USB();
-                            console.NetworkThreadRunning = false;
-                            break;
-                        case Model.GENESIS_G59USB:
-                            console.CurrentVisibleGroup = VisibleGroup.G59;
-                            grpG59.Visible = true;
-                            console.grpG59.Visible = true;
-                            console.btnUSB.Visible = true;
-                            grpSi570.Enabled = true;
-                            grpG59Keyer.Enabled = true;
-                            grpGenesisUSB.Enabled = true;
-                            comboKeyerConnPrimary.Text = "USB";
-                            console.Keyer.PrimaryConnPort = "USB";
-                            grpGenesisConnection.Enabled = false;
-                            console.CurrentModel = Model.GENESIS_G59USB;
-
-                            if (!console.booting)
-                            {
-                                chkGeneralUSBPresent.Checked = false;
-                            }
-
-                            chkGeneralDisablePTT.Checked = false;
-
-                            if (radGenModelGenesisG59.Focused || force_model)
-                            {
-                                chkGeneralRXOnly.Enabled = true;
-                                chkGeneralRXOnly.Checked = false;
-                                chkGeneralDisablePTT.Checked = false;
-                                force_model = false;
-                            }
-
-                            chkGeneralRXOnly.Enabled = true;
-                            VID_TextBox.Text = "fffe";
-                            PID_TextBox.Text = "1970";
-
-                            console.ReInit_USB();
-                            console.NetworkThreadRunning = false;
-
-
-                            force_model = true;
-                            VID_TextBox.Text = "fffe";
-                            VID = -2;
-                            PID_TextBox.Text = "1970";
-                            PID = 0x1970;
-                            break;
-                        case Model.GENESIS_G59NET:
-                            chkLineMic.Enabled = true;
-                            chkContinuousTuning.Enabled = true;
-                            grpNETBox.Visible = true;
-                            console.CurrentVisibleGroup = VisibleGroup.G59;
-                            chkGeneralUSBPresent.Enabled = false;
-                            console.btnNetwork.Visible = true;
-                            console.btnUSB.Visible = false;
-                            grpSi570.Enabled = true;
-                            grpG59Keyer.Enabled = true;
-                            grpGenesisUSB.Enabled = true;
-                            comboKeyerConnPrimary.Text = "NET";
-                            grpGenesisConnection.Enabled = false;
-                            console.UsbSi570Enable = false;
-
-                            if (!console.booting)
-                                chkGeneralUSBPresent.Checked = false;
-                            chkGeneralDisablePTT.Checked = false;
-
-                            if (radGenModelGenesisNET.Focused || force_model)
-                            {
-                                chkGeneralRXOnly.Enabled = true;
-                                chkGeneralRXOnly.Checked = false;
-                                chkGeneralDisablePTT.Checked = false;
-                                force_model = false;
-                            }
-
-                            chkGeneralRXOnly.Enabled = true;
-                            VID_TextBox.Enabled = false;
-                            PID_TextBox.Enabled = false;
-                            console.NetworkThreadRunning = true;
-                            break;
-                        case Model.GENESIS_G500:
-                            chkLineMic.Checked = false;
-                            chkLineMic.Enabled = false;
-                            chkContinuousTuning.Checked = false;
-                            chkContinuousTuning.Enabled = false;
-                            console.CurrentVisibleGroup = VisibleGroup.G500;
-                            chkGeneralUSBPresent.Enabled = true;
-                            console.net_device.Disconnect();
-                            console.btnNetwork.Visible = false;
-                            grpG59.Visible = false;
-                            grpSi570.Enabled = false;
-                            grpG59Keyer.Enabled = false;
-                            grpGenesisUSB.Enabled = false;
-                            grpGenesisConnection.Enabled = true;
-                            grpGenesis500.Visible = true;
-                            chkGeneralDisablePTT.Checked = false;
-                            console.UsbSi570Enable = false;
-
-                            if (!console.booting)
-                                chkGeneralUSBPresent.Checked = false;
-
-                            if (radGenModelGenesisG500.Focused || force_model)
-                            {
-                                chkGeneralRXOnly.Checked = false;
-                                chkGeneralDisablePTT.Checked = false;
-                                force_model = false;
-                            }
-
-                            if (!console.UsbSi570Enable)
-                                console.ReInit_USB();
-
-                            console.NetworkThreadRunning = false;
-                            break;
-                        case Model.GENESIS_G3020:
-                            console.CurrentVisibleGroup = VisibleGroup.G3020;
-                            chkGeneralUSBPresent.Enabled = true;
-                            grpGenesisConnection.Enabled = true;
-                            console.CurrentModel = Model.GENESIS_G3020;
-                            chkGeneralDisablePTT.Checked = false;
-                            console.UsbSi570Enable = false;
-                            grpGenesis3020.Visible = true;
-
-                            if (!console.booting)
-                            {
-
-                                chkGeneralUSBPresent.Checked = false;
-                            }
-
-                            if (radGenModelGenesisG3020.Focused || force_model)
-                            {
-                                chkGeneralRXOnly.Checked = false;
-                                chkGeneralDisablePTT.Checked = false;
-                                force_model = false;
-                            }
-
-                            chkGeneralRXOnly.Enabled = true;
-                            console.ReInit_USB();
-                            console.NetworkThreadRunning = false;
-                            force_model = true;
-                            break;
-                        case Model.GENESIS_G137:
-                            console.CurrentVisibleGroup = VisibleGroup.G137;
-                            chkGeneralUSBPresent.Enabled = true;
-                            grpGenesisConnection.Enabled = true;
-                            grpGenesis137.Visible = true;
-                            console.CurrentModel = Model.GENESIS_G137;
-                            chkGeneralDisablePTT.Checked = false;
-
-                            if (!console.booting)
-                            {
-                                chkGeneralUSBPresent.Checked = false;
-                            }
-
-                            if (radGenModelGenesisG137.Focused || force_model)
-                            {
-                                chkGeneralRXOnly.Checked = false;
-                                chkGeneralDisablePTT.Checked = false;
-                                force_model = false;
-                            }
-
-                            if (!console.UsbSi570Enable)
-                                console.ReInit_USB();
-
-                            console.NetworkThreadRunning = false;
-                            force_model = true;
-                            break;
-                        case Model.GENESIS_G40:
-                            console.CurrentVisibleGroup = VisibleGroup.G40;
-                            chkGeneralUSBPresent.Enabled = true;
-                            grpGenesisConnection.Enabled = true;
-                            grpGenesis40.Visible = true;
-                            console.CurrentModel = Model.GENESIS_G40;
-                            chkGeneralDisablePTT.Checked = false;
-                            console.UsbSi570Enable = false;
-                            console.grpG40.Visible = true;
-
-                            if (!console.booting)
-                            {
-                                chkGeneralUSBPresent.Checked = false;
-                            }
-
-                            if (radGenModelGenesisG40.Focused || force_model)
-                            {
-                                chkGeneralRXOnly.Checked = false;
-                                chkGeneralDisablePTT.Checked = false;
-                                force_model = false;
-                            }
-
-                            console.ReInit_USB();
-                            console.NetworkThreadRunning = false;
-                            force_model = true;
-                            break;
-                        case Model.GENESIS_G80:
-                            console.CurrentVisibleGroup = VisibleGroup.G80;
-                            chkGeneralUSBPresent.Enabled = true;
-                            grpGenesisConnection.Enabled = true;
-                            grpGenesis80.Visible = true;
-                            console.grpG80.Visible = true;
-                            console.CurrentModel = Model.GENESIS_G80;
-                            chkGeneralDisablePTT.Checked = false;
-                            console.UsbSi570Enable = false;
-
-                            if (!console.booting)
-                            {
-                                chkGeneralUSBPresent.Checked = false;
-                            }
-
-                            if (radGenModelGenesisG80.Focused || force_model)
-                            {
-                                chkGeneralRXOnly.Checked = false;
-                                chkGeneralDisablePTT.Checked = false;
-                                force_model = false;
-                            }
-
-                            console.ReInit_USB();
-                            console.NetworkThreadRunning = false;
-                            force_model = true;
-                            break;
-                        case Model.GENESIS_G160:
-                            console.CurrentVisibleGroup = VisibleGroup.G160;
-                            chkGeneralUSBPresent.Enabled = true;
-                            console.btnNetwork.Visible = false;
-                            grpGenesisConnection.Enabled = true;
-                            console.grpG160.Visible = true;
-                            console.CurrentModel = Model.GENESIS_G160;
-                            chkGeneralDisablePTT.Checked = false;
-                            console.UsbSi570Enable = false;
-
-                            if (!console.booting)
-                            {
-                                chkGeneralUSBPresent.Checked = false;
-                            }
-
-                            if (radGenModelGenesisG160.Focused || force_model)
-                            {
-                                chkGeneralRXOnly.Checked = false;
-                                chkGeneralDisablePTT.Checked = false;
-                                force_model = false;
-                            }
-
-                            if (!console.UsbSi570Enable)
-                                console.ReInit_USB();
-
-                            console.NetworkThreadRunning = false;
-                            force_model = true;
-                            break;
-                        case Model.QRP2000:
-                            chkContinuousTuning.Enabled = true;
-                            console.UsbSi570Enable = false;
+                        if (!console.booting)
                             chkGeneralUSBPresent.Checked = false;
-                            chkGeneralUSBPresent.Enabled = false;
-                            console.Keyer.PrimaryConnPort = "QRP2000";
-                            grpQRP2000.Visible = true;
-                            console.CurrentModel = Model.QRP2000;
+
+                        if (radGenModelGenesisG11.Focused || force_model)
+                        {
+                            //chkGeneralRXOnly.Enabled = true;
+                            //chkGeneralRXOnly.Checked = false;
                             chkGeneralDisablePTT.Checked = false;
-                            console.btnUSB.Visible = true;
-                            console.btnNetwork.Visible = false;
-
-                            if (!console.booting)
-                            {
-                                comboAudioOutput1.SelectedIndex = 0;
-                            }
-
-                            console.ReInit_USB();
-
-                            if (radGenModelQRP2000.Focused || force_model)
-                            {
-                                chkGeneralRXOnly.Checked = false;
-                                chkGeneralDisablePTT.Checked = false;
-                                force_model = false;
-                            }
-
-                            console.NetworkThreadRunning = false;
-                            force_model = true;
-                            break;
-                        case Model.GENESIS_G6:
-                            console.CurrentModel = Model.GENESIS_G6;
-                            comboAudioDriver1.Text = "G6 USB";
-                            comboAudioSoundCard.Text = "Genesis G6";
-                            comboAudioInput1.Text = "G6 input";
-                            comboAudioOutput1.Text = "G6 output";
-                            chkContinuousTuning.Checked = false;
-                            chkContinuousTuning.Enabled = true;
-                            console.UsbSi570Enable = false;
-                            chkGeneralUSBPresent.Checked = false;
-                            chkGeneralUSBPresent.Enabled = false;
-                            console.Keyer.PrimaryConnPort = "USB";
-                            grpSi570.Enabled = true;
-                            grpG59Keyer.Enabled = true;
-                            grpGenesisUSB.Enabled = true;
-                            grpGenesisConnection.Enabled = false;
-                            grpG6.Visible = true;
-                            console.grpG6.Visible = true;
-                            chkGeneralDisablePTT.Checked = false;
-                            console.btnUSB.Visible = true;
-                            console.btnNetwork.Visible = false;
-                            console.ReInit_USB();
-
-                            if (radGenModelGenesisG6.Focused || force_model)
-                            {
-                                chkGeneralRXOnly.Checked = false;
-                                chkGeneralDisablePTT.Checked = false;
-                                force_model = false;
-                            }
-                            force_model = true;
-                            break;
-                        case Model.RTL_SDR:
-                            console.CurrentModel = Model.RTL_SDR;
-                            comboAudioDriver1.Text = "RTL SDR";
-                            comboAudioSoundCard.Text = "RTL SDR";
-                            comboAudioInput1.Text = "RTL SDR";
-                            comboAudioOutput1.Text = "RTL SDR";
-                            chkContinuousTuning.Checked = false;
-                            chkContinuousTuning.Enabled = false;
-                            console.UsbSi570Enable = false;
-                            chkGeneralUSBPresent.Checked = false;
-                            chkGeneralUSBPresent.Enabled = false;
-                            console.Keyer.PrimaryConnPort = "USB";
-                            grpRTL_SDR.Visible = true;
-                            chkGeneralDisablePTT.Checked = true;
-                            console.btnUSB.Visible = true;
-                            console.ReInit_USB();
-                            chkGeneralRXOnly.Checked = true;
-                            chkGeneralDisablePTT.Checked = true;
                             force_model = false;
-                            comboRTL_SDR_SampleRate_SelectedIndexChanged(this, EventArgs.Empty);
-                            comboRTL_SDR_BufferSize_SelectedIndexChanged(this, EventArgs.Empty);
-                            force_model = true;
-                            break;
-                    }
-			}
-		}
+                        }
+
+                        //chkGeneralRXOnly.Enabled = true;
+                        VID_TextBox.Text = "fffe";
+                        PID_TextBox.Text = "1971";
+                        console.ReInit_USB();
+                        console.NetworkThreadRunning = false;
+                        break;
+                    case Model.GENESIS_G59USB:
+                        comboKeyerConnPrimary.Text = "USB";
+                        console.Keyer.PrimaryConnPort = "USB";
+                        console.CurrentVisibleGroup = VisibleGroup.G59;
+                        grpG59.Visible = true;
+                        console.grpG59.Visible = true;
+                        console.btnUSB.Visible = true;
+                        grpSi570.Enabled = true;
+                        grpG59Keyer.Enabled = true;
+                        grpGenesisUSB.Enabled = true;
+                        comboKeyerConnPrimary.Text = "USB";
+                        console.Keyer.PrimaryConnPort = "USB";
+                        grpGenesisConnection.Enabled = false;
+                        console.CurrentModel = Model.GENESIS_G59USB;
+
+                        if (!console.booting)
+                        {
+                            chkGeneralUSBPresent.Checked = false;
+                        }
+
+                        chkGeneralDisablePTT.Checked = false;
+
+                        if (radGenModelGenesisG59.Focused || force_model)
+                        {
+                            //chkGeneralRXOnly.Enabled = true;
+                            //chkGeneralRXOnly.Checked = false;
+                            chkGeneralDisablePTT.Checked = false;
+                            force_model = false;
+                        }
+
+                        //chkGeneralRXOnly.Enabled = true;
+                        console.ReInit_USB();
+                        console.NetworkThreadRunning = false;
+                        force_model = true;
+                        VID_TextBox.Text = "fffe";
+                        VID = -2;
+                        PID_TextBox.Text = "1970";
+                        PID = 0x1970;
+                        break;
+                    case Model.GENESIS_G59NET:
+                        chkLineMic.Enabled = true;
+                        chkContinuousTuning.Enabled = true;
+                        grpNETBox.Visible = true;
+                        console.CurrentVisibleGroup = VisibleGroup.G59;
+                        chkGeneralUSBPresent.Enabled = false;
+                        console.btnNetwork.Visible = true;
+                        console.btnUSB.Visible = false;
+                        grpSi570.Enabled = true;
+                        grpG59Keyer.Enabled = true;
+                        grpGenesisUSB.Enabled = true;
+                        comboKeyerConnPrimary.Text = "NET";
+                        grpGenesisConnection.Enabled = false;
+                        console.UsbSi570Enable = false;
+
+                        if (!console.booting)
+                            chkGeneralUSBPresent.Checked = false;
+                        chkGeneralDisablePTT.Checked = false;
+
+                        if (radGenModelGenesisNET.Focused || force_model)
+                        {
+                            //chkGeneralRXOnly.Enabled = true;
+                            //chkGeneralRXOnly.Checked = false;
+                            chkGeneralDisablePTT.Checked = false;
+                            force_model = false;
+                        }
+
+                        //chkGeneralRXOnly.Enabled = true;
+                        VID_TextBox.Enabled = false;
+                        PID_TextBox.Enabled = false;
+                        console.NetworkThreadRunning = true;
+                        break;
+                    case Model.GENESIS_G500:
+                        chkLineMic.Checked = false;
+                        chkLineMic.Enabled = false;
+                        chkContinuousTuning.Checked = false;
+                        chkContinuousTuning.Enabled = false;
+                        console.CurrentVisibleGroup = VisibleGroup.G500;
+                        chkGeneralUSBPresent.Enabled = true;
+                        console.net_device.Disconnect();
+                        console.btnNetwork.Visible = false;
+                        grpG59.Visible = false;
+                        grpSi570.Enabled = false;
+                        grpG59Keyer.Enabled = false;
+                        grpGenesisUSB.Enabled = false;
+                        grpGenesisConnection.Enabled = true;
+                        grpGenesis500.Visible = true;
+                        chkGeneralDisablePTT.Checked = false;
+                        console.UsbSi570Enable = false;
+
+                        if (!console.booting)
+                            chkGeneralUSBPresent.Checked = false;
+
+                        if (radGenModelGenesisG500.Focused || force_model)
+                        {
+                            //chkGeneralRXOnly.Checked = false;
+                            //chkGeneralDisablePTT.Checked = false;
+                            force_model = false;
+                        }
+
+                        if (!console.UsbSi570Enable)
+                            console.ReInit_USB();
+
+                        console.NetworkThreadRunning = false;
+                        break;
+                    case Model.GENESIS_G3020:
+                        console.CurrentVisibleGroup = VisibleGroup.G3020;
+                        chkGeneralUSBPresent.Enabled = true;
+                        grpGenesisConnection.Enabled = true;
+                        console.CurrentModel = Model.GENESIS_G3020;
+                        chkGeneralDisablePTT.Checked = false;
+                        console.UsbSi570Enable = false;
+                        grpGenesis3020.Visible = true;
+
+                        if (!console.booting)
+                        {
+
+                            chkGeneralUSBPresent.Checked = false;
+                        }
+
+                        if (radGenModelGenesisG3020.Focused || force_model)
+                        {
+                            //chkGeneralRXOnly.Checked = false;
+                            chkGeneralDisablePTT.Checked = false;
+                            force_model = false;
+                        }
+
+                        //chkGeneralRXOnly.Enabled = true;
+                        console.ReInit_USB();
+                        console.NetworkThreadRunning = false;
+                        force_model = true;
+                        break;
+                    case Model.GENESIS_G137:
+                        console.CurrentVisibleGroup = VisibleGroup.G137;
+                        chkGeneralUSBPresent.Enabled = true;
+                        grpGenesisConnection.Enabled = true;
+                        grpGenesis137.Visible = true;
+                        console.CurrentModel = Model.GENESIS_G137;
+                        chkGeneralDisablePTT.Checked = false;
+
+                        if (!console.booting)
+                        {
+                            chkGeneralUSBPresent.Checked = false;
+                        }
+
+                        if (radGenModelGenesisG137.Focused || force_model)
+                        {
+                            //chkGeneralRXOnly.Checked = false;
+                            chkGeneralDisablePTT.Checked = false;
+                            force_model = false;
+                        }
+
+                        if (!console.UsbSi570Enable)
+                            console.ReInit_USB();
+
+                        console.NetworkThreadRunning = false;
+                        force_model = true;
+                        break;
+                    case Model.GENESIS_G40:
+                        console.CurrentVisibleGroup = VisibleGroup.G40;
+                        chkGeneralUSBPresent.Enabled = true;
+                        grpGenesisConnection.Enabled = true;
+                        grpGenesis40.Visible = true;
+                        console.CurrentModel = Model.GENESIS_G40;
+                        chkGeneralDisablePTT.Checked = false;
+                        console.UsbSi570Enable = false;
+                        console.grpG40.Visible = true;
+
+                        if (!console.booting)
+                        {
+                            chkGeneralUSBPresent.Checked = false;
+                        }
+
+                        if (radGenModelGenesisG40.Focused || force_model)
+                        {
+                            //chkGeneralRXOnly.Checked = false;
+                            chkGeneralDisablePTT.Checked = false;
+                            force_model = false;
+                        }
+
+                        console.ReInit_USB();
+                        console.NetworkThreadRunning = false;
+                        force_model = true;
+                        break;
+                    case Model.GENESIS_G80:
+                        console.CurrentVisibleGroup = VisibleGroup.G80;
+                        chkGeneralUSBPresent.Enabled = true;
+                        grpGenesisConnection.Enabled = true;
+                        grpGenesis80.Visible = true;
+                        console.grpG80.Visible = true;
+                        console.CurrentModel = Model.GENESIS_G80;
+                        chkGeneralDisablePTT.Checked = false;
+                        console.UsbSi570Enable = false;
+
+                        if (!console.booting)
+                        {
+                            chkGeneralUSBPresent.Checked = false;
+                        }
+
+                        if (radGenModelGenesisG80.Focused || force_model)
+                        {
+                            //chkGeneralRXOnly.Checked = false;
+                            chkGeneralDisablePTT.Checked = false;
+                            force_model = false;
+                        }
+
+                        console.ReInit_USB();
+                        console.NetworkThreadRunning = false;
+                        force_model = true;
+                        break;
+                    case Model.GENESIS_G160:
+                        console.CurrentVisibleGroup = VisibleGroup.G160;
+                        chkGeneralUSBPresent.Enabled = true;
+                        console.btnNetwork.Visible = false;
+                        grpGenesisConnection.Enabled = true;
+                        console.grpG160.Visible = true;
+                        console.CurrentModel = Model.GENESIS_G160;
+                        chkGeneralDisablePTT.Checked = false;
+                        console.UsbSi570Enable = false;
+
+                        if (!console.booting)
+                        {
+                            chkGeneralUSBPresent.Checked = false;
+                        }
+
+                        if (radGenModelGenesisG160.Focused || force_model)
+                        {
+                            //chkGeneralRXOnly.Checked = false;
+                            chkGeneralDisablePTT.Checked = false;
+                            force_model = false;
+                        }
+
+                        if (!console.UsbSi570Enable)
+                            console.ReInit_USB();
+
+                        console.NetworkThreadRunning = false;
+                        force_model = true;
+                        break;
+                    case Model.QRP2000:
+                        chkContinuousTuning.Enabled = true;
+                        console.UsbSi570Enable = false;
+                        chkGeneralUSBPresent.Checked = false;
+                        chkGeneralUSBPresent.Enabled = false;
+                        console.Keyer.PrimaryConnPort = "QRP2000";
+                        grpQRP2000.Visible = true;
+                        console.CurrentModel = Model.QRP2000;
+                        chkGeneralDisablePTT.Checked = false;
+                        console.btnUSB.Visible = true;
+                        console.btnNetwork.Visible = false;
+
+                        if (!console.booting)
+                        {
+                            comboAudioOutput1.SelectedIndex = 0;
+                        }
+
+                        console.ReInit_USB();
+
+                        if (radGenModelQRP2000.Focused || force_model)
+                        {
+                            //chkGeneralRXOnly.Checked = false;
+                            chkGeneralDisablePTT.Checked = false;
+                            force_model = false;
+                        }
+
+                        console.NetworkThreadRunning = false;
+                        force_model = true;
+                        break;
+                    case Model.GENESIS_G6:
+                        console.CurrentModel = Model.GENESIS_G6;
+                        comboAudioDriver1.Text = "G6 USB";
+                        comboAudioSoundCard.Text = "Genesis G6";
+                        comboAudioInput1.Text = "G6 input";
+                        comboAudioOutput1.Text = "G6 output";
+                        chkContinuousTuning.Checked = false;
+                        chkContinuousTuning.Enabled = true;
+                        console.UsbSi570Enable = false;
+                        chkGeneralUSBPresent.Checked = false;
+                        chkGeneralUSBPresent.Enabled = false;
+                        console.Keyer.PrimaryConnPort = "USB";
+                        grpSi570.Enabled = true;
+                        grpG59Keyer.Enabled = true;
+                        grpGenesisUSB.Enabled = true;
+                        grpGenesisConnection.Enabled = false;
+                        grpG6.Visible = true;
+                        console.grpG6.Visible = true;
+                        chkGeneralDisablePTT.Checked = false;
+                        console.btnUSB.Visible = true;
+                        console.btnNetwork.Visible = false;
+                        console.ReInit_USB();
+                        VID_TextBox.Text = "fffe";
+                        PID_TextBox.Text = "1972";
+
+                        if (radGenModelGenesisG6.Focused || force_model)
+                        {
+                            //chkGeneralRXOnly.Checked = false;
+                            chkGeneralDisablePTT.Checked = false;
+                            force_model = false;
+                        }
+                        force_model = true;
+                        break;
+                    case Model.RTL_SDR:
+                        console.CurrentModel = Model.RTL_SDR;
+                        comboAudioDriver1.Text = "RTL SDR";
+                        comboAudioSoundCard.Text = "RTL SDR";
+                        comboAudioInput1.Text = "RTL SDR";
+                        comboAudioOutput1.Text = "RTL SDR";
+                        chkContinuousTuning.Checked = false;
+                        chkContinuousTuning.Enabled = false;
+                        console.UsbSi570Enable = false;
+                        chkGeneralUSBPresent.Checked = false;
+                        chkGeneralUSBPresent.Enabled = false;
+                        console.Keyer.PrimaryConnPort = "USB";
+                        grpRTL_SDR.Visible = true;
+                        chkGeneralDisablePTT.Checked = true;
+                        console.btnUSB.Visible = true;
+                        console.ReInit_USB();
+                        chkGeneralRXOnly.Checked = true;
+                        chkGeneralDisablePTT.Checked = true;
+                        force_model = false;
+                        comboRTL_SDR_SampleRate_SelectedIndexChanged(this, EventArgs.Empty);
+                        comboRTL_SDR_BufferSize_SelectedIndexChanged(this, EventArgs.Empty);
+                        force_model = true;
+                        break;
+                }
+            }
+        }
 
 		public bool RXOnly
 		{
@@ -23214,6 +23695,7 @@ namespace PowerSDR
                 if (radGenModelGenesisG3020.Checked)
                 {
                     CurrentModel = Model.GENESIS_G3020;
+                    chkLineMic.Checked = false;
                 }
 
                 console.Console_Resize(this, EventArgs.Empty);
@@ -23231,6 +23713,7 @@ namespace PowerSDR
                 if (radGenModelGenesisG40.Checked)
                 {
                     CurrentModel = Model.GENESIS_G40;
+                    chkLineMic.Checked = false;
                 }
 
                 console.Console_Resize(this, EventArgs.Empty);
@@ -23248,6 +23731,7 @@ namespace PowerSDR
                 if (radGenModelGenesisG80.Checked)
                 {
                     CurrentModel = Model.GENESIS_G80;
+                    chkLineMic.Checked = false;
                 }
 
                 console.Console_Resize(this, EventArgs.Empty);
@@ -23265,6 +23749,7 @@ namespace PowerSDR
                 if (radGenModelGenesisG160.Checked)
                 {
                     CurrentModel = Model.GENESIS_G160;
+                    chkLineMic.Checked = false;
                 }
 
                 console.Console_Resize(this, EventArgs.Empty);
@@ -23282,6 +23767,7 @@ namespace PowerSDR
                 if (radGenModelGenesisG137.Checked)
                 {
                     CurrentModel = Model.GENESIS_G137;
+                    chkLineMic.Checked = false;
                 }
 
                 console.Console_Resize(this, EventArgs.Empty);
@@ -23299,6 +23785,7 @@ namespace PowerSDR
                 if (radGenModelGenesisG500.Checked)
                 {
                     CurrentModel = Model.GENESIS_G500;
+                    chkLineMic.Checked = false;
                 }
 
                 console.Console_Resize(this, EventArgs.Empty);
@@ -23608,6 +24095,7 @@ namespace PowerSDR
                     catch (Exception ex)
                     {
                         index = 0;
+                        Debug.Write("Error in AudioInput selection!\n" + ex.ToString());
                     }
 
                     console.AudioInputIndex1 = index;
@@ -25875,8 +26363,24 @@ namespace PowerSDR
             {
                 int samples = (int)((double)udDisplayScopeTime.Value * console.SampleRate1 / 10000.0);
                 Audio.ScopeSamplesPerPixel = samples;
+                Debug.Write("SamplesPerPixel: " + samples.ToString() + "\n");
             }
 		}
+
+        private void clrBtnScopeColor_Changed(object sender, EventArgs e)       // yt7pwr
+        {
+            try
+            {
+                Display_GDI.ScopeColor = Color.FromArgb(clrbtnScopeColor.Color.ToArgb());
+#if(DirectX)
+                Display_DirectX.ScopeColor = Color.FromArgb(clrbtnScopeColor.Color.ToArgb());
+#endif
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
 
 		private void udDisplayMeterAvg_ValueChanged(object sender, System.EventArgs e)
 		{
@@ -26170,7 +26674,14 @@ namespace PowerSDR
 
         private void udDSPCWMonFreq_ValueChanged(object sender, EventArgs e)        // yt7pwr
         {
-            DttSP.SetMonitorFreq((float)udDSPCWMonFreq.Value);
+            try
+            {
+                DttSP.SetMonitorFreq((float)udDSPCWMonFreq.Value);
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         #endregion
@@ -26246,31 +26757,38 @@ namespace PowerSDR
 
 		private void comboKeyerConnPrimary_SelectedIndexChanged(object sender, System.EventArgs e)
 		{
-            switch (comboKeyerConnPrimary.Text)
+            try
             {
-                case "None":
-                    console.Keyer.PrimaryKeyer = false;
-                    break;
-                default:
-                    console.Keyer.PrimaryKeyer = true;
+                switch (comboKeyerConnPrimary.Text)
+                {
+                    case "None":
+                        console.Keyer.PrimaryKeyer = false;
+                        break;
+                    default:
+                        console.Keyer.PrimaryKeyer = true;
 
-                    bool running = DttSP.KeyerRunning();
+                        bool running = DttSP.KeyerRunning();
 
-                    if (running)
-                    {
-                        DttSP.StopKeyer();
-                        console.Keyer.RunKeyer = false;
-                    }
+                        if (running)
+                        {
+                            DttSP.StopKeyer();
+                            console.Keyer.RunKeyer = false;
+                        }
 
-                    Thread.Sleep(50);
-                    console.Keyer.PrimaryConnPort = comboKeyerConnPrimary.Text;
+                        Thread.Sleep(50);
+                        console.Keyer.PrimaryConnPort = comboKeyerConnPrimary.Text;
 
-                    if (!running)
-                    {
-                        DttSP.StartKeyer();
-                        console.Keyer.RunKeyer = true;
-                    }
-                    break;
+                        /*if (!running && !console.booting)
+                        {
+                            DttSP.StartKeyer();
+                            console.Keyer.RunKeyer = true;
+                        }*/
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
             }
 		}
 
@@ -26885,7 +27403,7 @@ namespace PowerSDR
             try
             {
                 if (console.CurrentModel == Model.GENESIS_G59USB || console.CurrentModel == Model.GENESIS_G59NET ||
-                    console.CurrentModel == Model.GENESIS_G11)
+                    console.CurrentModel == Model.GENESIS_G11 || console.CurrentModel == Model.GENESIS_G6)
                 {
                     DialogResult dr = MessageBox.Show("Is a 50 Ohm dummy load connected to the output?\n" +
                         "Failure to use a dummy load with this routine could cause damage to the PA10 amplifier.",
@@ -26896,7 +27414,7 @@ namespace PowerSDR
                     if (dr == DialogResult.No)
                         return;
 
-                    progress = new Progress("Calibrate PA10 Gain");
+                    progress = new Progress("Calibrate PA Gain");
 
                     Thread t = new Thread(new ThreadStart(CalibratePAGain));
                     t.Name = "PA Gain Calibration Thread";
@@ -26917,7 +27435,7 @@ namespace PowerSDR
             {
                 bool[] run = new bool[14];
 
-                progressPA10Calibration.Value = 0;
+                progressPAcalibration.Value = 0;
 
                 if (chkPA10_160m.Checked)
                     run[0] = true;
@@ -26967,18 +27485,20 @@ namespace PowerSDR
                     run[11] = true;
                 else
                     run[11] = false;
-                if (chkPA10_2190m.Checked && console.CurrentModel == Model.GENESIS_G11)
+                if (chkPA10_2190m.Checked && (console.CurrentModel == Model.GENESIS_G11 ||
+                    console.CurrentModel == Model.GENESIS_G6))
                     run[12] = true;
                 else
                     run[12] = false;
-                if (chkPA10_600m.Checked && console.CurrentModel == Model.GENESIS_G11)
+                if (chkPA10_600m.Checked && (console.CurrentModel == Model.GENESIS_G11 ||
+                    console.CurrentModel == Model.GENESIS_G6))
                     run[13] = true;
                 else
                     run[13] = false;
 
-                bool done = console.CalibratePA10Gain(progress, run, (int)udPACalPower.Value);
-                if (done) MessageBox.Show("PA10 Gain Calibration complete.");
-                else MessageBox.Show("PA10 Gain Calibration not complete!");
+                bool done = console.CalibratePAgain(progress, run, (int)udPACalPower.Value);
+                if (done) MessageBox.Show("PA Gain Calibration complete.");
+                else MessageBox.Show("PA Gain Calibration not complete!");
             }
             catch (Exception ex)
             {
@@ -27737,7 +28257,7 @@ namespace PowerSDR
 
 		private void btnOK_Click(object sender, System.EventArgs e)
 		{
-            SaveOptions();
+            //SaveOptions();
             this.Hide();
 
 			/*Thread t = new Thread(new ThreadStart(SaveOptions));
@@ -27750,8 +28270,16 @@ namespace PowerSDR
 
         private void btnSave_Click(object sender, EventArgs e)
         {
-            SaveOptions();
-            DB.Update();
+            try
+            {
+                //SaveOptions();
+                console.SaveDatabase();
+                DB.Update();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
 		private void btnCancel_Click(object sender, System.EventArgs e)
@@ -28464,32 +28992,43 @@ namespace PowerSDR
 
   		#region CAT Setup event handlers 
 
-		public void initCATandPTTprops() 
-		{ 
-			if(comboCATPort.Text.StartsWith("COM"))
-				console.CATPort = Int32.Parse(comboCATPort.Text.Substring(3));
+		public void initCATandPTTprops()        // changes yt7pwr
+		{
+            try
+            {
+                /*if (comboCATPort.Text.StartsWith("COM"))
+                    console.CATPort = Int32.Parse(comboCATPort.Text.Substring(3));*/
 
-            console.CATEnabled = chkCATEnable.Checked;
-			console.CATPTTRTS = chkCATPTT_RTS.Checked; 
-			console.CATPTTDTR = chkCATPTT_DTR.Checked;
-			console.PTTBitBangEnabled = chkCATPTTEnabled.Checked; 
-			if(comboCATPTTPort.Text.StartsWith("COM"))
-				console.CATPTTBitBangPort = Int32.Parse(comboCATPTTPort.Text.Substring(3)); 
-			console.CATBaudRate = Convert.ToInt32((string)comboCATbaud.SelectedItem, 10); 
-			console.CATParity = SDRSerialPort.stringToParity((string)comboCATparity.SelectedItem);
-			console.CATDataBits = SDRSerialPort.stringToDataBits((string)comboCATdatabits.SelectedItem); 
-			console.CATStopBits = SDRSerialPort.stringToStopBits((string)comboCATstopbits.SelectedItem); 
+                console.CATEnabled = chkCATEnable.Checked;
+                console.CATPTTRTS = chkCATPTT_RTS.Checked;
+                console.CATPTTDTR = chkCATPTT_DTR.Checked;
+                //console.PTTBitBangEnabled = chkCATPTTEnabled.Checked;
+                chkCATPTTEnabled_CheckedChanged(this, EventArgs.Empty);
 
-			// make sure the enabled state of bitbang ptt is correct 
-			if ( chkCATPTT_RTS.Checked || chkCATPTT_DTR.Checked ) 
-			{
-				chkCATPTTEnabled.Enabled = true; 
-			}
-			else 
-			{
-				chkCATPTTEnabled.Enabled = false; 
-				chkCATPTTEnabled.Checked = false; 
-			}
+                /*if (comboCATPTTPort.Text.StartsWith("COM"))
+                    console.CATPTTBitBangPort = Int32.Parse(comboCATPTTPort.Text.Substring(3));*/
+
+                console.CATBaudRate = Convert.ToInt32((string)comboCATbaud.SelectedItem, 10);
+                console.CATParity = SDRSerialPort.stringToParity((string)comboCATparity.SelectedItem);
+                console.CATDataBits = SDRSerialPort.stringToDataBits((string)comboCATdatabits.SelectedItem);
+                console.CATStopBits = SDRSerialPort.stringToStopBits((string)comboCATstopbits.SelectedItem);
+                chkCATEnable_CheckedChanged(this, EventArgs.Empty);
+
+                // make sure the enabled state of bitbang ptt is correct 
+                if (chkCATPTT_RTS.Checked || chkCATPTT_DTR.Checked)
+                {
+                    chkCATPTTEnabled.Enabled = true;
+                }
+                else
+                {
+                    chkCATPTTEnabled.Enabled = false;
+                    chkCATPTTEnabled.Checked = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
 		} 
 
 		// called in error cases to set the dialiog vars from 
@@ -28513,7 +29052,7 @@ namespace PowerSDR
 
 		private void chkCATEnable_CheckedChanged(object sender, System.EventArgs e) 
 		{
-			if(initializing) return;
+			if(console.booting) return;
 
 			if(comboCATPort.Text == "" || !comboCATPort.Text.StartsWith("COM"))
 			{
@@ -28610,7 +29149,7 @@ namespace PowerSDR
 
 		private void chkCATPTTEnabled_CheckedChanged(object sender, System.EventArgs e)
 		{
-			if(initializing) return;
+			if(console.booting) return;
 
 			bool enable_sub_fields; 
 
@@ -29073,12 +29612,28 @@ namespace PowerSDR
 
         #region Genesis config // yt7pwr
 
+        private void chkDragSpectrum_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                console.spectrum_drag_enabled = chkDragSpectrum.Checked;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
         private void chkDragVFOA_CheckedChanged(object sender, EventArgs e)
         {
-            if (chkDragVFOA.Checked)
-                console.allow_vfo_drag = true;
-            else
-                console.allow_vfo_drag = false;
+            try
+            {
+                console.allow_vfo_drag = chkDragVFOA.Checked;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void comboSi570GUI_SelectedIndexChanged(object sender, EventArgs e)
@@ -29625,6 +30180,14 @@ namespace PowerSDR
                 Thread.Sleep(1);
                 console.g11.WriteToDevice(20, (long)(G59DASH_DOT_ratio * 10));
             }
+            else if (console.CurrentModel == Model.GENESIS_G6)
+            {
+                console.g6.WriteToDevice(4,
+                    (long)(5 * 1200 / G59CWSpeed));                            // write CW keyer speed
+                //console.g6.WriteToDevice(4,
+                    //(long)(1200 / (G59CWSpeed * G59CWSpeedCorrection)));    // write CW keyer speed
+                console.g6.WriteToDevice(20, (long)(G59DASH_DOT_ratio * 10));
+            }
         }
 
         private void chkG59Iambic_CheckedChanged(object sender, EventArgs e)
@@ -29642,6 +30205,8 @@ namespace PowerSDR
                 console.net_device.WriteToDevice(20, (long)(G59DASH_DOT_ratio * 10));
             else if (console.CurrentModel == Model.GENESIS_G11)
                 console.g11.WriteToDevice(20, (long)(G59DASH_DOT_ratio * 10));
+            else if (console.CurrentModel == Model.GENESIS_G6)
+                console.g6.WriteToDevice(20, (long)(G59DASH_DOT_ratio * 10));
         }
 
         private void chkG59KeyerAutoCorrection_CheckedChanged(object sender, EventArgs e)
@@ -29663,6 +30228,9 @@ namespace PowerSDR
             else if (console.CurrentModel == Model.GENESIS_G11)
                 console.g11.WriteToDevice(4,
                     (long)(1200 / (G59CWSpeed * G59CWSpeedCorrection)));
+            else if (console.CurrentModel == Model.GENESIS_G6)
+                console.g6.WriteToDevice(4,
+                    (long)(1200 / (G59CWSpeed * G59CWSpeedCorrection)));
         }
 
         public void KeyerModeChange()
@@ -29676,13 +30244,13 @@ namespace PowerSDR
 
                 if (tmp_mode == DSPMode.CWL || tmp_mode == DSPMode.CWU)
                 {
-                    if (chkG59Iambic.Checked)
+                    if (chkGenesisIambic.Checked)
                     {
-                        if (chkG59IambicBMode.Checked & !chkG59IambicReverse.Checked)
+                        if (chkIambicBMode.Checked & !chkIambicReverse.Checked)
                             genesisKeyerMode = Keyer_mode.Iambic_B_Mode;
-                        else if (chkG59IambicReverse.Checked && !chkG59IambicBMode.Checked)
+                        else if (chkIambicReverse.Checked && !chkIambicBMode.Checked)
                             genesisKeyerMode = Keyer_mode.IambicReverse;
-                        else if (chkG59IambicReverse.Checked && chkG59IambicBMode.Checked)
+                        else if (chkIambicReverse.Checked && chkIambicBMode.Checked)
                             genesisKeyerMode = Keyer_mode.Iambic_Reverse_B_Mode;
                         else
                             genesisKeyerMode = Keyer_mode.Iambic;
@@ -29698,10 +30266,12 @@ namespace PowerSDR
                     case Model.GENESIS_G11:
                         console.G11_setup_keyer();
                         break;
-
                     case Model.GENESIS_G59USB:
                     case Model.GENESIS_G59NET:
                         console.G59_setup_keyer();
+                        break;
+                    case Model.GENESIS_G6:
+                        console.G6_setup_keyer();
                         break;
                 }
             }
@@ -29725,20 +30295,17 @@ namespace PowerSDR
 
         private void chkG59_PTT_Inv_CheckedChanged(object sender, EventArgs e)
         {
-            if (chkG59_PTT_Inv.Checked)
-                console.G59PTT_Inverted = 1;
-            else
-                console.G59PTT_Inverted = 0;
+            console.ExtPA_PTT_Inverted = chkG59_PTT_Inv.Checked;
         }
 
         private void udG59PTT_ON_time_ValueChanged(object sender, EventArgs e)
         {
-            console.G59PTT_Delay_ON = (short)udG59PTT_ON_time.Value;
+            console.ExtPA_PTT_Delay_ON = (short)udG59PTT_ON_time.Value;
         }
 
         private void udG59PTT_OFF_time_ValueChanged(object sender, EventArgs e)
         {
-            console.G59PTT_Delay_OFF = (short)udG59PTT_OFF_time.Value;
+            console.ExtPA_PTT_Delay_OFF = (short)udG59PTT_OFF_time.Value;
         }
 
         private void chkG59ExtPA_CheckedChanged(object sender, EventArgs e)
@@ -30780,7 +31347,8 @@ namespace PowerSDR
                         }
 
                         if (chkVACExclusive.Checked &&
-                            current_sound_card == SoundCard.UNSUPPORTED_CARD)
+                            (current_sound_card == SoundCard.UNSUPPORTED_CARD ||
+                            current_sound_card == SoundCard.G6))
                             Audio.VACAudioExclusive = true;
                         else
                             Audio.VACAudioExclusive = false;
@@ -30921,14 +31489,6 @@ namespace PowerSDR
                 btnG11FiltersShow.Enabled = true;
         }
 
-        private void chkG11PTTinverted_CheckedChanged(object sender, EventArgs e)
-        {
-            if (chkG11PTTinverted.Checked)
-                console.G11PTT_Inverted = 1;
-            else
-                console.G11PTT_Inverted = 0;
-        }
-
         private void chkG11RX2_CheckedChanged(object sender, EventArgs e)
         {
             console.G11SecRXAnt = chkG11RX2.Checked;
@@ -30948,6 +31508,26 @@ namespace PowerSDR
         private void chkG11RXIndependent_CheckedChanged(object sender, EventArgs e)
         {
             console.G11XTRV_separateRXTX = chkG11RXIndependent.Checked;
+        }
+
+        private void chkG11ExtPA_CheckedChanged(object sender, EventArgs e)
+        {
+            console.Genesis_EXT_PA_present = chkG11ExtPA.Checked;
+        }
+
+        private void chkG11extPAinverted_CheckedChanged(object sender, EventArgs e)
+        {
+            console.ExtPA_PTT_Inverted = chkG11extPAinverted.Checked;
+        }
+
+        private void udG11extPAON_ValueChanged(object sender, EventArgs e)
+        {
+            console.ExtPA_PTT_Delay_ON = (short)udG11extPAON.Value;
+        }
+
+        private void udG11extPAOFF_ValueChanged(object sender, EventArgs e)
+        {
+            console.ExtPA_PTT_Delay_OFF = (short)udG11extPAOFF.Value;
         }
 
         #endregion
@@ -31736,6 +32316,70 @@ namespace PowerSDR
             console.G6SecRXAnt = chkG6RX2input.Checked;
         }
 
+        private void chkG6SendAudio_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (chkG6SendAudio.Checked)
+                    Audio.G6_send_audio = 1;
+                else
+                    Audio.G6_send_audio = 0;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void chkG6TXDACmute_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (chkG6TXDACmute.Checked)
+                    console.g6.WriteToDevice(34, 0);        // TXDAC off
+                else
+                    console.g6.WriteToDevice(33, 0);        // TXDAC on
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void chkG6ExtPAinv_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                console.ExtPA_PTT_Inverted = chkG6ExtPAinv.Checked;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void chkG6ExtPA_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                console.Genesis_EXT_PA_present = chkG6ExtPA.Checked;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void udG6ExtPAonTime_ValueChanged(object sender, EventArgs e)
+        {
+            console.ExtPA_PTT_Delay_ON = (short)udG6ExtPAonTime.Value;
+        }
+
+        private void udG6ExtPAoffTime_ValueChanged(object sender, EventArgs e)
+        {
+            console.ExtPA_PTT_Delay_OFF = (short)udG6ExtPAoffTime.Value;
+        }
+
         #endregion
 
         private void udTXFMDeviation_ValueChanged(object sender, EventArgs e)
@@ -31856,7 +32500,7 @@ namespace PowerSDR
                     if (console.RTL_SDR != null && console.RTL_SDR.connected)
                     {
                         if (chkRTL_SDR_OffsetTuning.Checked)
-                            console.RTL_SDR.SetFrquencyOffset((int)udRTL_SDR_correction.Value);
+                            console.RTL_SDR.SetFrequencyOffset((int)udRTL_SDR_correction.Value);
                     }
                 }
             }
@@ -31892,7 +32536,7 @@ namespace PowerSDR
                 if (console.RTL_SDR != null && console.RTL_SDR.connected)
                 {
                     if(chkRTL_SDR_OffsetTuning.Checked)
-                        console.RTL_SDR.SetFrquencyOffset((int)udRTL_SDR_correction.Value);
+                        console.RTL_SDR.SetFrequencyOffset((int)udRTL_SDR_correction.Value);
                 }
             }
             catch (Exception ex)

@@ -46,7 +46,7 @@ namespace PowerSDR
         Console console;
         string file = "debug report.txt";
 
-        public DebugForm(Console c)
+        public DebugForm(Console c, bool enable_debug)
         {
             try
             {
@@ -60,8 +60,18 @@ namespace PowerSDR
                 this.Font = new_font;
                 this.PerformAutoScale();
                 this.PerformLayout();
-
                 console = c;
+
+                if (enable_debug)
+                {
+                    chkAudio.Checked = true;
+                    chkCAT.Checked = true;
+                    chkConsole.Checked = true;
+                    chkDirectX.Checked = true;
+                    chkEthernet.Checked = true;
+                    chkIRRemote.Checked = true;
+                    chkUSB.Checked = true;
+                }
             }
             catch (Exception ex)
             {
@@ -147,8 +157,10 @@ namespace PowerSDR
                 {
                     console.g59.SetCallback(console.DebugInvokeCallback);
                     console.g11.SetCallback(console.DebugInvokeCallback);
+                    console.g6.SetCallback(console.DebugInvokeCallback);
                     console.g6.callback_enabled = true;
                     console.qrp2000.debug = true;
+                    console.RTL_SDR.debug = true;
                 }
                 else
                 {
@@ -156,6 +168,7 @@ namespace PowerSDR
                     console.g11.callback_enabled = false;
                     console.g6.callback_enabled = false;
                     console.qrp2000.debug = false;
+                    console.RTL_SDR.debug = false;
                 }
             }
             catch (Exception ex)
@@ -233,6 +246,13 @@ namespace PowerSDR
                 rtbDebugMsg.AppendText("Device Caps2: \n" + q.DeviceCaps2.ToString() + "\n");
                 rtbDebugMsg.AppendText("Pixel Shader: \n" + q.PixelShaderVersion.ToString() + "\n");
                 rtbDebugMsg.AppendText("Texture Caps: \n" + q.TextureCaps.ToString() + "\n");
+                rtbDebugMsg.AppendText("FVF Caps: \n" + q.FVFCaps.ToString() + "\n");
+                rtbDebugMsg.AppendText("Line Caps: \n" + q.LineCaps.ToString() + "\n");
+                rtbDebugMsg.AppendText("MaxVertexIndex Caps: \n" + q.MaxVertexIndex.ToString() + "\n");
+                rtbDebugMsg.AppendText("PrimitiveMiscCaps: \n" + q.PrimitiveMiscCaps.ToString() + "\n");
+                rtbDebugMsg.AppendText("RatserCaps: \n" + q.RasterCaps.ToString() + "\n");
+                rtbDebugMsg.AppendText("VertexProcessingCaps: \n" + q.VertexProcessingCaps.ToString() + "\n");
+                rtbDebugMsg.AppendText("VS20Caps: \n" + q.VS20Caps.ToString() + "\n");
             }
             catch (Exception ex)
             {

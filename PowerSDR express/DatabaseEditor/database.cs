@@ -539,7 +539,7 @@ namespace DatabaseEditor
                                 3.630001, 3.650000, "80M All/SSB contest",		true,
 								3.650001, 3.689999, "80M All modes",        	true,
                                 3.690000, 3.690000, "80M SSB QRP",          	true,
-                                3.650001, 3.699999, "80M All modes",        	true,
+                                3.690001, 3.699999, "80M All modes",        	true,
 								3.700000, 3.734999, "80M All/SSB contest",  	true,
                                 3.735000, 3.735000, "80M Emergency",          	true,
                                 3.735001, 3.775000, "80M All/SSB contest",  	true,
@@ -1439,6 +1439,81 @@ namespace DatabaseEditor
             }
         }
 
+        private static void AddG6BandFiltersTable()   // yt7pwr
+        {
+            ds.Tables.Add("G6BandFilters");
+            DataTable t = ds.Tables["G6BandFilters"];
+
+            t.Columns.Add("Low", typeof(double));
+            t.Columns.Add("High", typeof(double));
+            t.Columns.Add("Filter", typeof(string));
+
+            object[] data = {
+                                0.002, 0.179999, "C5",
+                                0.18, 0.349999, "C4",
+                                0.35, 0.579999, "C3",
+                                0.58, 0.999999, "C2",
+                                1.0, 1.1699999, "C1",
+                                1.7, 2.899999, "B9",
+                                2.9, 4.999999, "B10",
+                                5.0, 7.999999, "B8",
+                                8.0, 11.999999, "B6",
+                                12.0, 16.999999, "B7",
+                                17.0, 23.999999, "B5",
+                                24.0, 33.999999, "B3",
+                                34.0, 49.999999, "B1",
+                                50.0, 74.999999, "B4",
+                                75.0, 129.999999, "B2",
+                                130.0, 159.999999, "A1",
+                                160.0, 219.999999, "A4",
+                                220.0, 359.999999, "A3",
+                                360.0, 480.0, "A2"
+                             };
+
+            for (int i = 0; i < data.Length / 3; i++)
+            {
+                DataRow dr = t.NewRow();
+                dr["Low"] = (double)data[i * 3 + 0];
+                dr["High"] = (double)data[i * 3 + 1];
+                dr["Filter"] = (string)data[i * 3 + 2];
+                t.Rows.Add(dr);
+            }
+        }
+
+        private static void AddQRP2000BandFiltersTable()   // yt7pwr
+        {
+            ds.Tables.Add("QRP2000BandFilters");
+            DataTable t = ds.Tables["QRP2000BandFilters"];
+
+            t.Columns.Add("Low", typeof(double));
+            t.Columns.Add("High", typeof(double));
+            t.Columns.Add("Filter", typeof(string));
+
+            object[] data = {
+                                1.0, 2.75, Band.B160M.ToString(),
+                                2.7500001, 5.2, Band.B80M.ToString(),
+                                5.200001, 5.5, Band.B60M.ToString(),
+                                5.500001, 8.7, Band.B40M.ToString(),
+                                8.700001, 12.75, Band.B30M.ToString(),
+                                12.750001, 16.209, Band.B20M.ToString(),
+                                16.209001, 19.584, Band.B17M.ToString(),
+                                19.584001, 23.17, Band.B15M.ToString(),
+                                23.170001, 26.495, Band.B12M.ToString(),
+                                26.495001, 30.0, Band.B10M.ToString(),
+                                49.9, 54.1, Band.B6M.ToString(),
+                                144.0, 148.0, Band.B2M.ToString(),
+                             };
+
+            for (int i = 0; i < data.Length / 3; i++)
+            {
+                DataRow dr = t.NewRow();
+                dr["Low"] = (double)data[i * 3 + 0];
+                dr["High"] = (double)data[i * 3 + 1];
+                dr["Filter"] = (string)data[i * 3 + 2];
+                t.Rows.Add(dr);
+            }
+        }
+
         private static void AddG59BandFiltersTable()   // yt7pwr
         {
             ds.Tables.Add("G59BandFilters");
@@ -1591,8 +1666,14 @@ namespace DatabaseEditor
                 if (!ds.Tables.Contains("G59BandFilters"))
                     AddG59BandFiltersTable();
 
+                if (!ds.Tables.Contains("QRP2000BandFilters"))
+                    AddQRP2000BandFiltersTable();
+
                 if (!ds.Tables.Contains("G11BandFilters"))
                     AddG11BandFiltersTable();
+
+                if (!ds.Tables.Contains("G6BandFilters"))
+                    AddG6BandFiltersTable();
             }
             catch (Exception ex)
             {
@@ -1621,6 +1702,8 @@ namespace DatabaseEditor
                     AddBandLimitsTable();
                     AddG11BandFiltersTable();
                     AddG59BandFiltersTable();
+                    AddQRP2000BandFiltersTable();
+                    AddG6BandFiltersTable();
                 }
 
                 VerifyTables();
@@ -1630,6 +1713,7 @@ namespace DatabaseEditor
                 ds.Tables["IARU3BandText"].DefaultView.Sort = "Low";
                 ds.Tables["BandLimits"].DefaultView.Sort = "Low";
                 ds.Tables["G59BandFilters"].DefaultView.Sort = "Low";
+                ds.Tables["QRP2000BandFilters"].DefaultView.Sort = "Low";
                 ds.Tables["G11BandFilters"].DefaultView.Sort = "Low";
             }
             catch (Exception ex)
@@ -1861,6 +1945,46 @@ namespace DatabaseEditor
                 }
 
                 return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+                return false;
+            }
+        }
+
+        public static bool CheckImportTable(string filename, out string table_name)
+        {
+            table_name = "";
+
+            try
+            {
+                if (!File.Exists(filename))
+                    return false;
+
+                DataSet file = new DataSet();
+
+                try
+                {
+                    file.ReadXml(filename);
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+
+                DataTableCollection tb = file.Tables;
+
+                if (tb != null && tb.Count == 1)
+                {
+                    table_name = tb[0].ToString();
+                    return true;
+                }
+                else
+                {
+                    MessageBox.Show("File do not contain valid table! " + "Error!");
+                    return false;
+                }
             }
             catch (Exception ex)
             {

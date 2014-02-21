@@ -1,7 +1,7 @@
 ﻿//=================================================================
 // DXClusterClient.cs
 //=================================================================
-// Copyright (C) 2011,2012 YT7PWR
+// Copyright (C) 2011-2013 YT7PWR
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -61,7 +61,7 @@ namespace PowerSDR
 
         #endregion
 
-        #region constructor
+        #region constructor/destructor
 
         public DXClusterClient(string call, string name, string qth)
         {
@@ -90,6 +90,27 @@ namespace PowerSDR
             CMD2 = ClusterSetupForm.btn2cmd.Text.ToString();
             CMD3 = ClusterSetupForm.btn3cmd.Text.ToString();
             CMD4 = ClusterSetupForm.btn4cmd.Text.ToString();
+        }
+
+        void ClosingForm(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            try
+            {
+                if (client.ClusterClient.Client != null && client.ClusterClient.Client.Connected)
+                {
+                    client.SendMessage(1, "BYE");
+                    e.Cancel = true;
+                }
+                else if (client.ClusterClient.Client != null)
+                {
+                    closing = true;
+                    client.ClusterClient.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         #endregion
@@ -179,7 +200,7 @@ namespace PowerSDR
                             rtbDXClusterText.AppendText(text);
                             SendMessage(rtbDXClusterText.Handle, WM_VSCROLL, SB_BOTTOM, 0);
 
-                            if (text.StartsWith("login:"))
+                            if (text.StartsWith("login:") || text.EndsWith("login: "))
                             {
                                 client.SendMessage(0, CALL);
 
@@ -488,7 +509,7 @@ namespace PowerSDR
 
                     case 1:
                         {                                               // bye
-                            if (ClusterClient.Connected)
+                            if (ClusterClient.Client.Connected)
                             {
                                 ASCIIEncoding asen = new ASCIIEncoding();
                                 byte[] ba = asen.GetBytes(message);
@@ -500,8 +521,9 @@ namespace PowerSDR
                                 data[3] = 0x0d;
                                 data[4] = 0x0a;
                                 sw.Write(data, 0, data.Length);
-                                Thread.Sleep(100);
-                                ClusterClient.Client.Disconnect(true);
+                                Thread.Sleep(1000);
+                                ClusterClient.Client.Shutdown(SocketShutdown.Both);
+                                ClusterClient.Client.Close(1000);
                             }
                         }
                         break;
@@ -512,6 +534,8 @@ namespace PowerSDR
             catch (Exception ex)
             {
                 Debug.Write(ex.ToString());
+                ClusterClient.Client.Shutdown(SocketShutdown.Both);
+                ClusterClient.Client.Close();
                 return false;
             }
         }

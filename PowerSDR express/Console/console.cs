@@ -144,6 +144,7 @@ namespace PowerSDR
         WindowsVista = 6,
         Windows7 = 7,
         Windows8 = 8,
+        Windows8_1 = 9,
     }
 
     public enum VisibleGroup   // yt7pwr
@@ -561,7 +562,7 @@ namespace PowerSDR
 
     unsafe public partial class Console : System.Windows.Forms.Form
     {
-        const string GSDR_revision = "  v2.0.6";
+        const string GSDR_revision = "  v2.0.16";
         private CheckBoxTS chkG6ATT_18dB;
         private CheckBoxTS chkG6ATT_12dB;
 
@@ -589,7 +590,7 @@ namespace PowerSDR
         public CAToverEthernetClient CAT_client_socket;
         public bool CalibrationInProgress = false;
         private bool calibration_running = false;
-        public Mutex display_mutex = new Mutex();
+        //public Mutex display_mutex = new Mutex();
         public AutoResetEvent network_event;
         ManagementEventWatcher eventWatcher;
         public Skin skin;
@@ -1259,7 +1260,13 @@ namespace PowerSDR
             DB.Init();											// Initialize the database
 
             Splash.SetStatus("Initializing DSP");				// Set progress point
-            DttSP.Init();										// Initialize the DSP processor
+
+            if (!DttSP.Init())									// Initialize the DSP processor
+            {
+                Splash.SetStatus("Error in DSP!");
+                Thread.Sleep(3000);
+                this.ExitConsole();
+            }
 
             Splash.SetStatus("Initializing PortAudio");			// Set progress point
             int result = PA19.PA_Initialize();					// Initialize the audio interface
@@ -1268,6 +1275,7 @@ namespace PowerSDR
             {
                 Splash.SetStatus("Error while initializing PortAudio!");
                 Thread.Sleep(2000);
+                this.ExitConsole();
             }
 
             Splash.SetStatus("Loading Main Form");				// Set progress point
@@ -1421,13 +1429,7 @@ namespace PowerSDR
                         DXClusterForm.Hide();
                     }
 
-                    SaveState();
-
-                    if (XTRVForm != null) XTRVForm.SaveOptions();
-                    if (CWXForm != null) CWXForm.SaveSettings();
-                    if (SetupForm != null) SetupForm.SaveOptions();
-                    if (EQForm != null) EQForm.SaveSettings();
-                    if (DXClusterForm != null) DXClusterForm.SaveOptions();
+                    SaveDatabase();
 
                     if (disposing)
                     {
@@ -1444,6 +1446,23 @@ namespace PowerSDR
             catch (Exception ex)
             {
                 MessageBox.Show("Dispose error!\n" + ex.ToString());
+            }
+        }
+
+        public void SaveDatabase()                                  // yt7pwr
+        {
+            try
+            {
+                SaveState();
+                if (XTRVForm != null) XTRVForm.SaveOptions();
+                if (CWXForm != null) CWXForm.SaveSettings();
+                if (SetupForm != null) SetupForm.SaveOptions();
+                if (EQForm != null) EQForm.SaveSettings();
+                if (DXClusterForm != null) DXClusterForm.SaveOptions();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
             }
         }
 
@@ -6672,9 +6691,9 @@ namespace PowerSDR
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.SystemColors.Control;
             resources.ApplyResources(this, "$this");
+            this.Controls.Add(this.grpG11);
             this.Controls.Add(this.grpModeSpecificPhone);
             this.Controls.Add(this.grpG6);
-            this.Controls.Add(this.grpG11);
             this.Controls.Add(this.grpG59);
             this.Controls.Add(this.grpModeSpecificFM);
             this.Controls.Add(this.grpModeSpecificDigital);
@@ -6851,9 +6870,6 @@ namespace PowerSDR
         #endregion
 
         #region Main
-        // ======================================================
-        // Main
-        // ======================================================
 
         [STAThread]
         static void Main(string[] args)
@@ -6981,7 +6997,7 @@ namespace PowerSDR
 
                             if (m.HWnd == this.Handle)
                             {
-                                this.Console_Resize(this, EventArgs.Empty);
+                                //this.Console_Resize(this, EventArgs.Empty);
                             }
                         }
                         break;
@@ -7040,6 +7056,16 @@ namespace PowerSDR
                                 break;
 
                             case Model.GENESIS_G6:
+                                //g6.OnDeviceChange(m);
+                                Thread.Sleep(300);
+
+                                if (g6.Connected)
+                                {
+                                    G6Init();
+                                    btnUSB.BackColor = Color.Green;
+                                }
+                                else
+                                    btnUSB.BackColor = Color.Red;
                                 break;
 
                             case Model.RTL_SDR:
@@ -7079,18 +7105,23 @@ namespace PowerSDR
                                 break;
 
                             case Model.GENESIS_G11:
+                                if (g11.Connected)
                                 {
-                                    if (g11.Connected)
-                                    {
-                                        if (!g11.OnDeviceChange(m))
-                                            btnUSB.BackColor = Color.Red;
-                                        else
-                                            btnUSB.BackColor = Color.Green;
-                                    }
+                                    if (!g11.OnDeviceChange(m))
+                                        btnUSB.BackColor = Color.Red;
+                                    else
+                                        btnUSB.BackColor = Color.Green;
                                 }
                                 break;
 
                             case Model.GENESIS_G6:
+                                if (g6.Connected)
+                                {
+                                    /*if (!g6.OnDeviceChange(m))
+                                        btnUSB.BackColor = Color.Red;
+                                    else
+                                        btnUSB.BackColor = Color.Green;*/
+                                }
                                 break;
 
                             case Model.QRP2000:
@@ -8113,12 +8144,17 @@ namespace PowerSDR
             }
         }
 
+        public bool pause_Resize = false;
         public bool pause_DisplayThread = false;
         public void Console_Resize(object sender, EventArgs e)  // yt7pwr
         {
             try
             {
-                display_mutex.WaitOne();
+                if (pause_Resize)
+                    return;
+
+                //display_mutex.WaitOne(100);
+                pause_Resize = true;
 
                 if (!booting)
                 { 
@@ -9231,12 +9267,14 @@ namespace PowerSDR
                     }
                 }
 
-                display_mutex.ReleaseMutex();
+                //display_mutex.ReleaseMutex();
+                pause_Resize = false;
             }
             catch (Exception ex)
             {
+                pause_Resize = false;
                 Debug.Write(ex.ToString());
-                display_mutex.ReleaseMutex();
+                //display_mutex.ReleaseMutex();
             }
         }
 
@@ -9381,6 +9419,9 @@ namespace PowerSDR
                             case 2:
                                 WinVer = WindowsVersion.Windows8;
                                 break;
+                            case 3:
+                                WinVer = WindowsVersion.Windows8;
+                                break;
                             default:
                                 WinVer = WindowsVersion.WindowsVista;
                                 break;
@@ -9403,6 +9444,8 @@ namespace PowerSDR
             g6.booting = true;
             g6.SetCallback(GenesisG6CommandCallback);
             g6.SetIQCallback(Audio.G6AudioCallback);
+            //g6.SetIQCallback(Audio.G6ADCaudioCallback);
+            //g6.SetDACcallback(Audio.G6DACaudioCallback);
             net_device = new GenesisNetBox.NetBox(Handle);
             net_device.booting = true;
             qrp2000 = new QRP2000(this);
@@ -9456,6 +9499,35 @@ namespace PowerSDR
                 MessageBox.Show("DirectX general fault!\n" + ex.ToString());
             }
 #endif
+
+            if (CmdLineArgs != null)
+            {
+                for (int i = 0; i < CmdLineArgs.Length; i++)
+                {
+                    switch (CmdLineArgs[i])
+                    {
+                        case "--disable-swr-prot-at-my-risk":
+                            DisableSWRProtection = true;
+                            this.Text = this.Text + "  *** SWR Protection Disabled! ***";
+                            break;
+                        case "--high-pwr-am":
+                            Audio.high_pwr_am = true;
+                            MessageBox.Show("high power am");
+                            break;
+                        case "--debug-enable":
+                            debug_enabled = true;
+                            debug = new DebugForm(this, true);
+                            debug.StartPosition = FormStartPosition.Manual;
+                            debug.Show();
+                            debug.Focus();
+                            Win32.SetWindowPos(debug.Handle.ToInt32(),
+                                -1, this.Left, this.Top, debug.Width, debug.Height, 0);
+                            this.Text = this.Text + " Debug enabled!";
+                            break;
+                    }
+                }
+            }
+
             losc_hover_digit = -1;
             vfoA_hover_digit = -1;
             vfoB_hover_digit = -1;
@@ -9589,24 +9661,6 @@ namespace PowerSDR
             ChangeWheelTuneLeftSubRX();
 
             SetupForm.initCATandPTTprops();   // wjt added -- get console props setup for cat and ptt 
-
-            if (CmdLineArgs != null)
-            {
-                for (int i = 0; i < CmdLineArgs.Length; i++)
-                {
-                    switch (CmdLineArgs[i])
-                    {
-                        case "--disable-swr-prot-at-my-risk":
-                            DisableSWRProtection = true;
-                            this.Text = this.Text + "  *** SWR Protection Disabled! ***";
-                            break;
-                        case "--high-pwr-am":
-                            Audio.high_pwr_am = true;
-                            MessageBox.Show("high power am");
-                            break;
-                    }
-                }
-            }
 
             if (comboMeterTXMode.Items.Count > 0 && comboMeterTXMode.SelectedIndex < 0)
                 comboMeterTXMode.SelectedIndex = 0;
@@ -9871,7 +9925,10 @@ namespace PowerSDR
                     g11.CloseUSB();
                 }
                 if (g6 != null)
+                {
+                    //g6.Exit();
                     g6.CloseUSB();
+                }
 
                 if (usb_si570_enable && SI570.connected)
                     SI570.CloseUSB();
@@ -11943,70 +12000,78 @@ namespace PowerSDR
 
         private Band BandFilterByFreq(double freq)     // yt7pwr
         {
-            Band f = Band.GEN;
-
-            if (IsXTRV(freq))
+            try
             {
-                if (freq >= xBand[1].freq_min && freq <= xBand[1].freq_max)
+                Band f = Band.GEN;
+
+                if (IsXTRV(freq))
                 {
-                    freq -= xBand[1].losc;
+                    if (freq >= xBand[1].freq_min && freq <= xBand[1].freq_max)
+                    {
+                        freq -= xBand[1].losc;
+                    }
+                    else if (freq >= xBand[2].freq_min && freq <= xBand[2].freq_max)
+                    {
+                        freq -= xBand[2].losc;
+                    }
+                    else if (freq >= xBand[3].freq_min && freq <= xBand[3].freq_max)
+                    {
+                        freq -= xBand[3].losc;
+                    }
+                    else if (freq >= xBand[4].freq_min && freq <= xBand[4].freq_max)
+                    {
+                        freq -= xBand[4].losc;
+                    }
+                    else if (freq >= xBand[5].freq_min && freq <= xBand[5].freq_max)
+                    {
+                        freq -= xBand[5].losc;
+                    }
+                    else if (freq >= xBand[6].freq_min && freq <= xBand[6].freq_max)
+                    {
+                        freq -= xBand[6].losc;
+                    }
+                    else if (freq >= xBand[7].freq_min && freq <= xBand[7].freq_max)
+                    {
+                        freq -= xBand[7].losc;
+                    }
+                    else if (freq >= xBand[8].freq_min && freq <= xBand[8].freq_max)
+                    {
+                        freq -= xBand[8].losc;
+                    }
+                    else if (freq >= xBand[9].freq_min && freq <= xBand[9].freq_max)
+                    {
+                        freq -= xBand[9].losc;
+                    }
+                    else if (freq >= xBand[10].freq_min && freq <= xBand[10].freq_max)
+                    {
+                        freq -= xBand[10].losc;
+                    }
+                    else if (freq >= xBand[11].freq_min && freq <= xBand[11].freq_max)
+                    {
+                        freq -= xBand[11].losc;
+                    }
+                    else if (freq >= xBand[12].freq_min && freq <= xBand[12].freq_max)
+                    {
+                        freq -= xBand[12].losc;
+                    }
+                    else if (freq >= 144.0 && freq <= 146.0)
+                    {
+                        if (current_model == Model.GENESIS_G11)
+                            freq -= g11_Xtrv_losc_freq / 1e6;
+                        else if (current_model == Model.GENESIS_G59NET || current_model == Model.GENESIS_G59USB)
+                            freq -= g59_2m_Xtrv_losc_freq / 1e6;
+                    }
                 }
-                else if (freq >= xBand[2].freq_min && freq <= xBand[2].freq_max)
-                {
-                    freq -= xBand[2].losc;
-                }
-                else if (freq >= xBand[3].freq_min && freq <= xBand[3].freq_max)
-                {
-                    freq -= xBand[3].losc;
-                }
-                else if (freq >= xBand[4].freq_min && freq <= xBand[4].freq_max)
-                {
-                    freq -= xBand[4].losc;
-                }
-                else if (freq >= xBand[5].freq_min && freq <= xBand[5].freq_max)
-                {
-                    freq -= xBand[5].losc;
-                }
-                else if (freq >= xBand[6].freq_min && freq <= xBand[6].freq_max)
-                {
-                    freq -= xBand[6].losc;
-                }
-                else if (freq >= xBand[7].freq_min && freq <= xBand[7].freq_max)
-                {
-                    freq -= xBand[7].losc;
-                }
-                else if (freq >= xBand[8].freq_min && freq <= xBand[8].freq_max)
-                {
-                    freq -= xBand[8].losc;
-                }
-                else if (freq >= xBand[9].freq_min && freq <= xBand[9].freq_max)
-                {
-                    freq -= xBand[9].losc;
-                }
-                else if (freq >= xBand[10].freq_min && freq <= xBand[10].freq_max)
-                {
-                    freq -= xBand[10].losc;
-                }
-                else if (freq >= xBand[11].freq_min && freq <= xBand[11].freq_max)
-                {
-                    freq -= xBand[11].losc;
-                }
-                else if (freq >= xBand[12].freq_min && freq <= xBand[12].freq_max)
-                {
-                    freq -= xBand[12].losc;
-                }
-                else if (freq >= 144.0 && freq <= 146.0)
-                {
-                    if (current_model == Model.GENESIS_G11)
-                        freq -= g11_Xtrv_losc_freq / 1e6;
-                    else if (current_model == Model.GENESIS_G59NET || current_model == Model.GENESIS_G59USB)
-                        freq -= g59_2m_Xtrv_losc_freq / 1e6;
-                }
+
+                DB.GetBandFilters(current_model, freq, out f);
+
+                return f;
             }
-
-            DB.GetBandFilters(current_model, freq, out f);
-
-            return f;
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+                return Band.GEN;
+            }
         }
 
         private void SetCurrentBand(Band b)
@@ -12024,9 +12089,16 @@ namespace PowerSDR
             }
         }
 
-        private float GainByBand(Band b)
+        private float GainByBand(double freq)
         {
-            float retval = 0;
+            float retval = 0.0f;
+
+            Band b = BandByFreq(freq); // Band.GEN;
+
+            /*if(current_model == Model.GENESIS_G6)
+                DB.GetBandLimits(freq, out b);
+            else
+                DB.GetBandFilters(current_model, freq, out b);*/
 
             switch (b)
             {
@@ -13660,12 +13732,13 @@ namespace PowerSDR
 
         public bool AbortPa10Calibration = false;
         // changes yt7pwr
-        public bool CalibratePA10Gain(Progress progress, bool[] run, int target_watts) // calibrate PA10 Gain values
+        public bool CalibratePAgain(Progress progress, bool[] run, int target_watts)                // calibrate PA Gain values
         {
             try
             {
                 bool ret_val = false;
                 bool Iambic_status = CWIambic;
+                Model rig = current_model;
 
                 if (!PowerOn)
                 {
@@ -13704,7 +13777,7 @@ namespace PowerSDR
                         break;
                 }
 
-                SetupForm.progressPA10Calibration.Value = 0;
+                SetupForm.progressPAcalibration.Value = 0;
 
                 float[] band_freqs = { 1.9f, 3.75f, 5.3205f, 7.15f, 10.125f, 14.175f, 18.1f, 21.225f, 24.9f, 28.85f, 
                                          50.1f, 144.3f, 0.137f, 0.5f };
@@ -13757,12 +13830,24 @@ namespace PowerSDR
                             CurrentDSPMode = DSPMode.CWU;
 
                         Thread.Sleep(1);
-                        g59.WriteToDevice(18, (long)Keyer_mode.TUNE);
-                        Thread.Sleep(1);
+
+                        switch (rig)
+                        {
+                            case Model.GENESIS_G59USB:
+                            case Model.GENESIS_G59NET:
+                                g59.WriteToDevice(18, (long)Keyer_mode.TUNE);
+                                break;
+                            case Model.GENESIS_G11:
+                                g11.WriteToDevice(18, (long)Keyer_mode.TUNE);
+                                break;
+                            case Model.GENESIS_G6:
+                                g6.WriteToDevice(18, (long)Keyer_mode.TUNE);
+                                break;
+                        }
 
                         Thread.Sleep(1000);
-
                         bool good_result = false;
+
                         while (good_result == false)
                         {
                             DttSP.SetKeyerIambic(false);
@@ -13778,7 +13863,19 @@ namespace PowerSDR
 
                             double watts = 0;
 
-                            watts = PAPower(g59.fwd_PWR);
+                            switch (rig)
+                            {
+                                case Model.GENESIS_G59USB:
+                                case Model.GENESIS_G59NET:
+                                    watts = PAPower(g59.fwd_PWR);
+                                    break;
+                                case Model.GENESIS_G11:
+                                    watts = PAPower(g11.fwd_PWR);
+                                    break;
+                                case Model.GENESIS_G6:
+                                    watts = PAPower(g6.fwd_PWR);
+                                    break;
+                            }
 
                             // convert to dBm
                             diff_dBm = (float)Math.Round((WattsTodBm(watts) - WattsTodBm((double)target / 10)), 1);
@@ -13934,7 +14031,7 @@ namespace PowerSDR
                         Thread.Sleep(3000);
                     }
 
-                    SetupForm.progressPA10Calibration.Value = Math.Min(((i + 1) * 9), 100);
+                    SetupForm.progressPAcalibration.Value = Math.Min(((i + 1) * 9), 100);
                 }
 
                 ret_val = true;
@@ -13945,8 +14042,10 @@ namespace PowerSDR
                 Thread.Sleep(1000);
 
                 if (current_model != Model.GENESIS_G59USB ||
-                    current_model != Model.GENESIS_G59NET)
-                    DttSP.SetKeyerIambic(CWIambic);                 // restor                comboPreamp.Enabled = true;
+                    current_model != Model.GENESIS_G59NET ||
+                    current_model != Model.GENESIS_G11 ||
+                    current_model != Model.GENESIS_G6)
+                    DttSP.SetKeyerIambic(CWIambic);                 // restore
 
                 comboDisplayMode.Enabled = true;
                 LOSCFreq = float.Parse(losc_freq_text);             // restore LOSC
@@ -13966,7 +14065,7 @@ namespace PowerSDR
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
 
-                SetupForm.progressPA10Calibration.Value = SetupForm.progressPA10Calibration.Maximum;
+                SetupForm.progressPAcalibration.Value = SetupForm.progressPAcalibration.Maximum;
                 CurrentDSPMode = dsp_mode;							// restore dsp mode
                 goto end;
             }
@@ -14309,17 +14408,6 @@ namespace PowerSDR
             }
         }
 
-        private short g11PTT_inverted = 0;
-        public short G11PTT_Inverted
-        {
-            get { return g11PTT_inverted; }
-            set
-            {
-                g11PTT_inverted = value;
-                g11.WriteToDevice(28, value);
-            }
-        }
-
         private bool vfob_split_extended = false;
         public bool VFOB_SPLIT_EXTENDED
         {
@@ -14331,31 +14419,50 @@ namespace PowerSDR
             }
         }
 
-        private short g59PTT_delay_on = 100;
-        public short G59PTT_Delay_ON
+        private short extPA_PTT_delay_on = 100;
+        public short ExtPA_PTT_Delay_ON
         {
-            get { return g59PTT_delay_on; }
-            set { g59PTT_delay_on = value; }
+            get { return extPA_PTT_delay_on; }
+            set { extPA_PTT_delay_on = value; }
         }
 
-        private short g59PTT_delay_off = 100;
-        public short G59PTT_Delay_OFF
+        private short extPA_PTT_delay_off = 100;
+        public short ExtPA_PTT_Delay_OFF
         {
-            get { return g59PTT_delay_off; }
-            set { g59PTT_delay_off = value; }
+            get { return extPA_PTT_delay_off; }
+            set { extPA_PTT_delay_off = value; }
         }
 
-        private short g59PTT_inverted = 0;
-        public short G59PTT_Inverted
+        private bool extPA_PTT_inverted = false;
+        public bool ExtPA_PTT_Inverted
         {
-            get { return g59PTT_inverted; }
+            get { return extPA_PTT_inverted; }
             set
             {
-                g59PTT_inverted = value;
-                if (current_model == Model.GENESIS_G59USB)
-                    g59.WriteToDevice(28, value);
-                else if (current_model == Model.GENESIS_G59NET)
-                    net_device.WriteToDevice(28, value);
+                extPA_PTT_inverted = value;
+
+                if (value)
+                {
+                    if (current_model == Model.GENESIS_G59USB)
+                        g59.WriteToDevice(28, 1);
+                    else if (current_model == Model.GENESIS_G59NET)
+                        net_device.WriteToDevice(28, 1);
+                    else if (current_model == Model.GENESIS_G11)
+                        g11.WriteToDevice(28, 1);
+                    else if (current_model == Model.GENESIS_G6)
+                        g6.WriteToDevice(28, 1);
+                }
+                else
+                {
+                    if (current_model == Model.GENESIS_G59USB)
+                        g59.WriteToDevice(28, 0);
+                    else if (current_model == Model.GENESIS_G59NET)
+                        net_device.WriteToDevice(28, 0);
+                    else if (current_model == Model.GENESIS_G11)
+                        g11.WriteToDevice(28, 0);
+                    else if (current_model == Model.GENESIS_G6)
+                        g6.WriteToDevice(28, 0);
+                }
             }
         }
 
@@ -14690,6 +14797,8 @@ namespace PowerSDR
                             net_device.WriteToDevice(22, 1);
                         else if (current_model == Model.GENESIS_G11)
                             g11.WriteToDevice(22, 1);
+                        else if (current_model == Model.GENESIS_G6)
+                            g6.WriteToDevice(22, 1);
                     }
                     else
                     {
@@ -14699,6 +14808,8 @@ namespace PowerSDR
                             net_device.WriteToDevice(22, 0);
                         else if (current_model == Model.GENESIS_G11)
                             g11.WriteToDevice(22, 0);
+                        else if (current_model == Model.GENESIS_G6)
+                            g6.WriteToDevice(22, 0);
                     }
                 }
             }
@@ -15221,26 +15332,39 @@ namespace PowerSDR
                 if (PowerOn)
                     pause_DisplayThread = true;
 
-                current_display_mode = value;
-                Display_GDI.CurrentDisplayMode = value;
-#if(DirectX)
-                Display_DirectX.CurrentDisplayMode = value;
-
-                if (current_display_engine == DisplayEngine.DIRECT_X)
+                if ((current_display_mode == DisplayMode.PANAFALL && value == DisplayMode.PANASCOPE) ||
+                    (current_display_mode == DisplayMode.PANASCOPE && value == DisplayMode.PANAFALL))
                 {
-                    if (draw_display_thread != null)
-                        draw_display_thread.Abort();
+                    current_display_mode = value;
+                    Display_GDI.CurrentDisplayMode = value;
+#if(DirectX)
+                    Display_DirectX.CurrentDisplayMode = value;
+#endif
+                }
+                else
+                {
+                    current_display_mode = value;
+                    Display_GDI.CurrentDisplayMode = value;
+#if(DirectX)
+                    Display_DirectX.CurrentDisplayMode = value;
 
-                    NewVFOSignalGauge.DirectXRelease();
-                    Display_DirectX.DirectXRelease();
+                    if (current_display_engine == DisplayEngine.DIRECT_X)
+                    {
+                        if (draw_display_thread != null)
+                            draw_display_thread.Abort();
 
-                    foreach (var item in ObjectTable.Objects)
-                        item.Dispose();
+                        NewVFOSignalGauge.DirectXRelease();
+                        Display_DirectX.DirectXRelease();
 
-                    NewVFOSignalGauge.DirectX_Init(NewVFO_background_image);
-                    Display_DirectX.PanadapterTarget = picDisplay;
-                    Display_DirectX.WaterfallTarget = picWaterfall;
-                    Display_DirectX.DirectXInit();
+                        foreach (var item in ObjectTable.Objects)
+                            item.Dispose();
+
+                        NewVFOSignalGauge.DirectX_Init(NewVFO_background_image);
+                        Display_DirectX.PanadapterTarget = picDisplay;
+                        Display_DirectX.WaterfallTarget = picWaterfall;
+                        Display_DirectX.DirectXInit();
+
+                    }
 
                     if (PowerOn)
                     {
@@ -15251,8 +15375,9 @@ namespace PowerSDR
                         draw_display_thread.IsBackground = true;
                         draw_display_thread.Start();
                     }
-                }
 #endif
+                }
+
                 pause_DisplayThread = false;
             }
         }
@@ -16577,10 +16702,30 @@ namespace PowerSDR
                                             break;
                                     }
 
-                                    g6.Set_frequency((long)(Math.Round(losc_freq * 1e6, 6)), false);
+                                    if (losc_freq <= 2.5)
+                                    {
+                                        g6.WriteToDevice(31, 1);    // Freq H/L
+                                        g6.Set_frequency((long)(Math.Round(8 * losc_freq * 1e6, 6)), false);
+                                    }
+                                    else
+                                    {
+                                        g6.WriteToDevice(31, 0);    // Freq H/L
+                                        g6.Set_frequency((long)(Math.Round(losc_freq * 1e6, 6)), false);
+                                    }
                                 }
                                 else
-                                    g6.Set_frequency((long)(Math.Round(losc_freq * 1e6, 6)), false);
+                                {
+                                    if (losc_freq <= 2.5)
+                                    {
+                                        g6.WriteToDevice(31, 1);    // Freq H/L
+                                        g6.Set_frequency((long)(Math.Round(8 * losc_freq * 1e6, 6)), false);
+                                    }
+                                    else
+                                    {
+                                        g6.WriteToDevice(31, 0);    // Freq H/L
+                                        g6.Set_frequency((long)(Math.Round(losc_freq * 1e6, 6)), false);
+                                    }
+                                }
                             }
                             else if (current_model == Model.RTL_SDR)
                             {
@@ -18940,9 +19085,10 @@ namespace PowerSDR
         public AGCMode current_agc_mode = AGCMode.FAST;
         public AGCMode CurrentAGCMode
         {
-            get { return (AGCMode)comboAGCMainRX.SelectedIndex; }
+            get { return current_agc_mode; }
             set
             {
+                current_agc_mode = value;
                 comboAGCMainRX.SelectedIndex = (int)value;
                 comboAGCSubRX.SelectedIndex = (int)value;
             }
@@ -21139,7 +21285,7 @@ namespace PowerSDR
             {
                 while (PowerOn)
                 {
-                    display_mutex.WaitOne();
+                    //display_mutex.WaitOne();
 
                     if (this.WindowState == FormWindowState.Minimized && !ConsoleClosing)
                     {
@@ -21269,20 +21415,23 @@ namespace PowerSDR
                                     break;
                             }
 
-                            Display_DirectX.DataReady = true;
-                            UpdateDisplay();
+                            if (!pause_DisplayThread)
+                            {
+                                Display_DirectX.DataReady = true;
+                                UpdateDisplay();
+                            }
                         }
 
                         Thread.Sleep(display_delay);
                     }
 
-                    display_mutex.ReleaseMutex();
+                    //display_mutex.ReleaseMutex();
                 }
             }
             catch (Exception ex)
             {
                 Debug.Write(ex.ToString());
-                display_mutex.ReleaseMutex();
+                //display_mutex.ReleaseMutex();
             }
         }
 #endif
@@ -21293,7 +21442,7 @@ namespace PowerSDR
             {
                 while (PowerOn)
                 {
-                    display_mutex.WaitOne();
+                    //display_mutex.WaitOne();
 
                     if ((this.WindowState == FormWindowState.Minimized ||
                         current_display_mode == DisplayMode.OFF) && !Audio.EnableEthernetServerDevice && !ConsoleClosing)
@@ -21398,9 +21547,13 @@ namespace PowerSDR
                             if (!Display_GDI.DataReady)
                                 fixed (float* ptr = &Display_GDI.new_display_data[0])
                                     DttSP.GetSpectrum(thread_no, ptr);
-                            Display_GDI.WaterfallDataReady = true;
-                            Display_GDI.DataReady = true;
-                            UpdateDisplay();
+
+                            if (!pause_DisplayThread)
+                            {
+                                Display_GDI.WaterfallDataReady = true;
+                                Display_GDI.DataReady = true;
+                                UpdateDisplay();
+                            }
 
                             if (PowerOn)
                                 Thread.Sleep(display_delay);
@@ -21412,13 +21565,13 @@ namespace PowerSDR
                         Thread.Sleep(display_delay);
                     }
 
-                    display_mutex.ReleaseMutex();
+                    //display_mutex.ReleaseMutex();
                 }
             }
             catch (Exception ex)
             {
                 Debug.Write(ex.ToString());
-                display_mutex.ReleaseMutex();
+                //display_mutex.ReleaseMutex();
             }
         }
 
@@ -25235,6 +25388,8 @@ namespace PowerSDR
             }
             catch (Exception ex)
             {
+                Debug.Write(ex.ToString());
+
                 if (debug != null && debug.Visible)
                 {
                     this.Invoke(new DebugCallbackFunction(DebugCallback), "Error in chkPower! \n" + ex.ToString());
@@ -25277,6 +25432,7 @@ namespace PowerSDR
 
         public void comboDisplayMode_SelectedIndexChanged(object sender, System.EventArgs e)  // changes yt7pwr
         {
+            DisplayMode tmp_mode = CurrentDisplayMode;
             pause_DisplayThread = true;
             int txt_width = picDisplay.Width / 6;
             txtDisplayPeakFreq.Width = txt_width;
@@ -25292,57 +25448,109 @@ namespace PowerSDR
             {
                 case "Histogram":
                     {
-                        picWaterfall.Hide();
-                        System.Drawing.Point grp_position = new System.Drawing.Point(0, 0);
-                        System.Drawing.Point picDisplay_position = new System.Drawing.Point(10, 15);
-                        grpDisplay.Height = this.Height - grpVFO.Height - 180;    // picDisplay
-                        grpDisplay.Width = this.Width - grpBandHF.Width - 140;
-                        picDisplay.Location = picDisplay_position;
-                        picDisplay.Height = (grpDisplay.Height - 40);
-                        picDisplay.Width = grpDisplay.Width - 19;
-                        picDisplay.Show();
+                        switch (tmp_mode)
+                        {
+                            case DisplayMode.HISTOGRAM:
+                            case DisplayMode.PANADAPTER:
+                            case DisplayMode.PHASE:
+                            case DisplayMode.PHASE2:
+                            case DisplayMode.SCOPE:
+                            case DisplayMode.SPECTRUM:
+                                break;
+                            default:
+                                picWaterfall.Hide();
+                                System.Drawing.Point grp_position = new System.Drawing.Point(0, 0);
+                                System.Drawing.Point picDisplay_position = new System.Drawing.Point(10, 15);
+                                grpDisplay.Height = this.Height - grpVFO.Height - 180;    // picDisplay
+                                grpDisplay.Width = this.Width - grpBandHF.Width - 140;
+                                picDisplay.Location = picDisplay_position;
+                                picDisplay.Height = (grpDisplay.Height - 40);
+                                picDisplay.Width = grpDisplay.Width - 19;
+                                picDisplay.Show();
+                                break;
+                        }
+
                         CurrentDisplayMode = DisplayMode.HISTOGRAM;
                     }
                     break;
                 case "Scope":
                     {
-                        picWaterfall.Hide();
-                        System.Drawing.Point grp_position = new System.Drawing.Point(0, 0);
-                        System.Drawing.Point picDisplay_position = new System.Drawing.Point(10, 15);
-                        grpDisplay.Height = this.Height - grpVFO.Height - 180;    // picDisplay
-                        grpDisplay.Width = this.Width - grpBandHF.Width - 140;
-                        picDisplay.Location = picDisplay_position;
-                        picDisplay.Height = (grpDisplay.Height - 40);
-                        picDisplay.Width = grpDisplay.Width - 19;
-                        picDisplay.Show();
+                        switch (tmp_mode)
+                        {
+                            case DisplayMode.SCOPE:
+                            case DisplayMode.PANADAPTER:
+                            case DisplayMode.PHASE:
+                            case DisplayMode.PHASE2:
+                            case DisplayMode.HISTOGRAM:
+                            case DisplayMode.SPECTRUM:
+                                break;
+                            default:
+                                picWaterfall.Hide();
+                                System.Drawing.Point grp_position = new System.Drawing.Point(0, 0);
+                                System.Drawing.Point picDisplay_position = new System.Drawing.Point(10, 15);
+                                grpDisplay.Height = this.Height - grpVFO.Height - 180;    // picDisplay
+                                grpDisplay.Width = this.Width - grpBandHF.Width - 140;
+                                picDisplay.Location = picDisplay_position;
+                                picDisplay.Height = (grpDisplay.Height - 40);
+                                picDisplay.Width = grpDisplay.Width - 19;
+                                picDisplay.Show();
+                                break;
+                        }
+
                         CurrentDisplayMode = DisplayMode.SCOPE;
                     }
                     break;
                 case "Phase":
                     {
-                        picWaterfall.Hide();
-                        System.Drawing.Point grp_position = new System.Drawing.Point(0, 0);
-                        System.Drawing.Point picDisplay_position = new System.Drawing.Point(10, 15);
-                        grpDisplay.Height = this.Height - grpVFO.Height - 180;    // picDisplay
-                        grpDisplay.Width = this.Width - grpBandHF.Width - 140;
-                        picDisplay.Location = picDisplay_position;
-                        picDisplay.Height = (grpDisplay.Height - 40);
-                        picDisplay.Width = grpDisplay.Width - 19;
-                        picDisplay.Show();
+                        switch (tmp_mode)
+                        {
+                            case DisplayMode.PHASE:
+                            case DisplayMode.PANADAPTER:
+                            case DisplayMode.HISTOGRAM:
+                            case DisplayMode.PHASE2:
+                            case DisplayMode.SCOPE:
+                            case DisplayMode.SPECTRUM:
+                                break;
+                            default:
+                                picWaterfall.Hide();
+                                System.Drawing.Point grp_position = new System.Drawing.Point(0, 0);
+                                System.Drawing.Point picDisplay_position = new System.Drawing.Point(10, 15);
+                                grpDisplay.Height = this.Height - grpVFO.Height - 180;    // picDisplay
+                                grpDisplay.Width = this.Width - grpBandHF.Width - 140;
+                                picDisplay.Location = picDisplay_position;
+                                picDisplay.Height = (grpDisplay.Height - 40);
+                                picDisplay.Width = grpDisplay.Width - 19;
+                                picDisplay.Show();
+                                break;
+                        }
+
                         CurrentDisplayMode = DisplayMode.PHASE;
                     }
                     break;
                 case "Phase2":
                     {
-                        picWaterfall.Hide();
-                        System.Drawing.Point grp_position = new System.Drawing.Point(0, 0);
-                        System.Drawing.Point picDisplay_position = new System.Drawing.Point(10, 15);
-                        grpDisplay.Height = this.Height - grpVFO.Height - 180;    // picDisplay
-                        grpDisplay.Width = this.Width - grpBandHF.Width - 140;
-                        picDisplay.Location = picDisplay_position;
-                        picDisplay.Height = (grpDisplay.Height - 40);
-                        picDisplay.Width = grpDisplay.Width - 19;
-                        picDisplay.Show();
+                        switch (tmp_mode)
+                        {
+                            case DisplayMode.PHASE2:
+                            case DisplayMode.PANADAPTER:
+                            case DisplayMode.PHASE:
+                            case DisplayMode.HISTOGRAM:
+                            case DisplayMode.SCOPE:
+                            case DisplayMode.SPECTRUM:
+                                break;
+                            default:
+                                picWaterfall.Hide();
+                                System.Drawing.Point grp_position = new System.Drawing.Point(0, 0);
+                                System.Drawing.Point picDisplay_position = new System.Drawing.Point(10, 15);
+                                grpDisplay.Height = this.Height - grpVFO.Height - 180;    // picDisplay
+                                grpDisplay.Width = this.Width - grpBandHF.Width - 140;
+                                picDisplay.Location = picDisplay_position;
+                                picDisplay.Height = (grpDisplay.Height - 40);
+                                picDisplay.Width = grpDisplay.Width - 19;
+                                picDisplay.Show();
+                                break;
+                        }
+
                         CurrentDisplayMode = DisplayMode.PHASE2;
                     }
                     break;
@@ -25368,104 +25576,164 @@ namespace PowerSDR
                     break;
                 case "Panafall":
                     {
-                        System.Drawing.Point grp_position = new System.Drawing.Point(0, 0);
-                        System.Drawing.Point picWaterfall_position = new System.Drawing.Point(10, 15);
-                        grpDisplay.Height = this.Height - grpVFO.Height - 180;
-                        grpDisplay.Width = this.Width - grpBandHF.Width - 140;
-                        picWaterfall.Location = picWaterfall_position;
-                        picWaterfall.Height = (grpDisplay.Height - 40) / 2;       // panafall           
-                        picWaterfall.Width = grpDisplay.Width - 19;
-                        grp_position = picWaterfall.Location;
-                        grp_position.Y = picWaterfall.Height + 15;
-                        picWaterfall.Show();
-                        picDisplay.Location = grp_position;
-                        picDisplay.Height = (grpDisplay.Height - 40) / 2;
-                        picDisplay.Width = grpDisplay.Width - 19;
-                        picDisplay.Show();
+                        switch (tmp_mode)
+                        {
+                            case DisplayMode.PANAFALL:
+                            case DisplayMode.PANASCOPE:
+                                break;
+                            default:
+                                System.Drawing.Point grp_position = new System.Drawing.Point(0, 0);
+                                System.Drawing.Point picWaterfall_position = new System.Drawing.Point(10, 15);
+                                grpDisplay.Height = this.Height - grpVFO.Height - 180;
+                                grpDisplay.Width = this.Width - grpBandHF.Width - 140;
+                                picWaterfall.Location = picWaterfall_position;
+                                picWaterfall.Height = (grpDisplay.Height - 40) / 2;       // panafall           
+                                picWaterfall.Width = grpDisplay.Width - 19;
+                                grp_position = picWaterfall.Location;
+                                grp_position.Y = picWaterfall.Height + 15;
+                                picWaterfall.Show();
+                                picDisplay.Location = grp_position;
+                                picDisplay.Height = (grpDisplay.Height - 40) / 2;
+                                picDisplay.Width = grpDisplay.Width - 19;
+                                picDisplay.Show();
+                                break;
+                        }
+
                         CalcDisplayFreq();
                         CurrentDisplayMode = DisplayMode.PANAFALL;
                     }
                     break;
                 case "Panafall_inv":
                     {
-                        System.Drawing.Point grp_position = new System.Drawing.Point(0, 0);
-                        System.Drawing.Point picWaterfall_position = new System.Drawing.Point(10, 15);
-                        grpDisplay.Height = this.Height - grpVFO.Height - 180;
-                        grpDisplay.Width = this.Width - grpBandHF.Width - 140;
-                        picDisplay.Location = picWaterfall_position;
-                        picDisplay.Height = (grpDisplay.Height - 40) / 2;       // panafall           
-                        picDisplay.Width = grpDisplay.Width - 19;
-                        grp_position = picDisplay.Location;
-                        grp_position.Y = picDisplay.Height + 15;
-                        picDisplay.Show();
-                        picWaterfall.Location = grp_position;
-                        picWaterfall.Height = (grpDisplay.Height - 40) / 2;
-                        picWaterfall.Width = grpDisplay.Width - 19;
-                        picWaterfall.Show();
+                        switch (tmp_mode)
+                        {
+                            case DisplayMode.PANAFALL_INV:
+                                break;
+                            default:
+                                System.Drawing.Point grp_position = new System.Drawing.Point(0, 0);
+                                System.Drawing.Point picWaterfall_position = new System.Drawing.Point(10, 15);
+                                grpDisplay.Height = this.Height - grpVFO.Height - 180;
+                                grpDisplay.Width = this.Width - grpBandHF.Width - 140;
+                                picDisplay.Location = picWaterfall_position;
+                                picDisplay.Height = (grpDisplay.Height - 40) / 2;       // panafall           
+                                picDisplay.Width = grpDisplay.Width - 19;
+                                grp_position = picDisplay.Location;
+                                grp_position.Y = picDisplay.Height + 15;
+                                picDisplay.Show();
+                                picWaterfall.Location = grp_position;
+                                picWaterfall.Height = (grpDisplay.Height - 40) / 2;
+                                picWaterfall.Width = grpDisplay.Width - 19;
+                                picWaterfall.Show();
+                                break;
+                        }
+
                         CalcDisplayFreq();
                         CurrentDisplayMode = DisplayMode.PANAFALL_INV;
                     }
                     break;
                 case "Spectrum":
                     {
-                        System.Drawing.Point grp_position = new System.Drawing.Point(0, 0);
-                        System.Drawing.Point picDisplay_position = new System.Drawing.Point(10, 15);
-                        grpDisplay.Height = this.Height - grpVFO.Height - 180;    // picDisplay
-                        grpDisplay.Width = this.Width - grpBandHF.Width - 140;
-                        picDisplay.Location = picDisplay_position;
-                        picDisplay.Height = (grpDisplay.Height - 40);
-                        picDisplay.Width = grpDisplay.Width - 19;
-                        picWaterfall.Hide();
-                        picDisplay.Show();
+                        switch (tmp_mode)
+                        {
+                            case DisplayMode.SPECTRUM:
+                            case DisplayMode.PANADAPTER:
+                            case DisplayMode.PHASE:
+                            case DisplayMode.PHASE2:
+                            case DisplayMode.SCOPE:
+                            case DisplayMode.HISTOGRAM:
+                                break;
+                            default:
+                                System.Drawing.Point grp_position = new System.Drawing.Point(0, 0);
+                                System.Drawing.Point picDisplay_position = new System.Drawing.Point(10, 15);
+                                grpDisplay.Height = this.Height - grpVFO.Height - 180;    // picDisplay
+                                grpDisplay.Width = this.Width - grpBandHF.Width - 140;
+                                picDisplay.Location = picDisplay_position;
+                                picDisplay.Height = (grpDisplay.Height - 40);
+                                picDisplay.Width = grpDisplay.Width - 19;
+                                picWaterfall.Hide();
+                                picDisplay.Show();
+                                break;
+                        }
+
                         CurrentDisplayMode = DisplayMode.SPECTRUM;
                         UpdateRXDisplayVars((int)udFilterLow.Value, (int)udFilterHigh.Value);
                     }
                     break;
                 case "Panascope":
                     {
-                        System.Drawing.Point grp_position = new System.Drawing.Point(0, 0);
-                        System.Drawing.Point picWaterfall_position = new System.Drawing.Point(10, 15);
-                        grpDisplay.Height = this.Height - grpVFO.Height - 180;
-                        grpDisplay.Width = this.Width - grpBandHF.Width - 140;
-                        picWaterfall.Location = picWaterfall_position;
-                        picWaterfall.Height = (grpDisplay.Height - 40) / 2;                 
-                        picWaterfall.Width = grpDisplay.Width - 19;
-                        grp_position = picWaterfall.Location;
-                        grp_position.Y = picWaterfall.Height + 15;
-                        picWaterfall.Show();
-                        picDisplay.Location = grp_position;
-                        picDisplay.Height = (grpDisplay.Height - 40) / 2;
-                        picDisplay.Width = grpDisplay.Width - 19;
-                        picDisplay.Show();
+                        switch (tmp_mode)
+                        {
+                            case DisplayMode.PANASCOPE:
+                            case DisplayMode.PANAFALL:
+                                break;
+                            default:
+                                System.Drawing.Point grp_position = new System.Drawing.Point(0, 0);
+                                System.Drawing.Point picWaterfall_position = new System.Drawing.Point(10, 15);
+                                grpDisplay.Height = this.Height - grpVFO.Height - 180;
+                                grpDisplay.Width = this.Width - grpBandHF.Width - 140;
+                                picWaterfall.Location = picWaterfall_position;
+                                picWaterfall.Height = (grpDisplay.Height - 40) / 2;
+                                picWaterfall.Width = grpDisplay.Width - 19;
+                                grp_position = picWaterfall.Location;
+                                grp_position.Y = picWaterfall.Height + 15;
+                                picWaterfall.Show();
+                                picDisplay.Location = grp_position;
+                                picDisplay.Height = (grpDisplay.Height - 40) / 2;
+                                picDisplay.Width = grpDisplay.Width - 19;
+                                picDisplay.Show();
+                                break;
+                        }
+
                         CalcDisplayFreq();
                         CurrentDisplayMode = DisplayMode.PANASCOPE;
                     }
                     break;
                 case "Panadapter":
                     {
-                        System.Drawing.Point grp_position = new System.Drawing.Point(0, 0);
-                        System.Drawing.Point picDisplay_position = new System.Drawing.Point(10, 15);
-                        grpDisplay.Height = this.Height - grpVFO.Height - 180;    // picDisplay
-                        grpDisplay.Width = this.Width - grpBandHF.Width - 140;
-                        picDisplay.Location = picDisplay_position;
-                        picDisplay.Height = (grpDisplay.Height - 40);
-                        picDisplay.Width = grpDisplay.Width - 19;
-                        picWaterfall.Hide();
-                        picDisplay.Show();
+                        switch (tmp_mode)
+                        {
+                            case DisplayMode.PANADAPTER:
+                            case DisplayMode.HISTOGRAM:
+                            case DisplayMode.PHASE:
+                            case DisplayMode.PHASE2:
+                            case DisplayMode.SCOPE:
+                            case DisplayMode.SPECTRUM:
+                                break;
+                            default:
+                                System.Drawing.Point grp_position = new System.Drawing.Point(0, 0);
+                                System.Drawing.Point picDisplay_position = new System.Drawing.Point(10, 15);
+                                grpDisplay.Height = this.Height - grpVFO.Height - 180;    // picDisplay
+                                grpDisplay.Width = this.Width - grpBandHF.Width - 140;
+                                picDisplay.Location = picDisplay_position;
+                                picDisplay.Height = (grpDisplay.Height - 40);
+                                picDisplay.Width = grpDisplay.Width - 19;
+                                picWaterfall.Hide();
+                                picDisplay.Show();
+                                break;
+                        }
+
                         CurrentDisplayMode = DisplayMode.PANADAPTER;
                         CalcDisplayFreq();
                     }
                     break;
                 case "Waterfall":
                     {
-                        System.Drawing.Point picWaterfall_position = new System.Drawing.Point(10, 15);
-                        picDisplay.Hide();
-                        grpDisplay.Height = this.Height - grpVFO.Height - 180;    // waterfall
-                        grpDisplay.Width = this.Width - grpBandHF.Width - 140;
-                        picWaterfall.Location = picWaterfall_position;
-                        picWaterfall.Height = (grpDisplay.Height - 40);
-                        picWaterfall.Width = grpDisplay.Width - 19;
-                        picWaterfall.Show();
+                        switch (tmp_mode)
+                        {
+                            case DisplayMode.WATERFALL:
+                                break;
+                            default:
+                                System.Drawing.Point picWaterfall_position = new System.Drawing.Point(10, 15);
+                                picDisplay.Hide();
+                                grpDisplay.Height = this.Height - grpVFO.Height - 180;    // waterfall
+                                grpDisplay.Width = this.Width - grpBandHF.Width - 140;
+                                picWaterfall.Location = picWaterfall_position;
+                                picWaterfall.Height = (grpDisplay.Height - 40);
+                                picWaterfall.Width = grpDisplay.Width - 19;
+                                picWaterfall.Show();
+                                break;
+                        }
+
                         CurrentDisplayMode = DisplayMode.WATERFALL;
                         CalcDisplayFreq();
                     }
@@ -25599,7 +25867,11 @@ namespace PowerSDR
                 }
 
                 double target_dbm = 10 * (double)Math.Log10((double)val * 10000);
-                target_dbm -= GainByBand(CurrentBand);
+
+                if(SplitAB_TX)
+                    target_dbm -= GainByBand(vfoBFreq);
+                else
+                    target_dbm -= GainByBand(vfoAFreq);
 
                 double target_volts = Math.Sqrt(Math.Pow(10, target_dbm * 0.1) * 0.05);		// E = Sqrt(P * R) 
                 Audio.RadioVolume = target_volts / audio_volts1;
@@ -25612,6 +25884,7 @@ namespace PowerSDR
             }
             catch
             {
+
             }
         }
 
@@ -25869,7 +26142,7 @@ namespace PowerSDR
             ptbCWSpeed.Value = (int)udCWSpeed.Value;
 
             if ((current_model == Model.GENESIS_G59USB || current_model == Model.GENESIS_G11 ||
-                CurrentModel == Model.GENESIS_G59NET) && !booting)
+                CurrentModel == Model.GENESIS_G59NET || current_model == Model.GENESIS_G6) && !booting)
                 SetupForm.G59CWSpeed = (int)udCWSpeed.Value;
 
             if (CWXForm == null || CWXForm.IsDisposed)
@@ -26543,7 +26816,8 @@ namespace PowerSDR
                         case (DSPMode.CWL):
                         case (DSPMode.CWU):
                             {
-                                //if (current_display_mode != DisplayMode.PANASCOPE)
+                                if (current_display_mode != DisplayMode.PANASCOPE || 
+                                    current_display_mode != DisplayMode.SCOPE)
                                     pause_DisplayThread = true;
 
                                 cw_key_mode = true;
@@ -26592,7 +26866,10 @@ namespace PowerSDR
                         case (DSPMode.CWL):
                         case (DSPMode.CWU):
                             {
-                                pause_DisplayThread = true;
+                                if (current_display_mode != DisplayMode.PANASCOPE &&
+                                    current_display_mode != DisplayMode.SCOPE)
+                                    pause_DisplayThread = true;
+
                                 cw_key_mode = true;
                                 DttSP.CWRingRestart();
                             }
@@ -26675,7 +26952,7 @@ namespace PowerSDR
 
                 if (genesis_ext_PA_present)
                 {
-                    Thread.Sleep(G59PTT_Delay_ON);
+                    Thread.Sleep(ExtPA_PTT_Delay_ON);
 
                     if (current_model == Model.GENESIS_G59USB)
                         g59.WriteToDevice(30, 1);
@@ -26691,7 +26968,7 @@ namespace PowerSDR
                 {
                     case Model.GENESIS_G6:
                         {
-                            Thread.Sleep(1);
+                            //Thread.Sleep(1);
 
                             if (chkVFOSplit.Checked)
                             {
@@ -26711,6 +26988,7 @@ namespace PowerSDR
                             }
 
                             g6.WriteToDevice(13, TXSwitchTime / 3);
+                            g6.MUTE = true;
                         }
                         break;
                     case Model.GENESIS_G59USB:
@@ -26816,6 +27094,7 @@ namespace PowerSDR
                 {
                     case Model.GENESIS_G6:
                         {
+                            g6.MUTE = false;
                             g6.KeyerNewData = false;
                             g6.WriteToDevice(26, 0);                               // Line input
                             g6.KEYER = 0xff;
@@ -26869,7 +27148,7 @@ namespace PowerSDR
 
                 if (genesis_ext_PA_present)
                 {
-                    Thread.Sleep(G59PTT_Delay_OFF);
+                    Thread.Sleep(ExtPA_PTT_Delay_OFF);
 
                     if (current_model == Model.GENESIS_G59USB)
                         g59.WriteToDevice(30, 0);
@@ -27441,6 +27720,9 @@ namespace PowerSDR
                         case Model.GENESIS_G11:
                             g11.WriteToDevice(18, (long)Keyer_mode.TUNE);
                             break;
+                        case Model.GENESIS_G6:
+                            g6.WriteToDevice(18, (long)Keyer_mode.TUNE);
+                            break;
                     }
                 }
 
@@ -27468,6 +27750,9 @@ namespace PowerSDR
                         break;
                     case Model.GENESIS_G11:
                         G11_setup_keyer();
+                        break;
+                    case Model.GENESIS_G6:
+                        G6_setup_keyer();
                         break;
                     default:
                         DttSP.SetKeyerIambic(CWIambic);
@@ -29901,6 +30186,8 @@ namespace PowerSDR
         private int vfob_whole_filter_start_low = 0;
         private int vfob_whole_filter_start_high = 0;
         private bool spectrum_drag = false;
+        private bool spectrum_drag_start = false;
+        public bool spectrum_drag_enabled = false;
         private int spectrum_drag_last_x = 0;
         private int vfob_drag_last_x = 0;
         private int vfoA_drag_last_x = 0;
@@ -30534,12 +30821,14 @@ namespace PowerSDR
                                     vfob_drag_start_freq = vfoBFreq;
                                     vfob_drag_last_x = e.X;
                                 }
-                                else if (spectrum_drag)
+                                else if (spectrum_drag && spectrum_drag_enabled)
                                 {
+                                    spectrum_drag_start = true;
                                     chkVFOLock.Checked = false;
                                     int diff = (int)(PixelToHz(e.X) - PixelToHz(spectrum_drag_last_x));
                                     LOSCFreq -= diff / 1e6;
                                     spectrum_drag_last_x = e.X;
+
                                     if (chkVFOsinc.Checked)
                                     {
                                         VFOAFreq = vfoAFreq;
@@ -30596,24 +30885,617 @@ namespace PowerSDR
 
         private void picDisplay_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e) // changes yt7pwr
         {
-            int filter_low, filter_high;
-            int notch_low = 0;
-            int notch_high = 0;
-
-            if (current_display_mode == DisplayMode.PANADAPTER ||
-                current_display_mode == DisplayMode.PANAFALL ||
-                current_display_mode == DisplayMode.PANAFALL_INV ||
-                current_display_mode == DisplayMode.PANASCOPE)
-                picDisplay.Focus();
-
-            filter_low = DttSP.TXFilterLowCut;
-            filter_high = DttSP.TXFilterHighCut;
-
-            if (e.Button == MouseButtons.Left && PowerOn)
+            try
             {
-                ptbDisplayPan.Value = 0;
+                int filter_low, filter_high;
+                int notch_low = 0;
+                int notch_high = 0;
 
-                if (current_click_tune_mode != ClickTuneMode.Off)
+                if (current_display_mode == DisplayMode.PANADAPTER ||
+                    current_display_mode == DisplayMode.PANAFALL ||
+                    current_display_mode == DisplayMode.PANAFALL_INV ||
+                    current_display_mode == DisplayMode.PANASCOPE)
+                    picDisplay.Focus();
+
+                filter_low = DttSP.TXFilterLowCut;
+                filter_high = DttSP.TXFilterHighCut;
+
+                if (e.Button == MouseButtons.Left && PowerOn)
+                {
+                    ptbDisplayPan.Value = 0;
+
+                    if (current_click_tune_mode != ClickTuneMode.Off)
+                    {
+                        switch (Display_GDI.CurrentDisplayMode)
+                        {
+                            case DisplayMode.PANAFALL:
+                            case DisplayMode.PANAFALL_INV:
+                            case DisplayMode.WATERFALL:
+                            case DisplayMode.PANADAPTER:
+                            case DisplayMode.HISTOGRAM:
+                            case DisplayMode.PANASCOPE:
+                                float x = PixelToHz(e.X);
+                                double freq = loscFreq + (double)x * 0.0000010;
+                                MaxFreq = LOSCFreq + DttSP.SampleRate / 2 * 1e-6;
+                                MinFreq = LOSCFreq - DttSP.SampleRate / 2 * 1e-6;
+
+                                if (freq > MaxFreq)
+                                    freq = MaxFreq;
+                                if (freq < MinFreq)
+                                    freq = MinFreq;
+
+                                if (current_click_tune_mode == ClickTuneMode.VFOA)
+                                {
+                                    memory = false;
+                                    vfoa_lock = true;
+                                    VFOAFreq = Math.Round(freq, 6);
+                                    vfoa_lock = false;
+                                }
+                                else
+                                {
+                                    vfob_lock = true;
+                                    VFOBFreq = Math.Round(freq, 6);
+                                    vfob_lock = false;
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        if (Display_GDI.CurrentDisplayMode == DisplayMode.PANADAPTER ||
+                            Display_GDI.CurrentDisplayMode == DisplayMode.PANAFALL ||
+                            Display_GDI.CurrentDisplayMode == DisplayMode.PANAFALL_INV ||
+                            Display_GDI.CurrentDisplayMode == DisplayMode.HISTOGRAM ||
+                            Display_GDI.CurrentDisplayMode == DisplayMode.PANASCOPE
+                            && current_dsp_mode != DSPMode.DRM)
+                        {
+                            int vfoA_x = 0;
+                            int lowA_x = 0;
+                            int highA_x = 0;
+                            int vfoB_x = 0;
+                            int lowB_x = 0;
+                            int highB_x = 0;
+
+                            if (!chkMOX.Checked)
+                            {
+                                switch (current_dsp_mode)
+                                {
+                                    case (DSPMode.CWL):
+                                    case (DSPMode.CWU):
+                                        {
+                                            vfoA_x = HzToPixel((float)((vfoAFreq - loscFreq) * 1e6));
+                                            lowA_x = vfoA_x - (HzToPixel((DttSP.RXFilterHighCut - DttSP.RXFilterLowCut) / 2) - HzToPixel(0.0f));
+                                            highA_x = vfoA_x + (HzToPixel((DttSP.RXFilterHighCut - DttSP.RXFilterLowCut) / 2) - HzToPixel(0.0f));
+                                        }
+                                        break;
+                                    default:
+                                        {
+                                            vfoA_x = HzToPixel((float)((VFOAFreq - LOSCFreq) * 1e6));
+                                            lowA_x = vfoA_x + (HzToPixel(DttSP.RXFilterLowCut) - HzToPixel(0.0f));
+                                            highA_x = vfoA_x + (HzToPixel(DttSP.RXFilterHighCut) - HzToPixel(0.0f));
+
+                                            if (DttSP.RXFilterLowCut < 0 && DttSP.RXFilterHighCut < 0)
+                                            {
+                                                notch_low = vfoA_x - HzToPixel(notch_low_value) + HzToPixel(0.0f);
+                                                notch_high = vfoA_x - HzToPixel(notch_high_value) + HzToPixel(0.0f);
+                                            }
+                                            else
+                                            {
+                                                notch_low = vfoA_x + HzToPixel(notch_low_value) - HzToPixel(0.0f); ;
+                                                notch_high = vfoA_x + HzToPixel(notch_high_value) - HzToPixel(0.0f);
+                                            }
+                                        }
+                                        break;
+                                }
+                                switch (current_dsp_mode_subRX)
+                                {
+                                    case (DSPMode.CWL):
+                                    case (DSPMode.CWU):
+                                        {
+                                            vfoB_x = HzToPixel((float)((vfoBFreq - loscFreq) * 1e6));
+                                            lowB_x = vfoB_x - (HzToPixel((DttSP.RXFilterHighCutSubRX - DttSP.RXFilterLowCutSubRX) / 2) - HzToPixel(0.0f));
+                                            highB_x = vfoB_x + (HzToPixel((DttSP.RXFilterHighCutSubRX - DttSP.RXFilterLowCutSubRX) / 2) - HzToPixel(0.0f));
+                                        }
+                                        break;
+                                    default:
+                                        {
+                                            vfoB_x = HzToPixel((float)((vfoBFreq - loscFreq) * 1e6));
+                                            lowB_x = vfoB_x + (HzToPixel(DttSP.RXFilterLowCutSubRX) - HzToPixel(0.0f));
+                                            highB_x = vfoB_x + (HzToPixel(DttSP.RXFilterHighCutSubRX) - HzToPixel(0.0f));
+                                        }
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                lowA_x = HzToPixel(DttSP.TXFilterLowCut);
+                                highA_x = HzToPixel(DttSP.TXFilterHighCut);
+                                lowB_x = HzToPixel(DttSP.TXFilterLowCut);
+                                highB_x = HzToPixel(DttSP.TXFilterHighCut);
+                            }
+
+                            int vfob_x = 0;
+                            int vfob_low_x = 0;
+                            int vfob_high_x = 0;
+
+                            if (chkEnableSubRX.Checked && !chkMOX.Checked)
+                            {
+                                switch (current_dsp_mode_subRX)
+                                {
+                                    case (DSPMode.CWL):
+                                    case (DSPMode.CWU):
+                                        {
+                                            vfob_x = HzToPixel((float)((vfoBFreq - loscFreq) * 1e6));
+                                            vfob_low_x = vfob_x - (HzToPixel((DttSP.RXFilterHighCutSubRX - DttSP.RXFilterLowCutSubRX) / 2) - HzToPixel(0.0f));
+                                            vfob_high_x = vfob_x + (HzToPixel((DttSP.RXFilterHighCutSubRX - DttSP.RXFilterLowCutSubRX) / 2) - HzToPixel(0.0f));
+                                        }
+                                        break;
+                                    default:
+                                        {
+                                            vfob_x = HzToPixel((float)((vfoBFreq - loscFreq) * 1e6));
+                                            vfob_low_x = vfob_x + (HzToPixel(DttSP.RXFilterLowCutSubRX) - HzToPixel(0.0f));
+                                            vfob_high_x = vfob_x + (HzToPixel(DttSP.RXFilterHighCutSubRX) - HzToPixel(0.0f));
+                                        }
+                                        break;
+                                }
+                            }
+
+                            if (filter_mode == FilterMode.NOTCH)
+                            {
+                                if (Math.Abs(e.X - lowA_x) < 3 && e.X < highA_x)                  // vfoA low
+                                {
+                                    vfoa_low_filter_drag = true;
+                                    Cursor = Cursors.SizeWE;
+                                }
+                                else if (Math.Abs(e.X - highA_x) < 3)                             // vfoA high
+                                {
+                                    vfoa_high_filter_drag = true;
+                                    Cursor = Cursors.SizeWE;
+                                }
+                                else if ((DttSP.RXFilterHighCut < 0 && DttSP.RXFilterLowCut < 0) &&
+                                    Math.Abs(e.X - notch_low) < 3 && e.X > notch_high)            // notch low for LSB
+                                {
+                                    vfoa_notch_low_drag = true;
+                                    Cursor = Cursors.SizeWE;
+                                }
+                                else if ((Math.Abs(e.X - notch_low) < 3 && e.X < notch_high))     // notch low for USB
+                                {
+                                    vfoa_notch_low_drag = true;
+                                    Cursor = Cursors.SizeWE;
+                                }
+                                else if ((DttSP.RXFilterLowCut < 0 && DttSP.RXFilterHighCut < 0) &&
+                                    (Math.Abs(e.X - notch_high) < 3) || (Math.Abs(e.X - notch_low) < 3))                         // notch high
+                                {
+                                    vfoa_notch_high_drag = true;
+                                    Cursor = Cursors.SizeWE;
+                                }
+                                else if (Math.Abs(e.X - notch_high) < 3)                          // notch high
+                                {
+                                    vfoa_notch_high_drag = true;
+                                    Cursor = Cursors.SizeWE;
+                                }
+                                else if (DttSP.RXFilterLowCut < 0 && DttSP.RXFilterHighCut < 0)   // all notch
+                                {
+                                    vfoa_whole_notch_drag = true;
+                                    vfoa_whole_notch_start_x = e.X;
+                                    Cursor = Cursors.SizeWE;
+                                }
+                                else if ((e.X > notch_low && e.X < notch_high))                   // all notch
+                                {
+                                    vfoa_whole_notch_drag = true;
+                                    vfoa_whole_notch_start_x = e.X;
+                                    Cursor = Cursors.SizeWE;
+                                }
+                                else if (e.X > lowA_x && e.X < highA_x)                            // vfoA
+                                {
+                                    if (!allow_vfo_drag)
+                                    {
+                                        vfoa_whole_filter_drag = true;
+                                        vfoa_whole_filter_start_x = e.X;
+
+                                        if (!chkMOX.Checked)
+                                        {
+                                            vfoa_whole_filter_start_low = (int)udFilterLow.Value;
+                                            vfoa_whole_filter_start_high = (int)udFilterHigh.Value;
+                                        }
+                                        else
+                                        {
+                                            vfoa_whole_filter_start_low = SetupForm.TXFilterLow;
+                                            vfoa_whole_filter_start_high = SetupForm.TXFilterHigh;
+                                        }
+
+
+                                        Cursor = Cursors.NoMoveHoriz;
+                                    }
+                                    else
+                                    {
+                                        vfoA_drag_last_x = e.X;
+                                        vfoA_drag = true;
+                                        vfoA_drag_start_freq = VFOAFreq;
+                                        Cursor = Cursors.SizeWE;
+                                    }
+                                }
+                                else
+                                {
+                                    spectrum_drag_last_x = e.X;
+                                    spectrum_drag = true;
+                                    Cursor = Cursors.Hand;
+                                }
+                            }
+                            else if (chkEnableSubRX.Checked && Math.Abs(e.X - vfob_low_x) < 3 && e.X < vfob_high_x)  // vfoB low
+                            {
+                                vfob_low_filter_drag = true;
+                                Cursor = Cursors.SizeWE;
+                            }
+                            else if (chkEnableSubRX.Checked && Math.Abs(e.X - vfob_high_x) < 3)                // vfoB high
+                            {
+                                vfob_high_filter_drag = true;
+                                Cursor = Cursors.SizeWE;
+                            }
+                            else if (chkEnableSubRX.Checked && e.X > lowB_x && e.X < highB_x)                  // vfoB
+                            {
+                                if (!allow_vfo_drag)
+                                {
+                                    vfob_whole_filter_drag = true;
+                                    vfob_whole_filter_start_x = e.X;
+                                    if (!chkMOX.Checked)
+                                    {
+                                        vfob_whole_filter_start_low = (int)udSubRXFilterLow.Value;
+                                        vfob_whole_filter_start_high = (int)udSubRXFilterHigh.Value;
+                                    }
+                                    else
+                                    {
+                                        if (chkVFOSplit.Checked)
+                                        {
+                                            vfob_whole_filter_start_low = SetupForm.TXFilterLow;
+                                            vfob_whole_filter_start_high = SetupForm.TXFilterHigh;
+                                        }
+                                    }
+
+                                    Cursor = Cursors.NoMoveHoriz;
+                                }
+                                else
+                                {
+                                    vfob_drag_last_x = e.X;
+                                    vfob_drag = true;
+                                    vfob_drag_start_freq = VFOBFreq;
+                                    Cursor = Cursors.SizeWE;
+                                }
+                            }
+                            else if (chkEnableSubRX.Checked && !chkMOX.Checked &&
+                                (e.X > vfob_low_x - 3 && e.X < vfob_high_x + 3))
+                            {
+                                vfob_drag_last_x = e.X;
+                                vfob_drag_start_freq = vfoBFreq;
+                                vfob_drag = true;
+                                Cursor = Cursors.SizeWE;
+                            }
+                            else if (Math.Abs(e.X - lowA_x) < 3 && e.X < highA_x)           // vfoA low
+                            {
+                                vfoa_low_filter_drag = true;
+                                Cursor = Cursors.SizeWE;
+                            }
+                            else if (Math.Abs(e.X - highA_x) < 3)                        // vfoA high
+                            {
+                                vfoa_high_filter_drag = true;
+                                Cursor = Cursors.SizeWE;
+                            }
+                            else if (e.X > lowA_x && e.X < highA_x)                // vfoA
+                            {
+                                if (!allow_vfo_drag)
+                                {
+                                    vfoa_whole_filter_drag = true;
+                                    vfoa_whole_filter_start_x = e.X;
+
+                                    if (!chkMOX.Checked)
+                                    {
+                                        vfoa_whole_filter_start_low = (int)udFilterLow.Value;
+                                        vfoa_whole_filter_start_high = (int)udFilterHigh.Value;
+                                    }
+                                    else
+                                    {
+                                        vfoa_whole_filter_start_low = SetupForm.TXFilterLow;
+                                        vfoa_whole_filter_start_high = SetupForm.TXFilterHigh;
+                                    }
+
+                                    Cursor = Cursors.NoMoveHoriz;
+                                }
+                                else
+                                {
+                                    vfoA_drag_last_x = e.X;
+                                    vfoA_drag = true;
+                                    vfoA_drag_start_freq = VFOAFreq;
+                                    Cursor = Cursors.SizeWE;
+                                }
+                            }
+                            else
+                            {
+                                spectrum_drag_last_x = e.X;
+                                spectrum_drag = true;
+                                Cursor = Cursors.Hand;
+                            }
+                        }
+                        else
+                        {
+                            spectrum_drag_last_x = e.X;
+                            spectrum_drag = true;
+                            Cursor = Cursors.Hand;
+                        }
+                    }
+                }
+                else if (e.Button == MouseButtons.Right && PowerOn)
+                {
+                    switch (current_click_tune_mode)
+                    {
+                        case ClickTuneMode.Off:
+                            CurrentClickTuneMode = ClickTuneMode.VFOA;
+                            if (!minimal_screen)
+                            {
+                                grpMainRXFilter.BringToFront();
+                                grpSubRXFilter.SendToBack();          // visible only MainRX settings
+                                grpMainRXMode.Visible = true;
+                                grpMainRXMode.BringToFront();
+                                grpSubRXMode.Visible = false;
+                                grpDSPMainRX.Visible = true;
+                                grpDSPMainRX.BringToFront();
+                                grpDSPSubRX.Visible = false;
+
+                                switch (current_dsp_mode)
+                                {
+                                    case DSPMode.AM:
+                                    case DSPMode.DSB:
+                                    case DSPMode.LSB:
+                                    case DSPMode.SAM:
+                                    case DSPMode.SPEC:
+                                    case DSPMode.USB:
+                                        grpModeSpecificDigital.SendToBack();
+                                        grpModeSpecificCW.SendToBack();
+                                        grpModeSpecificPhone.BringToFront();
+                                        grpModeSpecificFM.SendToBack();
+                                        break;
+                                    case DSPMode.CWL:
+                                    case DSPMode.CWU:
+                                        grpModeSpecificCW.BringToFront();
+                                        grpModeSpecificDigital.SendToBack();
+                                        grpModeSpecificPhone.SendToBack();
+                                        grpModeSpecificFM.SendToBack();
+                                        break;
+                                    case DSPMode.DIGL:
+                                    case DSPMode.DIGU:
+                                    case DSPMode.DRM:
+                                        grpModeSpecificDigital.BringToFront();
+                                        grpModeSpecificCW.SendToBack();
+                                        grpModeSpecificPhone.SendToBack();
+                                        grpModeSpecificFM.SendToBack();
+                                        break;
+                                    case DSPMode.FMN:
+                                    case DSPMode.WFM:
+                                        grpModeSpecificDigital.SendToBack();
+                                        grpModeSpecificCW.SendToBack();
+                                        grpModeSpecificFM.BringToFront();
+                                        grpModeSpecificPhone.SendToBack();
+                                        break;
+                                    default:
+                                        grpModeSpecificDigital.SendToBack();
+                                        grpModeSpecificCW.SendToBack();
+                                        grpModeSpecificPhone.BringToFront();
+                                        grpModeSpecificFM.SendToBack();
+                                        break;
+                                }
+                            }
+                            break;
+                        case ClickTuneMode.VFOA:
+                            if (chkVFOSplit.Checked || chkEnableSubRX.Checked)
+                            {
+                                CurrentClickTuneMode = ClickTuneMode.VFOB;
+                                if (!minimal_screen)
+                                {
+                                    grpMainRXMode.Visible = false;
+                                    grpSubRXFilter.BringToFront();
+                                    grpMainRXFilter.SendToBack();
+                                    grpSubRXMode.Visible = true;
+                                    grpSubRXMode.BringToFront();
+                                    grpDSPMainRX.Visible = false;
+                                    grpDSPSubRX.Visible = true;
+
+                                    switch (current_dsp_mode_subRX)
+                                    {
+                                        case DSPMode.AM:
+                                        case DSPMode.DRM:
+                                        case DSPMode.DSB:
+                                        case DSPMode.LSB:
+                                        case DSPMode.SAM:
+                                        case DSPMode.SPEC:
+                                        case DSPMode.USB:
+                                            grpModeSpecificDigital.SendToBack();
+                                            grpModeSpecificCW.SendToBack();
+                                            grpModeSpecificPhone.BringToFront();
+                                            grpModeSpecificFM.SendToBack();
+                                            break;
+                                        case DSPMode.CWL:
+                                        case DSPMode.CWU:
+                                            grpModeSpecificCW.BringToFront();
+                                            grpModeSpecificDigital.SendToBack();
+                                            grpModeSpecificPhone.SendToBack();
+                                            grpModeSpecificFM.SendToBack();
+                                            break;
+                                        case DSPMode.DIGL:
+                                        case DSPMode.DIGU:
+                                            grpModeSpecificCW.SendToBack();
+                                            grpModeSpecificPhone.SendToBack();
+                                            grpModeSpecificDigital.BringToFront();
+                                            grpModeSpecificFM.SendToBack();
+                                            break;
+                                        case DSPMode.FMN:
+                                        case DSPMode.WFM:
+                                            grpModeSpecificDigital.SendToBack();
+                                            grpModeSpecificCW.SendToBack();
+                                            grpModeSpecificFM.BringToFront();
+                                            grpModeSpecificPhone.SendToBack();
+                                            break;
+                                        default:
+                                            grpModeSpecificDigital.SendToBack();
+                                            grpModeSpecificCW.SendToBack();
+                                            grpModeSpecificPhone.BringToFront();
+                                            grpModeSpecificFM.SendToBack();
+                                            break;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                CurrentClickTuneMode = ClickTuneMode.Off;
+                                if (!minimal_screen)
+                                {
+                                    grpMainRXFilter.BringToFront();
+                                    grpSubRXFilter.SendToBack();          // visible only MainRX settings
+                                    grpMainRXMode.Visible = true;
+                                    grpMainRXMode.BringToFront();
+                                    grpSubRXMode.Visible = false;
+                                    grpDSPMainRX.Visible = true;
+                                    grpDSPMainRX.BringToFront();
+                                    grpDSPSubRX.Visible = false;
+
+                                    switch (current_dsp_mode)
+                                    {
+                                        case DSPMode.AM:
+                                        case DSPMode.DRM:
+                                        case DSPMode.DSB:
+                                        case DSPMode.LSB:
+                                        case DSPMode.SAM:
+                                        case DSPMode.SPEC:
+                                        case DSPMode.USB:
+                                            grpModeSpecificDigital.SendToBack();
+                                            grpModeSpecificCW.SendToBack();
+                                            grpModeSpecificPhone.BringToFront();
+                                            grpModeSpecificFM.SendToBack();
+                                            break;
+                                        case DSPMode.CWL:
+                                        case DSPMode.CWU:
+                                            grpModeSpecificCW.BringToFront();
+                                            grpModeSpecificDigital.SendToBack();
+                                            grpModeSpecificPhone.SendToBack();
+                                            grpModeSpecificFM.SendToBack();
+                                            break;
+                                        case DSPMode.DIGL:
+                                        case DSPMode.DIGU:
+                                            grpModeSpecificCW.SendToBack();
+                                            grpModeSpecificPhone.SendToBack();
+                                            grpModeSpecificDigital.BringToFront();
+                                            grpModeSpecificFM.SendToBack();
+                                            break;
+                                        case DSPMode.FMN:
+                                        case DSPMode.WFM:
+                                            grpModeSpecificDigital.SendToBack();
+                                            grpModeSpecificCW.SendToBack();
+                                            grpModeSpecificFM.BringToFront();
+                                            grpModeSpecificPhone.SendToBack();
+                                            break;
+                                        default:
+                                            grpModeSpecificDigital.SendToBack();
+                                            grpModeSpecificCW.SendToBack();
+                                            grpModeSpecificPhone.BringToFront();
+                                            grpModeSpecificFM.SendToBack();
+                                            break;
+                                    }
+                                }
+                            }
+                            break;
+                        case ClickTuneMode.VFOB:
+                            {
+                                CurrentClickTuneMode = ClickTuneMode.Off;
+                                if (!minimal_screen)
+                                {
+                                    grpMainRXFilter.BringToFront();
+                                    grpSubRXFilter.SendToBack();          // visible only MainRX settings
+                                    grpMainRXMode.Visible = true;
+                                    grpMainRXMode.BringToFront();
+                                    grpSubRXMode.Visible = false;
+                                    grpDSPMainRX.Visible = true;
+                                    grpDSPMainRX.BringToFront();
+                                    grpDSPSubRX.Visible = false;
+
+                                    switch (current_dsp_mode)
+                                    {
+                                        case DSPMode.AM:
+                                        case DSPMode.DRM:
+                                        case DSPMode.DSB:
+                                        case DSPMode.LSB:
+                                        case DSPMode.SAM:
+                                        case DSPMode.SPEC:
+                                        case DSPMode.USB:
+                                            grpModeSpecificDigital.SendToBack();
+                                            grpModeSpecificCW.SendToBack();
+                                            grpModeSpecificPhone.BringToFront();
+                                            grpModeSpecificFM.SendToBack();
+                                            break;
+                                        case DSPMode.CWL:
+                                        case DSPMode.CWU:
+                                            grpModeSpecificCW.BringToFront();
+                                            grpModeSpecificDigital.SendToBack();
+                                            grpModeSpecificPhone.SendToBack();
+                                            grpModeSpecificFM.SendToBack();
+                                            break;
+                                        case DSPMode.DIGL:
+                                        case DSPMode.DIGU:
+                                            grpModeSpecificCW.SendToBack();
+                                            grpModeSpecificPhone.SendToBack();
+                                            grpModeSpecificDigital.BringToFront();
+                                            grpModeSpecificFM.SendToBack();
+                                            break;
+                                        case DSPMode.FMN:
+                                        case DSPMode.WFM:
+                                            grpModeSpecificDigital.SendToBack();
+                                            grpModeSpecificCW.SendToBack();
+                                            grpModeSpecificFM.BringToFront();
+                                            grpModeSpecificPhone.SendToBack();
+                                            break;
+                                        default:
+                                            grpModeSpecificDigital.SendToBack();
+                                            grpModeSpecificCW.SendToBack();
+                                            grpModeSpecificFM.SendToBack();
+                                            grpModeSpecificPhone.BringToFront();
+                                            break;
+                                    }
+                                }
+                            }
+                            break;
+                    }
+                }
+                else if (e.Button == MouseButtons.Middle)
+                {
+                    if (current_click_tune_mode == ClickTuneMode.Off ||
+                        current_click_tune_mode == ClickTuneMode.VFOA)
+                        ChangeWheelTuneLeft();
+                    else if (current_click_tune_mode == ClickTuneMode.VFOB)
+                        ChangeWheelTuneLeftSubRX();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void picDisplay_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                if (current_click_tune_mode == ClickTuneMode.Off &&
+                    !(vfoA_drag ||
+                    vfoa_low_filter_drag == true ||
+                    vfoa_high_filter_drag == true ||
+                    vfoa_whole_filter_drag == true ||
+                    vfob_low_filter_drag == true ||
+                    vfob_high_filter_drag == true ||
+                    vfob_whole_filter_drag == true ||
+                    vfob_drag == true ||
+                    vfoa_whole_notch_drag == true ||
+                    vfoa_notch_high_drag == true ||
+                    vfoa_notch_low_drag == true ||
+                    spectrum_drag_start == true))
                 {
                     switch (Display_GDI.CurrentDisplayMode)
                     {
@@ -30633,565 +31515,23 @@ namespace PowerSDR
                             if (freq < MinFreq)
                                 freq = MinFreq;
 
-                            if (current_click_tune_mode == ClickTuneMode.VFOA)
-                            {
-                                memory = false;
-                                vfoa_lock = true;
-                                VFOAFreq = Math.Round(freq, 6);
-                                vfoa_lock = false;
-                            }
-                            else
-                            {
-                                vfob_lock = true;
-                                VFOBFreq = Math.Round(freq, 6);
-                                vfob_lock = false;
-                            }
+                            memory = false;
+                            vfoa_lock = true;
+                            VFOAFreq = Math.Round(freq, 6);
+                            vfoa_lock = false;
                             break;
                         default:
                             break;
                     }
                 }
-                else
-                {
-                    if (Display_GDI.CurrentDisplayMode == DisplayMode.PANADAPTER ||
-                        Display_GDI.CurrentDisplayMode == DisplayMode.PANAFALL ||
-                        Display_GDI.CurrentDisplayMode == DisplayMode.PANAFALL_INV ||
-                        Display_GDI.CurrentDisplayMode == DisplayMode.HISTOGRAM ||
-                        Display_GDI.CurrentDisplayMode == DisplayMode.PANASCOPE
-                        && current_dsp_mode != DSPMode.DRM)
-                    {
-                        int vfoA_x = 0;
-                        int lowA_x = 0;
-                        int highA_x = 0;
-                        int vfoB_x = 0;
-                        int lowB_x = 0;
-                        int highB_x = 0;
-                        if (!chkMOX.Checked)
-                        {
-                            switch (current_dsp_mode)
-                            {
-                                case (DSPMode.CWL):
-                                case (DSPMode.CWU):
-                                    {
-                                        vfoA_x = HzToPixel((float)((vfoAFreq - loscFreq) * 1e6));
-                                        lowA_x = vfoA_x - (HzToPixel((DttSP.RXFilterHighCut - DttSP.RXFilterLowCut) / 2) - HzToPixel(0.0f));
-                                        highA_x = vfoA_x + (HzToPixel((DttSP.RXFilterHighCut - DttSP.RXFilterLowCut) / 2) - HzToPixel(0.0f));
-                                    }
-                                    break;
-                                default:
-                                    {
-                                        vfoA_x = HzToPixel((float)((VFOAFreq - LOSCFreq) * 1e6));
-                                        lowA_x = vfoA_x + (HzToPixel(DttSP.RXFilterLowCut) - HzToPixel(0.0f));
-                                        highA_x = vfoA_x + (HzToPixel(DttSP.RXFilterHighCut) - HzToPixel(0.0f));
 
-                                        if (DttSP.RXFilterLowCut < 0 && DttSP.RXFilterHighCut < 0)
-                                        {
-                                            notch_low = vfoA_x - HzToPixel(notch_low_value) + HzToPixel(0.0f);
-                                            notch_high = vfoA_x - HzToPixel(notch_high_value) + HzToPixel(0.0f);
-                                        }
-                                        else
-                                        {
-                                            notch_low = vfoA_x + HzToPixel(notch_low_value) - HzToPixel(0.0f); ;
-                                            notch_high = vfoA_x + HzToPixel(notch_high_value) - HzToPixel(0.0f);
-                                        }
-                                    }
-                                    break;
-                            }
-                            switch (current_dsp_mode_subRX)
-                            {
-                                case (DSPMode.CWL):
-                                case (DSPMode.CWU):
-                                    {
-                                        vfoB_x = HzToPixel((float)((vfoBFreq - loscFreq) * 1e6));
-                                        lowB_x = vfoB_x - (HzToPixel((DttSP.RXFilterHighCutSubRX - DttSP.RXFilterLowCutSubRX) / 2) - HzToPixel(0.0f));
-                                        highB_x = vfoB_x + (HzToPixel((DttSP.RXFilterHighCutSubRX - DttSP.RXFilterLowCutSubRX) / 2) - HzToPixel(0.0f));
-                                    }
-                                    break;
-                                default:
-                                    {
-                                        vfoB_x = HzToPixel((float)((vfoBFreq - loscFreq) * 1e6));
-                                        lowB_x = vfoB_x + (HzToPixel(DttSP.RXFilterLowCutSubRX) - HzToPixel(0.0f));
-                                        highB_x = vfoB_x + (HzToPixel(DttSP.RXFilterHighCutSubRX) - HzToPixel(0.0f));
-                                    }
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            lowA_x = HzToPixel(DttSP.TXFilterLowCut);
-                            highA_x = HzToPixel(DttSP.TXFilterHighCut);
-                            lowB_x = HzToPixel(DttSP.TXFilterLowCut);
-                            highB_x = HzToPixel(DttSP.TXFilterHighCut);
-                        }
-
-                        int vfob_x = 0;
-                        int vfob_low_x = 0;
-                        int vfob_high_x = 0;
-                        if (chkEnableSubRX.Checked && !chkMOX.Checked)
-                        {
-                            switch (current_dsp_mode_subRX)
-                            {
-                                case (DSPMode.CWL):
-                                case (DSPMode.CWU):
-                                    {
-                                        vfob_x = HzToPixel((float)((vfoBFreq - loscFreq) * 1e6));
-                                        vfob_low_x = vfob_x - (HzToPixel((DttSP.RXFilterHighCutSubRX - DttSP.RXFilterLowCutSubRX) / 2) - HzToPixel(0.0f));
-                                        vfob_high_x = vfob_x + (HzToPixel((DttSP.RXFilterHighCutSubRX - DttSP.RXFilterLowCutSubRX) / 2) - HzToPixel(0.0f));
-                                    }
-                                    break;
-                                default:
-                                    {
-                                        vfob_x = HzToPixel((float)((vfoBFreq - loscFreq) * 1e6));
-                                        vfob_low_x = vfob_x + (HzToPixel(DttSP.RXFilterLowCutSubRX) - HzToPixel(0.0f));
-                                        vfob_high_x = vfob_x + (HzToPixel(DttSP.RXFilterHighCutSubRX) - HzToPixel(0.0f));
-                                    }
-                                    break;
-                            }
-                        }
-
-                        if (filter_mode == FilterMode.NOTCH)
-                        {
-                            if (Math.Abs(e.X - lowA_x) < 3 && e.X < highA_x)                  // vfoA low
-                            {
-                                vfoa_low_filter_drag = true;
-                                Cursor = Cursors.SizeWE;
-                            }
-                            else if (Math.Abs(e.X - highA_x) < 3)                             // vfoA high
-                            {
-                                vfoa_high_filter_drag = true;
-                                Cursor = Cursors.SizeWE;
-                            }
-                            else if ((DttSP.RXFilterHighCut < 0 && DttSP.RXFilterLowCut < 0) &&
-                                Math.Abs(e.X - notch_low) < 3 && e.X > notch_high)            // notch low for LSB
-                            {
-                                vfoa_notch_low_drag = true;
-                                Cursor = Cursors.SizeWE;
-                            }
-                            else if ((Math.Abs(e.X - notch_low) < 3 && e.X < notch_high))     // notch low for USB
-                            {
-                                vfoa_notch_low_drag = true;
-                                Cursor = Cursors.SizeWE;
-                            }
-                            else if ((DttSP.RXFilterLowCut < 0 && DttSP.RXFilterHighCut < 0) &&
-                                (Math.Abs(e.X - notch_high) < 3) || (Math.Abs(e.X - notch_low) < 3))                         // notch high
-                            {
-                                vfoa_notch_high_drag = true;
-                                Cursor = Cursors.SizeWE;
-                            }
-                            else if (Math.Abs(e.X - notch_high) < 3)                          // notch high
-                            {
-                                vfoa_notch_high_drag = true;
-                                Cursor = Cursors.SizeWE;
-                            }
-                            else if (DttSP.RXFilterLowCut < 0 && DttSP.RXFilterHighCut < 0)   // all notch
-                            {
-                                vfoa_whole_notch_drag = true;
-                                vfoa_whole_notch_start_x = e.X;
-                                Cursor = Cursors.SizeWE;
-                            }
-                            else if ((e.X > notch_low && e.X < notch_high))                   // all notch
-                            {
-                                vfoa_whole_notch_drag = true;
-                                vfoa_whole_notch_start_x = e.X;
-                                Cursor = Cursors.SizeWE;
-                            }
-                            else if (e.X > lowA_x && e.X < highA_x)                            // vfoA
-                            {
-                                if (!allow_vfo_drag)
-                                {
-                                    vfoa_whole_filter_drag = true;
-                                    vfoa_whole_filter_start_x = e.X;
-
-                                    if (!chkMOX.Checked)
-                                    {
-                                        vfoa_whole_filter_start_low = (int)udFilterLow.Value;
-                                        vfoa_whole_filter_start_high = (int)udFilterHigh.Value;
-                                    }
-                                    else
-                                    {
-                                        vfoa_whole_filter_start_low = SetupForm.TXFilterLow;
-                                        vfoa_whole_filter_start_high = SetupForm.TXFilterHigh;
-                                    }
-
-
-                                    Cursor = Cursors.NoMoveHoriz;
-                                }
-                                else
-                                {
-                                    vfoA_drag_last_x = e.X;
-                                    vfoA_drag = true;
-                                    vfoA_drag_start_freq = VFOAFreq;
-                                    Cursor = Cursors.SizeWE;
-                                }
-                            }
-                            else
-                            {
-                                spectrum_drag_last_x = e.X;
-                                spectrum_drag = true;
-                                Cursor = Cursors.Hand;
-                            }
-                        }
-                        else if (chkEnableSubRX.Checked && Math.Abs(e.X - vfob_low_x) < 3 && e.X < vfob_high_x)  // vfoB low
-                        {
-                            vfob_low_filter_drag = true;
-                            Cursor = Cursors.SizeWE;
-                        }
-                        else if (chkEnableSubRX.Checked && Math.Abs(e.X - vfob_high_x) < 3)                // vfoB high
-                        {
-                            vfob_high_filter_drag = true;
-                            Cursor = Cursors.SizeWE;
-                        }
-                        else if (chkEnableSubRX.Checked && e.X > lowB_x && e.X < highB_x)                  // vfoB
-                        {
-                            if (!allow_vfo_drag)
-                            {
-                                vfob_whole_filter_drag = true;
-                                vfob_whole_filter_start_x = e.X;
-                                if (!chkMOX.Checked)
-                                {
-                                    vfob_whole_filter_start_low = (int)udSubRXFilterLow.Value;
-                                    vfob_whole_filter_start_high = (int)udSubRXFilterHigh.Value;
-                                }
-                                else
-                                {
-                                    if (chkVFOSplit.Checked)
-                                    {
-                                        vfob_whole_filter_start_low = SetupForm.TXFilterLow;
-                                        vfob_whole_filter_start_high = SetupForm.TXFilterHigh;
-                                    }
-                                }
-
-                                Cursor = Cursors.NoMoveHoriz;
-                            }
-                            else
-                            {
-                                vfob_drag_last_x = e.X;
-                                vfob_drag = true;
-                                vfob_drag_start_freq = VFOBFreq;
-                                Cursor = Cursors.SizeWE;
-                            }
-                        }
-                        else if (chkEnableSubRX.Checked && !chkMOX.Checked &&
-                            (e.X > vfob_low_x - 3 && e.X < vfob_high_x + 3))
-                        {
-                            vfob_drag_last_x = e.X;
-                            vfob_drag_start_freq = vfoBFreq;
-                            vfob_drag = true;
-                            Cursor = Cursors.SizeWE;
-                        }
-                        else if (Math.Abs(e.X - lowA_x) < 3 && e.X < highA_x)           // vfoA low
-                        {
-                            vfoa_low_filter_drag = true;
-                            Cursor = Cursors.SizeWE;
-                        }
-                        else if (Math.Abs(e.X - highA_x) < 3)                        // vfoA high
-                        {
-                            vfoa_high_filter_drag = true;
-                            Cursor = Cursors.SizeWE;
-                        }
-                        else if (e.X > lowA_x && e.X < highA_x)                // vfoA
-                        {
-                            if (!allow_vfo_drag)
-                            {
-                                vfoa_whole_filter_drag = true;
-                                vfoa_whole_filter_start_x = e.X;
-
-                                if (!chkMOX.Checked)
-                                {
-                                    vfoa_whole_filter_start_low = (int)udFilterLow.Value;
-                                    vfoa_whole_filter_start_high = (int)udFilterHigh.Value;
-                                }
-                                else
-                                {
-                                    vfoa_whole_filter_start_low = SetupForm.TXFilterLow;
-                                    vfoa_whole_filter_start_high = SetupForm.TXFilterHigh;
-                                }
-
-                                Cursor = Cursors.NoMoveHoriz;
-                            }
-                            else
-                            {
-                                vfoA_drag_last_x = e.X;
-                                vfoA_drag = true;
-                                vfoA_drag_start_freq = VFOAFreq;
-                                Cursor = Cursors.SizeWE;
-                            }
-                        }
-                        else
-                        {
-                            spectrum_drag_last_x = e.X;
-                            spectrum_drag = true;
-                            Cursor = Cursors.Hand;
-                        }
-                    }
-                    else
-                    {
-                        spectrum_drag_last_x = e.X;
-                        spectrum_drag = true;
-                        Cursor = Cursors.Hand;
-                    }
-                }
-            }
-            else if (e.Button == MouseButtons.Right && PowerOn)
-            {
-                switch (current_click_tune_mode)
-                {
-                    case ClickTuneMode.Off:
-                        CurrentClickTuneMode = ClickTuneMode.VFOA;
-                        if (!minimal_screen)
-                        {
-                            grpMainRXFilter.BringToFront();
-                            grpSubRXFilter.SendToBack();          // visible only MainRX settings
-                            grpMainRXMode.Visible = true;
-                            grpMainRXMode.BringToFront();
-                            grpSubRXMode.Visible = false;
-                            grpDSPMainRX.Visible = true;
-                            grpDSPMainRX.BringToFront();
-                            grpDSPSubRX.Visible = false;
-
-                            switch (current_dsp_mode)
-                            {
-                                case DSPMode.AM:
-                                case DSPMode.DSB:
-                                case DSPMode.LSB:
-                                case DSPMode.SAM:
-                                case DSPMode.SPEC:
-                                case DSPMode.USB:
-                                    grpModeSpecificDigital.SendToBack();
-                                    grpModeSpecificCW.SendToBack();
-                                    grpModeSpecificPhone.BringToFront();
-                                    grpModeSpecificFM.SendToBack();
-                                    break;
-                                case DSPMode.CWL:
-                                case DSPMode.CWU:
-                                    grpModeSpecificCW.BringToFront();
-                                    grpModeSpecificDigital.SendToBack();
-                                    grpModeSpecificPhone.SendToBack();
-                                    grpModeSpecificFM.SendToBack();
-                                    break;
-                                case DSPMode.DIGL:
-                                case DSPMode.DIGU:
-                                case DSPMode.DRM:
-                                    grpModeSpecificDigital.BringToFront();
-                                    grpModeSpecificCW.SendToBack();
-                                    grpModeSpecificPhone.SendToBack();
-                                    grpModeSpecificFM.SendToBack();
-                                    break;
-                                case DSPMode.FMN:
-                                case DSPMode.WFM:
-                                    grpModeSpecificDigital.SendToBack();
-                                    grpModeSpecificCW.SendToBack();
-                                    grpModeSpecificFM.BringToFront();
-                                    grpModeSpecificPhone.SendToBack();
-                                    break;
-                                default:
-                                    grpModeSpecificDigital.SendToBack();
-                                    grpModeSpecificCW.SendToBack();
-                                    grpModeSpecificPhone.BringToFront();
-                                    grpModeSpecificFM.SendToBack();
-                                    break;
-                            }
-                        }
-                        break;
-                    case ClickTuneMode.VFOA:
-                        if (chkVFOSplit.Checked || chkEnableSubRX.Checked)
-                        {
-                            CurrentClickTuneMode = ClickTuneMode.VFOB;
-                            if (!minimal_screen)
-                            {
-                                grpMainRXMode.Visible = false;
-                                grpSubRXFilter.BringToFront();
-                                grpMainRXFilter.SendToBack();
-                                grpSubRXMode.Visible = true;
-                                grpSubRXMode.BringToFront();
-                                grpDSPMainRX.Visible = false;
-                                grpDSPSubRX.Visible = true;
-
-                                switch (current_dsp_mode_subRX)
-                                {
-                                    case DSPMode.AM:
-                                    case DSPMode.DRM:
-                                    case DSPMode.DSB:
-                                    case DSPMode.LSB:
-                                    case DSPMode.SAM:
-                                    case DSPMode.SPEC:
-                                    case DSPMode.USB:
-                                        grpModeSpecificDigital.SendToBack();
-                                        grpModeSpecificCW.SendToBack();
-                                        grpModeSpecificPhone.BringToFront();
-                                        grpModeSpecificFM.SendToBack();
-                                        break;
-                                    case DSPMode.CWL:
-                                    case DSPMode.CWU:
-                                        grpModeSpecificCW.BringToFront();
-                                        grpModeSpecificDigital.SendToBack();
-                                        grpModeSpecificPhone.SendToBack();
-                                        grpModeSpecificFM.SendToBack();
-                                        break;
-                                    case DSPMode.DIGL:
-                                    case DSPMode.DIGU:
-                                        grpModeSpecificCW.SendToBack();
-                                        grpModeSpecificPhone.SendToBack();
-                                        grpModeSpecificDigital.BringToFront();
-                                        grpModeSpecificFM.SendToBack();
-                                        break;
-                                    case DSPMode.FMN:
-                                    case DSPMode.WFM:
-                                        grpModeSpecificDigital.SendToBack();
-                                        grpModeSpecificCW.SendToBack();
-                                        grpModeSpecificFM.BringToFront();
-                                        grpModeSpecificPhone.SendToBack();
-                                        break;
-                                    default:
-                                        grpModeSpecificDigital.SendToBack();
-                                        grpModeSpecificCW.SendToBack();
-                                        grpModeSpecificPhone.BringToFront();
-                                        grpModeSpecificFM.SendToBack();
-                                        break;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            CurrentClickTuneMode = ClickTuneMode.Off;
-                            if (!minimal_screen)
-                            {
-                                grpMainRXFilter.BringToFront();
-                                grpSubRXFilter.SendToBack();          // visible only MainRX settings
-                                grpMainRXMode.Visible = true;
-                                grpMainRXMode.BringToFront();
-                                grpSubRXMode.Visible = false;
-                                grpDSPMainRX.Visible = true;
-                                grpDSPMainRX.BringToFront();
-                                grpDSPSubRX.Visible = false;
-
-                                switch (current_dsp_mode)
-                                {
-                                    case DSPMode.AM:
-                                    case DSPMode.DRM:
-                                    case DSPMode.DSB:
-                                    case DSPMode.LSB:
-                                    case DSPMode.SAM:
-                                    case DSPMode.SPEC:
-                                    case DSPMode.USB:
-                                        grpModeSpecificDigital.SendToBack();
-                                        grpModeSpecificCW.SendToBack();
-                                        grpModeSpecificPhone.BringToFront();
-                                        grpModeSpecificFM.SendToBack();
-                                        break;
-                                    case DSPMode.CWL:
-                                    case DSPMode.CWU:
-                                        grpModeSpecificCW.BringToFront();
-                                        grpModeSpecificDigital.SendToBack();
-                                        grpModeSpecificPhone.SendToBack();
-                                        grpModeSpecificFM.SendToBack();
-                                        break;
-                                    case DSPMode.DIGL:
-                                    case DSPMode.DIGU:
-                                        grpModeSpecificCW.SendToBack();
-                                        grpModeSpecificPhone.SendToBack();
-                                        grpModeSpecificDigital.BringToFront();
-                                        grpModeSpecificFM.SendToBack();
-                                        break;
-                                    case DSPMode.FMN:
-                                    case DSPMode.WFM:
-                                        grpModeSpecificDigital.SendToBack();
-                                        grpModeSpecificCW.SendToBack();
-                                        grpModeSpecificFM.BringToFront();
-                                        grpModeSpecificPhone.SendToBack();
-                                        break;
-                                    default:
-                                        grpModeSpecificDigital.SendToBack();
-                                        grpModeSpecificCW.SendToBack();
-                                        grpModeSpecificPhone.BringToFront();
-                                        grpModeSpecificFM.SendToBack();
-                                        break;
-                                }
-                            }
-                        }
-                        break;
-                    case ClickTuneMode.VFOB:
-                        {
-                            CurrentClickTuneMode = ClickTuneMode.Off;
-                            if (!minimal_screen)
-                            {
-                                grpMainRXFilter.BringToFront();
-                                grpSubRXFilter.SendToBack();          // visible only MainRX settings
-                                grpMainRXMode.Visible = true;
-                                grpMainRXMode.BringToFront();
-                                grpSubRXMode.Visible = false;
-                                grpDSPMainRX.Visible = true;
-                                grpDSPMainRX.BringToFront();
-                                grpDSPSubRX.Visible = false;
-
-                                switch (current_dsp_mode)
-                                {
-                                    case DSPMode.AM:
-                                    case DSPMode.DRM:
-                                    case DSPMode.DSB:
-                                    case DSPMode.LSB:
-                                    case DSPMode.SAM:
-                                    case DSPMode.SPEC:
-                                    case DSPMode.USB:
-                                        grpModeSpecificDigital.SendToBack();
-                                        grpModeSpecificCW.SendToBack();
-                                        grpModeSpecificPhone.BringToFront();
-                                        grpModeSpecificFM.SendToBack();
-                                        break;
-                                    case DSPMode.CWL:
-                                    case DSPMode.CWU:
-                                        grpModeSpecificCW.BringToFront();
-                                        grpModeSpecificDigital.SendToBack();
-                                        grpModeSpecificPhone.SendToBack();
-                                        grpModeSpecificFM.SendToBack();
-                                        break;
-                                    case DSPMode.DIGL:
-                                    case DSPMode.DIGU:
-                                        grpModeSpecificCW.SendToBack();
-                                        grpModeSpecificPhone.SendToBack();
-                                        grpModeSpecificDigital.BringToFront();
-                                        grpModeSpecificFM.SendToBack();
-                                        break;
-                                    case DSPMode.FMN:
-                                    case DSPMode.WFM:
-                                        grpModeSpecificDigital.SendToBack();
-                                        grpModeSpecificCW.SendToBack();
-                                        grpModeSpecificFM.BringToFront();
-                                        grpModeSpecificPhone.SendToBack();
-                                        break;
-                                    default:
-                                        grpModeSpecificDigital.SendToBack();
-                                        grpModeSpecificCW.SendToBack();
-                                        grpModeSpecificFM.SendToBack();
-                                        grpModeSpecificPhone.BringToFront();
-                                        break;
-                                }
-                            }
-                        }
-                        break;
-                }
-            }
-            else if (e.Button == MouseButtons.Middle)
-            {
-                if (current_click_tune_mode == ClickTuneMode.Off ||
-                    current_click_tune_mode == ClickTuneMode.VFOA)
-                    ChangeWheelTuneLeft();
-                else if (current_click_tune_mode == ClickTuneMode.VFOB)
-                    ChangeWheelTuneLeftSubRX();
-            }
-
-        }
-
-        private void picDisplay_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left)
-            {
                 if (Display_GDI.CurrentDisplayMode == DisplayMode.PANADAPTER
                     || Display_GDI.CurrentDisplayMode == DisplayMode.PANAFALL ||
                     Display_GDI.CurrentDisplayMode == DisplayMode.PANAFALL_INV ||
                     Display_GDI.CurrentDisplayMode == DisplayMode.HISTOGRAM ||
                     Display_GDI.CurrentDisplayMode == DisplayMode.PANASCOPE)
                 {
+                    vfoA_drag = false;
                     vfoa_low_filter_drag = false;
                     vfoa_high_filter_drag = false;
                     vfoa_whole_filter_drag = false;
@@ -31275,6 +31615,7 @@ namespace PowerSDR
 
                 if (spectrum_drag)
                 {
+                    spectrum_drag_start = false;
                     spectrum_drag = false;
                     VFOAFreq = vfoAFreq;
                     VFOBFreq = vfoBFreq;
@@ -34011,9 +34352,6 @@ namespace PowerSDR
         #endregion
 
         #region VFO Button Events
-        // ======================================================
-        // VFO Button Events
-        // ======================================================
 
         // Added 6/20/05 BT for CAT commands
         public void CATVFOSwap(string pChangec)
@@ -34024,13 +34362,25 @@ namespace PowerSDR
                 switch (c)
                 {
                     case "0":
-                        btnVFOAtoB_Click(btnVFOAtoB, EventArgs.Empty);
+                        btnVFOAtoB_Click(btnVFOAtoB, EventArgs.Empty);  // VFOA->VFOB
                         break;
                     case "1":
-                        btnVFOBtoA_Click(btnVFOBtoA, EventArgs.Empty);
+                        btnVFOBtoA_Click(btnVFOBtoA, EventArgs.Empty);  // VFOB->VFOA
                         break;
                     case "2":
-                        btnVFOSwap_Click(btnVFOSwap, EventArgs.Empty);
+                        btnVFOSwap_Click(btnVFOSwap, EventArgs.Empty);  // VFOA<->VFOB
+                        break;
+                    case "3":
+                        VFOBFreq = VFOAFreq;                            // VFOB == VFOA
+                        break;
+                    case "4":
+                        VFOAFreq = VFOBFreq;                            // VFOA == VFOB
+                        break;
+                    case "5":
+                        VFOAFreq = LOSCFreq;                            // VFOA == LOSC
+                        break;
+                    case "6":
+                        VFOBFreq = LOSCFreq;                            // VFOB == LOSC
                         break;
                 }
             }
@@ -34594,7 +34944,11 @@ namespace PowerSDR
                 CWXForm = new CWX(this);
                 CWXForm.StartPosition = FormStartPosition.Manual;
                 CWXForm.RestoreSettings();
+
+                Win32.SetWindowPos(CWXForm.Handle.ToInt32(),
+                    -1, this.Left, this.Top, CWXForm.Width, CWXForm.Height, 0);
             }
+
             btnCWX1.Checked = false;
             btnCWX2.Checked = false;
             btnCWX3.Checked = false;
@@ -35740,7 +36094,7 @@ namespace PowerSDR
             AboutForm.Show();
             AboutForm.Focus();
             Win32.SetWindowPos(AboutForm.Handle.ToInt32(),
-                -1, AboutForm.Left, AboutForm.Top, AboutForm.Width, AboutForm.Height, 0);
+                -1, this.Left, this.Top, AboutForm.Width, AboutForm.Height, 0);
         }
         #endregion
 
@@ -35832,10 +36186,13 @@ namespace PowerSDR
                 if (EthCATIsActive)
                     CAT_client_socket.ClientServerSync("ZZGA;");                    // sync with server
 
-                if (vfo_new_look)
-                    txtLOSCnew_LostFocus(null, null);
-                else
-                    txtLOSCFreq_LostFocus(null, null);                              // force WBIR reinit!
+                if (!MOX)
+                {
+                    if (vfo_new_look)
+                        txtLOSCnew_LostFocus(null, null);
+                    else
+                        txtLOSCFreq_LostFocus(null, null);                              // force WBIR reinit!
+                }
             }
         }
 
@@ -35861,10 +36218,13 @@ namespace PowerSDR
                 if (EthCATIsActive)
                     CAT_client_socket.ClientServerSync("ZZGR;");                // sync with server
 
-                if (vfo_new_look)
-                    txtLOSCnew_LostFocus(null, null);
-                else
-                    txtLOSCFreq_LostFocus(null, null);                          // force WBIR reinit!
+                if (!MOX)
+                {
+                    if (vfo_new_look)
+                        txtLOSCnew_LostFocus(null, null);
+                    else
+                        txtLOSCFreq_LostFocus(null, null);                          // force WBIR reinit!
+                }
             }
         }
 
@@ -35891,10 +36251,13 @@ namespace PowerSDR
                 if (EthCATIsActive)
                     CAT_client_socket.ClientServerSync("ZZGN;");                    // sync with server
 
-                if (vfo_new_look)
-                    txtLOSCnew_LostFocus(null, null);
-                else
-                    txtLOSCFreq_LostFocus(null, null);                              // force WBIR reinit!
+                if (!MOX)
+                {
+                    if (vfo_new_look)
+                        txtLOSCnew_LostFocus(null, null);
+                    else
+                        txtLOSCFreq_LostFocus(null, null);                              // force WBIR reinit!
+                }
             }
         }
 
@@ -35980,10 +36343,13 @@ namespace PowerSDR
             if (EthCATIsActive)
                 CAT_client_socket.ClientServerSync("ZZGR;");                // sync with server
 
-            if (vfo_new_look)
-                txtLOSCnew_LostFocus(null, null);
-            else
-                txtLOSCFreq_LostFocus(null, null);                          // force WBIR reinit!
+            if (!MOX)
+            {
+                if (vfo_new_look)
+                    txtLOSCnew_LostFocus(null, null);
+                else
+                    txtLOSCFreq_LostFocus(null, null);                          // force WBIR reinit!
+            }
         }
 
         public bool AF_button
@@ -36069,10 +36435,13 @@ namespace PowerSDR
             if (EthCATIsActive)
                 CAT_client_socket.ClientServerSync("ZZGA;");                    // sync with server
 
-            if (vfo_new_look)
-                txtLOSCnew_LostFocus(null, null);
-            else
-                txtLOSCFreq_LostFocus(null, null);                              // force WBIR reinit!
+            if (!MOX)
+            {
+                if (vfo_new_look)
+                    txtLOSCnew_LostFocus(null, null);
+                else
+                    txtLOSCFreq_LostFocus(null, null);                              // force WBIR reinit!
+            }
         }
 
         public bool ATT_button
@@ -36158,10 +36527,13 @@ namespace PowerSDR
             if (EthCATIsActive)
                 CAT_client_socket.ClientServerSync("ZZGN;");                    // sync with server
 
-            if (vfo_new_look)
-                txtLOSCnew_LostFocus(null, null);
-            else
-                txtLOSCFreq_LostFocus(null, null);                              // force WBIR reinit!
+            if (!MOX)
+            {
+                if (vfo_new_look)
+                    txtLOSCnew_LostFocus(null, null);
+                else
+                    txtLOSCFreq_LostFocus(null, null);                              // force WBIR reinit!
+            }
         }
 
         private void lblAFNewVFO_Click(object sender, EventArgs e)
@@ -36814,6 +37186,7 @@ namespace PowerSDR
                 btnCWX6.BackColor = SystemColors.Control;
 
                 btnCWX1.BackColor = button_selected_color;
+
                 if (CWXForm == null || CWXForm.IsDisposed)
                 {
                     CWXForm = new CWX(this);
@@ -37327,525 +37700,695 @@ namespace PowerSDR
 
         private void panelVFOBnewHover_Paint(object sender, PaintEventArgs e)
         {
-            if (vfoB_new_hover_digit < 0)
-                return;
-
-            int x = 0;
-            int width = 0;
-
-            if (vfoB_new_hover_digit == 7)
+            try
             {
-                x = txtVFOBnew.Width - ((vfoB_char_width + vfoB_char_space) * 6);
-                x -= (vfoB_decimal_space + vfoB_char_space);
-            }
-            else if (vfoB_new_hover_digit > 7)
-            {
-                x = txtVFOBnew.Width - ((vfoB_char_width + vfoB_char_space) * 6) - vfoB_decimal_width -
-                    ((vfoB_char_width + vfoB_char_space) * (vfoB_new_hover_digit - 7));
-            }
-            else
-            {
-                x = txtVFOBnew.Width - ((vfoB_char_width + vfoB_char_space) * vfoB_new_hover_digit);
-                if (vfoB_new_hover_digit > 6)
-                    x -= (vfoB_decimal_space - vfoB_char_space * 2) - (vfoB_char_width + vfoB_char_space * 2);
-            }
-            width = x + vfoB_char_width;
+                if (vfoB_new_hover_digit < 0)
+                    return;
 
-            e.Graphics.DrawLine(new Pen(txtVFOBnew.ForeColor, 3.0f), x, 1, width, 1);
+                int x = 0;
+                int width = 0;
+
+                if (vfoB_new_hover_digit == 7)
+                {
+                    x = txtVFOBnew.Width - ((vfoB_char_width + vfoB_char_space) * 6);
+                    x -= (vfoB_decimal_space + vfoB_char_space);
+                }
+                else if (vfoB_new_hover_digit > 7)
+                {
+                    x = txtVFOBnew.Width - ((vfoB_char_width + vfoB_char_space) * 6) - vfoB_decimal_width -
+                        ((vfoB_char_width + vfoB_char_space) * (vfoB_new_hover_digit - 7));
+                }
+                else
+                {
+                    x = txtVFOBnew.Width - ((vfoB_char_width + vfoB_char_space) * vfoB_new_hover_digit);
+                    if (vfoB_new_hover_digit > 6)
+                        x -= (vfoB_decimal_space - vfoB_char_space * 2) - (vfoB_char_width + vfoB_char_space * 2);
+                }
+                width = x + vfoB_char_width;
+
+                e.Graphics.DrawLine(new Pen(txtVFOBnew.ForeColor, 3.0f), x, 1, width, 1);
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void panelVFOBnewHover_MouseMove(object sender, MouseEventArgs e)
         {
-            Control c1 = (Control)sender;
-            Control c2 = txtVFOBnew;
-            int client_width = (c1.Size.Width - c1.ClientSize.Width) + (c2.Size.Width - c2.ClientSize.Width);
-            int client_height = (c1.Size.Height - c1.ClientSize.Height) + (c2.Size.Height - c2.ClientSize.Height);
-            int x_offset = c1.Left - c2.Left - client_width / 2;
-            int y_offset = c1.Top - c2.Top - client_height / 2;
-            txtVFOBnew_MouseMove(sender, new MouseEventArgs(e.Button, e.Clicks, e.X + x_offset, e.Y + y_offset, e.Delta));
+            try
+            {
+                Control c1 = (Control)sender;
+                Control c2 = txtVFOBnew;
+                int client_width = (c1.Size.Width - c1.ClientSize.Width) + (c2.Size.Width - c2.ClientSize.Width);
+                int client_height = (c1.Size.Height - c1.ClientSize.Height) + (c2.Size.Height - c2.ClientSize.Height);
+                int x_offset = c1.Left - c2.Left - client_width / 2;
+                int y_offset = c1.Top - c2.Top - client_height / 2;
+                txtVFOBnew_MouseMove(sender, new MouseEventArgs(e.Button, e.Clicks, e.X + x_offset, e.Y + y_offset, e.Delta));
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void panelVFOAnewHover_MouseMove(object sender, MouseEventArgs e)
         {
-            Control c1 = (Control)sender;
-            Control c2 = txtVFOAnew;
-            int client_width = (c1.Size.Width - c1.ClientSize.Width) + (c2.Size.Width - c2.ClientSize.Width);
-            int client_height = (c1.Size.Height - c1.ClientSize.Height) + (c2.Size.Height - c2.ClientSize.Height);
-            int x_offset = c1.Left - c2.Left - client_width / 2;
-            int y_offset = c1.Top - c2.Top - client_height / 2;
-            txtVFOAnew_MouseMove(sender, new MouseEventArgs(e.Button, e.Clicks, e.X, e.Y, e.Delta));
-
+            try
+            {
+                Control c1 = (Control)sender;
+                Control c2 = txtVFOAnew;
+                int client_width = (c1.Size.Width - c1.ClientSize.Width) + (c2.Size.Width - c2.ClientSize.Width);
+                int client_height = (c1.Size.Height - c1.ClientSize.Height) + (c2.Size.Height - c2.ClientSize.Height);
+                int x_offset = c1.Left - c2.Left - client_width / 2;
+                int y_offset = c1.Top - c2.Top - client_height / 2;
+                txtVFOAnew_MouseMove(sender, new MouseEventArgs(e.Button, e.Clicks, e.X, e.Y, e.Delta));
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void panelVFOAnewHover_Paint(object sender, PaintEventArgs e)
         {
-            if (vfoA_new_hover_digit < 0)
-                return;
-
-            int x = 0;
-            int width = 0;
-
-            if (vfoA_new_hover_digit == 7)
+            try
             {
-                x = txtVFOAnew.Width - ((vfoA_char_width + vfoA_char_space * 2) * 6);
-                x -= (vfoA_decimal_space + vfoA_char_space * 2);
+                if (vfoA_new_hover_digit < 0)
+                    return;
+
+                int x = 0;
+                int width = 0;
+
+                if (vfoA_new_hover_digit == 7)
+                {
+                    x = txtVFOAnew.Width - ((vfoA_char_width + vfoA_char_space * 2) * 6);
+                    x -= (vfoA_decimal_space + vfoA_char_space * 2);
+                }
+                else
+                {
+                    x = txtVFOAnew.Width - ((vfoA_char_width + vfoA_char_space * 2) * vfoA_new_hover_digit);
+                    if (vfoA_new_hover_digit > 6)
+                        x -= (vfoA_decimal_space - vfoA_char_space * 2) - (vfoA_char_width + vfoA_char_space * 2);
+                }
+                width = x + vfoA_char_width;
+
+                e.Graphics.DrawLine(new Pen(txtVFOAnew.ForeColor, 3.0f), x, 1, width, 1);
             }
-            else
+            catch (Exception ex)
             {
-                x = txtVFOAnew.Width - ((vfoA_char_width + vfoA_char_space * 2) * vfoA_new_hover_digit);
-                if (vfoA_new_hover_digit > 6)
-                    x -= (vfoA_decimal_space - vfoA_char_space * 2) - (vfoA_char_width + vfoA_char_space * 2);
+                Debug.Write(ex.ToString());
             }
-            width = x + vfoA_char_width;
-
-            e.Graphics.DrawLine(new Pen(txtVFOAnew.ForeColor, 3.0f), x, 1, width, 1);
-
         }
 
         private void txtVFOAnew_MouseMove(object sender, MouseEventArgs e)
         {
-            if (this.ContainsFocus)
+            try
             {
-                int old_digit = vfoA_new_hover_digit;
-                int digit_index = 0;
-                GetNewVFOACharWidth();
-
-                int x = txtVFOAnew.Width;
-                while (x > e.X)
+                if (this.ContainsFocus)
                 {
-                    x -= vfoA_char_width;
-                    if (digit_index == 6)
+                    int old_digit = vfoA_new_hover_digit;
+                    int digit_index = 0;
+                    GetNewVFOACharWidth();
+
+                    int x = txtVFOAnew.Width;
+                    while (x > e.X)
                     {
-                        x -= vfoA_decimal_space;
-                        x += vfoA_char_width;
+                        x -= vfoA_char_width;
+                        if (digit_index == 6)
+                        {
+                            x -= vfoA_decimal_space;
+                            x += vfoA_char_width;
+                        }
+                        else
+                            x -= vfoA_char_space * 2;
+
+                        digit_index++;
                     }
-                    else
-                        x -= vfoA_char_space * 2;
 
-                    digit_index++;
-                }
+                    if (digit_index < 1) digit_index = -1;
 
-                if (digit_index < 1) digit_index = -1;
+                    if (vfoAFreq < 9.999999)
+                    {
+                        if (digit_index > 8) digit_index = 8;
+                    }
+                    else if (vfoAFreq < 99.999999)
+                    {
+                        if (digit_index > 9) digit_index = 9;
+                    }
+                    else if (vfoAFreq < 999.999999)
+                    {
+                        if (digit_index > 10) digit_index = 10;
+                    }
+                    else if (vfoAFreq < 9999.999999)
+                    {
+                        if (digit_index > 11) digit_index = 11;
+                    }
 
-                if (vfoAFreq < 9.999999)
-                {
-                    if (digit_index > 8) digit_index = 8;
-                }
-                else if (vfoAFreq < 99.999999)
-                {
-                    if (digit_index > 9) digit_index = 9;
-                }
-                else if (vfoAFreq < 999.999999)
-                {
-                    if (digit_index > 10) digit_index = 10;
-                }
-                else if (vfoAFreq < 9999.999999)
-                {
-                    if (digit_index > 11) digit_index = 11;
-                }
+                    vfoA_new_hover_digit = digit_index;
 
-                vfoA_new_hover_digit = digit_index;
-
-                if (vfoA_new_hover_digit != old_digit)
-                    panelVFOAnewHover.Invalidate();
+                    if (vfoA_new_hover_digit != old_digit)
+                        panelVFOAnewHover.Invalidate();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
             }
         }
 
         private void txtVFOAnew_MouseLeave(object sender, EventArgs e)
         {
-            vfoA_new_hover_digit = -1;
-            panelVFOAnewHover.Invalidate();
+            try
+            {
+                vfoA_new_hover_digit = -1;
+                panelVFOAnewHover.Invalidate();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void txtVFOBnew_MouseLeave(object sender, EventArgs e)
         {
-            vfoB_new_hover_digit = -1;
-            panelVFOBnewHover.Invalidate();
+            try
+            {
+                vfoB_new_hover_digit = -1;
+                panelVFOBnewHover.Invalidate();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void txtVFOBnew_MouseMove(object sender, MouseEventArgs e)
         {
-            if (this.ContainsFocus)
+            try
             {
-                int old_digit = vfoB_new_hover_digit;
-                int digit_index = 0;
-                GetNewVFOBCharWidth();
+                if (this.ContainsFocus)
+                {
+                    int old_digit = vfoB_new_hover_digit;
+                    int digit_index = 0;
+                    GetNewVFOBCharWidth();
 
-                int x = txtVFOBnew.Width;
+                    int x = txtVFOBnew.Width;
+                    while (x > e.X)
+                    {
+                        x -= vfoB_char_width;
+                        if (digit_index == 6)
+                        {
+                            x -= vfoB_decimal_space;
+                            x += vfoB_char_width;
+                        }
+                        else
+                            x -= vfoB_char_space;
+
+                        digit_index++;
+                    }
+
+                    if (digit_index < 1) digit_index = -1;
+
+                    if (vfoBFreq < 9.999999)
+                    {
+                        if (digit_index > 8) digit_index = 8;
+                    }
+                    else if (vfoBFreq < 99.999999)
+                    {
+                        if (digit_index > 9) digit_index = 9;
+                    }
+                    else if (vfoBFreq < 999.999999)
+                    {
+                        if (digit_index > 10) digit_index = 10;
+                    }
+                    else if (vfoBFreq < 9999.999999)
+                    {
+                        if (digit_index > 11) digit_index = 11;
+                    }
+                    vfoB_new_hover_digit = digit_index;
+                    if (vfoB_new_hover_digit != old_digit)
+                        panelVFOBnewHover.Invalidate();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void txtLOSCnew_MouseLeave(object sender, EventArgs e)
+        {
+            try
+            {
+                losc_new_hover_digit = -1;
+                panelLOSCnewHover.Invalidate();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
+        private void txtLOSCnew_MouseMove(object sender, MouseEventArgs e)
+        {
+            try
+            {
+                int old_digit = losc_new_hover_digit;
+                int digit_index = 0;
+                GetNewLOSCCharWidth();
+
+                int x = txtLOSCnew.Width;
                 while (x > e.X)
                 {
-                    x -= vfoB_char_width;
+                    x -= losc_char_width;
                     if (digit_index == 6)
                     {
-                        x -= vfoB_decimal_space;
-                        x += vfoB_char_width;
+                        x -= losc_decimal_space;
+                        x += losc_char_width;
                     }
                     else
-                        x -= vfoB_char_space;
+                        x -= losc_char_space;
 
                     digit_index++;
                 }
 
                 if (digit_index < 1) digit_index = -1;
 
-                if (vfoBFreq < 9.999999)
+                if (loscFreq < 9.999999)
                 {
                     if (digit_index > 8) digit_index = 8;
                 }
-                else if (vfoBFreq < 99.999999)
+                else if (loscFreq < 99.999999)
                 {
                     if (digit_index > 9) digit_index = 9;
                 }
-                else if (vfoBFreq < 999.999999)
+                else if (loscFreq < 999.999999)
                 {
                     if (digit_index > 10) digit_index = 10;
                 }
-                else if (vfoBFreq < 9999.999999)
+                else if (loscFreq < 9999.999999)
                 {
                     if (digit_index > 11) digit_index = 11;
                 }
-                vfoB_new_hover_digit = digit_index;
-                if (vfoB_new_hover_digit != old_digit)
-                    panelVFOBnewHover.Invalidate();
+                losc_new_hover_digit = digit_index;
+                if (losc_new_hover_digit != old_digit)
+                    panelLOSCnewHover.Invalidate();
             }
-
-        }
-
-        private void txtLOSCnew_MouseLeave(object sender, EventArgs e)
-        {
-            losc_new_hover_digit = -1;
-            panelLOSCnewHover.Invalidate();
-        }
-
-        private void txtLOSCnew_MouseMove(object sender, MouseEventArgs e)
-        {
-            int old_digit = losc_new_hover_digit;
-            int digit_index = 0;
-            GetNewLOSCCharWidth();
-
-            int x = txtLOSCnew.Width;
-            while (x > e.X)
+            catch (Exception ex)
             {
-                x -= losc_char_width;
-                if (digit_index == 6)
-                {
-                    x -= losc_decimal_space;
-                    x += losc_char_width;
-                }
-                else
-                    x -= losc_char_space;
-
-                digit_index++;
+                Debug.Write(ex.ToString());
             }
-
-            if (digit_index < 1) digit_index = -1;
-
-            if (loscFreq < 9.999999)
-            {
-                if (digit_index > 8) digit_index = 8;
-            }
-            else if (loscFreq < 99.999999)
-            {
-                if (digit_index > 9) digit_index = 9;
-            }
-            else if (loscFreq < 999.999999)
-            {
-                if (digit_index > 10) digit_index = 10;
-            }
-            else if (loscFreq < 9999.999999)
-            {
-                if (digit_index > 11) digit_index = 11;
-            }
-            losc_new_hover_digit = digit_index;
-            if (losc_new_hover_digit != old_digit)
-                panelLOSCnewHover.Invalidate();
         }
 
         private void panelLOSCnew_Paint(object sender, PaintEventArgs e)
         {
-            if (losc_new_hover_digit < 0)
-                return;
-
-            int x = 0;
-            int width = 0;
-
-            if (losc_new_hover_digit == 7)
+            try
             {
-                x = txtLOSCnew.Width - ((losc_char_width + losc_char_space) * 6);
-                x -= (losc_decimal_space + losc_char_space);
-            }
-            else if (losc_new_hover_digit > 7)
-            {
-                x = txtLOSCnew.Width - ((losc_char_width + losc_char_space) * 6) - losc_decimal_width -
-                    ((losc_char_width + losc_char_space) * (losc_new_hover_digit - 7));
-            }
-            else
-            {
-                x = txtLOSCnew.Width - ((losc_char_width + losc_char_space) * losc_new_hover_digit);
-                if (losc_new_hover_digit > 6)
-                    x -= (losc_decimal_space - losc_char_space * 2) - (losc_char_width + losc_char_space * 2);
-            }
+                if (losc_new_hover_digit < 0)
+                    return;
 
-            width = x + losc_char_width;
+                int x = 0;
+                int width = 0;
 
-            e.Graphics.DrawLine(new Pen(txtLOSCnew.ForeColor, 3.0f), x, 1, width, 1);
+                if (losc_new_hover_digit == 7)
+                {
+                    x = txtLOSCnew.Width - ((losc_char_width + losc_char_space) * 6);
+                    x -= (losc_decimal_space + losc_char_space);
+                }
+                else if (losc_new_hover_digit > 7)
+                {
+                    x = txtLOSCnew.Width - ((losc_char_width + losc_char_space) * 6) - losc_decimal_width -
+                        ((losc_char_width + losc_char_space) * (losc_new_hover_digit - 7));
+                }
+                else
+                {
+                    x = txtLOSCnew.Width - ((losc_char_width + losc_char_space) * losc_new_hover_digit);
+                    if (losc_new_hover_digit > 6)
+                        x -= (losc_decimal_space - losc_char_space * 2) - (losc_char_width + losc_char_space * 2);
+                }
+
+                width = x + losc_char_width;
+
+                e.Graphics.DrawLine(new Pen(txtLOSCnew.ForeColor, 3.0f), x, 1, width, 1);
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void panelLOSCnewHover_MouseMove(object sender, MouseEventArgs e)
         {
-            Control c1 = (Control)sender;
-            Control c2 = txtLOSCnew;
-            int client_width = (c1.Size.Width - c1.ClientSize.Width) + (c2.Size.Width - c2.ClientSize.Width);
-            int client_height = (c1.Size.Height - c1.ClientSize.Height) + (c2.Size.Height - c2.ClientSize.Height);
-            int x_offset = c1.Left - c2.Left - client_width / 2;
-            int y_offset = c1.Top - c2.Top - client_height / 2;
-            txtLOSCnew_MouseMove(sender, new MouseEventArgs(e.Button, e.Clicks, e.X + x_offset, e.Y + y_offset, e.Delta));
+            try
+            {
+                Control c1 = (Control)sender;
+                Control c2 = txtLOSCnew;
+                int client_width = (c1.Size.Width - c1.ClientSize.Width) + (c2.Size.Width - c2.ClientSize.Width);
+                int client_height = (c1.Size.Height - c1.ClientSize.Height) + (c2.Size.Height - c2.ClientSize.Height);
+                int x_offset = c1.Left - c2.Left - client_width / 2;
+                int y_offset = c1.Top - c2.Top - client_height / 2;
+                txtLOSCnew_MouseMove(sender, new MouseEventArgs(e.Button, e.Clicks, e.X + x_offset, e.Y + y_offset, e.Delta));
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         public void txtVFOAnew_LostFocus(object sender, System.EventArgs e) // yt7pwr
         {
-            if (txtVFOAnew.Text == "." || txtVFOAnew.Text == "")
+            try
             {
-                VFOAFreq = saved_vfoa_freq;
-            }
-            else
-            {
-                double tmp_vfoA = Double.Parse(txtVFOAnew.Text);
-                if (tmp_vfoA > 0.0 && tmp_vfoA < 500000.0)
+                if (txtVFOAnew.Text == "." || txtVFOAnew.Text == "")
                 {
-                    if (tmp_vfoA >= MinFreq && tmp_vfoA <= MaxFreq)
-                        VFOAFreq = tmp_vfoA;
+                    VFOAFreq = saved_vfoa_freq;
+                }
+                else
+                {
+                    double tmp_vfoA = Double.Parse(txtVFOAnew.Text);
+                    if (tmp_vfoA > 0.0 && tmp_vfoA < 500000.0)
+                    {
+                        if (tmp_vfoA >= MinFreq && tmp_vfoA <= MaxFreq)
+                            VFOAFreq = tmp_vfoA;
+                        else
+                            VFOAFreq = saved_vfoa_freq;
+                    }
                     else
                         VFOAFreq = saved_vfoa_freq;
                 }
-                else
-                    VFOAFreq = saved_vfoa_freq;
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
             }
         }
 
         private void txtVFOBnew_LostFocus(object sender, System.EventArgs e)  // changes yt7pwr
         {
-            if (txtVFOBnew.Text == "" || txtVFOBnew.Text == ".")
+            try
             {
-                VFOBFreq = saved_vfob_freq;
-                return;
-            }
+                if (txtVFOBnew.Text == "" || txtVFOBnew.Text == ".")
+                {
+                    VFOBFreq = saved_vfob_freq;
+                    return;
+                }
 
-            double freq = Double.Parse(txtVFOBnew.Text);
-            if (freq > MinFreq && freq < MaxFreq)
-                VFOBFreq = freq;
-            else
+                double freq = Double.Parse(txtVFOBnew.Text);
+                if (freq > MinFreq && freq < MaxFreq)
+                    VFOBFreq = freq;
+                else
+                {
+                    freq = saved_losc_freq;
+                    VFOBFreq = saved_vfob_freq;
+                }
+            }
+            catch (Exception ex)
             {
-                freq = saved_losc_freq;
-                VFOBFreq = saved_vfob_freq;
+                Debug.Write(ex.ToString());
             }
         }
 
         private void txtLOSCnew_LostFocus(object sender, System.EventArgs e)
         {
-            double loscfreq = 1.0;
+            try
+            {
+                double loscfreq = 1.0;
 
-            if (txtLOSCnew.Text == "." || txtLOSCnew.Text == "")
-            {
-                LOSCFreq = saved_losc_freq;
-                loscfreq = Double.Parse(txtLOSCnew.Text);
-            }
-            else
-            {
-                loscfreq = Double.Parse(txtLOSCnew.Text);
-                if (loscfreq > 0.0 && loscfreq < 500000.0)
-                    LOSCFreq = loscfreq;
-                else
+                if (txtLOSCnew.Text == "." || txtLOSCnew.Text == "")
+                {
                     LOSCFreq = saved_losc_freq;
-            }
+                    loscfreq = Double.Parse(txtLOSCnew.Text);
+                }
+                else
+                {
+                    loscfreq = Double.Parse(txtLOSCnew.Text);
 
-            UpdateLOSCFreq(loscfreq.ToString("f6"));
+                    if (loscfreq > 0.0 && loscfreq < 500000.0)
+                        LOSCFreq = loscfreq;
+                    else
+                        LOSCFreq = saved_losc_freq;
+                }
 
-            Display_GDI.LOSC = (long)(loscfreq * 1e6);
+                UpdateLOSCFreq(loscfreq.ToString("f6"));
+
+                Display_GDI.LOSC = (long)(loscfreq * 1e6);
 #if(DirectX)
-            Display_DirectX.LOSC = (long)(loscfreq * 1e6);
+                Display_DirectX.LOSC = (long)(loscfreq * 1e6);
 #endif
 
-            btnHidden.Focus();
+                btnHidden.Focus();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void txtVFOAnew_MouseDown(object sender, MouseEventArgs e)
         {
-            txtVFOAnew.Focus();
-            txtVFOAnew.SelectAll();
+            try
+            {
+                txtVFOAnew.Focus();
+                txtVFOAnew.SelectAll();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void txtVFOBnew_MouseDown(object sender, MouseEventArgs e)
         {
-            txtVFOBnew.Focus();
-            txtVFOBnew.SelectAll();
+            try
+            {
+                txtVFOBnew.Focus();
+                txtVFOBnew.SelectAll();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void txtLOSCnew_MouseDown(object sender, MouseEventArgs e)
         {
-            txtLOSCnew.Focus();
-            txtLOSCnew.SelectAll();
+            try
+            {
+                txtLOSCnew.Focus();
+                txtLOSCnew.SelectAll();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void txtVFOAnew_KeyPress(object sender, KeyPressEventArgs e)
         {
-            string separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
-            int KeyCode = (int)e.KeyChar;
-            if ((KeyCode < 48 || KeyCode > 57) &&			// numeric keys
-                KeyCode != 8 &&								// backspace
-                !e.KeyChar.ToString().Equals(separator) &&	// decimal
-                KeyCode != 27)								// escape
+            try
             {
-                e.Handled = true;
-            }
-            else
-            {
-                if (e.KeyChar.ToString().Equals(separator))
+                string separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+                int KeyCode = (int)e.KeyChar;
+                if ((KeyCode < 48 || KeyCode > 57) &&			// numeric keys
+                    KeyCode != 8 &&								// backspace
+                    !e.KeyChar.ToString().Equals(separator) &&	// decimal
+                    KeyCode != 27)								// escape
                 {
-                    e.Handled = (((TextBoxTS)sender).Text.IndexOf(separator) >= 0);
+                    e.Handled = true;
                 }
-                else if (KeyCode == 27)
+                else
                 {
-                    VFOAFreq = saved_vfoa_freq;
+                    if (e.KeyChar.ToString().Equals(separator))
+                    {
+                        e.Handled = (((TextBoxTS)sender).Text.IndexOf(separator) >= 0);
+                    }
+                    else if (KeyCode == 27)
+                    {
+                        VFOAFreq = saved_vfoa_freq;
+                        btnHidden.Focus();
+                    }
+                }
+                if (e.KeyChar == (char)Keys.Enter)
+                {
+                    txtVFOAnew_LostFocus(txtVFOAnew, new System.EventArgs());
                     btnHidden.Focus();
                 }
             }
-            if (e.KeyChar == (char)Keys.Enter)
+            catch (Exception ex)
             {
-                txtVFOAnew_LostFocus(txtVFOAnew, new System.EventArgs());
-                btnHidden.Focus();
+                Debug.Write(ex.ToString());
             }
         }
 
         private void txtVFOBnew_KeyPress(object sender, KeyPressEventArgs e)
         {
-            string separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
-            int KeyCode = (int)e.KeyChar;
-            if ((KeyCode < 48 || KeyCode > 57) &&			// numeric keys
-                KeyCode != 8 &&								// backspace
-                !e.KeyChar.ToString().Equals(separator) &&	// decimal
-                KeyCode != 27)								// escape
+            try
             {
-                e.Handled = true;
-            }
-            else
-            {
-                if (e.KeyChar.ToString().Equals(separator))
+                string separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+                int KeyCode = (int)e.KeyChar;
+                if ((KeyCode < 48 || KeyCode > 57) &&			// numeric keys
+                    KeyCode != 8 &&								// backspace
+                    !e.KeyChar.ToString().Equals(separator) &&	// decimal
+                    KeyCode != 27)								// escape
                 {
-                    e.Handled = (((TextBoxTS)sender).Text.IndexOf(separator) >= 0);
+                    e.Handled = true;
                 }
-                else if (KeyCode == 27)
+                else
                 {
-                    VFOBFreq = saved_vfob_freq;
+                    if (e.KeyChar.ToString().Equals(separator))
+                    {
+                        e.Handled = (((TextBoxTS)sender).Text.IndexOf(separator) >= 0);
+                    }
+                    else if (KeyCode == 27)
+                    {
+                        VFOBFreq = saved_vfob_freq;
+                        btnHidden.Focus();
+                    }
+                }
+                if (e.KeyChar == (char)Keys.Enter)
+                {
+                    txtVFOBnew_LostFocus(txtVFOBnew, new System.EventArgs());
                     btnHidden.Focus();
                 }
             }
-            if (e.KeyChar == (char)Keys.Enter)
+            catch (Exception ex)
             {
-                txtVFOBnew_LostFocus(txtVFOBnew, new System.EventArgs());
-                btnHidden.Focus();
+                Debug.Write(ex.ToString());
             }
         }
 
         private void txtLOSCnew_KeyPress(object sender, KeyPressEventArgs e)
         {
-            string separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
-            int KeyCode = (int)e.KeyChar;
-            if ((KeyCode < 48 || KeyCode > 57) &&			// numeric keys
-                KeyCode != 8 &&								// backspace
-                !e.KeyChar.ToString().Equals(separator) &&	// decimal
-                KeyCode != 27)								// escape
+            try
             {
-                e.Handled = true;
-            }
-            else
-            {
-                if (e.KeyChar.ToString().Equals(separator))
+                if (MOX)
+                    return;
+
+                string separator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+                int KeyCode = (int)e.KeyChar;
+                if ((KeyCode < 48 || KeyCode > 57) &&			// numeric keys
+                    KeyCode != 8 &&								// backspace
+                    !e.KeyChar.ToString().Equals(separator) &&	// decimal
+                    KeyCode != 27)								// escape
                 {
-                    e.Handled = (((TextBoxTS)sender).Text.IndexOf(separator) >= 0);
+                    e.Handled = true;
                 }
-                else if (KeyCode == 27)
+                else
                 {
-                    LOSCFreq = saved_losc_freq;
+                    if (e.KeyChar.ToString().Equals(separator))
+                    {
+                        e.Handled = (((TextBoxTS)sender).Text.IndexOf(separator) >= 0);
+                    }
+                    else if (KeyCode == 27)
+                    {
+                        LOSCFreq = saved_losc_freq;
+                        btnHidden.Focus();
+                    }
+                }
+                if (e.KeyChar == (char)Keys.Enter)
+                {
+                    txtLOSCnew_LostFocus(txtLOSCnew, new System.EventArgs());
                     btnHidden.Focus();
                 }
             }
-            if (e.KeyChar == (char)Keys.Enter)
+            catch (Exception ex)
             {
-                txtLOSCnew_LostFocus(txtLOSCnew, new System.EventArgs());
-                btnHidden.Focus();
+                Debug.Write(ex.ToString());
+
             }
         }
 
         private void GetNewVFOACharWidth()
         {
-            // This function calculates the pixel width of the VFO display.
-            // This information is used for mouse wheel hover tuning.
+            try
+            {
+                // This function calculates the pixel width of the VFO display.
+                // This information is used for mouse wheel hover tuning.
 
-            Graphics g = txtVFOAnew.CreateGraphics();
+                Graphics g = txtVFOAnew.CreateGraphics();
 
-            SizeF size = g.MeasureString("0", txtVFOAnew.Font, 1000, StringFormat.GenericTypographic);
-            vfoA_char_width = (int)Math.Round(size.Width - 2.0f, 0);	// subtract 2 since measure string includes 1 pixel border on each side
+                SizeF size = g.MeasureString("0", txtVFOAnew.Font, 1000, StringFormat.GenericTypographic);
+                vfoA_char_width = (int)Math.Round(size.Width - 2.0f, 0);	// subtract 2 since measure string includes 1 pixel border on each side
 
-            size = g.MeasureString("00", txtVFOAnew.Font, 1000, StringFormat.GenericTypographic);
-            vfoA_char_space = (int)Math.Round(size.Width - 2.0f - 2 * vfoA_char_width, 0);
+                size = g.MeasureString("00", txtVFOAnew.Font, 1000, StringFormat.GenericTypographic);
+                vfoA_char_space = (int)Math.Round(size.Width - 2.0f - 2 * vfoA_char_width, 0);
 
-            size = g.MeasureString(separator, txtVFOAnew.Font, 1000, StringFormat.GenericTypographic);
-            vfoA_decimal_width = (int)(size.Width);
+                size = g.MeasureString(separator, txtVFOAnew.Font, 1000, StringFormat.GenericTypographic);
+                vfoA_decimal_width = (int)(size.Width);
 
-            size = g.MeasureString("0" + separator + "0", txtVFOAnew.Font, 1000, StringFormat.GenericTypographic);
-            vfoA_decimal_space = (int)Math.Round(size.Width - 2.0f - (2 * vfoA_char_width), 0);
+                size = g.MeasureString("0" + separator + "0", txtVFOAnew.Font, 1000, StringFormat.GenericTypographic);
+                vfoA_decimal_space = (int)Math.Round(size.Width - 2.0f - (2 * vfoA_char_width), 0);
 
-            size = g.MeasureString("1234.678901", txtVFOAnew.Font, 1000, StringFormat.GenericTypographic);
-            vfoA_pixel_offset = (int)Math.Round(size.Width - 2.0f, 0);
+                size = g.MeasureString("1234.678901", txtVFOAnew.Font, 1000, StringFormat.GenericTypographic);
+                vfoA_pixel_offset = (int)Math.Round(size.Width - 2.0f, 0);
 
-            g.Dispose();
+                g.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void GetNewLOSCCharWidth()
         {
-            Graphics g = txtLOSCnew.CreateGraphics();
+            try
+            {
+                Graphics g = txtLOSCnew.CreateGraphics();
 
-            SizeF size = g.MeasureString("0", txtLOSCnew.Font, 1000, StringFormat.GenericTypographic);
-            losc_char_width = (int)Math.Round(size.Width - 2.0f, 0);
-            float float_char_width = size.Width - 2.0f;
+                SizeF size = g.MeasureString("0", txtLOSCnew.Font, 1000, StringFormat.GenericTypographic);
+                losc_char_width = (int)Math.Round(size.Width - 2.0f, 0);
+                float float_char_width = size.Width - 2.0f;
 
-            size = g.MeasureString("00", txtLOSCnew.Font, 1000, StringFormat.GenericTypographic);
-            losc_char_space = (int)Math.Round(size.Width - 2.0f - 2 * float_char_width, 0);
+                size = g.MeasureString("00", txtLOSCnew.Font, 1000, StringFormat.GenericTypographic);
+                losc_char_space = (int)Math.Round(size.Width - 2.0f - 2 * float_char_width, 0);
 
-            size = g.MeasureString(separator, txtLOSCnew.Font, 1000, StringFormat.GenericTypographic);
-            losc_decimal_width = (int)(size.Width - 2.0f);
+                size = g.MeasureString(separator, txtLOSCnew.Font, 1000, StringFormat.GenericTypographic);
+                losc_decimal_width = (int)(size.Width - 2.0f);
 
-            size = g.MeasureString("0" + separator + "0", txtLOSCnew.Font, 1000, StringFormat.GenericTypographic);
-            losc_decimal_space = (int)Math.Round(size.Width - 2.0f - 2 * float_char_width, 0);
+                size = g.MeasureString("0" + separator + "0", txtLOSCnew.Font, 1000, StringFormat.GenericTypographic);
+                losc_decimal_space = (int)Math.Round(size.Width - 2.0f - 2 * float_char_width, 0);
 
-            size = g.MeasureString("1234.678901", txtLOSCnew.Font, 1000, StringFormat.GenericTypographic);
-            losc_pixel_offset = (int)Math.Round(size.Width - 2.0f, 0);
+                size = g.MeasureString("1234.678901", txtLOSCnew.Font, 1000, StringFormat.GenericTypographic);
+                losc_pixel_offset = (int)Math.Round(size.Width - 2.0f, 0);
 
-            g.Dispose();
+                g.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void GetNewVFOBCharWidth()
         {
-            Graphics g = txtVFOBnew.CreateGraphics();
+            try
+            {
+                Graphics g = txtVFOBnew.CreateGraphics();
 
-            SizeF size = g.MeasureString("0", txtVFOBnew.Font, 1000, StringFormat.GenericTypographic);
-            vfoB_char_width = (int)Math.Round(size.Width - 2.0f, 0);
-            float float_char_width = size.Width - 2.0f;
+                SizeF size = g.MeasureString("0", txtVFOBnew.Font, 1000, StringFormat.GenericTypographic);
+                vfoB_char_width = (int)Math.Round(size.Width - 2.0f, 0);
+                float float_char_width = size.Width - 2.0f;
 
-            size = g.MeasureString("00", txtVFOBnew.Font, 1000, StringFormat.GenericTypographic);
-            vfoB_char_space = (int)Math.Round(size.Width - 2.0f - 2 * float_char_width, 0);
+                size = g.MeasureString("00", txtVFOBnew.Font, 1000, StringFormat.GenericTypographic);
+                vfoB_char_space = (int)Math.Round(size.Width - 2.0f - 2 * float_char_width, 0);
 
-            size = g.MeasureString(separator, txtVFOBnew.Font, 1000, StringFormat.GenericTypographic);
-            vfoB_decimal_width = (int)(size.Width - 2.0f);
+                size = g.MeasureString(separator, txtVFOBnew.Font, 1000, StringFormat.GenericTypographic);
+                vfoB_decimal_width = (int)(size.Width - 2.0f);
 
-            size = g.MeasureString("0" + separator + "0", txtVFOBnew.Font, 1000, StringFormat.GenericTypographic);
-            vfoB_decimal_space = (int)Math.Round(size.Width - 2.0f - 2 * float_char_width, 0);
+                size = g.MeasureString("0" + separator + "0", txtVFOBnew.Font, 1000, StringFormat.GenericTypographic);
+                vfoB_decimal_space = (int)Math.Round(size.Width - 2.0f - 2 * float_char_width, 0);
 
-            size = g.MeasureString("1234.678901", txtVFOBnew.Font, 1000, StringFormat.GenericTypographic);
-            vfoB_pixel_offset = (int)Math.Round(size.Width - 2.0f, 0);
+                size = g.MeasureString("1234.678901", txtVFOBnew.Font, 1000, StringFormat.GenericTypographic);
+                vfoB_pixel_offset = (int)Math.Round(size.Width - 2.0f, 0);
 
-            g.Dispose();
+                g.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void chkSQLMainRX_CheckedChanged(object sender, EventArgs e)
@@ -39187,19 +39730,26 @@ namespace PowerSDR
 
         private void comboAGCMainRX_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (comboAGCMainRX.SelectedIndex < 0) return;
+            try
             {
-                DttSP.SetRXAGC(0, 0, (AGCMode)comboAGCMainRX.SelectedIndex);
+                if (comboAGCMainRX.SelectedIndex < 0) return;
+                {
+                    DttSP.SetRXAGC(0, 0, (AGCMode)comboAGCMainRX.SelectedIndex);
+                }
+
+                if ((AGCMode)comboAGCMainRX.SelectedIndex == AGCMode.CUSTOM)
+                    SetupForm.CustomRXAGCEnabled = true;
+                else SetupForm.CustomRXAGCEnabled = false;
+
+                current_agc_mode = (AGCMode)comboAGCMainRX.SelectedIndex;
+
+                if (comboAGCMainRX.Focused)
+                    btnHidden.Focus();
             }
-
-            if ((AGCMode)comboAGCMainRX.SelectedIndex == AGCMode.CUSTOM)
-                SetupForm.CustomRXAGCEnabled = true;
-            else SetupForm.CustomRXAGCEnabled = false;
-
-            current_agc_mode = (AGCMode)comboAGCMainRX.SelectedIndex;
-
-            if (comboAGCMainRX.Focused)
-                btnHidden.Focus();
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
         }
 
         private void comboAGCSubRX_SelectedIndexChanged(object sender, EventArgs e)
@@ -39994,9 +40544,16 @@ namespace PowerSDR
             {
                 notch_low_value = value;
                 lblNotchLow.Text = notch_low_value.ToString();
+
                 if (notch_high_value - notch_low_value > 10)
                 {
-                    DttSP.SetNotchFilter(notch_low_value, notch_high_value);
+                    if (current_dsp_mode == DSPMode.FMN)
+                    {
+                        int width = FilterHighValue - FilterLowValue;
+                        DttSP.SetRXLowPassFilter(0, 0, Math.Abs((width / 2) + value));
+                    }
+                    else
+                        DttSP.SetNotchFilter(notch_low_value, notch_high_value);
                 }
             }
         }
@@ -40012,7 +40569,13 @@ namespace PowerSDR
 
                 if (notch_high_value - notch_low_value > 10)
                 {
-                    DttSP.SetNotchFilter(notch_low_value, notch_high_value);
+                    if (current_dsp_mode == DSPMode.FMN)
+                    {
+                        int width = FilterHighValue - FilterLowValue;
+                        DttSP.SetRXHighPassFilter(0, 0, Math.Abs((width / 2) + value));
+                    }
+                    else
+                        DttSP.SetNotchFilter(notch_low_value, notch_high_value);
                 }
             }
         }
@@ -40029,6 +40592,11 @@ namespace PowerSDR
                         {
                             NotchLow = -ptbNotchWidth.Value;
                             NotchHigh = ptbNotchWidth.Value;
+                        }
+                        else if (current_dsp_mode == DSPMode.FMN)
+                        {
+                            NotchLow = -ptbNotchWidth.Value;
+                            NotchHigh = +ptbNotchWidth.Value;
                         }
                         else
                         {
@@ -40234,7 +40802,14 @@ namespace PowerSDR
                     {
                         case FilterMode.NOTCH:
                             DttSP.SetRXFilterMode(0, 0, FilterMode.NOTCH);
-                            DttSP.SetNotchFilter(notch_low_value, notch_high_value);
+                            if (current_dsp_mode == DSPMode.FMN)
+                            {
+                                int width = FilterHighValue - FilterLowValue;
+                                DttSP.SetRXLowPassFilter(0, 0, Math.Abs(width / 2 - notch_low_value));
+                                DttSP.SetRXHighPassFilter(0, 0, Math.Abs(width / 2 + notch_high_value));
+                            }
+                            else
+                                DttSP.SetNotchFilter(notch_low_value, notch_high_value);
                             chkManualNotchFilter.BackColor = button_selected_color;
                             CATNOTCHenable = 1;
                             lblNotchLow.Text = notch_low_value.ToString();
@@ -40346,13 +40921,13 @@ namespace PowerSDR
             {
                 if (current_model == Model.GENESIS_G59USB && g59.Connected)
                 {
-                    g59.WriteToDevice(26, 0);                       // Line in
+                    g59.WriteToDevice(26, 0);                               // Line in
                     Thread.Sleep(1);
                     g59.WriteToDevice(0, 0);
                     Thread.Sleep(1);
-                    g59.WriteToDevice(24, 0);                       // CW monitor off
+                    g59.WriteToDevice(24, 0);                               // CW monitor off
                     Thread.Sleep(1);
-                    g59.WriteToDevice(28, G59PTT_Inverted);         // external PA inverted
+                    ExtPA_PTT_Inverted = extPA_PTT_inverted;
                     Thread.Sleep(1);
                     Genesis_EXT_PA_present = genesis_ext_PA_present;        // force reload
                     Thread.Sleep(1);
@@ -40376,12 +40951,11 @@ namespace PowerSDR
                     Thread.Sleep(1);
                     G59XTRV_separateRXTX = G59_XTRV_separate_RXTX;      // force refresh
                     Thread.Sleep(1);
-                    EventArgs e = EventArgs.Empty;
-                    btnATT_CheckedChanged(this, e);
+                    btnATT_CheckedChanged(this, EventArgs.Empty);
                     Thread.Sleep(1);
-                    btnHIGH_AF_CheckedChanged(this, e);
+                    btnHIGH_AF_CheckedChanged(this, EventArgs.Empty);
                     Thread.Sleep(1);
-                    btnHIGH_RF_CheckedChanged(this, e);
+                    btnHIGH_RF_CheckedChanged(this, EventArgs.Empty);
                     Thread.Sleep(1);
 
                     double freq = loscFreq;
@@ -40458,31 +41032,16 @@ namespace PowerSDR
                         Thread.Sleep(1);
 
                         G59_setup_keyer();
-
                         G59SecRXAnt = G59_sec_rx_ant;
-
-                        if (btnATT.Checked)
-                        {
-                            btnATT.Checked = false;
-                            btnATT.Checked = true;
-                        }
-
-                        if (btnHIGH_AF.Checked)
-                        {
-                            btnHIGH_AF.Checked = false;
-                            btnHIGH_AF.Checked = true;
-                        }
-
-                        if (btnHIGH_RF.Checked)
-                        {
-                            btnHIGH_RF.Checked = false;
-
-
-                            double freq = loscFreq;
-                            freq *= 1e6;
-                            net_device.Si570_freq = 56000000;  // reinit!
-                            net_device.SetLOSC((long)freq, true); btnHIGH_RF.Checked = true;
-                        }
+                        Thread.Sleep(1);
+                        G59XTRV_separateRXTX = G59_XTRV_separate_RXTX;      // force refresh
+                        Thread.Sleep(1);
+                        btnATT_CheckedChanged(this, EventArgs.Empty);
+                        Thread.Sleep(1);
+                        btnHIGH_AF_CheckedChanged(this, EventArgs.Empty);
+                        Thread.Sleep(1);
+                        btnHIGH_RF_CheckedChanged(this, EventArgs.Empty);
+                        Thread.Sleep(1);
                     }
                 }
 
@@ -40497,93 +41056,103 @@ namespace PowerSDR
 
         public void G59_setup_keyer()
         {
-            DSPMode tmp_mode;
-
-            if (chkVFOSplit.Checked)
-                tmp_mode = current_dsp_mode_subRX;
-            else
-                tmp_mode = current_dsp_mode;
-
-            Thread.Sleep(1);
-            g59.KEYER = 0xff;   // reset data
-            g59.WriteToDevice(4,
-                (long)(1200 / (SetupForm.G59CWSpeed * SetupForm.G59CWSpeedCorrection)));    // write CW keyer speed
-            Thread.Sleep(1);
-            g59.WriteToDevice(20, (long)(SetupForm.G59DASH_DOT_ratio * 10));                // write DASH/DOT ratio
-            Thread.Sleep(1);
-
-            if (current_model == Model.GENESIS_G59USB)
+            try
             {
-                if (tmp_mode == DSPMode.CWU || tmp_mode == DSPMode.CWL)
+                if (!booting)
                 {
-                    switch (SetupForm.GenesisKeyerMode)
+                    DSPMode tmp_mode;
+
+                    if (chkVFOSplit.Checked)
+                        tmp_mode = current_dsp_mode_subRX;
+                    else
+                        tmp_mode = current_dsp_mode;
+
+                    Thread.Sleep(1);
+                    g59.KEYER = 0xff;   // reset data
+                    g59.WriteToDevice(4,
+                        (long)(1200 / (SetupForm.G59CWSpeed * SetupForm.G59CWSpeedCorrection)));    // write CW keyer speed
+                    Thread.Sleep(1);
+                    g59.WriteToDevice(20, (long)(SetupForm.G59DASH_DOT_ratio * 10));                // write DASH/DOT ratio
+                    Thread.Sleep(1);
+
+                    if (current_model == Model.GENESIS_G59USB)
                     {
-                        case Keyer_mode.Iambic_B_Mode:
-                            g59.WriteToDevice(18, (long)Keyer_mode.Iambic_B_Mode);
-                            g59.KeyerMode = (short)Keyer_mode.Iambic_B_Mode;
-                            break;
+                        if (tmp_mode == DSPMode.CWU || tmp_mode == DSPMode.CWL)
+                        {
+                            switch (SetupForm.GenesisKeyerMode)
+                            {
+                                case Keyer_mode.Iambic_B_Mode:
+                                    g59.WriteToDevice(18, (long)Keyer_mode.Iambic_B_Mode);
+                                    g59.KeyerMode = (short)Keyer_mode.Iambic_B_Mode;
+                                    break;
 
-                        case Keyer_mode.Iambic:
-                            g59.WriteToDevice(18, (long)Keyer_mode.Iambic);
-                            g59.KeyerMode = (short)Keyer_mode.Iambic;
-                            break;
+                                case Keyer_mode.Iambic:
+                                    g59.WriteToDevice(18, (long)Keyer_mode.Iambic);
+                                    g59.KeyerMode = (short)Keyer_mode.Iambic;
+                                    break;
 
-                        case Keyer_mode.Iambic_Reverse_B_Mode:
-                            g59.WriteToDevice(18, (long)Keyer_mode.Iambic_Reverse_B_Mode);
-                            g59.KeyerMode = (short)Keyer_mode.Iambic_Reverse_B_Mode;
-                            break;
+                                case Keyer_mode.Iambic_Reverse_B_Mode:
+                                    g59.WriteToDevice(18, (long)Keyer_mode.Iambic_Reverse_B_Mode);
+                                    g59.KeyerMode = (short)Keyer_mode.Iambic_Reverse_B_Mode;
+                                    break;
 
-                        case Keyer_mode.IambicReverse:
-                            g59.WriteToDevice(18, (long)Keyer_mode.IambicReverse);
-                            g59.KeyerMode = (short)Keyer_mode.IambicReverse;
-                            break;
-                        case Keyer_mode.HandKey:
-                            g59.WriteToDevice(18, (long)Keyer_mode.HandKey);
-                            g59.KeyerMode = (short)Keyer_mode.HandKey;
-                            break;
+                                case Keyer_mode.IambicReverse:
+                                    g59.WriteToDevice(18, (long)Keyer_mode.IambicReverse);
+                                    g59.KeyerMode = (short)Keyer_mode.IambicReverse;
+                                    break;
+                                case Keyer_mode.HandKey:
+                                    g59.WriteToDevice(18, (long)Keyer_mode.HandKey);
+                                    g59.KeyerMode = (short)Keyer_mode.HandKey;
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            g59.WriteToDevice(18, (long)Keyer_mode.PHONE);
+                            g59.KeyerMode = (short)Keyer_mode.PHONE;
+                        }
+                    }
+                    else if (current_model == Model.GENESIS_G59NET)
+                    {
+                        if (tmp_mode == DSPMode.CWU || tmp_mode == DSPMode.CWL)
+                        {
+                            switch (SetupForm.GenesisKeyerMode)
+                            {
+                                case Keyer_mode.Iambic_B_Mode:
+                                    net_device.WriteToDevice(18, (long)Keyer_mode.Iambic_B_Mode);
+                                    net_device.KeyerMode = (short)Keyer_mode.Iambic_B_Mode;
+                                    break;
+                                case Keyer_mode.Iambic:
+                                    net_device.WriteToDevice(18, (long)Keyer_mode.Iambic);
+                                    net_device.KeyerMode = (short)Keyer_mode.Iambic;
+                                    break;
+
+                                case Keyer_mode.Iambic_Reverse_B_Mode:
+                                    net_device.WriteToDevice(18, (long)Keyer_mode.Iambic_Reverse_B_Mode);
+                                    net_device.KeyerMode = (short)Keyer_mode.Iambic_Reverse_B_Mode;
+                                    break;
+                                case Keyer_mode.IambicReverse:
+                                    net_device.WriteToDevice(18, (long)Keyer_mode.IambicReverse);
+                                    net_device.KeyerMode = (short)Keyer_mode.IambicReverse;
+                                    break;
+
+                                case Keyer_mode.HandKey:
+                                    net_device.WriteToDevice(18, (long)Keyer_mode.HandKey);
+                                    net_device.KeyerMode = (short)Keyer_mode.HandKey;
+                                    break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        net_device.WriteToDevice(18, (long)Keyer_mode.PHONE);
+                        net_device.KeyerMode = (short)Keyer_mode.PHONE;
                     }
                 }
-                else
-                {
-                    g59.WriteToDevice(18, (long)Keyer_mode.PHONE);
-                    g59.KeyerMode = (short)Keyer_mode.PHONE;
-                }
             }
-            else if (current_model == Model.GENESIS_G59NET)
+            catch (Exception ex)
             {
-                if (tmp_mode == DSPMode.CWU || tmp_mode == DSPMode.CWL)
-                {
-                    switch (SetupForm.GenesisKeyerMode)
-                    {
-                        case Keyer_mode.Iambic_B_Mode:
-                            net_device.WriteToDevice(18, (long)Keyer_mode.Iambic_B_Mode);
-                            net_device.KeyerMode = (short)Keyer_mode.Iambic_B_Mode;
-                            break;
-                        case Keyer_mode.Iambic:
-                            net_device.WriteToDevice(18, (long)Keyer_mode.Iambic);
-                            net_device.KeyerMode = (short)Keyer_mode.Iambic;
-                            break;
-
-                        case Keyer_mode.Iambic_Reverse_B_Mode:
-                            net_device.WriteToDevice(18, (long)Keyer_mode.Iambic_Reverse_B_Mode);
-                            net_device.KeyerMode = (short)Keyer_mode.Iambic_Reverse_B_Mode;
-                            break;
-                        case Keyer_mode.IambicReverse:
-                            net_device.WriteToDevice(18, (long)Keyer_mode.IambicReverse);
-                            net_device.KeyerMode = (short)Keyer_mode.IambicReverse;
-                            break;
-
-                        case Keyer_mode.HandKey:
-                            net_device.WriteToDevice(18, (long)Keyer_mode.HandKey);
-                            net_device.KeyerMode = (short)Keyer_mode.HandKey;
-                            break;
-                    }
-                }
-            }
-            else
-            {
-                net_device.WriteToDevice(18, (long)Keyer_mode.PHONE);
-                net_device.KeyerMode = (short)Keyer_mode.PHONE;
+                Debug.Write(ex.ToString());
             }
         }
 
@@ -40710,7 +41279,7 @@ namespace PowerSDR
                 Thread.Sleep(1);
                 g11.WriteToDevice(24, 0);                               // CW monitor off
                 Thread.Sleep(1);
-                g11.WriteToDevice(28, G11PTT_Inverted);                 // external PA inverted
+                ExtPA_PTT_Inverted = extPA_PTT_inverted;
                 Thread.Sleep(1);
                 Genesis_EXT_PA_present = genesis_ext_PA_present;        // force reload
                 Thread.Sleep(1);
@@ -40729,12 +41298,11 @@ namespace PowerSDR
                 Thread.Sleep(1);
                 G11XTRV_separateRXTX = G11_XTRV_separate_RXTX;          // force refresh
                 Thread.Sleep(1);
-                EventArgs e = EventArgs.Empty;
-                btnATT_CheckedChanged(this, e);
+                chkG11AFbtn_CheckedChanged(this, EventArgs.Empty);
                 Thread.Sleep(1);
-                btnHIGH_AF_CheckedChanged(this, e);
+                chkG11ATTbtn_CheckedChanged(this, EventArgs.Empty);
                 Thread.Sleep(1);
-                btnHIGH_RF_CheckedChanged(this, e);
+                chkG11RFbtn_CheckedChanged(this, EventArgs.Empty);
                 Thread.Sleep(1);
 
                 Thread.Sleep(1);
@@ -40755,55 +41323,65 @@ namespace PowerSDR
 
         public void G11_setup_keyer()
         {
-            DSPMode tmp_mode;
-
-            if (chkVFOSplit.Checked)
-                tmp_mode = current_dsp_mode_subRX;
-            else
-                tmp_mode = current_dsp_mode;
-
-            Thread.Sleep(1);
-            g11.KEYER = 0xff;   // reset data
-            g11.WriteToDevice(4,
-                (long)(1200 / (SetupForm.G59CWSpeed * SetupForm.G59CWSpeedCorrection)));    // write CW keyer speed
-            Thread.Sleep(1);
-            g11.WriteToDevice(20, (long)(SetupForm.G59DASH_DOT_ratio * 10));                // write DASH/DOT ratio
-            Thread.Sleep(1);
-
-            if (tmp_mode == DSPMode.CWL || tmp_mode == DSPMode.CWU)
+            try
             {
-                switch (SetupForm.GenesisKeyerMode)
+                if (!booting)
                 {
-                    case Keyer_mode.Iambic_B_Mode:
-                        g11.WriteToDevice(18, (long)Keyer_mode.Iambic_B_Mode);
-                        g11.KeyerMode = (short)Keyer_mode.Iambic_B_Mode;
-                        break;
+                    DSPMode tmp_mode;
 
-                    case Keyer_mode.Iambic:
-                        g11.WriteToDevice(18, (long)Keyer_mode.Iambic);
-                        g11.KeyerMode = (short)Keyer_mode.Iambic;
-                        break;
+                    if (chkVFOSplit.Checked)
+                        tmp_mode = current_dsp_mode_subRX;
+                    else
+                        tmp_mode = current_dsp_mode;
 
-                    case Keyer_mode.Iambic_Reverse_B_Mode:
-                        g11.WriteToDevice(18, (long)Keyer_mode.Iambic_Reverse_B_Mode);
-                        g11.KeyerMode = (short)Keyer_mode.Iambic_Reverse_B_Mode;
-                        break;
+                    Thread.Sleep(1);
+                    g11.KEYER = 0xff;   // reset data
+                    g11.WriteToDevice(4,
+                        (long)(1200 / (SetupForm.G59CWSpeed * SetupForm.G59CWSpeedCorrection)));    // write CW keyer speed
+                    Thread.Sleep(1);
+                    g11.WriteToDevice(20, (long)(SetupForm.G59DASH_DOT_ratio * 10));                // write DASH/DOT ratio
+                    Thread.Sleep(1);
 
-                    case Keyer_mode.IambicReverse:
-                        g11.WriteToDevice(18, (long)Keyer_mode.IambicReverse);
-                        g11.KeyerMode = (short)Keyer_mode.IambicReverse;
-                        break;
+                    if (tmp_mode == DSPMode.CWL || tmp_mode == DSPMode.CWU)
+                    {
+                        switch (SetupForm.GenesisKeyerMode)
+                        {
+                            case Keyer_mode.Iambic_B_Mode:
+                                g11.WriteToDevice(18, (long)Keyer_mode.Iambic_B_Mode);
+                                g11.KeyerMode = (short)Keyer_mode.Iambic_B_Mode;
+                                break;
 
-                    case Keyer_mode.HandKey:
-                        g11.WriteToDevice(18, (long)Keyer_mode.HandKey);
-                        g11.KeyerMode = (short)Keyer_mode.HandKey;
-                        break;
+                            case Keyer_mode.Iambic:
+                                g11.WriteToDevice(18, (long)Keyer_mode.Iambic);
+                                g11.KeyerMode = (short)Keyer_mode.Iambic;
+                                break;
+
+                            case Keyer_mode.Iambic_Reverse_B_Mode:
+                                g11.WriteToDevice(18, (long)Keyer_mode.Iambic_Reverse_B_Mode);
+                                g11.KeyerMode = (short)Keyer_mode.Iambic_Reverse_B_Mode;
+                                break;
+
+                            case Keyer_mode.IambicReverse:
+                                g11.WriteToDevice(18, (long)Keyer_mode.IambicReverse);
+                                g11.KeyerMode = (short)Keyer_mode.IambicReverse;
+                                break;
+
+                            case Keyer_mode.HandKey:
+                                g11.WriteToDevice(18, (long)Keyer_mode.HandKey);
+                                g11.KeyerMode = (short)Keyer_mode.HandKey;
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        g11.WriteToDevice(18, (long)Keyer_mode.PHONE);
+                        g11.KeyerMode = (short)Keyer_mode.PHONE;
+                    }
                 }
             }
-            else
+            catch (Exception ex)
             {
-                g11.WriteToDevice(18, (long)Keyer_mode.PHONE);
-                g11.KeyerMode = (short)Keyer_mode.PHONE;
+                Debug.Write("Error in G11 setup keyer!\n" + ex.ToString());
             }
         }
 
@@ -42443,6 +43021,9 @@ namespace PowerSDR
 
             XTRVForm.Show();
             XTRVForm.Focus();
+
+            Win32.SetWindowPos(XTRVForm.Handle.ToInt32(),
+                -1, this.Left, this.Top, XTRVForm.Width, XTRVForm.Height, 0);
         }
 
         public void XTRV_cross_thread_callback(int nr, string btn_txt, double f_min, double f_max, double losc,
@@ -42591,14 +43172,14 @@ namespace PowerSDR
         {
             if (debug == null || debug.IsDisposed)
             {
-                debug = new DebugForm(this);
+                debug = new DebugForm(this, false);
                 debug.StartPosition = FormStartPosition.Manual;
             }
 
             debug.Show();
             debug.Focus();
             Win32.SetWindowPos(debug.Handle.ToInt32(),
-                -1, debug.Left, debug.Top, debug.Width, debug.Height, 0);
+                -1, this.Left, this.Top, debug.Width, debug.Height, 0);
         }
 
         public void DebugCallback(string msg)
@@ -42670,18 +43251,19 @@ namespace PowerSDR
         {
             try
             {
+                g6.WriteToDevice(14, 0);                                    // transmiter OFF
                 //DttSP.ResizeSDR(0, block_size1);
                 DttSP.SetMode(0, 0, CurrentDSPMode);
                 CurrentFilter = CurrentFilter;
                 DttSP.SetMode(0, 1, CurrentDSPModeSubRX);
                 CurrentFilterSubRX = current_filter_subRX;
-                SampleRate1 = sample_rate1;                             // force refresh
+                SampleRate1 = sample_rate1;                                 // force refresh
                 Thread.Sleep(300);
-                //g6.WriteToDevice(26, 0);                                // Line in
+                //g6.WriteToDevice(26, 0);                                  // Line in
                 //g6.WriteToDevice(0, 0);
-                g6.WriteToDevice(24, 0);                                // CW monitor off
-                g6.WriteToDevice(28, G11PTT_Inverted);                  // external PA inverted
-                Genesis_EXT_PA_present = genesis_ext_PA_present;                // force reload
+                g6.WriteToDevice(24, 0);                                    // CW monitor off
+                ExtPA_PTT_Inverted = extPA_PTT_inverted;
+                Genesis_EXT_PA_present = genesis_ext_PA_present;            // force reload
                 G6SetBandFilter(vfoAFreq);
 
                 if (g6_auto_correction)
@@ -42694,22 +43276,25 @@ namespace PowerSDR
 
                 G6_setup_keyer();
 
-                //Thread.Sleep(1);
-                G6XTRV_separateRXTX = G6_XTRV_separate_RXTX;                    // force refresh
-                //Thread.Sleep(1);
-                EventArgs e = EventArgs.Empty;
-                btnATT_CheckedChanged(this, e);
-                //Thread.Sleep(1);
-                btnHIGH_AF_CheckedChanged(this, e);
-                //Thread.Sleep(1);
-                btnHIGH_RF_CheckedChanged(this, e);
-                //Thread.Sleep(1);
+                Thread.Sleep(1);
+                G6XTRV_separateRXTX = G6_XTRV_separate_RXTX;                // force refresh
+                Thread.Sleep(1);
+                chkG6AF_CheckedChanged(this, EventArgs.Empty);
+                Thread.Sleep(1);
+                chkG6ATT_12dB_CheckedChanged(this, EventArgs.Empty);
+                Thread.Sleep(1);
+                chkG6ATT_18dB_CheckedChanged(this, EventArgs.Empty);
+                Thread.Sleep(1);
+                chkG6ATT_CheckedChanged(this, EventArgs.Empty);
+                Thread.Sleep(1);
+                chkG6RF_CheckedChanged(this, EventArgs.Empty);
+                Thread.Sleep(1);
 
                 //Thread.Sleep(1);
-                G6SecRXAnt = G6_sec_rx_ant;                                     // second RX antenna force reload
+                G6SecRXAnt = G6_sec_rx_ant;                                 // second RX antenna force reload
                 double freq = loscFreq;
                 freq *= 1e6;
-                g6.Si570_freq = 56000000;                                       // reinit!
+                g6.Si570_freq = 56000000;                                   // reinit!
                 g6.Set_frequency((long)Math.Round(freq, 6), true);
 
                 int length;
@@ -42737,13 +43322,12 @@ namespace PowerSDR
             else
                 tmp_mode = current_dsp_mode;
 
-            //Thread.Sleep(1);
             g6.KEYER = 0xff;   // reset data
             g6.WriteToDevice(4,
-                (long)(1200 / (SetupForm.G59CWSpeed * SetupForm.G59CWSpeedCorrection)));    // write CW keyer speed
-            //Thread.Sleep(1);
-            g6.WriteToDevice(20, (long)(SetupForm.G59DASH_DOT_ratio * 10));         // write DASH/DOT ratio
-            //Thread.Sleep(1);
+                (long)(5 * 1200 / SetupForm.G59CWSpeed));                                       // write CW keyer speed
+            //g6.WriteToDevice(4,
+                //(long)(1200 / (SetupForm.G59CWSpeed * SetupForm.G59CWSpeedCorrection)));        // write CW keyer speed
+            g6.WriteToDevice(20, (long)(SetupForm.G59DASH_DOT_ratio * 10));                     // write DASH/DOT ratio
 
             if (tmp_mode == DSPMode.CWL || tmp_mode == DSPMode.CWU)
             {
@@ -42804,10 +43388,13 @@ namespace PowerSDR
                 if (EthCATIsActive)
                     CAT_client_socket.ClientServerSync("ZZGA;");                    // sync with server
 
-                if (vfo_new_look)
-                    txtLOSCnew_LostFocus(null, null);
-                else
-                    txtLOSCFreq_LostFocus(null, null);                              // force WBIR reinit!
+                if (!MOX)
+                {
+                    if (vfo_new_look)
+                        txtLOSCnew_LostFocus(null, null);
+                    else
+                        txtLOSCFreq_LostFocus(null, null);                              // force WBIR reinit!
+                }
             }
         }
 
@@ -42833,10 +43420,13 @@ namespace PowerSDR
                 if (EthCATIsActive)
                     CAT_client_socket.ClientServerSync("ZZGR;");                // sync with server
 
-                if (vfo_new_look)
-                    txtLOSCnew_LostFocus(null, null);
-                else
-                    txtLOSCFreq_LostFocus(null, null);                          // force WBIR reinit!
+                if (!MOX)
+                {
+                    if (vfo_new_look)
+                        txtLOSCnew_LostFocus(null, null);
+                    else
+                        txtLOSCFreq_LostFocus(null, null);                          // force WBIR reinit!
+                }
             }
         }
 
@@ -42863,10 +43453,13 @@ namespace PowerSDR
                 if (EthCATIsActive)
                     CAT_client_socket.ClientServerSync("ZZGN;");                    // sync with server
 
-                if (vfo_new_look)
-                    txtLOSCnew_LostFocus(null, null);
-                else
-                    txtLOSCFreq_LostFocus(null, null);                              // force WBIR reinit!
+                if (!MOX)
+                {
+                    if (vfo_new_look)
+                        txtLOSCnew_LostFocus(null, null);
+                    else
+                        txtLOSCFreq_LostFocus(null, null);                              // force WBIR reinit!
+                }
             }
         }
 
@@ -42892,10 +43485,13 @@ namespace PowerSDR
             if (EthCATIsActive)
                 CAT_client_socket.ClientServerSync("ZZGN;");                    // sync with server
 
-            if (vfo_new_look)
-                txtLOSCnew_LostFocus(null, null);
-            else
-                txtLOSCFreq_LostFocus(null, null);                              // force WBIR reinit!
+            if (!MOX)
+            {
+                if (vfo_new_look)
+                    txtLOSCnew_LostFocus(null, null);
+                else
+                    txtLOSCFreq_LostFocus(null, null);                              // force WBIR reinit!
+            }
         }
 
         private void chkG6ATT_18dB_CheckedChanged(object sender, EventArgs e)   // -18dB ATT
@@ -42919,10 +43515,13 @@ namespace PowerSDR
             if (EthCATIsActive)
                 CAT_client_socket.ClientServerSync("ZZGN;");                    // sync with server
 
-            if (vfo_new_look)
-                txtLOSCnew_LostFocus(null, null);
-            else
-                txtLOSCFreq_LostFocus(null, null);                              // force WBIR reinit!
+            if (!MOX)
+            {
+                if (vfo_new_look)
+                    txtLOSCnew_LostFocus(null, null);
+                else
+                    txtLOSCFreq_LostFocus(null, null);                              // force WBIR reinit!
+            }
         }
 
         public void G6SetBandFilter(double freq)
@@ -43606,7 +44205,24 @@ namespace PowerSDR
                 toolTip1.SetToolTip(chkFMMsg6, VoiceMsgForm.txtMsg6.Text);
         }
 
+        private void chkWFMstereo_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (chkWFMstereo.Checked)
+                    DttSP.FMenableStereo(0, 0, 1);
+                else
+                    DttSP.FMenableStereo(0, 0, 0);
+            }
+            catch (Exception ex)
+            {
+                Debug.Write(ex.ToString());
+            }
+        }
+
         #endregion
+
+        #region Audio MUTE      // yt7pwr
 
         private void chkVACMute_CheckedChanged(object sender, EventArgs e)
         {
@@ -43656,8 +44272,6 @@ namespace PowerSDR
                 Debug.Write(ex.ToString());
             }
         }
-
-        #region Audio MUTE      // yt7pwr
 
         private MuteChannels mute_ch = MuteChannels.Both;
 
@@ -43715,21 +44329,6 @@ namespace PowerSDR
         }
 
         #endregion
-
-        private void chkWFMstereo_CheckedChanged(object sender, EventArgs e)
-        {
-            try
-            {
-                if(chkWFMstereo.Checked)
-                    DttSP.FMenableStereo(0, 0, 1);
-                else
-                    DttSP.FMenableStereo(0, 0, 0);
-            }
-            catch (Exception ex)
-            {
-                Debug.Write(ex.ToString());
-            }   
-        }
     }
 
     #region DttSP

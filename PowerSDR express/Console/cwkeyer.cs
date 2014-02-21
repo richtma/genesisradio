@@ -35,7 +35,7 @@
 
 /*
  *  Changes for GenesisRadio
- *  Copyright (C)2008,2009,2010,2011,2012 YT7PWR Goran Radivojevic
+ *  Copyright (C)2008-2013 YT7PWR Goran Radivojevic
  *  contact via email at: yt7pwr@ptt.rs or yt7pwr2002@yahoo.com
 */
 
@@ -77,8 +77,13 @@ namespace PowerSDR
             set 
             {
                 runKeyer = value;
-                if (runKeyer)
+
+                if (runKeyer && console.chkPower.Checked)
+                {
                     StartKeyerThread();
+                }
+                else if (!value)
+                    DttSP.PollTimerRelease();
             }
         }
 
@@ -395,11 +400,11 @@ namespace PowerSDR
             // Destructor logic here, make sure threads cleaned up
             DttSP.StopKeyer();
             Thread.Sleep(10);
-            if (CWTone != null)
+            if (CWTone != null && CWTone != null)
                 CWTone.Abort();
-            if (Monitor != null)
+            if (Monitor != null && Monitor != null)
                 Monitor.Abort();
-            if (Keyer.IsAlive)
+            if (Keyer != null && Keyer.IsAlive)
                 Keyer.Abort();
             Thread.Sleep(50);
             DttSP.DeleteKeyer();
@@ -426,9 +431,10 @@ namespace PowerSDR
                 int[] tmp = new int[1];
                 bool tune_CW = false;
 
-                do
+                //do
                 {
                     DttSP.KeyerStartedWait();
+
                     while (runKeyer)
                     {
                         timer.Start();
@@ -942,10 +948,12 @@ namespace PowerSDR
 
                         timer.Stop();
                         msdel = (float)timer.DurationMsec;
+                        //msdel = (float)DttSP.TimerRead();
                         //Debug.Write(msdel.ToString() + "\n");
 
                         if (keyprog || secondary_keyer_mox || tune_CW || ptt_bit_bang_enabled)
                         {
+                            //keyprog = false;
                             DttSP.KeyValue(msdel, secondary_keyer_dash, secondary_keyer_dot, keyprog);
                             keyprog = false;
                         }
@@ -965,7 +973,7 @@ namespace PowerSDR
                             keyprog = false;
                         }
                     }
-                } while (true);
+                }// while (true);
             }
             catch (Exception ex)
             {
